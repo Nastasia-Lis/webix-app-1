@@ -1,9 +1,8 @@
 import * as header from "./modules/header.js";
 import * as sidebar from "./modules/sidebar.js";
-import * as multiviewSidebar from "./modules/multiviewSidebar.js";
-
-import {loginCheck} from './modules/userLogin.js';
-import {defaultStorageSettings} from './modules/userSettings.js';
+//import * as multiviewSidebar from "./modules/multiviewSidebar.js";
+//import * as table from "./modules/table.js";
+//import {sidebarData} from './modules/data.js';
 
 webix.ready(function(){
     
@@ -12,7 +11,11 @@ webix.ready(function(){
             header.header(),
             { id:"mainContent", cols:[
                 sidebar.sidebar(),
-                multiviewSidebar.multiviewSidebar(),
+               
+               
+                
+                
+
             ]}
         ]
       
