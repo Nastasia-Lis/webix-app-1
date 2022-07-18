@@ -18,8 +18,7 @@ webix.ready(function(){
       
     });
     
-    loginCheck();
-    defaultStorageSettings();
+
 });
 
 
