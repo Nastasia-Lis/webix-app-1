@@ -13,3 +13,17 @@
 .webix_error div {
   background-color: #ffe2d7;
 }
+
+.webix_tree_item {
+  cursor: pointer;
+  padding: 5px 5px !important;
+  border-radius: 10px !important;
+}
+
+.webix_tree_item:hover {
+  background-color: #e9f2ff !important;
+}
+
+.webix_tree .webix_tree_item.webix_selected {
+  background-color: #d8e8fd !important;
+}

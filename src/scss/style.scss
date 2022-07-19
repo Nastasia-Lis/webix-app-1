@@ -14,3 +14,19 @@
     //border-radius: 10px!important;
     background-color: rgb(255, 226, 215);
 }
+
+
+.webix_tree_item{
+    cursor: pointer;
+    padding: 5px 5px!important;
+    border-radius: 10px!important;
+}
+
+.webix_tree_item:hover{
+    background-color: rgb(233, 242, 255)!important;
+}
+
+.webix_tree .webix_tree_item.webix_selected{
+    background-color: rgb(216, 232, 253)!important;
+    
+}

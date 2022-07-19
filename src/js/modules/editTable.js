@@ -60,12 +60,14 @@ export function editTable () {
         view:"form", id:'editForm', width: 350,
 
         elements:[
+            
             {cols: [
-            { view:"button", id:"btnSave", value:"Сохранить", css:"webix_primary", click:saveItem},
-            { view:"button", id:"btnAdd",  value:"+", click:addItem},
+            
+            { view:"button", id:"btnAdd",  type:"icon", icon:"wxi-plus-circle",  click:addItem},
             { view:"button", id:"btnClean",  value:"Очистить", click:clearForm},
-            { view:"button", id:"btnRemove",  value:"Удалить", click:removeItem},
+            { view:"button", id:"btnRemove",  type:"icon",css:"", icon:"wxi-trash", click:removeItem},
             ]},
+            { view:"button", id:"btnSave", value:"Сохранить", css:"webix_primary", click:saveItem},
             { view:"text", name:"title", label:"Title", invalidMessage:"Must be filled in"},
             { view:"text", name:"year", label:"Year", invalidMessage:"Should be between 1970 and current" },
             { view:"text", name:"rating", label:"Rating", invalidMessage:"Cannot be empty or 0" },

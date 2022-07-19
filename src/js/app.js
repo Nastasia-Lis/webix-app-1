@@ -1,14 +1,16 @@
 import * as header from "./modules/header.js";
-import * as sidebar from "./modules/sidebar.js";
-//import * as multiviewSidebar from "./modules/multiviewSidebar.js";
+import {gridColumns,tableDataOne} from './modules/data/data.js';
+import {sidebarMenu, selected, currObj} from './modules/sidebar.js';
+
+
+import * as multiviewSidebar from "./modules/multiviewSidebar.js";
+
 import * as table from "./modules/table.js";
 import * as editTable from "./modules/editTable.js";
-import * as paginationTable from "./modules/paginationTable.js";
 import * as toolbarTable from "./modules/toolbarTable.js";
 
 
-import {gridColumns,tableDataOne} from './modules/data/data.js';
-import {sidebarMenu, selected} from './modules/sidebar.js';
+
 
 
 webix.ready(function(){
@@ -20,13 +22,10 @@ webix.ready(function(){
                 sidebarMenu,
                 {view:"resizer"},
                 {rows:[
-                    {cols:[
-                        toolbarTable.toolbarTable(),
-                        
-                        //paginationTable.paginationTable(),
-                    ]},
+                    toolbarTable.toolbarTable(),
                     table.table(),
                 ]},
+                //multiviewSidebar.multiviewSidebar(),
                 {view:"resizer"},
                 editTable.editTable()
                 
@@ -38,7 +37,7 @@ webix.ready(function(){
         ]
 
 
-       
+        
       
     });
     

@@ -1,35 +1,24 @@
-// import {multiviewSidebarData} from './data/data.js';
-
 // import * as table from "./table.js";
+// import * as toolbarTable from "./toolbarTable.js";
 // import {gridColumns,tableDataOne, tableDataFour} from './data/data.js';
 
 // export function multiviewSidebar () {
 //     return{
 //         view: "multiview",
-//         //id:"multiviewSidebar",
+//         id:"multiviewSidebar",
 //         animate: false,
 //         cells:[
-//             {   id: "table1", 
+//             {   id: "tableDataOne", 
 //                 rows:[
-//                     //tableToolbar.tableToolbar("tableOne"),
-//                     table.table("tableOne", tableDataOne, gridColumns), 
-//                 //     {cols:[
-//                 //         {},
-//                 //         pagerTable.pagerTable("pagerTableOne"),
-//                 //         {}
-//                 //     ]}
+//                     toolbarTable.toolbarTable("searchTabOne", "paginationTabOne","tableOne"),
+//                     table.table("tableOne", tableDataOne,"paginationTabOne"),
 //                 ]
 //             },
 
-//             {   id: "table4", 
+//             {   id: "tableDataFour", 
 //                 rows:[
-//                     //tableToolbar.tableToolbar("tableTwo"),
-//                     table.table("tableFour", tableDataFour, gridColumns), 
-//                     // {cols:[
-//                     //     {},
-//                     //     pagerTable.pagerTable("pagerTableTwo"),
-//                     //     {}
-//                     // ]}
+//                     toolbarTable.toolbarTable("searchTabFour", "paginationTabFour"),
+//                     table.table("tableFour", tableDataFour,"paginationTabFour","tableFour"),
 //                 ]
 //             },
 //         ] 

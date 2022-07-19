@@ -1,9 +1,9 @@
-import * as paginationTable from "./paginationTable.js";
+
 
 export function toolbarTable () {
     function exportToExcel(){
-        webix.toExcel(idTable, {
-          filename:"ProductTable",
+        webix.toExcel("tableInfo", {
+          filename:"Table",
           filterHTML:true,
           styles:true
         });
@@ -13,46 +13,34 @@ export function toolbarTable () {
         cols: [
             {   view:"search", 
                 placeholder:"Поиск", 
-                id:"search", 
+                id:"searchTable",
+                css:"searchTable", 
                 width:150, 
                 on: {
                     onTimedKeyPress() {
-                        var value = this.getValue().toLowerCase(); 
+                        var value = this.getValue().toLowerCase();
                         $$("tableInfo").filter(function(obj){
                         return obj.title.toLowerCase().indexOf(value)!=-1;
                     });
                     }}
             },
-            {},
-            paginationTable.paginationTable(),
+            
+            {
+                view:"pager",
+                id:"pagerTable",
+                size:20,
+                group:5,
+                template:`{common.prev()} 
+              {common.pages()} {common.next()}`
+            },
 
             {   view:"button",
-                width: 250, 
+                width: 50, 
                 type:"icon",
                 icon:"wxi-download",
-                label:"Экспортировать как Excel", 
+                //label:"Экспортировать как Excel", 
                 click:exportToExcel 
             },
         ]
     };
-
-
-
 }
-            // view:"toolbar", 
-            // cols:[
-            //   { view:"search", placeholder:"Поиск", id:"search", width:50},
-            // ]
-        
-        // {
-        //     width: 350,
-        //     view:"text",
-        //     id:"textField",
-        //     placeholder:"Text",
-        //     on: {
-        //       onTimedKeyPress: function() {
-        //         $$("tableInfo").filterByAll();
-        //       }
-        //     }
-        // }
-       
