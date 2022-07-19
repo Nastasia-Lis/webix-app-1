@@ -37,6 +37,7 @@
     "webpack-stream": "^7.0.0"
   },
   "dependencies": {
-    "del": "^6.0.0"
+    "del": "^6.0.0",
+    "jshint": "^2.13.5"
   }
 }
