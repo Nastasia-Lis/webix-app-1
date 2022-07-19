@@ -1,0 +1,15 @@
+.webix_success {
+  border-radius: 10px !important;
+}
+
+.webix_success div {
+  background-color: #d7ffe7;
+}
+
+.webix_error {
+  border-radius: 10px !important;
+}
+
+.webix_error div {
+  background-color: #ffe2d7;
+}
