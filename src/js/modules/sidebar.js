@@ -12,6 +12,7 @@ import {sidebarData,tableDataOne,tableDataFour} from './data/data.js';
         data:sidebarData, 
         select: selected,
         width: 200,
+        minHeight:150,
         // on:{
         //     onAfterSelect: function(id){
         //         console.log(id);

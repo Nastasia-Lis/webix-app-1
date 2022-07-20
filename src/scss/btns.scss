@@ -1,18 +1,40 @@
 .webix{
+
+    &_button, .webixbutton{
+        font-weight: 400!important;
+    }
+
     &_tree_item{
-        cursor: pointer;
+        cursor: pointer!important;
         padding: 5px 10px!important;
-        border-radius: 8px!important;
+        border-radius: 6px!important;
         transition: .2s;
     }
     &_tree_item:hover{
         background-color: var(--secondary)!important;
     }
+
+    &_tree_folder_open{
+        color: var(--primary-light)!important;
+    }
     
-    &_tree .webix_tree_item.webix_selected{
+    &__tree_item.webix_selected{
         background-color: var(--secondary-dark)!important;
         
     }
+
+    &_webix_selected .webix_tree_file{
+        color: var(--primary-light)!important;
+    }
+
+    &_tree_item:hover .webix_tree_folder,
+    &_tree_item:hover .webix_tree_folder_open,
+    &_tree_item:hover .webix_tree_file{
+        color: var(--primary-light);
+    }
+
+   
+
     
     
     &_primary .webix_button{
@@ -52,6 +74,7 @@
     &_danger .webix_button{
         background: var(--danger)!important;
         transition: .2s;
+        border-radius: 6px!important;
     }
 
     &_danger:hover .webix_button{
@@ -60,6 +83,12 @@
     &_danger:active .webix_button{
         background: var(--danger-dark)!important;
     }
+
+    &_danger .webix_icon_btn,
+    &_btn-download .webix_icon_btn{
+        margin: 0px !important;
+    }
+
     
 
     &_add-btn > .webix_el_box > .webix_button {
@@ -79,6 +108,7 @@
 
     &_pager_item_selected{
         cursor: pointer;
+        border-radius: 6px!important;
         @include primary-btn;
     }
     &_pager_item_selected:hover{
@@ -90,6 +120,7 @@
     }
 
     &_view .webix_pager_item{
+        border-radius: 6px!important;
         @include secondary-btn;
     }
     &_view .webix_pager_item:hover{

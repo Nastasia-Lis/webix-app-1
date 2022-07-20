@@ -5,6 +5,14 @@
 @import "src/scss/btns";
 
 
+// validation action btn edit table
+
+//login, import, menu
+
+//adaptive
+
+//counter table
+
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
 .webix_view {
     font-family: 'Open Sans', sans-serif!important;
@@ -13,8 +21,17 @@
 input:focus{
     border: 1px solid var(--primary)!important;
 }
+
+input {
+    border-radius: 6px!important;
+}
  
 .webix{
+
+    // &_header-style{
+    //     background-color: red;
+    // }
+
     //--------------table
     &_table-style .webix_hcell{
         background:var(--secondary);

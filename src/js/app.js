@@ -16,25 +16,30 @@ import * as toolbarTable from "./modules/toolbarTable.js";
 webix.ready(function(){
     
     webix.ui({
-        rows: [
-            header.header(),
-            { id:"mainContent", cols:[
-                sidebarMenu,
-                {view:"resizer"},
-                {rows:[
-                    toolbarTable.toolbarTable(),
-                    table.table(),
-                ]},
-                //multiviewSidebar.multiviewSidebar(),
-                {view:"resizer"},
-                editTableBar
-                
-               
-                
-                
-
-            ]}
-        ]
+        view:"scrollview", 
+        id:"scrollview", 
+        scroll:"y", 
+        body:{
+            rows: [
+                header.header(),
+                {   id:"adaptive",
+                    rows:[ ]
+                },
+                {   id:"mainContent",
+                    responsive:"adaptive", 
+                    cols:[
+                        sidebarMenu,
+                        {view:"resizer"},
+                        {id:"tableContainer",rows:[
+                            toolbarTable.toolbarTable(),
+                            table.table(),
+                        ]},
+                        //multiviewSidebar.multiviewSidebar(),
+                        {view:"resizer"},
+                        editTableBar
+                    ]}
+            ]
+        }
 
 
         

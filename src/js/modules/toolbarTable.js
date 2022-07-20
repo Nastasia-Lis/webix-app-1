@@ -9,62 +9,81 @@ export function toolbarTable () {
         });
         notify ("success","Таблица сохранена");
     }
+
+    // function countFindElemets() {
+    //     let count = ($$("tableInfo").getLastId());
+    //     return (count);
+    // }
+
     return { 
-        padding:17, margin:5, cols: [
-            {   view:"search", 
-                placeholder:"Поиск", 
-                id:"searchTable",
-                css:"searchTable", 
-                width:150, 
-                on: {
-                    onTimedKeyPress() {
-                        let value = this.getValue().toLowerCase();
-                        let countRows = $$("tableInfo").getVisibleCount();
-                        let i = 0;
-                        // while (i < countRows) { 
-                        //     i++;
-                        // }console.log(i);
-                        
-                        // if (i==0){
-                        //     console.log("ноль");
-                        // }
-
-                        $$("tableInfo").filter(function(obj){
-                            //console.log(obj)
+        rows:[
+            {padding:17, margin:5, 
+                cols: [
+                {   view:"search", 
+                    placeholder:"Поиск", 
+                    id:"searchTable",
+                    css:"searchTable", 
+                    maxWidth:250, 
+                    minWidth:40, 
+                    on: {
+                        onTimedKeyPress() {
+                            let value = this.getValue().toLowerCase();
+                            //let allElements = ($$("tableInfo").getLastId());
                             let findElements = 0;
-                            
-                            while (findElements<6){
-                                if (obj.title.toLowerCase().indexOf(value)!=-1) {
-                                findElements++; 
-                                }
-                            }
-                                
-                            console.log(findElements);
 
+                            $$("tableInfo").filter(function(obj){
+                                if (obj.title.toLowerCase().indexOf(value)!=-1) {
+                                    findElements++; 
+                                }
+                                return obj.title.toLowerCase().indexOf(value)!=-1;
+                            });
+                            if (!findElements){
+                                console.log("нет");
+                                $$("tableInfo").showOverlay("Ничего не найдено");
                             
-                            return obj.title.toLowerCase().indexOf(value)!=-1;
-                        });
+                            } else if(findElements){
+                                $$("tableInfo").hideOverlay("Ничего не найдено");
+                              
+                            }
+                        }
+                    }
+                },
+ 
+                {
+                    view:"pager",
+                    id:"pagerTable",
+                    size:10,
+                    group:3,
+                    template:`{common.prev()} 
+                {common.pages()} {common.next()}`
+                },
+
+                {   view:"button",
+                    width: 50, 
+                    type:"icon",
+                    icon:"wxi-download",
+                    css:"webix_btn-download",
+                    height:50,
+                    width:60,
+                    click:exportToExcel 
+                },
+                ],
+            },
+            {   id:"countFindElemets",
+                height:30,
+                //borderless:true,
+                template: "#count#",
+                on: {
+                    onAfterRender() {
+                        let count = ($$("tableInfo").getLastId());
+                        //$$("countFindElemets").config.template="<div>ueue</div>";
+                        //$$("countFindElemets").refresh();
+                        return count;
                     }
                 }
-            },
-            
-            {
-                view:"pager",
-                id:"pagerTable",
-                size:10,
-                group:3,
-                template:`{common.prev()} 
-              {common.pages()} {common.next()}`
-            },
-
-            {   view:"button",
-                width: 50, 
-                type:"icon",
-                icon:"wxi-download",
-                height:45,
-                width:50,
-                click:exportToExcel 
-            },
+            }
         ]
+
+        
     };
 }

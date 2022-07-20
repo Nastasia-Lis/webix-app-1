@@ -17,21 +17,34 @@
   --add-dark: rgb(108, 192, 140);
 }
 
+.webix_button, .webix .webixbutton {
+  font-weight: 400 !important;
+}
 .webix_tree_item {
-  cursor: pointer;
+  cursor: pointer !important;
   padding: 5px 10px !important;
-  border-radius: 8px !important;
+  border-radius: 6px !important;
   transition: 0.2s;
 }
 .webix_tree_item:hover {
   background-color: var(--secondary) !important;
 }
-.webix_tree .webix_tree_item.webix_selected {
+.webix_tree_folder_open {
+  color: var(--primary-light) !important;
+}
+.webix__tree_item.webix_selected {
   background-color: var(--secondary-dark) !important;
+}
+.webix_webix_selected .webix_tree_file {
+  color: var(--primary-light) !important;
+}
+.webix_tree_item:hover .webix_tree_folder, .webix_tree_item:hover .webix_tree_folder_open, .webix_tree_item:hover .webix_tree_file {
+  color: var(--primary-light);
 }
 .webix_primary .webix_button {
   background: var(--primary) !important;
   transition: 0.2s;
+  border-radius: 6px !important;
 }
 .webix_primary .webix_button:hover {
   background: var(--primary-light) !important;
@@ -43,6 +56,7 @@
   background: var(--secondary) !important;
   color: var(--primary) !important;
   transition: 0.2s;
+  border-radius: 6px !important;
 }
 .webix_secondary .webix_button .webix_icon_btn {
   color: var(--primary) !important;
@@ -60,12 +74,16 @@
 .webix_danger .webix_button {
   background: var(--danger) !important;
   transition: 0.2s;
+  border-radius: 6px !important;
 }
 .webix_danger:hover .webix_button {
   background: var(--danger-light) !important;
 }
 .webix_danger:active .webix_button {
   background: var(--danger-dark) !important;
+}
+.webix_danger .webix_icon_btn, .webix_btn-download .webix_icon_btn {
+  margin: 0px !important;
 }
 .webix_add-btn > .webix_el_box > .webix_button {
   background: var(--add) !important;
@@ -82,8 +100,10 @@
 }
 .webix_pager_item_selected {
   cursor: pointer;
+  border-radius: 6px !important;
   background: var(--primary) !important;
   transition: 0.2s;
+  border-radius: 6px !important;
 }
 .webix_pager_item_selected:hover {
   cursor: pointer;
@@ -93,9 +113,11 @@
   background: var(--primary-dark) !important;
 }
 .webix_view .webix_pager_item {
+  border-radius: 6px !important;
   background: var(--secondary) !important;
   color: var(--primary) !important;
   transition: 0.2s;
+  border-radius: 6px !important;
 }
 .webix_view .webix_pager_item:hover {
   background: var(--primary) !important;
@@ -111,6 +133,10 @@
 
 input:focus {
   border: 1px solid var(--primary) !important;
+}
+
+input {
+  border-radius: 6px !important;
 }
 
 .webix_table-style .webix_hcell {
@@ -143,6 +169,7 @@ input:focus {
 .webix_popup_button.confirm {
   background: var(--primary) !important;
   transition: 0.2s;
+  border-radius: 6px !important;
 }
 .webix_popup_button.confirm:hover {
   background: var(--primary-light) !important;

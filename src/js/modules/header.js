@@ -9,12 +9,13 @@ export function header() {
     const header = {
         view: "toolbar", 
         id: "header",
-        padding:3,
+        padding:10,
+        css:"webix_header-style",
         //hidden:true, 
         elements: [
             { view: "label", label: "App"},
-            { view:"button", label:"Импорт", width: 100},
-            { view:"button", label:"Выйти", width: 100}
+            { view:"button",  type:"icon", icon:"wxi-file",css:"webix_btn-import", label:"Импорт", height:48,width: 130},
+            { view:"button", label:"Выйти",height:48, width: 120}
             
         ]
     };
