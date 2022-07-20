@@ -1,4 +1,4 @@
-
+import {notify} from './editTable.js';
 
 export function toolbarTable () {
     function exportToExcel(){
@@ -7,10 +7,10 @@ export function toolbarTable () {
           filterHTML:true,
           styles:true
         });
+        notify ("success","Таблица сохранена");
     }
-
     return { 
-        cols: [
+        padding:17, margin:5, cols: [
             {   view:"search", 
                 placeholder:"Поиск", 
                 id:"searchTable",
@@ -18,18 +18,41 @@ export function toolbarTable () {
                 width:150, 
                 on: {
                     onTimedKeyPress() {
-                        var value = this.getValue().toLowerCase();
+                        let value = this.getValue().toLowerCase();
+                        let countRows = $$("tableInfo").getVisibleCount();
+                        let i = 0;
+                        // while (i < countRows) { 
+                        //     i++;
+                        // }console.log(i);
+                        
+                        // if (i==0){
+                        //     console.log("ноль");
+                        // }
+
                         $$("tableInfo").filter(function(obj){
-                        return obj.title.toLowerCase().indexOf(value)!=-1;
-                    });
-                    }}
+                            //console.log(obj)
+                            let findElements = 0;
+                            
+                            while (findElements<6){
+                                if (obj.title.toLowerCase().indexOf(value)!=-1) {
+                                findElements++; 
+                                }
+                            }
+                                
+                            console.log(findElements);
+
+                            
+                            return obj.title.toLowerCase().indexOf(value)!=-1;
+                        });
+                    }
+                }
             },
             
             {
                 view:"pager",
                 id:"pagerTable",
-                size:20,
-                group:5,
+                size:10,
+                group:3,
                 template:`{common.prev()} 
               {common.pages()} {common.next()}`
             },
@@ -38,7 +61,8 @@ export function toolbarTable () {
                 width: 50, 
                 type:"icon",
                 icon:"wxi-download",
-                //label:"Экспортировать как Excel", 
+                height:45,
+                width:50,
                 click:exportToExcel 
             },
         ]

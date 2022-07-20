@@ -1,29 +1,152 @@
-.webix_success {
-  border-radius: 10px !important;
-}
-
-.webix_success div {
-  background-color: #d7ffe7;
-}
-
-.webix_error {
-  border-radius: 10px !important;
-}
-
-.webix_error div {
-  background-color: #ffe2d7;
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans&display=swap");
+:root {
+  --white: #fff;
+  --primary: rgb(108, 160, 228);
+  --primary-light:rgb(151, 190, 241);
+  --primary-dark:rgb(91, 140, 204);
+  --secondary:rgb(222, 234, 252);
+  --secondary-dark:rgb(215, 232, 255);
+  --success: rgb(215, 255, 231);
+  --error: rgb(255, 226, 215);
+  --notify: rgb(254, 255, 215);
+  --danger: rgb(252, 145, 106);
+  --danger-light: rgb(247, 178, 152);
+  --danger-dark: rgb(223, 126, 91);
+  --add: rgb(141, 214, 169);
+  --add-light: rgb(167, 230, 191);
+  --add-dark: rgb(108, 192, 140);
 }
 
 .webix_tree_item {
   cursor: pointer;
-  padding: 5px 5px !important;
+  padding: 5px 10px !important;
+  border-radius: 8px !important;
+  transition: 0.2s;
+}
+.webix_tree_item:hover {
+  background-color: var(--secondary) !important;
+}
+.webix_tree .webix_tree_item.webix_selected {
+  background-color: var(--secondary-dark) !important;
+}
+.webix_primary .webix_button {
+  background: var(--primary) !important;
+  transition: 0.2s;
+}
+.webix_primary .webix_button:hover {
+  background: var(--primary-light) !important;
+}
+.webix_primary .webix_button:active {
+  background: var(--primary-dark) !important;
+}
+.webix_secondary .webix_button {
+  background: var(--secondary) !important;
+  color: var(--primary) !important;
+  transition: 0.2s;
+}
+.webix_secondary .webix_button .webix_icon_btn {
+  color: var(--primary) !important;
+}
+.webix_secondary .webix_button:hover {
+  background: var(--primary) !important;
+  color: var(--white) !important;
+}
+.webix_secondary .webix_button:hover .webix_icon_btn {
+  color: var(--white) !important;
+}
+.webix_secondary .webix_button:active {
+  background: var(--primary-dark) !important;
+}
+.webix_danger .webix_button {
+  background: var(--danger) !important;
+  transition: 0.2s;
+}
+.webix_danger:hover .webix_button {
+  background: var(--danger-light) !important;
+}
+.webix_danger:active .webix_button {
+  background: var(--danger-dark) !important;
+}
+.webix_add-btn > .webix_el_box > .webix_button {
+  background: var(--add) !important;
+  transition: 0.2s;
+}
+.webix_add-btn > .webix_el_box > .webix_button > .webix_icon_btn {
+  color: var(--white) !important;
+}
+.webix_add-btn:hover > .webix_el_box > .webix_button {
+  background: var(--add-light) !important;
+}
+.webix_add-btn:active > .webix_el_box > .webix_button {
+  background: var(--add-dark) !important;
+}
+.webix_pager_item_selected {
+  cursor: pointer;
+  background: var(--primary) !important;
+  transition: 0.2s;
+}
+.webix_pager_item_selected:hover {
+  cursor: pointer;
+  background: var(--primary-light) !important;
+}
+.webix_pager_item_selected:active {
+  background: var(--primary-dark) !important;
+}
+.webix_view .webix_pager_item {
+  background: var(--secondary) !important;
+  color: var(--primary) !important;
+  transition: 0.2s;
+}
+.webix_view .webix_pager_item:hover {
+  background: var(--primary) !important;
+  color: var(--white) !important;
+}
+.webix_view .webix_pager_item:active {
+  background: var(--primary-dark) !important;
+}
+
+.webix_view {
+  font-family: "Open Sans", sans-serif !important;
+}
+
+input:focus {
+  border: 1px solid var(--primary) !important;
+}
+
+.webix_table-style .webix_hcell {
+  background: var(--secondary);
+}
+.webix_dtable .webix_ss_header .webix_hcolumn div.webix_last_row, .webix_dtable div.webix_ss_vscroll_header {
+  border-bottom-color: #dadee0 !important;
+}
+.webix_dtable .webix_select_mark > div.webix_row_select {
+  box-shadow: inset 2px 0 var(--primary) !important;
+}
+.webix_cell {
+  cursor: pointer;
+}
+.webix_success {
   border-radius: 10px !important;
 }
-
-.webix_tree_item:hover {
-  background-color: #e9f2ff !important;
+.webix_success div {
+  background-color: var(--success);
 }
-
-.webix_tree .webix_tree_item.webix_selected {
-  background-color: #d8e8fd !important;
+.webix_error {
+  border-radius: 10px !important;
+}
+.webix_error div {
+  background-color: var(--error);
+}
+.webix_confirm .webix_popup_title {
+  box-shadow: none !important;
+}
+.webix_popup_button.confirm {
+  background: var(--primary) !important;
+  transition: 0.2s;
+}
+.webix_popup_button.confirm:hover {
+  background: var(--primary-light) !important;
+}
+.webix_popup_button.confirm:active {
+  background: var(--primary-dark) !important;
 }

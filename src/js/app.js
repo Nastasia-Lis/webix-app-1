@@ -6,7 +6,7 @@ import {sidebarMenu, selected, currObj} from './modules/sidebar.js';
 import * as multiviewSidebar from "./modules/multiviewSidebar.js";
 
 import * as table from "./modules/table.js";
-import * as editTable from "./modules/editTable.js";
+import {editTableBar} from "./modules/editTable.js";
 import * as toolbarTable from "./modules/toolbarTable.js";
 
 
@@ -27,7 +27,7 @@ webix.ready(function(){
                 ]},
                 //multiviewSidebar.multiviewSidebar(),
                 {view:"resizer"},
-                editTable.editTable()
+                editTableBar
                 
                
                 

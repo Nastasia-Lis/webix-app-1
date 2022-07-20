@@ -1,0 +1,28 @@
+@mixin primary-btn {
+  background: var(--primary)!important;
+  transition: .2s;
+}
+@mixin primary-btn--hover {
+  background: var(--primary-light)!important;
+}  
+@mixin primary-btn--active {
+  background: var(--primary-dark)!important;
+} 
+
+
+@mixin secondary-btn {
+  background: var(--secondary )!important;
+  color:var(--primary)!important;
+  transition: .2s;
+}
+@mixin secondary-btn--hover {
+  background: var(--primary)!important;
+  color:var(--white)!important;
+}
+
+@mixin secondary-btn--active {
+  background: var(--primary-dark)!important;
+}
+
+
+//@include mixin-name;

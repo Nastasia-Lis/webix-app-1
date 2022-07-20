@@ -1,32 +1,75 @@
-.webix_success{
-    border-radius: 10px!important;
-}
-.webix_success div{
-    //border-radius: 10px!important;
-    background-color: rgb(215, 255, 231);
-}
+@import "src/scss/vars";
+
+@import "src/scss/mixins";
+
+@import "src/scss/btns";
 
 
-.webix_error{
-    border-radius: 10px!important;
-}
-.webix_error div{
-    //border-radius: 10px!important;
-    background-color: rgb(255, 226, 215);
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
+.webix_view {
+    font-family: 'Open Sans', sans-serif!important;
 }
 
-
-.webix_tree_item{
-    cursor: pointer;
-    padding: 5px 5px!important;
-    border-radius: 10px!important;
+input:focus{
+    border: 1px solid var(--primary)!important;
 }
+ 
+.webix{
+    //--------------table
+    &_table-style .webix_hcell{
+        background:var(--secondary);
+    }
 
-.webix_tree_item:hover{
-    background-color: rgb(233, 242, 255)!important;
-}
+    &_dtable .webix_ss_header .webix_hcolumn div.webix_last_row,
+    &_dtable div.webix_ss_vscroll_header{
+        border-bottom-color: rgb(218, 222, 224) !important;
+    }
 
-.webix_tree .webix_tree_item.webix_selected{
-    background-color: rgb(216, 232, 253)!important;
-    
+    &_dtable .webix_select_mark > div.webix_row_select{
+        box-shadow: inset 2px 0 var(--primary)!important;
+    }
+    &_cell{
+        cursor: pointer;
+    }
+    //--------------table
+
+
+    //--------------notify
+    &_success{
+        border-radius: 10px!important;
+    }
+    &_success div{
+        background-color: var( --success);
+    }
+
+
+    &_error{
+        border-radius: 10px!important;
+    }
+    &_error div{
+        background-color: var( --error);
+    }
+    //--------------notify
+
+
+
+
+    //--------------popup confirm
+   
+
+    &_confirm .webix_popup_title{
+        box-shadow: none !important;
+    }
+    &_popup_button.confirm{
+        @include primary-btn;
+    }
+
+    &_popup_button.confirm:hover{
+        @include primary-btn--hover;
+    }
+
+    &_popup_button.confirm:active{
+        @include primary-btn--active;
+    }
+    //--------------popup confirm
 }

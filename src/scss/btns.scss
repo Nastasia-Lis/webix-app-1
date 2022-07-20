@@ -1,0 +1,103 @@
+.webix{
+    &_tree_item{
+        cursor: pointer;
+        padding: 5px 10px!important;
+        border-radius: 8px!important;
+        transition: .2s;
+    }
+    &_tree_item:hover{
+        background-color: var(--secondary)!important;
+    }
+    
+    &_tree .webix_tree_item.webix_selected{
+        background-color: var(--secondary-dark)!important;
+        
+    }
+    
+    
+    &_primary .webix_button{
+        @include primary-btn;
+    }
+    &_primary .webix_button:hover{
+        @include primary-btn--hover;
+    }
+    &_primary .webix_button:active{
+        @include primary-btn--active;
+    }
+
+
+
+    &_secondary .webix_button{
+        @include secondary-btn;
+    }
+    &_secondary .webix_button .webix_icon_btn{
+        color: var(--primary)!important;
+    }
+
+    &_secondary .webix_button:hover{
+        @include secondary-btn--hover;
+    }
+    &_secondary .webix_button:hover .webix_icon_btn{
+        color:var(--white)!important;
+    }
+
+    &_secondary .webix_button:active{
+        @include secondary-btn--active;
+    }
+
+    
+
+
+
+    &_danger .webix_button{
+        background: var(--danger)!important;
+        transition: .2s;
+    }
+
+    &_danger:hover .webix_button{
+        background: var(--danger-light)!important;
+    }
+    &_danger:active .webix_button{
+        background: var(--danger-dark)!important;
+    }
+    
+
+    &_add-btn > .webix_el_box > .webix_button {
+        background: var(--add)!important;
+        transition: .2s;
+    }
+    &_add-btn > .webix_el_box > .webix_button > .webix_icon_btn{
+        color:var(--white)!important;
+    }
+    &_add-btn:hover > .webix_el_box > .webix_button {
+        background: var(--add-light)!important;
+    }
+    &_add-btn:active > .webix_el_box > .webix_button {
+        background: var(--add-dark)!important;
+    }
+
+
+    &_pager_item_selected{
+        cursor: pointer;
+        @include primary-btn;
+    }
+    &_pager_item_selected:hover{
+        cursor: pointer;
+        @include primary-btn--hover;
+    }
+    &_pager_item_selected:active{
+        @include primary-btn--active;
+    }
+
+    &_view .webix_pager_item{
+        @include secondary-btn;
+    }
+    &_view .webix_pager_item:hover{
+        @include secondary-btn--hover;
+    }
+    &_view .webix_pager_item:active{
+        @include secondary-btn--active;
+    }
+
+    
+}

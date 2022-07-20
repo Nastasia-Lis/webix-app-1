@@ -1,4 +1,4 @@
-export function editTable () {
+//export function editTable () {
 
     function saveItem(){        
         let form = $$( "editForm" );  
@@ -8,6 +8,9 @@ export function editTable () {
         if( form.isDirty() && form.validate() ){
             if( itemData.id ) 
                 list.updateItem(itemData.id, itemData);
+                clearItem();
+                $$("btnSave").hide();
+                $$("btnAdd").show();
                 notify ("success","Данные сохранены");
                 
         }
@@ -24,6 +27,10 @@ export function editTable () {
             function(){
                 $$( "tableInfo" ).remove($$("editForm").getValues().id);
                 clearItem();
+                if ($$("btnSave")) {
+                    $$("btnSave").hide();
+                    $$("btnAdd").show();
+                }
                 notify ("success","Данные удалены");
         });
         
@@ -33,6 +40,10 @@ export function editTable () {
         popupExec("Форма будет очищена").then(
             function(){
                 clearItem();
+                if ($$("btnSave")) {
+                    $$("btnSave").hide();
+                    $$("btnAdd").show();
+                }
                 notify ("success","Форма очищена");
         }); 
     }
@@ -56,18 +67,20 @@ export function editTable () {
         webix.message({type:typeNotify,  text:textMessage});
     }
 
-    return {
+    let editTableBar = {
         view:"form", id:'editForm', width: 350,
 
         elements:[
             
-            {cols: [
+            {  margin:5, borderless:true,cols: [
             
-            { view:"button", id:"btnAdd",  type:"icon", icon:"wxi-plus-circle",  click:addItem},
-            { view:"button", id:"btnClean",  value:"Очистить", click:clearForm},
-            { view:"button", id:"btnRemove",  type:"icon",css:"", icon:"wxi-trash", click:removeItem},
+            //{ view:"button", id:"btnAdd", height:45,width:50,css:"webix_add-btn",  type:"icon", icon:"wxi-plus",  click:addItem},
+            { view:"button", id:"btnClean",height:45,width:100,  value:"Очистить", click:clearForm},
+            {},
+            { view:"button", id:"btnRemove",height:45,width:50,css:"webix_danger", type:"icon", icon:"wxi-trash", click:removeItem},
             ]},
-            { view:"button", id:"btnSave", value:"Сохранить", css:"webix_primary", click:saveItem},
+            { view:"button", id:"btnAdd", value:"Добавить новую запись", height:45, css:"webix_primary", click:addItem},
+            { view:"button", id:"btnSave",hidden:true, value:"Сохранить", height:45, css:"webix_primary", click:saveItem},
             { view:"text", name:"title", label:"Title", invalidMessage:"Must be filled in"},
             { view:"text", name:"year", label:"Year", invalidMessage:"Should be between 1970 and current" },
             { view:"text", name:"rating", label:"Rating", invalidMessage:"Cannot be empty or 0" },
@@ -80,4 +93,9 @@ export function editTable () {
         //     title: webix.rules.isNotEmpty
         // }
     };
-}
+
+    
+export{
+    editTableBar,
+    notify
+};

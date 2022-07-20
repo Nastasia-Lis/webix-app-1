@@ -1,0 +1,23 @@
+:root {
+    --white: #fff;
+    
+    --primary: rgb(108, 160, 228);
+    --primary-light:rgb(151, 190, 241);
+    --primary-dark:rgb(91, 140, 204);
+
+    --secondary:rgb(222, 234, 252);
+    --secondary-dark:rgb(215, 232, 255);
+
+    //messages
+    --success: rgb(215, 255, 231);
+    --error: rgb(255, 226, 215);
+    --notify: rgb(254, 255, 215);
+
+    --danger: rgb(252, 145, 106);
+    --danger-light: rgb(247, 178, 152);
+    --danger-dark: rgb(223, 126, 91);
+
+    --add: rgb(141, 214, 169);
+    --add-light: rgb(167, 230, 191);
+    --add-dark: rgb(108, 192, 140);
+}
