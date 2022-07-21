@@ -5,12 +5,13 @@ import {sidebarData,tableDataOne,tableDataFour} from './data/data.js';
 
 
 
-    let selected = tableDataOne;
+    //let selected = tableDataOne;
     let sidebarMenu = {
         view:"tree", 
         id: "sidebarMenu",
         data:sidebarData, 
-        select: selected,
+        //select: selected,
+        minWidth:100,
         width: 200,
         minHeight:150,
         // on:{
@@ -48,5 +49,5 @@ import {sidebarData,tableDataOne,tableDataFour} from './data/data.js';
 
 export {
     sidebarMenu,
-    selected
+    //selected
 };

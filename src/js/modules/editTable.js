@@ -1,36 +1,94 @@
+import {tableId, editFormId, saveBtnId, addBtnId, delBtnId, cleanBtnId, saveNewBtnId} from './setId.js';
+//import {createFields} from '../app.js';
+import {tablesArray} from './data/data.js';
+
+
+
+// function createFields () {
+
+//     let headersArray= $$(tableId).getColumns();
+//     let inputsArray = [];
+//     // for each array, create array inputs, set array
+//     headersArray.forEach((el) => {
+//         inputsArray.push(
+//             {
+//             view:"text", 
+//             name:el.id, 
+//             label:el.id, 
+//             }
+//         );
+//     });
+
+//     return(console.log(inputsArray));
+
+// }
+
+
+
+
 function saveItem(){        
-    let form = $$( "editForm" );  
-    let list = $$( "tableInfo" );  
-    let itemData = $$("editForm").getValues();    
+    let form = $$( editFormId );  
+    let list = $$( tableId );  
+    let itemData = $$(editFormId).getValues();    
     
     if( form.isDirty() && form.validate() ){
-        if( itemData.id ) 
+        if( itemData.id ) {
             list.updateItem(itemData.id, itemData);
             clearItem();
-            $$("btnSave").hide();
-            $$("btnAdd").show();
-            notify ("success","Данные сохранены");
-            
+            notify ("success","Данные сохранены");}
+        else {
+            list.add( itemData );
+            clearItem();
+            notify ("success","Данные добавлены");
+        }    
     }
+    defaultStateForm ();
 }
 
 function addItem () {
-    $$("tableInfo").add($$("editForm").getValues());
+    let headersArray= $$(tableId).getColumns();
+    let inputsArray = [];
+    headersArray.forEach((el) => {
+        inputsArray.push(
+            {
+            view:"text", 
+            name:el.id, 
+            label:el.id, 
+            }
+        );
+    });
+
+    let inpObj = {margin:8,id:"inputsTable", rows:inputsArray};
+
+    ($$(editFormId).addView( inpObj, 1));
+    $$(saveBtnId).hide();
+    $$(addBtnId).hide();
+    $$(saveNewBtnId).show();
+}
+
+
+function saveNewItem (){
+    $$(tableId).add($$(editFormId).getValues());
     clearItem();
     notify ("success","Данные добавлены");
+    defaultStateForm ();
+    $$(editFormId).removeView("inputsTable");
 }
+
 
 function removeItem() {
     popupExec("Запись будет удалена").then(
         function(){
-            $$( "tableInfo" ).remove($$("editForm").getValues().id);
+            $$( tableId ).remove($$(editFormId).getValues().id);
             clearItem();
-            if ($$("btnSave")) {
-                $$("btnSave").hide();
-                $$("btnAdd").show();
+            if ($$(saveBtnId)) {
+                $$(saveBtnId).hide();
+                $$(addBtnId).show();
             }
             notify ("success","Данные удалены");
     });
+
+    defaultStateForm (saveBtnId);
     
 }
 
@@ -38,18 +96,34 @@ function clearForm(){
     popupExec("Форма будет очищена").then(
         function(){
             clearItem();
-            if ($$("btnSave")) {
-                $$("btnSave").hide();
-                $$("btnAdd").show();
+            if ($$(saveBtnId)) {
+                $$(saveBtnId).hide();
+                $$(addBtnId).show();
             }
             notify ("success","Форма очищена");
+            defaultStateForm ();
     }); 
 }
 
 function clearItem(){
-    $$("editForm").clear();
-    $$("editForm").clearValidation();
+    $$(editFormId).clear();
+    $$(editFormId).clearValidation();
+    defaultStateForm ();
 }
+
+
+function defaultStateForm () {
+    
+    if (saveNewBtnId) {
+        $$(saveNewBtnId).hide();
+    } else if (saveBtnId){
+        $$(saveBtnId).hide();
+    }
+
+    //$$(editFormId).removeView("inputsTable");
+    $$(addBtnId).show();
+}
+
 
 function popupExec (titleText) { 
     return webix.confirm({
@@ -63,22 +137,25 @@ function notify (typeNotify,textMessage) {
     webix.message({type:typeNotify,  text:textMessage});
 }
 
-let editTableBar = {
-    view:"form", id:'editForm', minHeight:350,
 
+
+let editTableBar = {
+    view:"form", id:editFormId, minHeight:350,minWidth:350,width:350,
     elements:[
         
-        {margin:15,rows:[{margin:5, rows:[
+        {margin:5,rows:[{margin:5, rows:[
                 {margin:5, 
                 borderless:true,
                 cols: [
                     {   view:"button", 
-                        id:"btnClean",
-                        height:48,
-                        //maxWidth:1500,  
+                        id:cleanBtnId,
+                        height:48, 
+                        disabled:true,
                         value:"Очистить форму", click:clearForm},
+                        
                     {   view:"button", 
-                        id:"btnRemove",
+                        id:delBtnId,
+                        disabled:true,
                         height:48,
                         width:100,
                         css:"webix_danger", 
@@ -89,19 +166,12 @@ let editTableBar = {
                 ]
         },
             
-        { 
-            view:"button", 
-            id:"btnAdd", 
-            value:"Добавить новую запись", 
-            height:48,
-            css:"webix_primary", 
-            click:addItem
-        }
+       
         ]},
 
        {margin:10, rows:[ { 
             view:"button", 
-            id:"btnSave",
+            id:saveBtnId,
             hidden:true, 
             value:"Сохранить", 
             height:48, 
@@ -109,30 +179,27 @@ let editTableBar = {
             click:saveItem
         },
         { 
-            view:"text", 
-            name:"title", 
-            label:"Title", 
-            invalidMessage:"-"
+            view:"button", 
+            id:addBtnId,
+            value:"Добавить новую запись", 
+            height:48,
+            css:"webix_primary", 
+            click:addItem
         },
         { 
-            view:"text", 
-            name:"year", 
-            label:"Year", 
-            invalidMessage:"-"
+            view:"button", 
+            id:saveNewBtnId,
+            value:"Сохранить новую запись",
+            hidden:true,  
+            height:48,
+            css:"webix_primary", 
+            click:saveNewItem
         },
-        { 
-            view:"text", 
-            name:"rating", 
-            label:"Rating", 
-            invalidMessage:"-" 
-        },
-        { 
-            view:"text", 
-            name:"votes",
-            label:"Votes", 
-            invalidMessage:"-" 
-        }, 
-        {}]}]}
+
+        ]},
+        
+    ]},
+    {}
     
     
     ],
@@ -141,6 +208,7 @@ let editTableBar = {
     // rules:{
     //     title: webix.rules.isNotEmpty
     // }
+
 };
 
     

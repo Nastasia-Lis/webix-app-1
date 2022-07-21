@@ -1,8 +1,10 @@
 import {notify} from './editTable.js';
 
+import {tableId, pagerId,searchId, findElemetsId} from './setId.js';
+
 export function toolbarTable () {
     function exportToExcel(){
-        webix.toExcel("tableInfo", {
+        webix.toExcel(tableId, {
           filename:"Table",
           filterHTML:true,
           styles:true
@@ -10,10 +12,12 @@ export function toolbarTable () {
         notify ("success","Таблица сохранена");
     }
 
-    // function countFindElemets() {
-    //     let count = ($$("tableInfo").getLastId());
-    //     return (count);
-    // }
+    // array => set id for table => set id for pager 
+    // editTable id, toolbar id
+    //+ set method pager for table
+    // add to multiview cells
+
+  
 
     return { 
         rows:[
@@ -21,17 +25,29 @@ export function toolbarTable () {
                 cols: [
                 {   view:"search", 
                     placeholder:"Поиск", 
-                    id:"searchTable",
+                    id:searchId,
                     css:"searchTable", 
                     maxWidth:250, 
                     minWidth:40, 
                     on: {
                         onTimedKeyPress() {
                             let value = this.getValue().toLowerCase();
-                            //let allElements = ($$("tableInfo").getLastId());
                             let findElements = 0;
 
-                            $$("tableInfo").filter(function(obj){
+
+                           //console.log( $$(tableId).columnId(1));
+                           //const myObj = JSON.parse($$(tableId).getItem(1));
+                           
+
+                            // let text = "";
+                            // for (const x in myObj) {
+                            // text += x + ", ";
+                            // }
+                           let obj = $$(tableId).getItem(1);
+                            console.log(Object.keys(obj));
+                           
+
+                            $$(tableId).filter(function(obj){
                                 if (obj.title.toLowerCase().indexOf(value)!=-1) {
                                     findElements++; 
                                 }
@@ -39,19 +55,20 @@ export function toolbarTable () {
                             });
                             if (!findElements){
                                 console.log("нет");
-                                $$("tableInfo").showOverlay("Ничего не найдено");
+                                $$(tableId).showOverlay("Ничего не найдено");
                             
                             } else if(findElements){
-                                $$("tableInfo").hideOverlay("Ничего не найдено");
+                                $$(tableId).hideOverlay("Ничего не найдено");
                               
                             }
-                        }
+                        },
+                        
                     }
                 },
  
                 {
                     view:"pager",
-                    id:"pagerTable",
+                    id:pagerId,
                     size:10,
                     group:3,
                     template:`{common.prev()} 
@@ -69,13 +86,13 @@ export function toolbarTable () {
                 },
                 ],
             },
-            {   id:"countFindElemets",
+            {   id:findElemetsId,
                 height:30,
                 //borderless:true,
                 template: "#count#",
                 on: {
                     onAfterRender() {
-                        let count = ($$("tableInfo").getLastId());
+                        let count = ($$(tableId).getLastId());
                         //$$("countFindElemets").config.template="<div>ueue</div>";
                         //$$("countFindElemets").refresh();
                         return count;

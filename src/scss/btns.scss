@@ -67,6 +67,12 @@
         @include secondary-btn--active;
     }
 
+
+    &_view.webix_control .webix_disabled_box .webix_button{
+        color: rgb(124, 124, 124)!important;
+        background: var(--gray) !important;
+    }
+
     
 
 

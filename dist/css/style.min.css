@@ -1,6 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Open+Sans&display=swap");
 :root {
   --white: #fff;
+  --gray: rgb(209, 209, 209);
   --primary: rgb(108, 160, 228);
   --primary-light:rgb(151, 190, 241);
   --primary-dark:rgb(91, 140, 204);
@@ -70,6 +71,10 @@
 }
 .webix_secondary .webix_button:active {
   background: var(--primary-dark) !important;
+}
+.webix_view.webix_control .webix_disabled_box .webix_button {
+  color: #7c7c7c !important;
+  background: var(--gray) !important;
 }
 .webix_danger .webix_button {
   background: var(--danger) !important;

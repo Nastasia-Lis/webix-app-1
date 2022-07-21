@@ -1,31 +1,37 @@
-import {gridColumns,tableDataOne} from './data/data.js';
-import {selected} from './sidebar.js';
+import {tablesArray} from './data/data.js';
+import {tableId, pagerId,editFormId, saveBtnId, addBtnId} from './setId.js';
+
+import {createFields } from './editTable.js';
 
 export function table () {
     return {
         view:"datatable",
-        id:"tableInfo", 
-        data:selected,
-        css:"webix_table-style",
+        id: tableId,
+        data:tablesArray[0].content,
+        css:"webix_table-style webix_header_border webix_data_border",
         resizeColumn: true,
         autoConfig: true,
-        pager:"pagerTable",
-        scroll:"x",
-        minHeight:350,
+        pager:pagerId,
+        minHeight:300,
         footer: true,
         //footer:{content:"summColumn"} 
-        maxWidth:780,
+        minWidth:500, 
+        minColumnWidth:120,
         on:{
-            onAfterSelect(id){
-                let values = $$("tableInfo").getItem(id);
-                $$("editForm").setValues(values);
-                $$("btnSave").show();
-                $$("btnAdd").hide();
+            onAfterSelect(id, ev){
+                let values = $$(tableId).getItem(id); 
+                $$(editFormId).setValues(values);
+                $$(saveBtnId).show();
+                $$(addBtnId).hide();
+
+
             },
+
             onAfterLoad:function(){
                 if (!this.count())
                   this.showOverlay("Ничего не найдено");
-            }
+            },
+
         }
     };
     
