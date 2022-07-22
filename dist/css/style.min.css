@@ -168,6 +168,12 @@ input {
 .webix_error div {
   background-color: var(--error);
 }
+.webix_debug {
+  border-radius: 10px !important;
+}
+.webix_debug div {
+  background-color: var(--notify);
+}
 .webix_confirm .webix_popup_title {
   box-shadow: none !important;
 }

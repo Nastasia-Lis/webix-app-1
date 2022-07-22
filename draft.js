@@ -1,7 +1,6 @@
 webix.ready(function(){
 
-    function getObjStruct(obj)
-    {
+    function getObjStruct(obj){
         var res = [];
         for(var m in obj) {
             type = typeof obj[m];
@@ -290,20 +289,28 @@ webix.ready(function(){
   
     webix.ui({
          id:"mylayout",
-         rows: [toolbar, 
-                 { cols: [
-                          {id:"placeh1", rows: [{view:"template", 
-                                                 type:"header", 
-                                                 template:"Структура сайта"},
-                                                tree]
-                          },
-                          {view:"resizer"},
-                          {id:"placeh2", rows: [{view:"template", 
-                                                 type:"header", 
-                                                 template:"Свойства элемента"},
-                                                proped]
-                          }
-                         ]
+         rows: [
+            toolbar, 
+                 
+            { cols: [
+                    {   id:"placeh1", 
+                        rows: [{
+                            view:"template", 
+                            type:"header", 
+                            template:"Структура сайта"},
+                            tree
+                        ]
+                    },
+                    {view:"resizer"},
+                    {   id:"placeh2", 
+                        rows: [{
+                            view:"template", 
+                            type:"header", 
+                            template:"Свойства элемента"},
+                            proped
+                        ]
+                    }
+                    ]
                  },
                 { view:"label", label:"Copyright  &copy; ООО ИнфоИнт 2021", align:"center"}
                ]

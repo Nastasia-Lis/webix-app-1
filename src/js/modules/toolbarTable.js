@@ -11,14 +11,6 @@ export function toolbarTable () {
         });
         notify ("success","Таблица сохранена");
     }
-
-    // array => set id for table => set id for pager 
-    // editTable id, toolbar id
-    //+ set method pager for table
-    // add to multiview cells
-
-  
-
     return { 
         rows:[
             {padding:17, margin:5, 
@@ -33,20 +25,7 @@ export function toolbarTable () {
                         onTimedKeyPress() {
                             let value = this.getValue().toLowerCase();
                             let findElements = 0;
-
-
-                           //console.log( $$(tableId).columnId(1));
-                           //const myObj = JSON.parse($$(tableId).getItem(1));
-                           
-
-                            // let text = "";
-                            // for (const x in myObj) {
-                            // text += x + ", ";
-                            // }
                            let obj = $$(tableId).getItem(1);
-                            console.log(Object.keys(obj));
-                           
-
                             $$(tableId).filter(function(obj){
                                 if (obj.title.toLowerCase().indexOf(value)!=-1) {
                                     findElements++; 
@@ -54,12 +33,10 @@ export function toolbarTable () {
                                 return obj.title.toLowerCase().indexOf(value)!=-1;
                             });
                             if (!findElements){
-                                console.log("нет");
                                 $$(tableId).showOverlay("Ничего не найдено");
                             
                             } else if(findElements){
                                 $$(tableId).hideOverlay("Ничего не найдено");
-                              
                             }
                         },
                         
@@ -82,19 +59,22 @@ export function toolbarTable () {
                     css:"webix_btn-download",
                     height:50,
                     width:60,
-                    click:exportToExcel 
+                    click:exportToExcel,
+                    on: {
+                        onAfterRender: function () {
+                            //document.getElementById('webix_btn-download1').setAttribute('data-tooltip', 'aaa');
+        
+                        }
+                    } 
                 },
                 ],
             },
             {   id:findElemetsId,
                 height:30,
-                //borderless:true,
                 template: "#count#",
                 on: {
                     onAfterRender() {
                         let count = ($$(tableId).getLastId());
-                        //$$("countFindElemets").config.template="<div>ueue</div>";
-                        //$$("countFindElemets").refresh();
                         return count;
                     }
                 }

@@ -1,8 +1,15 @@
 import {sidebarData,tableDataOne,tableDataFour} from './data/data.js';
 
 
-//export function sidebar () {
 
+    function getTreeItem() {
+          //     let firstItem = this.getFirstId();
+        //     this.select(firstItem);
+        
+        let selected = $$("sidebarMenu").getSelectedId();
+        console.log(selected);
+    }
+    
 
 
     //let selected = tableDataOne;
@@ -14,7 +21,13 @@ import {sidebarData,tableDataOne,tableDataFour} from './data/data.js';
         minWidth:100,
         width: 200,
         minHeight:150,
-        // on:{
+        on:{
+            onMenuItemClick: function(id){
+                console.log($$("sidebarMenu").getSelectedItem);
+            }
+        },
+
+         // on:{
         //     onAfterSelect: function(id){
         //         console.log(id);
         //         selected = id;
@@ -25,10 +38,7 @@ import {sidebarData,tableDataOne,tableDataFour} from './data/data.js';
         //     }
         // },
 
-        // on:{
-        //     onAfterSelect: function(id){
-        //       $$("multiview").setValue(id);
-        //     }
+       
         // },
         //   ready:function () {
         //     let firstItem = this.getFirstId();

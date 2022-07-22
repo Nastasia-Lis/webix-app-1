@@ -1,37 +1,12 @@
 import {tableId, editFormId, saveBtnId, addBtnId, delBtnId, cleanBtnId, saveNewBtnId} from './setId.js';
-//import {createFields} from '../app.js';
-import {tablesArray} from './data/data.js';
-
-
-
-// function createFields () {
-
-//     let headersArray= $$(tableId).getColumns();
-//     let inputsArray = [];
-//     // for each array, create array inputs, set array
-//     headersArray.forEach((el) => {
-//         inputsArray.push(
-//             {
-//             view:"text", 
-//             name:el.id, 
-//             label:el.id, 
-//             }
-//         );
-//     });
-
-//     return(console.log(inputsArray));
-
-// }
-
-
-
+//--- bns
 
 function saveItem(){        
     let form = $$( editFormId );  
     let list = $$( tableId );  
     let itemData = $$(editFormId).getValues();    
     
-    if( form.isDirty() && form.validate() ){
+    if(form.validate() ){
         if( itemData.id ) {
             list.updateItem(itemData.id, itemData);
             clearItem();
@@ -43,24 +18,13 @@ function saveItem(){
         }    
     }
     defaultStateForm ();
+    $$("inputsTable").hide();
+    $$(tableId).clearSelection();
 }
 
 function addItem () {
-    let headersArray= $$(tableId).getColumns();
-    let inputsArray = [];
-    headersArray.forEach((el) => {
-        inputsArray.push(
-            {
-            view:"text", 
-            name:el.id, 
-            label:el.id, 
-            }
-        );
-    });
-
-    let inpObj = {margin:8,id:"inputsTable", rows:inputsArray};
-
-    ($$(editFormId).addView( inpObj, 1));
+    createEditFields();
+    $$(delBtnId).disable();
     $$(saveBtnId).hide();
     $$(addBtnId).hide();
     $$(saveNewBtnId).show();
@@ -68,11 +32,15 @@ function addItem () {
 
 
 function saveNewItem (){
-    $$(tableId).add($$(editFormId).getValues());
-    clearItem();
-    notify ("success","Данные добавлены");
-    defaultStateForm ();
-    $$(editFormId).removeView("inputsTable");
+    if($$(editFormId).isDirty()){
+        $$(tableId).add($$(editFormId).getValues());
+        clearItem();
+        notify ("success","Данные добавлены"); 
+        defaultStateForm ();
+        $$("inputsTable").hide();
+    }else {
+        notify ("debug","Форма пуста");
+    }
 }
 
 
@@ -85,45 +53,82 @@ function removeItem() {
                 $$(saveBtnId).hide();
                 $$(addBtnId).show();
             }
+            $$("inputsTable").hide();
             notify ("success","Данные удалены");
     });
-
     defaultStateForm (saveBtnId);
     
 }
 
+
+
 function clearForm(){
-    popupExec("Форма будет очищена").then(
-        function(){
-            clearItem();
-            if ($$(saveBtnId)) {
-                $$(saveBtnId).hide();
-                $$(addBtnId).show();
-            }
-            notify ("success","Форма очищена");
-            defaultStateForm ();
-    }); 
+    if ($$(saveBtnId).isVisible()){
+        $$(editFormId).setDirty(true);
+    } 
+    
+    if($$(editFormId).isDirty()){
+        popupExec("Форма будет очищена").then(
+            function(){
+                clearItem();
+                $$(tableId).clearSelection();
+                defaultStateForm ();
+                $$("inputsTable").hide();
+                notify ("success","Форма очищена");
+        });
+    } else {
+        notify ("debug","Форма пуста");
+    }
+}
+
+//--- bns
+
+
+
+
+//--- components
+
+function createEditFields () {
+
+    if(Object.keys($$(editFormId).elements).length==0){
+        let headersArray= $$(tableId).getColumns();
+        let inputsArray = [];
+        headersArray.forEach((el) => {
+            inputsArray.push(
+                {
+                view:"text", 
+                name:el.id, 
+                label:el.id, 
+                }
+            );
+        });
+        let inpObj = {margin:8,id:"inputsTable", rows:inputsArray};
+        $$(cleanBtnId).enable(); 
+        $$(delBtnId).enable();
+        return ($$(editFormId).addView( inpObj, 1));
+    } else {
+        $$(cleanBtnId).enable(); 
+        $$(delBtnId).enable();
+        $$("inputsTable").show();
+    }
 }
 
 function clearItem(){
     $$(editFormId).clear();
     $$(editFormId).clearValidation();
     defaultStateForm ();
+    $$(cleanBtnId).disable(); 
+    $$(delBtnId).disable();
 }
-
 
 function defaultStateForm () {
-    
-    if (saveNewBtnId) {
+    if ($$(saveNewBtnId).isVisible()) {
         $$(saveNewBtnId).hide();
-    } else if (saveBtnId){
+    } else if ($$(saveBtnId).isVisible()){
         $$(saveBtnId).hide();
     }
-
-    //$$(editFormId).removeView("inputsTable");
     $$(addBtnId).show();
 }
-
 
 function popupExec (titleText) { 
     return webix.confirm({
@@ -136,6 +141,10 @@ function notify (typeNotify,textMessage) {
     webix.message.position = "bottom";
     webix.message({type:typeNotify,  text:textMessage});
 }
+
+//--- components
+
+
 
 
 
@@ -203,16 +212,26 @@ let editTableBar = {
     
     
     ],
-
-
-    // rules:{
-    //     title: webix.rules.isNotEmpty
-    // }
+    // on:{
+    //     onChange: function(){
+    //         //webix.message("Value changed from");
+    //     }
+    // },
+    
+    rules:{
+        $all:webix.rules.isNotEmpty
+    },
+    ready:function(){
+        this.validate();
+      }
 
 };
 
     
 export{
     editTableBar,
-    notify
+    notify,
+    createEditFields,
+    popupExec,
+    defaultStateForm
 };

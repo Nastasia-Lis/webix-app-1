@@ -13,7 +13,9 @@
 
 //counter table, popup table (show row)
 
-//select row + add form input + disablet btns
+//alt text
+
+// tabs
 
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
 .webix_view {
@@ -29,10 +31,6 @@ input {
 }
  
 .webix{
-
-    // &_header-style{
-    //     background-color: red;
-    // }
 
     //--------------table
     &_table-style .webix_hcell{
@@ -67,6 +65,13 @@ input {
     }
     &_error div{
         background-color: var( --error);
+    }
+
+    &_debug{
+        border-radius: 10px!important;
+    }
+    &_debug div{
+        background-color: var(--notify);
     }
     //--------------notify
 

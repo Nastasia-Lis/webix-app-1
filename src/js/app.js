@@ -52,7 +52,7 @@ webix.ready(function(){
       
     });
 
-
+    
     
     //-------adaptive
     // webix.event(window, "resize", function(e){
@@ -106,7 +106,7 @@ webix.ready(function(){
 
 
 
-
+document.getElementById('webix_btn-download1').setAttribute('data-tooltip', 'aaa');
 
 
 
