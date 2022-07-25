@@ -2,27 +2,33 @@ import {tableId, editFormId, saveBtnId, addBtnId, delBtnId, cleanBtnId, saveNewB
 //--- bns
 
 function saveItem(){        
-    let form = $$( editFormId );  
     let list = $$( tableId );  
     let itemData = $$(editFormId).getValues();    
     
-    if(form.validate() ){
+    if($$(editFormId).validate() ){
+       
         if( itemData.id ) {
             list.updateItem(itemData.id, itemData);
             clearItem();
-            notify ("success","Данные сохранены");}
+            notify ("success","Данные сохранены");
+            defaultStateForm ();
+            $$("inputsTable").hide();
+            $$(tableId).clearSelection();}
         else {
             list.add( itemData );
             clearItem();
             notify ("success","Данные добавлены");
         }    
+    } else {
+        notify ("error","Заполните пустые поля");
     }
-    defaultStateForm ();
-    $$("inputsTable").hide();
-    $$(tableId).clearSelection();
+
+    
 }
 
 function addItem () {
+    //console.log($$(tableId).count())
+    
     createEditFields();
     $$(delBtnId).disable();
     $$(saveBtnId).hide();
@@ -32,14 +38,19 @@ function addItem () {
 
 
 function saveNewItem (){
-    if($$(editFormId).isDirty()){
-        $$(tableId).add($$(editFormId).getValues());
-        clearItem();
-        notify ("success","Данные добавлены"); 
-        defaultStateForm ();
-        $$("inputsTable").hide();
-    }else {
-        notify ("debug","Форма пуста");
+    
+    if($$( editFormId ).validate() ) {
+        if($$(editFormId).isDirty()){
+            $$(tableId).add($$(editFormId).getValues());
+            clearItem();
+            notify ("success","Данные добавлены"); 
+            defaultStateForm ();
+            $$("inputsTable").hide();
+        }else {
+            notify ("debug","Форма пуста");
+        }
+    } else {
+        notify ("error","Заполните пустые поля");
     }
 }
 
@@ -192,6 +203,7 @@ let editTableBar = {
             id:addBtnId,
             value:"Добавить новую запись", 
             height:48,
+            disabled:true,
             css:"webix_primary", 
             click:addItem
         },
@@ -212,11 +224,6 @@ let editTableBar = {
     
     
     ],
-    // on:{
-    //     onChange: function(){
-    //         //webix.message("Value changed from");
-    //     }
-    // },
     
     rules:{
         $all:webix.rules.isNotEmpty

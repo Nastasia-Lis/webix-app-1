@@ -1,7 +1,7 @@
 import {tablesArray} from './data/data.js';
 
 
-    let tableId = tablesArray[1].id;
+    let tableId = "table";
     
     //tooldarTable elements
     let pagerId = tableId+"-pager";

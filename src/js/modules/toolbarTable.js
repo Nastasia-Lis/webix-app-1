@@ -71,11 +71,13 @@ export function toolbarTable () {
             },
             {   id:findElemetsId,
                 height:30,
-                template: "#count#",
+                template: "",
                 on: {
                     onAfterRender() {
                         let count = ($$(tableId).getLastId());
+                        console.log($$(tableId).count())
                         return count;
+                        
                     }
                 }
             }

@@ -21,6 +21,7 @@ import {sidebarData,tableDataOne,tableDataFour} from './data/data.js';
         minWidth:100,
         width: 200,
         minHeight:150,
+        select:true,
         on:{
             onMenuItemClick: function(id){
                 console.log($$("sidebarMenu").getSelectedItem);

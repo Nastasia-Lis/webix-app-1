@@ -11,7 +11,7 @@ export function table () {
         css:"webix_table-style webix_header_border webix_data_border",
         resizeColumn: true,
         autoConfig: true,
-        pager:pagerId,
+        //pager:pagerId,
         minHeight:300,
         footer: true,
         minWidth:500, 
