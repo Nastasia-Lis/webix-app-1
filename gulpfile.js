@@ -21,7 +21,8 @@ import {server} from "./gulp/tasks/server.js";
 import {scss} from "./gulp/tasks/scss.js";
 import {js} from "./gulp/tasks/js.js";
 import {images} from "./gulp/tasks/images.js";
-//import {json} from "./gulp/tasks/json.js";
+import {codebase} from "./gulp/tasks/codebase.js";
+import {init} from "./gulp/tasks/init.js";
 
 // наблюдает за изменениями
 function watcher () {
@@ -29,11 +30,12 @@ function watcher () {
     gulp.watch(path.watch.html, html);
     gulp.watch(path.watch.scss, scss);
     gulp.watch(path.watch.js, js);
-    //gulp.watch(path.watch.json, json);
+    gulp.watch(path.watch.codebase, codebase);
     gulp.watch(path.watch.images, images);
+    gulp.watch(path.watch.init, init);
 }
 
-const mainTasks = gulp.parallel(copy, html, scss, js, images);
+const mainTasks = gulp.parallel(copy, html, scss, js, images, codebase, init);
 
 const dev = gulp.series(reset, mainTasks, gulp.parallel(watcher, server));
 

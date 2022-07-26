@@ -101,10 +101,12 @@ function clearForm(){
 
 function createEditFields () {
 
-    if(Object.keys($$(editFormId).elements).length==0){
-        let headersArray= $$(tableId).getColumns();
+    let columnsData = $$(tableId).getColumns();
+
+    if(Object.keys($$(editFormId).elements).length==0  ){
+        //let headersArray= $$(tableId).getColumns();
         let inputsArray = [];
-        headersArray.forEach((el) => {
+        columnsData.forEach((el) => {
             inputsArray.push(
                 {
                 view:"text", 
@@ -118,6 +120,7 @@ function createEditFields () {
         $$(delBtnId).enable();
         return ($$(editFormId).addView( inpObj, 1));
     } else {
+        //$$(editFormId).refresh();
         $$(cleanBtnId).enable(); 
         $$(delBtnId).enable();
         $$("inputsTable").show();
@@ -133,7 +136,9 @@ function clearItem(){
 }
 
 function defaultStateForm () {
+    
     if ($$(saveNewBtnId).isVisible()) {
+
         $$(saveNewBtnId).hide();
     } else if ($$(saveBtnId).isVisible()){
         $$(saveBtnId).hide();

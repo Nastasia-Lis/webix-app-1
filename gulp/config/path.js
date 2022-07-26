@@ -12,11 +12,13 @@ export const path = {
         images:`${buildFolder}/img/`,
         fonts: `${buildFolder}/fonts/`,
         files: `${buildFolder}/files/`,
-        json: `${buildFolder}/js/json/`
+        codebase: `${buildFolder}/js/codebase/`,
+        init: `${buildFolder}/init/`,
     },
     src: {
         js: `${srcFolder}/js/app.js`,
-        json: `${srcFolder}/js/json/**/*.*`,
+        codebase: `${srcFolder}/js/codebase/**/*.*`,
+        init: `${srcFolder}/init/**/*.*`,
         images: `${srcFolder}/img/**/*.{jpg,jpeg,png,gif,webp}`,
         svg: `${srcFolder}/img/**/*.svg `,
         scss: `${srcFolder}/scss/style.scss`,
@@ -26,7 +28,8 @@ export const path = {
     },
     watch: {
         js: `${srcFolder}/js/**/*.js`,
-        json: `${srcFolder}/js/json/**/*.*`,
+        codebase: `${srcFolder}/js/codebase/**/*.*`,
+        init: `${srcFolder}/init/**/*.*`,
         scss: `${srcFolder}/scss/**/*.scss`,
         html: `${srcFolder}/**/*.html`,
         images: `${srcFolder}/img/**/*.{jpg,jpeg,png,svg,gif,webp}`,
