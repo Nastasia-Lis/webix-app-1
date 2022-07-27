@@ -23,6 +23,7 @@ import {js} from "./gulp/tasks/js.js";
 import {images} from "./gulp/tasks/images.js";
 import {codebase} from "./gulp/tasks/codebase.js";
 import {init} from "./gulp/tasks/init.js";
+import {fonts} from "./gulp/tasks/fonts.js";
 
 // наблюдает за изменениями
 function watcher () {
@@ -33,9 +34,10 @@ function watcher () {
     gulp.watch(path.watch.codebase, codebase);
     gulp.watch(path.watch.images, images);
     gulp.watch(path.watch.init, init);
+    gulp.watch(path.watch.fonts, fonts);
 }
 
-const mainTasks = gulp.parallel(copy, html, scss, js, images, codebase, init);
+const mainTasks = gulp.parallel(copy, html, scss, js, images, codebase, init, fonts);
 
 const dev = gulp.series(reset, mainTasks, gulp.parallel(watcher, server));
 

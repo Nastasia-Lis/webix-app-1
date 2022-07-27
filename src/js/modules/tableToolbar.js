@@ -1,8 +1,8 @@
 import {notify} from './editTable.js';
 
-import {tableId, pagerId,searchId, findElemetsId} from './setId.js';
+import {tableId, pagerId,searchId, findElemetsId, exportBtn} from './setId.js';
 
-export function toolbarTable () {
+export function tableToolbar () {
     function exportToExcel(){
         webix.toExcel(tableId, {
           filename:"Table",
@@ -21,16 +21,21 @@ export function toolbarTable () {
                     css:"searchTable", 
                     maxWidth:250, 
                     minWidth:40, 
+                    disabled:true,
                     on: {
                         onTimedKeyPress() {
                             let value = this.getValue().toLowerCase();
                             let findElements = 0;
-                           let obj = $$(tableId).getItem(1);
+                            //let obj = $$(tableId).getItem(1);
+                           
                             $$(tableId).filter(function(obj){
-                                if (obj.title.toLowerCase().indexOf(value)!=-1) {
+                                let firstColVal = obj[Object.keys(obj)[0]];
+                                if (firstColVal.indexOf(value)!=-1) {
                                     findElements++; 
+                                    
                                 }
-                                return obj.title.toLowerCase().indexOf(value)!=-1;
+                                
+                                return firstColVal.indexOf(value)!=-1;
                             });
                             if (!findElements){
                                 $$(tableId).showOverlay("Ничего не найдено");
@@ -38,6 +43,11 @@ export function toolbarTable () {
                             } else if(findElements){
                                 $$(tableId).hideOverlay("Ничего не найдено");
                             }
+                            $$(findElemetsId).setValues(findElements.toString());
+                            
+                        },
+                        onAfterRender: function () {
+                           this.getInputNode().setAttribute("title","Поиск по таблице");
                         },
                         
                     }
@@ -55,31 +65,32 @@ export function toolbarTable () {
                 {   view:"button",
                     width: 50, 
                     type:"icon",
+                    id:exportBtn,
                     icon:"wxi-download",
                     css:"webix_btn-download",
+                    title:"текст",
                     height:50,
                     width:60,
+                    disabled:true,
                     click:exportToExcel,
                     on: {
                         onAfterRender: function () {
-                            //document.getElementById('webix_btn-download1').setAttribute('data-tooltip', 'aaa');
-        
+                            this.getInputNode().setAttribute("title","Экспорт таблицы");
                         }
                     } 
                 },
                 ],
             },
-            {   id:findElemetsId,
+            {   view:"template",
+                id:findElemetsId,
                 height:30,
-                template: "",
-                on: {
-                    onAfterRender() {
-                        let count = ($$(tableId).getLastId());
-                        console.log($$(tableId).count())
-                        return count;
-                        
+                template:function () {
+                    if (Object.keys($$(findElemetsId).getValues()).length !==0){
+                        return "<div style='color:#999898'> Количество записей:"+" "+$$(findElemetsId).getValues()+" </div>";
+                    } else {
+                        return "";
                     }
-                }
+                },
             }
         ]
 

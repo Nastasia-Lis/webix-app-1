@@ -1,6 +1,6 @@
 import {tableId, editFormId, saveBtnId, addBtnId, delBtnId, cleanBtnId, saveNewBtnId} from './setId.js';
-//--- bns
 
+//--- bns
 function saveItem(){        
     let list = $$( tableId );  
     let itemData = $$(editFormId).getValues();    
@@ -22,13 +22,9 @@ function saveItem(){
     } else {
         notify ("error","Заполните пустые поля");
     }
-
-    
 }
 
 function addItem () {
-    //console.log($$(tableId).count())
-    
     createEditFields();
     $$(delBtnId).disable();
     $$(saveBtnId).hide();
@@ -67,7 +63,7 @@ function removeItem() {
             $$("inputsTable").hide();
             notify ("success","Данные удалены");
     });
-    defaultStateForm (saveBtnId);
+    defaultStateForm ();
     
 }
 
@@ -100,18 +96,55 @@ function clearForm(){
 //--- components
 
 function createEditFields () {
+    
+    $$(tableId).attachEvent("onBeforeLoad", webix.once(function( ){
+        //при переходе в др табл
+
+        //получить id текущего tree item 
+        // переменная в дереве, сравнить???
+        //вставить если fail
+
+        let currItemTree ;
+        let newItemTree = $$("tree").getSelectedItem();
+        console.log(currItemTree)
+        popupExec ("Данные не сохранены").then(
+            function(){
+               
+        }).fail(function(){
+            webix.message("Cancel");
+        });
+
+
+        // if($$(editFormId).isDirty()){
+        //     popupExec("Форма будет очищена").then(
+        //         function(){
+        //             clearItem();
+        //             $$(tableId).clearSelection();
+        //             defaultStateForm ();
+        //             $$("inputsTable").hide();
+        //             notify ("success","Форма очищена");
+        //     });
+        // } else {
+        //     notify ("debug","Форма пуста");
+        // }
+
+    }));
+    
+
 
     let columnsData = $$(tableId).getColumns();
 
     if(Object.keys($$(editFormId).elements).length==0  ){
         //let headersArray= $$(tableId).getColumns();
+        //console.log(columnsData[0].label)
         let inputsArray = [];
         columnsData.forEach((el) => {
+            
             inputsArray.push(
                 {
                 view:"text", 
                 name:el.id, 
-                label:el.id, 
+                label:el.label, 
                 }
             );
         });
@@ -131,12 +164,9 @@ function clearItem(){
     $$(editFormId).clear();
     $$(editFormId).clearValidation();
     defaultStateForm ();
-    $$(cleanBtnId).disable(); 
-    $$(delBtnId).disable();
 }
 
 function defaultStateForm () {
-    
     if ($$(saveNewBtnId).isVisible()) {
 
         $$(saveNewBtnId).hide();
@@ -144,10 +174,13 @@ function defaultStateForm () {
         $$(saveBtnId).hide();
     }
     $$(addBtnId).show();
+    $$(delBtnId).disable();
+    $$(cleanBtnId).disable();
 }
 
 function popupExec (titleText) { 
     return webix.confirm({
+        width:300,
         title:titleText,
         text:"Вы уверены?"
     });
@@ -165,9 +198,14 @@ function notify (typeNotify,textMessage) {
 
 
 let editTableBar = {
-    view:"form", id:editFormId, minHeight:350,minWidth:350,width:350,
+    view:"form", 
+    id:editFormId,
+    container:"webix__form-container", 
+    minHeight:350,
+    minWidth:350,
+    width: 350,
+    scroll:true,
     elements:[
-        
         {margin:5,rows:[{margin:5, rows:[
                 {margin:5, 
                 borderless:true,
@@ -186,7 +224,12 @@ let editTableBar = {
                         css:"webix_danger", 
                         type:"icon", 
                         icon:"wxi-trash", 
-                        click:removeItem
+                        click:removeItem,
+                        on: {
+                            onAfterRender: function () {
+                                this.getInputNode().setAttribute("title","Удалить запись из таблицы");
+                            }
+                        } 
                     },
                 ]
         },
@@ -235,7 +278,8 @@ let editTableBar = {
     },
     ready:function(){
         this.validate();
-      }
+        console.log(window.innerWidth)
+    },
 
 };
 

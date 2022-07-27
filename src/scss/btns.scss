@@ -18,9 +18,8 @@
         color: var(--primary-light)!important;
     }
     
-    &__tree_item.webix_selected{
+    &_tree .webix_tree_item.webix_selected{
         background-color: var(--secondary-dark)!important;
-        
     }
 
     &_webix_selected .webix_tree_file{

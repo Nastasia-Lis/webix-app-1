@@ -6,23 +6,32 @@
 
 
 //login, import
-
-//adaptive editTable, refresh labels
-
-//counter table, popup table (show row)
-
-//alt text
+//post
+//cors
 
 // tabs
-
 // tree: confirm if data dont saved
 
-// popup btn css, table footer css
+//+-    counter table +(?), adaptive editTable
+//**    popup table (show row), 
+//(nan) check folders view
 
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
+
+//(?1)
+// rows data src
+// struct json for folder
+
+
+@font-face {
+	font-family: 'Open Sans'; 
+	src: local('Open Sans'),
+		url(/fonts/OpenSans-Regular.ttf); 
+}
+
 .webix_view {
     font-family: 'Open Sans', sans-serif!important;
 }
+
 
 input:focus{
     border: 1px solid var(--primary)!important;
@@ -40,8 +49,10 @@ input {
     }
 
     &_dtable .webix_ss_header .webix_hcolumn div.webix_last_row,
-    &_dtable div.webix_ss_vscroll_header{
+    &_dtable div.webix_ss_vscroll_header,
+    &_dtable div.webix_ss_vscroll_footer{
         border-bottom-color: rgb(218, 222, 224) !important;
+        border-top-color: rgb(218, 222, 224) !important;
     }
 
     &_dtable .webix_select_mark > div.webix_row_select{
@@ -50,6 +61,13 @@ input {
     &_cell{
         cursor: pointer;
     }
+
+
+    &_dtable .webix_ss_footer .webix_hcolumn > div:first-child, .webix_dtable .webix_ss_footer .webix_hcell[row="0"]{
+        border-top-color: rgb(218, 222, 224) !important;
+    }
+
+
     //--------------table
 
 
@@ -96,6 +114,25 @@ input {
 
     &_popup_button.confirm:active{
         @include primary-btn--active;
+    }
+
+    &_popup_button{
+        padding: 5px 10px!important;
+    }
+
+    &_popup_controls > :first-child{
+        @include secondary-btn;
+    }
+
+    &_popup_controls > :first-child:hover{
+        @include secondary-btn--hover ;
+    }
+    &_popup_controls > :first-child:active{
+        @include secondary-btn--active ;
+    }
+    &_modal_box{
+        border-radius: 8px!important;
+        padding: 15px 30px!important;
     }
     //--------------popup confirm
 }

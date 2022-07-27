@@ -1,14 +1,13 @@
-import {tableId, pagerId,editFormId, saveBtnId,saveNewBtnId, addBtnId, delBtnId, findElemetsId} from './modules/setId.js';
+import {tableId, pagerId,editFormId, saveBtnId,saveNewBtnId, addBtnId, delBtnId, findElemetsId, searchId,  exportBtn} from './modules/setId.js';
 import * as header from "./modules/header.js";
-import {editTableBar} from "./modules/editTable.js";
-import * as toolbarTable from "./modules/toolbarTable.js";
-
-import {createEditFields,popupExec} from './modules/editTable.js';
+import * as tableToolbar from "./modules/tableToolbar.js";
+import {editTableBar, defaultStateForm,createEditFields,popupExec} from "./modules/editTable.js";
 
 
 webix.ready(function(){
 
     let countRows;
+    let currItemTree;
     function getObjStruct(obj)
     {
         var res = [];
@@ -42,8 +41,8 @@ webix.ready(function(){
       tree.updateItem(tree_id, { content:obj});
       tree.refresh();
       
-      var proped = $$("proped");
-      let elems = proped.config.elements;
+      var tableTemplate = $$("tableTemplate");
+      let elems = tableTemplate.config.elements;
       elems = [
                //{ label:"value", type:"text", id:"value", value: titem.value}
               ];
@@ -60,9 +59,9 @@ webix.ready(function(){
     //     elems.push({ label:"Родитель", type:"text", id:"pid"     , value:propsobj["pid"     ]});
     //     elems.push({ label:"Порядок" , type:"text", id:"order"   , value:propsobj["order"   ]});
         
-    //     proped.define("elements", elems);
-    //     proped.setValues(propsobj);
-    //     proped.refresh();
+    //     tableTemplate.define("elements", elems);
+    //     tableTemplate.setValues(propsobj);
+    //     tableTemplate.refresh();
   
     //     webix.ajax().post("/item/"+titem.content.id, titem.content).then(function (data) {
     //         webix.message("Item "+titem.content.id+" updated.");
@@ -72,8 +71,8 @@ webix.ready(function(){
   
     //   }
   
-      proped.define("elements",elems);
-      proped.refresh();
+      tableTemplate.define("elements",elems);
+      tableTemplate.refresh();
     }
 
   
@@ -87,8 +86,8 @@ webix.ready(function(){
      var tree = {
         view:"edittree",
         id:"tree",
-        minWidth:100,
-        width: 200,
+        minWidth:200,
+        width: 300,
         minHeight:150,
         editable:false,
         editor:"text",
@@ -109,21 +108,18 @@ webix.ready(function(){
         
         on:{
             onSelectChange:function (ids) {
-                $$( addBtnId).enable();
+                console.log($$(tableId).getColumns())
+                $$(addBtnId).enable();
+                $$(searchId).enable();
+                $$(exportBtn).enable();
                 var tree = $$("tree");
                 var titem = tree.getItem(ids[0]);
-                
                 $$(tableId).clearAll();
-
                 if (titem == undefined) {
-                
                     webix.ajax().get("init/default/api/fields.json").then(function (data) {
-                        
                         data = data.json().content; //список всех items
-                        
                         titem.content = data.json();
                         console.log(titem.content, "err");
-                        
                     });
                 } else {
                     
@@ -132,26 +128,23 @@ webix.ready(function(){
                         data = data.json().content[ids[0]]; //полный item
                         
                         let dataFields = data.fields;
-                        // let obj = Object.keys(data.fields) //id список полей 
-                        // let dataTable = [];
-                        // obj.forEach(function(data) {
-                        //    dataFields[data].id = data;
-                           
-                        //    dataTable.push(dataFields[data]);
-                        // });
-
-                        console.log(dataFields)
-
-                        $$(tableId).refreshColumns(dataFields);
-                        $$(tableId).parse(dataFields);
+                        let obj = Object.keys(data.fields) //id список полей 
+                        let columnTable = [];
+                        obj.forEach(function(data) {
+                           dataFields[data].id = data;
+                           dataFields[data].fillspace = true;
+                           dataFields[data].header= dataFields[data]["label"];
+                           columnTable.push(dataFields[data]);
+                        });
+                        $$(tableId).refreshColumns(columnTable);
+                        $$(tableId).parse();
                         
                         countRows = $$(tableId).count();
-                        $$(findElemetsId).setValues(countRows);
+                        $$(findElemetsId).setValues(countRows.toString());
                     });
                 }  
             },
   
-            
             
             onDataRequest: function (id) {
             // submenu render
@@ -165,10 +158,10 @@ webix.ready(function(){
             webix.message("Getting children of " + id);
            
             this.parse(
-            webix.ajax().get("init/default/api/tables.json").then(function (data) {
-                
-                return data.content;
-            })
+                webix.ajax().get("init/default/api/tables.json").then(function (data) {
+                    
+                    return data.content;
+                })
             );
             
             
@@ -297,10 +290,9 @@ webix.ready(function(){
   
 
     // --- TABLE
-    var proped = {
+    var tableTemplate = {
         view:"datatable",
         id: tableId,
-        //data:tablesArray[0].content,
         css:"webix_table-style webix_header_border webix_data_border",
         resizeColumn: true,
         autoConfig: true,
@@ -308,18 +300,18 @@ webix.ready(function(){
         minHeight:300,
         footer: true,
         minWidth:500, 
+        select:true,
         minColumnWidth:200,
         on:{
             onAfterSelect(id){
+
                 let values = $$(tableId).getItem(id); 
                 function toEditForm () {
-                    //$$(editFormId).updateItem();
                     console.log(values)
                     $$(editFormId).setValues(values);
                     $$(saveNewBtnId).hide();
                     $$(saveBtnId).show();
-                    $$(addBtnId).hide();
-                    
+                    $$(addBtnId).hide(); 
                 }
                 
                 if($$(editFormId).isDirty()){
@@ -328,7 +320,6 @@ webix.ready(function(){
                             $$(editFormId).clear();
                             $$(delBtnId).enable();
                             toEditForm();
-                            
                     }); 
                 } else {
                     createEditFields();
@@ -337,21 +328,54 @@ webix.ready(function(){
                 
             },
 
+
             onAfterLoad:function(){
+                $$(editFormId).removeView("inputsTable");
+                defaultStateForm ();
+                
                 if (!this.count())
                   this.showOverlay("Ничего не найдено");
+                
+                if (this.count())
+                  this.hideOverlay();  
+
+                  
             },  
+
+            // "onResize":function(){ 
+            //     let width = window.innerWidth;
+            //     if (width > 1200){
+            //         console.log("больше");
+            //         $$(tableId).define("width", 800);
+            //     } else {
+            //         console.log("меньше");
+            //     }
+                
+            // },
+
+            onAfterDelete: function() {
+                if (!this.count())
+                  this.showOverlay("Ничего не найдено");
+            },
+
+            onAfterAdd: function() {
+                countRows+=1;
+                $$(findElemetsId).setValues(countRows.toString());
+                this.hideOverlay();
+            }
         },
         ready:function(){
-            if (!this.count()){ // if no data are available
+            if (!this.count()){ 
                 webix.extend(this, webix.OverlayBox);
-                this.showOverlay("<div style='...'>There is no data</div>");
+                this.showOverlay("<div style='...'>Ничего не найдено</div>");
             }
         }
-
-
     };
   
+
+
+    /// LAYOUT
+
     webix.ui({
         view:"scrollview",
                 id:"layout", 
@@ -366,21 +390,27 @@ webix.ready(function(){
                             responsive:"adaptive", 
                             cols:[
                                 tree,
-                                {view:"resizer", id:"resizeOne"},
-                                {id:"tableContainer",rows:[
-                                    toolbarTable.toolbarTable(countRows),
-                                    proped,
-                                   
-                                ]},
-                                {view:"resizer", id:"resizeTwo"},
-                                editTableBar,
+                                {   view:"resizer", 
+                                    id:"resizeOne", 
+                                    class:"webix_resizers",
+                                },
+                                {   id:"tableContainer",
+                                    rows:[
+                                        tableToolbar.tableToolbar(),
+                                        tableTemplate,
+                                    ]
+                                },
+                                {   view:"resizer", 
+                                    id:"resizeTwo", 
+                                    class:"webix_resizers"
+                                },
+                                    editTableBar,
                                 
-                         ]},
+                            ]
+                        },
               
                     ]
                 },
-
-
 
     });
   
@@ -705,334 +735,7 @@ webix.ready(function(){
     webix.UIManager.addHotKey("enter", enter_subtree, $$("tree"));
   
 
-  });
-  
-
-
-
-
-
-
-
-//   var info = {"tree": [
-//     {
-//         "id": 41,
-//         "order": 1,
-//         "value": "Главная",
-//         "webix_kids": false,
-//     },
-//     {
-//         "id": 9,
-//         "order": 2,
-//         "value": "Продажа",
-//         "webix_kids": true
-//     },
-//     {
-//         "id": 10,
-//         "order": 4,
-//         "value": "Аренда",
-//         "webix_kids": true
-//     }
-// ],
-
-// "item": [
-//     {
-//         "id": 41,
-//         "img_url": "https://any2any.herokuapp.com/static/goods_131.jpg",
-//         "lnk_type": "1111nav",
-//         "lnk_url": "https://b24-le10ac.bitrix24.site/",
-//         "name": "Главная",
-//         "order": 1,
-//         "pid": 41,
-//         "tags": ""
-//     },
-//     {
-//         "id": 9,
-//         "img_url": "https://any2any.herokuapp.com/static/goods_131.jpg",
-//         "lnk_type": "nav",
-//         "lnk_url": "",
-//         "name": "Продажа",
-//         "order": 2,
-//         "pid": 9,
-//         "tags": ""
-//     },
-//     {
-//         "id": 42,
-//         "img_url": "",
-//         "lnk_type": "inf",
-//         "lnk_url": "https://b24-le10ac.bitrix24.site/reklamnayaaktsiya/",
-//         "name": "Акции",
-//         "order": 371,
-//         "pid": 42,
-//         "tags": ""
-//     },
-//     {
-//         "id": 14,
-//         "img_url": "https://any2any.herokuapp.com/static/goods_131.jpg",
-//         "lnk_type": "inf",
-//         "lnk_url": "https://b24-le10ac.bitrix24.site/kassy-online/",
-//         "name": "Кассы",
-//         "order": 91,
-//         "pid": 9,
-//         "tags": "#Касса#Эвотор#АТОЛ#Sigma#ККТ"
-//     },
-//     {
-//         "id": 16,
-//         "img_url": "https://any2any.herokuapp.com/static/goods_131.jpg",
-//         "lnk_type": "inf",
-//         "lnk_url": "",
-//         "name": "Торговое оборудование",
-//         "order": 92,
-//         "pid": 9,
-//         "tags": ""
-//     },
-//     {
-//         "id": 15,
-//         "img_url": "https://any2any.herokuapp.com/static/goods_131.jpg",
-//         "lnk_type": "inf",
-//         "lnk_url": "",
-//         "name": "Сканеры штрих-кодов",
-//         "order": 93,
-//         "pid": 9,
-//         "tags": ""
-//     },
-//     {
-//         "id": 17,
-//         "img_url": "https://any2any.herokuapp.com/static/goods_131.jpg",
-//         "lnk_type": "inf",
-//         "lnk_url": "",
-//         "name": "Расходники",
-//         "order": 94,
-//         "pid": 9,
-//         "tags": ""
-//     }
-// ],
-
-// "child": [
-//     {
-//         "data": [
-//             {
-//                 "content": {
-//                     "id": 41,
-//                     "img_url": "https://any2any.herokuapp.com/static/goods_131.jpg",
-//                     "lnk_type": "nav",
-//                     "lnk_url": "https://b24-le10ac.bitrix24.site/",
-//                     "name": "Главная",
-//                     "order": 1,
-//                     "pid": 41,
-//                     "tags": ""
-//                 },
-//                 "id": 41,
-//                 "parent": 41,
-//                 "state": "finalized",
-//                 "value": "Главная",
-//                 "webix_kids": false
-//             }
-//         ],
-//         "parent": 41
-//     },
-//     {"data": [
-//         {
-//             "content": {
-//                 "id": 9,
-//                 "img_url": "https://any2any.herokuapp.com/static/goods_131.jpg",
-//                 "lnk_type": "nav",
-//                 "lnk_url": "",
-//                 "name": "Продажа",
-//                 "order": 2,
-//                 "pid": 9,
-//                 "tags": ""
-//             },
-//             "id": 9,
-//             "parent": 9,
-//             "state": "finalized",
-//             "value": "Продажа",
-//             "webix_kids": true
-//         },
-//         {
-//             "content": {
-//                 "id": 14,
-//                 "img_url": "https://any2any.herokuapp.com/static/goods_131.jpg",
-//                 "lnk_type": "inf",
-//                 "lnk_url": "https://b24-le10ac.bitrix24.site/kassy-online/",
-//                 "name": "Кассы",
-//                 "order": 91,
-//                 "pid": 9,
-//                 "tags": "#Касса#Эвотор#АТОЛ#Sigma#ККТ"
-//             },
-//             "id": 14,
-//             "parent": 9,
-//             "state": "finalized",
-//             "value": "Кассы",
-//             "webix_kids": false
-//         },
-//         {
-//             "content": {
-//                 "id": 16,
-//                 "img_url": "https://any2any.herokuapp.com/static/goods_131.jpg",
-//                 "lnk_type": "inf",
-//                 "lnk_url": "",
-//                 "name": "Торговое оборудование",
-//                 "order": 92,
-//                 "pid": 9,
-//                 "tags": ""
-//             },
-//             "id": 16,
-//             "parent": 9,
-//             "state": "finalized",
-//             "value": "Торговое оборудование",
-//             "webix_kids": false
-//         },
-//         {
-//             "content": {
-//                 "id": 15,
-//                 "img_url": "https://any2any.herokuapp.com/static/goods_131.jpg",
-//                 "lnk_type": "inf",
-//                 "lnk_url": "",
-//                 "name": "Сканеры штрих-кодов",
-//                 "order": 93,
-//                 "pid": 9,
-//                 "tags": ""
-//             },
-//             "id": 15,
-//             "parent": 9,
-//             "state": "finalized",
-//             "value": "Сканеры штрих-кодов",
-//             "webix_kids": false
-//         },
-//         {
-//             "content": {
-//                 "id": 17,
-//                 "img_url": "https://any2any.herokuapp.com/static/goods_131.jpg",
-//                 "lnk_type": "inf",
-//                 "lnk_url": "",
-//                 "name": "Расходники",
-//                 "order": 94,
-//                 "pid": 9,
-//                 "tags": ""
-//             },
-//             "id": 17,
-//             "parent": 9,
-//             "state": "finalized",
-//             "value": "Расходники",
-//             "webix_kids": false
-//         },
-//         {
-//             "content": {
-//                 "id": 46,
-//                 "img_url": "",
-//                 "lnk_type": "inf",
-//                 "lnk_url": "https://prizma72.bitrix24.ru/~pSh0q",
-//                 "name": "КП Кассы Эвотор",
-//                 "order": 95,
-//                 "pid": 9,
-//                 "tags": "#КП#Коммерческое предложение#Касса#ККТ#Эвотор"
-//             },
-//             "id": 46,
-//             "parent": 9,
-//             "state": "finalized",
-//             "value": "КП Кассы Эвотор",
-//             "webix_kids": false
-//         }
-//     ],
-//     "parent": 9},
-//     {
-//         "data": [
-//             {
-//                 "content": {
-//                     "id": 42,
-//                     "img_url": "",
-//                     "lnk_type": "inf",
-//                     "lnk_url": "https://b24-le10ac.bitrix24.site/reklamnayaaktsiya/",
-//                     "name": "Акции",
-//                     "order": 371,
-//                     "pid": 42,
-//                     "tags": ""
-//                 },
-//                 "id": 42,
-//                 "parent": 42,
-//                 "state": "finalized",
-//                 "value": "Акции",
-//                 "webix_kids": false
-//             }
-//         ],
-//         "parent": 42
-//     },
-//     {
-//         "data": [
-//             {
-//                 "content": {
-//                     "id": 10,
-//                     "img_url": "",
-//                     "lnk_type": "nav",
-//                     "lnk_url": "",
-//                     "name": "Аренда",
-//                     "order": 4,
-//                     "pid": 10,
-//                     "tags": ""
-//                 },
-//                 "id": 10,
-//                 "parent": 10,
-//                 "state": "finalized",
-//                 "value": "Аренда",
-//                 "webix_kids": true
-//             },
-//             {
-//                 "content": {
-//                     "id": 45,
-//                     "img_url": "",
-//                     "lnk_type": "inf",
-//                     "lnk_url": "",
-//                     "name": "Онлайн-кассы",
-//                     "order": 451,
-//                     "pid": 10,
-//                     "tags": ""
-//                 },
-//                 "id": 45,
-//                 "parent": 10,
-//                 "state": "finalized",
-//                 "value": "Онлайн-кассы",
-//                 "webix_kids": false
-//             },
-//             {
-//                 "content": {
-//                     "id": 18,
-//                     "img_url": "https://www.prizma72.ru/fotos/goods_6.jpg",
-//                     "lnk_type": "inf",
-//                     "lnk_url": "https://www.prizma72.ru/goods/pos-sistemy",
-//                     "name": "POS-системы",
-//                     "order": 452,
-//                     "pid": 10,
-//                     "tags": ""
-//                 },
-//                 "id": 18,
-//                 "parent": 10,
-//                 "state": "finalized",
-//                 "value": "POS-системы",
-//                 "webix_kids": false
-//             },
-//             {
-//                 "content": {
-//                     "id": 19,
-//                     "img_url": "https://www.prizma72.ru/fotos/goods_13.jpg",
-//                     "lnk_type": "inf",
-//                     "lnk_url": "https://www.prizma72.ru/goods/terminaly-sbora-dannyh-tsd",
-//                     "name": "ТСД",
-//                     "order": 453,
-//                     "pid": 10,
-//                     "tags": ""
-//                 },
-//                 "id": 19,
-//                 "parent": 10,
-//                 "state": "finalized",
-//                 "value": "ТСД",
-//                 "webix_kids": false
-//             }
-//         ],
-//         "parent": 10
-//     }
-// ]
-// };
+});
 
 
 
