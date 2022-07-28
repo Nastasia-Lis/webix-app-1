@@ -1,11 +1,12 @@
 import {tableId, pagerId,editFormId, saveBtnId,saveNewBtnId, addBtnId, delBtnId, findElemetsId, searchId,  exportBtn} from './modules/setId.js';
+
+import {formLogin} from "./modules/login.js";
 import * as header from "./modules/header.js";
 import * as tableToolbar from "./modules/tableToolbar.js";
-import {editTableBar, defaultStateForm,createEditFields,popupExec} from "./modules/editTable.js";
-
+import {editTableBar, defaultStateForm,createEditFields,popupExec, checkFormSaved,clearItem} from "./modules/editTable.js";
 
 webix.ready(function(){
-
+    
     let countRows;
     let currItemTree;
     function getObjStruct(obj)
@@ -95,7 +96,7 @@ webix.ready(function(){
         activeTitle:true,
         select: true,
         clipboard: true,
-        data: webix.ajax().get("http://localhost:3000/init/default/api/fields.json").then(function (data) {
+        data: webix.ajax().get("/init/default/api/fields.json").then(function (data) {
             let srcTree = data.json().content;
             let obj = Object.keys(srcTree);
             let dataTree = [];
@@ -108,7 +109,6 @@ webix.ready(function(){
         
         on:{
             onSelectChange:function (ids) {
-                console.log($$(tableId).getColumns())
                 $$(addBtnId).enable();
                 $$(searchId).enable();
                 $$(exportBtn).enable();
@@ -145,7 +145,22 @@ webix.ready(function(){
                 }  
             },
   
-            
+            onBeforeSelect: function(data, preserve) {
+
+                if($$(editFormId).isDirty()){
+                    
+                    checkFormSaved().then(function(result){
+                        if(result) {
+                            console.log(data, preserve);
+                            clearItem();
+                            $$("tree").select(data);
+                        } 
+                    });
+                    
+                    return false;
+                }
+
+            },
             onDataRequest: function (id) {
             // submenu render
 
@@ -198,7 +213,7 @@ webix.ready(function(){
         //         }
                 
         //     }
-        }
+        };
   
 
 
@@ -376,45 +391,100 @@ webix.ready(function(){
 
     /// LAYOUT
 
+    // webix.ui({
+    //     view:"scrollview",
+    //             id:"layout", 
+    //             scroll:"y", 
+    //             body:{
+    //                 rows: [
+    //                     header.header(),
+    //                     {   id:"adaptive",
+    //                         rows:[ ]
+    //                     },
+    //                     {   id:"mainContent",
+    //                         responsive:"adaptive", 
+    //                         cols:[
+    //                             tree,
+    //                             {   view:"resizer", 
+    //                                 id:"resizeOne", 
+    //                                 class:"webix_resizers",
+    //                             },
+    //                             {   id:"tableContainer",
+    //                                 rows:[
+    //                                     tableToolbar.tableToolbar(),
+    //                                     tableTemplate,
+    //                                 ]
+    //                             },
+    //                             {   view:"resizer", 
+    //                                 id:"resizeTwo", 
+    //                                 class:"webix_resizers"
+    //                             },
+    //                                 editTableBar,
+                                
+    //                         ]
+    //                     },
+              
+    //                 ]
+    //             },
+
+    // });
+  
+
     webix.ui({
         view:"scrollview",
                 id:"layout", 
                 scroll:"y", 
                 body:{
-                    rows: [
-                        header.header(),
-                        {   id:"adaptive",
-                            rows:[ ]
-                        },
-                        {   id:"mainContent",
-                            responsive:"adaptive", 
-                            cols:[
-                                tree,
-                                {   view:"resizer", 
-                                    id:"resizeOne", 
-                                    class:"webix_resizers",
-                                },
-                                {   id:"tableContainer",
-                                    rows:[
-                                        tableToolbar.tableToolbar(),
-                                        tableTemplate,
-                                    ]
-                                },
-                                {   view:"resizer", 
-                                    id:"resizeTwo", 
-                                    class:"webix_resizers"
-                                },
-                                    editTableBar,
-                                
-                            ]
-                        },
-              
-                    ]
+                    cells: [ 
+                        {id: "userAuth", 
+                        cols: [
+                            {},
+                            {   rows:[
+                                    {},
+                                    formLogin,
+                                    {}
+                                ]},
+                            {}
+                        ]},
+                        //{ template:"Details page<br>not implemented :)<br><button >Back</button>", id:"mainContent" },
+                        {id:"mainLayout", rows: [
+                            
+                            header.header(),
+                            {   id:"adaptive",
+                                rows:[ ]
+                            },
+                            {   id:"mainContent",
+                                responsive:"adaptive", 
+                                cols:[
+                                    tree,
+                                    {   view:"resizer", 
+                                        id:"resizeOne", 
+                                        class:"webix_resizers",
+                                    },
+                                    {   id:"tableContainer",
+                                        rows:[
+                                            tableToolbar.tableToolbar(),
+                                            tableTemplate,
+                                        ]
+                                    },
+                                    {   view:"resizer", 
+                                        id:"resizeTwo", 
+                                        class:"webix_resizers"
+                                    },
+                                        editTableBar,
+                                    
+                                ]
+                            },
+                
+                        ]}
+                    ],
                 },
 
     });
-  
-    
+
+   
+    Backbone.history.start();
+
     var add_ctx = {
         view:"contextmenu",
         id:"cm",
@@ -736,6 +806,8 @@ webix.ready(function(){
   
 
 });
+
+
 
 
 

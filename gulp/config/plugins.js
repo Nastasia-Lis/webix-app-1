@@ -4,6 +4,7 @@ import notify from "gulp-notify";  // подсказки
 import browsersync from "browser-sync";
 import newer from "gulp-newer"; // проверка обнов
 import ifPlugin from "gulp-if";
+import proxyMiddleware from "http-proxy-middleware";
 
 export const plugins = {
     replace: replace,
@@ -11,5 +12,6 @@ export const plugins = {
     notify : notify,
     browsersync: browsersync,
     newer: newer,
-    if: ifPlugin
+    if: ifPlugin,
+    proxyMiddleware: proxyMiddleware,
 };

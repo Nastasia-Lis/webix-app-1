@@ -34,10 +34,14 @@
     "sass": "^1.48.0",
     "webp-converter": "^2.2.3",
     "webpack": "^5.66.0",
+    "webpack-dev-server": "^4.9.3",
     "webpack-stream": "^7.0.0"
   },
   "dependencies": {
     "del": "^6.0.0",
-    "jshint": "^2.13.5"
+    "express": "^4.18.1",
+    "http-proxy-middleware": "^2.0.6",
+    "jshint": "^2.13.5",
+    "url": "^0.11.0"
   }
 }

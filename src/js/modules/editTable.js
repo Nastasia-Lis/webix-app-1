@@ -98,35 +98,7 @@ function clearForm(){
 function createEditFields () {
     
     $$(tableId).attachEvent("onBeforeLoad", webix.once(function( ){
-        //при переходе в др табл
 
-        //получить id текущего tree item 
-        // переменная в дереве, сравнить???
-        //вставить если fail
-
-        let currItemTree ;
-        let newItemTree = $$("tree").getSelectedItem();
-        console.log(currItemTree)
-        popupExec ("Данные не сохранены").then(
-            function(){
-               
-        }).fail(function(){
-            webix.message("Cancel");
-        });
-
-
-        // if($$(editFormId).isDirty()){
-        //     popupExec("Форма будет очищена").then(
-        //         function(){
-        //             clearItem();
-        //             $$(tableId).clearSelection();
-        //             defaultStateForm ();
-        //             $$("inputsTable").hide();
-        //             notify ("success","Форма очищена");
-        //     });
-        // } else {
-        //     notify ("debug","Форма пуста");
-        // }
 
     }));
     
@@ -181,14 +153,38 @@ function defaultStateForm () {
 function popupExec (titleText) { 
     return webix.confirm({
         width:300,
+        ok: 'Да',
+        cancel: 'Отмена',
         title:titleText,
-        text:"Вы уверены?"
+        text:"Вы уверены, что хотите продолжить?"
     });
 }
 
 function notify (typeNotify,textMessage) {
     webix.message.position = "bottom";
     webix.message({type:typeNotify,  text:textMessage});
+}
+
+
+function checkFormSaved() {
+    return new webix.promise(function(resolve){
+      webix.confirm(
+        {
+          title: 'Данные не сохранены',
+          ok: 'Да',
+          width:300,
+          cancel: 'Отмена',
+          text: 'Вы уверены, что хотите продолжить?',
+          callback: function (result) {
+            if (result) {
+              resolve(true);
+            } else {
+              resolve(false);
+            }
+          }
+        }
+      );
+    });
 }
 
 //--- components
@@ -289,5 +285,7 @@ export{
     notify,
     createEditFields,
     popupExec,
-    defaultStateForm
+    defaultStateForm,
+    checkFormSaved,
+    clearItem
 };
