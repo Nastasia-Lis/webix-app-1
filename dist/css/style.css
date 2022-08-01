@@ -133,7 +133,7 @@
 
 @font-face {
   font-family: "Open Sans";
-  src: local("Open Sans"), url(/fonts/OpenSans-Regular.ttf);
+  src: local("Open Sans"), url(../fonts/OpenSans-Regular.ttf);
 }
 .webix_view {
   font-family: "Open Sans", sans-serif !important;

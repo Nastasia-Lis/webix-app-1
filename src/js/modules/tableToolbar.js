@@ -24,22 +24,20 @@ export function tableToolbar () {
                     disabled:true,
                     on: {
                         onTimedKeyPress() {
-                            let value = this.getValue().toLowerCase();
+                            let text = this.getValue().toLowerCase();
+                            let table = $$(tableId);
+                            let columns = table.config.columns;
                             let findElements = 0;
-                            //let obj = $$(tableId).getItem(1);
-                           
-                            $$(tableId).filter(function(obj){
-                                let firstColVal = obj[Object.keys(obj)[0]];
-                                if (firstColVal.indexOf(value)!=-1) {
-                                    findElements++; 
-                                    
-                                }
-                                
-                                return firstColVal.indexOf(value)!=-1;
+                            table.filter(function(obj){
+                                for (let i=0; i<columns.length; i++)
+                                    if (obj[columns[i].id].toString().toLowerCase().indexOf(text) !== -1){
+                                        findElements++; 
+                                        return true;
+                                    }
+                                return false;
                             });
                             if (!findElements){
                                 $$(tableId).showOverlay("Ничего не найдено");
-                            
                             } else if(findElements){
                                 $$(tableId).hideOverlay("Ничего не найдено");
                             }

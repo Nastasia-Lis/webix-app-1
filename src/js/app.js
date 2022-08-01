@@ -5,6 +5,10 @@ import * as header from "./modules/header.js";
 import * as tableToolbar from "./modules/tableToolbar.js";
 import {editTableBar, defaultStateForm,createEditFields,popupExec, checkFormSaved,clearItem} from "./modules/editTable.js";
 
+
+let itemTreeId = "";
+
+
 webix.ready(function(){
     
     let countRows;
@@ -109,36 +113,49 @@ webix.ready(function(){
         
         on:{
             onSelectChange:function (ids) {
+                itemTreeId = ids[0];
                 $$(addBtnId).enable();
                 $$(searchId).enable();
                 $$(exportBtn).enable();
                 var tree = $$("tree");
-                var titem = tree.getItem(ids[0]);
+                var titem = tree.getItem(ids[0]); //id,value tree item
                 $$(tableId).clearAll();
+
                 if (titem == undefined) {
-                    webix.ajax().get("init/default/api/fields.json").then(function (data) {
-                        data = data.json().content; //список всех items
-                        titem.content = data.json();
-                        console.log(titem.content, "err");
-                    });
+                    // webix.ajax().get("/init/default/api/fields.json").then(function (data) {
+                    //     data = data.json().content; //список всех items
+                    //     titem.content = data.json();
+                    //     console.log(titem.content, "err");
+                    // });
                 } else {
                     
-                    webix.ajax().get("init/default/api/fields.json").then(function (data) {
-                        
+                    webix.ajax().get("/init/default/api/fields.json").then(function (data) {
+    
                         data = data.json().content[ids[0]]; //полный item
                         
-                        let dataFields = data.fields;
-                        let obj = Object.keys(data.fields) //id список полей 
-                        let columnTable = [];
+                        let dataFields = data.fields; //[id:{info},..]
+                        let obj = Object.keys(data.fields) //[id,id,..]
+                        let columnsData = []; // [{cols data}]
                         obj.forEach(function(data) {
-                           dataFields[data].id = data;
-                           dataFields[data].fillspace = true;
-                           dataFields[data].header= dataFields[data]["label"];
-                           columnTable.push(dataFields[data]);
+                            dataFields[data].id = data;
+                            dataFields[data].fillspace = true;
+                            dataFields[data].header= dataFields[data]["label"];
+                            
+                            if(dataFields[data].id == "id"){
+                                dataFields[data].hidden = true;
+                            }
+                            columnsData.push(dataFields[data]);
                         });
-                        $$(tableId).refreshColumns(columnTable);
-                        $$(tableId).parse();
-                        
+                        $$(tableId).refreshColumns(columnsData);
+                    });
+
+                    webix.ajax().get("/init/default/api/"+itemTreeId).then(function (data){
+                        data = data.json().content;
+                        if (data.length !== 0){
+                            $$(tableId).parse(data);
+                        } else {
+                            $$(tableId).showOverlay("Ничего не найдено");
+                        }
                         countRows = $$(tableId).count();
                         $$(findElemetsId).setValues(countRows.toString());
                     });
@@ -148,7 +165,7 @@ webix.ready(function(){
             onBeforeSelect: function(data, preserve) {
 
                 if($$(editFormId).isDirty()){
-                    
+                    console.log("грязная форма");
                     checkFormSaved().then(function(result){
                         if(result) {
                             console.log(data, preserve);
@@ -173,7 +190,7 @@ webix.ready(function(){
             webix.message("Getting children of " + id);
            
             this.parse(
-                webix.ajax().get("init/default/api/tables.json").then(function (data) {
+                webix.ajax().get("/init/default/api/tables.json").then(function (data) {
                     
                     return data.content;
                 })
@@ -343,7 +360,6 @@ webix.ready(function(){
                 
             },
 
-
             onAfterLoad:function(){
                 $$(editFormId).removeView("inputsTable");
                 defaultStateForm ();
@@ -353,31 +369,30 @@ webix.ready(function(){
                 
                 if (this.count())
                   this.hideOverlay();  
-
                   
             },  
-
-            // "onResize":function(){ 
-            //     let width = window.innerWidth;
-            //     if (width > 1200){
-            //         console.log("больше");
-            //         $$(tableId).define("width", 800);
-            //     } else {
-            //         console.log("меньше");
-            //     }
-                
-            // },
 
             onAfterDelete: function() {
                 if (!this.count())
                   this.showOverlay("Ничего не найдено");
             },
 
-            onAfterAdd: function() {
+            onAfterAdd: function(id, index) {
+                //index = array, id как в таблице
                 countRows+=1;
                 $$(findElemetsId).setValues(countRows.toString());
                 this.hideOverlay();
-            }
+
+                // webix.ajax().post("/init/default/app/",).then(function (data) {
+                //     console.log(data);
+                // });
+
+            },
+
+            onDataUpdate: function(){
+                //только обновление
+                console.log("add11")
+            },
         },
         ready:function(){
             if (!this.count()){ 
@@ -387,65 +402,23 @@ webix.ready(function(){
         }
     };
   
-
-
-    /// LAYOUT
-
-    // webix.ui({
-    //     view:"scrollview",
-    //             id:"layout", 
-    //             scroll:"y", 
-    //             body:{
-    //                 rows: [
-    //                     header.header(),
-    //                     {   id:"adaptive",
-    //                         rows:[ ]
-    //                     },
-    //                     {   id:"mainContent",
-    //                         responsive:"adaptive", 
-    //                         cols:[
-    //                             tree,
-    //                             {   view:"resizer", 
-    //                                 id:"resizeOne", 
-    //                                 class:"webix_resizers",
-    //                             },
-    //                             {   id:"tableContainer",
-    //                                 rows:[
-    //                                     tableToolbar.tableToolbar(),
-    //                                     tableTemplate,
-    //                                 ]
-    //                             },
-    //                             {   view:"resizer", 
-    //                                 id:"resizeTwo", 
-    //                                 class:"webix_resizers"
-    //                             },
-    //                                 editTableBar,
-                                
-    //                         ]
-    //                     },
-              
-    //                 ]
-    //             },
-
-    // });
-  
-
     webix.ui({
+        
         view:"scrollview",
                 id:"layout", 
                 scroll:"y", 
                 body:{
                     cells: [ 
-                        {id: "userAuth", 
-                        cols: [
-                            {},
-                            {   rows:[
-                                    {},
-                                    formLogin,
-                                    {}
-                                ]},
-                            {}
-                        ]},
+                        // {id: "userAuth", 
+                        // cols: [
+                        //     {},
+                        //     {   rows:[
+                        //             {},
+                        //             formLogin,
+                        //             {}
+                        //         ]},
+                        //     {}
+                        // ]},
                         //{ template:"Details page<br>not implemented :)<br><button >Back</button>", id:"mainContent" },
                         {id:"mainLayout", rows: [
                             
@@ -483,7 +456,7 @@ webix.ready(function(){
     });
 
    
-    Backbone.history.start();
+    // Backbone.history.start();
 
     var add_ctx = {
         view:"contextmenu",
@@ -811,3 +784,6 @@ webix.ready(function(){
 
 
 
+export {
+    itemTreeId
+};

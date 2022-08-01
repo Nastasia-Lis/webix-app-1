@@ -15,7 +15,10 @@ export function header() {
         elements: [
             //{ view: "label", label: "App"},
             {   view:"label",
-                label:"<img src='/img/logo.png' style='height:35px; margin: 5px;'>" 
+                //label:"<img src='/img/logo.png' style='height:35px; margin: 5px;'>" 
+                label:"<img src='/init/static/images/expalogo.png' style='height:35px; margin: 5px;'>"
+
+                
             },
             {   view:"button",  
                 type:"icon", 
@@ -39,6 +42,9 @@ export function header() {
                         this.getInputNode().setAttribute("title","Выйти из аккаунта");
                     }
                 } ,
+                click: function() {
+                    history.back();
+                }
             }
             
         ]
