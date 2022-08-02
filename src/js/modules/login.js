@@ -1,17 +1,17 @@
 
-// var routes = new (Backbone.Router.extend({
-//     routes:{
-//         "":"index", 
-//         "content":"content" 
-//     },
-//     content:function(){
-//         $$("mainLayout").show(); 
-//     },
-//     index:function(){
-//         $$("userAuth").show();
-//     }, 
+var routes = new (Backbone.Router.extend({
+    routes:{
+        "":"index", 
+        "content":"content" 
+    },
+    content:function(){
+        $$("mainLayout").show(); 
+    },
+    index:function(){
+        $$("userAuth").show();
+    }, 
 
-// }));
+}));
 
 
 function submit(){
@@ -20,8 +20,11 @@ function submit(){
     //     $$("mainContent").show();
     // });
 
-    //routes.navigate("content", { trigger:true});
-    $$("mainContent").show();
+    // routes.navigate("content", { trigger:true});
+    // $$("mainContent").show();
+
+
+    
     //Backbone.Transitions.transit(content, slideUpDown);
     //$$("mainContent").show();
 

@@ -1,18 +1,12 @@
 import {tableId, editFormId, saveBtnId,searchId, addBtnId, delBtnId, cleanBtnId, saveNewBtnId} from './setId.js';
-import {itemTreeId} from '../app.js';
-
-
-
+import {itemTreeId} from './sidebar.js';
 
 
 //--- bns
 function saveItem(){        
 
     let itemData = $$(editFormId).getValues();   
-    console.log(itemData.id) 
-    
     if($$(editFormId).validate() ){
-        
         if( itemData.id ) {
             webix.ajax().put("/init/default/api/"+itemTreeId+"/"+itemData.id, itemData, {
                 success:function(){
@@ -43,6 +37,7 @@ function saveItem(){
 
 function addItem () {
     $$(tableId).filter(false);
+    $$(tableId).hideOverlay("Ничего не найдено");
     $$(searchId).setValue("");
     createEditFields();
     $$(delBtnId).disable();
@@ -162,7 +157,6 @@ function createEditFields () {
 
 
 function clearItem(){
-    console.log("очищение формы");
     $$(editFormId).clear();
     $$(editFormId).clearValidation();
     defaultStateForm ();

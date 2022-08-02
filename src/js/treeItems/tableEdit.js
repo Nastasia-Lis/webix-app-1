@@ -1,8 +1,8 @@
-import {notify} from './editTable.js';
+import {tableId, pagerId,editFormId, saveBtnId,saveNewBtnId, addBtnId, delBtnId, findElemetsId, searchId,  exportBtn} from '../modules/setId.js';
+import {defaultStateForm,createEditFields,popupExec,notify} from "../modules/editTableForm.js";
 
-import {tableId, pagerId,searchId, findElemetsId, exportBtn} from './setId.js';
 
-export function tableToolbar () {
+function tableToolbar () {
     function exportToExcel(){
         webix.toExcel(tableId, {
           filename:"Table",
@@ -95,3 +95,82 @@ export function tableToolbar () {
         
     };
 }
+
+
+
+let countRows;
+let tableTemplate = {
+    view:"datatable",
+    id: tableId,
+    css:"webix_table-style webix_header_border webix_data_border",
+    resizeColumn: true,
+    autoConfig: true,
+    pager:pagerId,
+    minHeight:300,
+    footer: true,
+    minWidth:500, 
+    select:true,
+    minColumnWidth:200,
+    on:{
+        onAfterSelect(id){
+
+            let values = $$(tableId).getItem(id); 
+            function toEditForm () {
+                console.log(values)
+                $$(editFormId).setValues(values);
+                $$(saveNewBtnId).hide();
+                $$(saveBtnId).show();
+                $$(addBtnId).hide(); 
+            }
+            
+            if($$(editFormId).isDirty()){
+                popupExec("Данные не сохранены").then(
+                    function(){
+                        $$(editFormId).clear();
+                        $$(delBtnId).enable();
+                        toEditForm();
+                }); 
+            } else {
+                createEditFields();
+                toEditForm();
+            }
+            
+        },
+
+        onAfterLoad:function(){
+            $$(editFormId).removeView("inputsTable");
+            defaultStateForm ();
+            
+            if (!this.count())
+                this.showOverlay("Ничего не найдено");
+            
+            if (this.count())
+                this.hideOverlay();  
+                
+        },  
+
+        onAfterDelete: function() {
+            if (!this.count())
+                this.showOverlay("Ничего не найдено");
+        },
+
+        onAfterAdd: function(id, index) {
+            countRows+=1;
+            $$(findElemetsId).setValues(countRows.toString());
+            this.hideOverlay();
+
+        },
+    },
+    ready:function(){
+        if (!this.count()){ 
+            webix.extend(this, webix.OverlayBox);
+            this.showOverlay("<div style='...'>Ничего не найдено</div>");
+        }
+    }
+};
+
+
+export {
+    tableToolbar,
+    tableTemplate
+};
