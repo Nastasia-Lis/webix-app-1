@@ -82,10 +82,11 @@ function tableToolbar (idPager, idSearch, idExport, idFindElements, idTable) {
             },
             {   view:"template",
                 id:idFindElements,
+                css:"webix_style-template-count",
                 height:30,
                 template:function () {
                     if (Object.keys($$(idFindElements).getValues()).length !==0){
-                        return "<div style='color:#999898'> Количество записей:"+" "+$$(idFindElements).getValues()+" </div>";
+                        return "<div style='color:#999898;'> Количество записей:"+" "+$$(idFindElements).getValues()+" </div>";
                     } else {
                         return "";
                     }
@@ -96,6 +97,8 @@ function tableToolbar (idPager, idSearch, idExport, idFindElements, idTable) {
         
     };
 }
+
+
 
 
 function table (idTable, idPager, onFunc, srcData) {
@@ -114,6 +117,10 @@ function table (idTable, idPager, onFunc, srcData) {
         on:onFunc,
     };
 }
+
+
+
+
 
 //----- table edit parameters
 let onFuncTable = {
@@ -157,8 +164,28 @@ let onFuncTable = {
 
 
 
-//----- table view parameters
 
+
+//----- table view parameters
+let jsonTableView = {
+    treeHeadlines :[
+        {"id": 'tableOne', "value": "Таблица 101"}
+    ],
+};
+
+let onFuncTableView = {
+    onAfterDelete: function() {
+        $$(findElementsId).setValues($$(tableId).count().toString());
+        if (!this.count())
+            this.showOverlay("Ничего не найдено");
+        if (this.count())
+            this.hideOverlay();
+    },
+    onAfterAdd: function() {
+        $$(findElementsId).setValues($$(tableId).count().toString());
+        this.hideOverlay();
+    },
+}
 
 //----- table view parameters
 
@@ -167,4 +194,6 @@ export {
     tableToolbar,
     table,
     onFuncTable,
+    jsonTableView,
+    onFuncTableView
 };

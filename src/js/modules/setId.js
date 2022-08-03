@@ -21,7 +21,9 @@ let delBtnId = tableId+"-delBtnId";
 let cleanBtnId = tableId+"-cleanBtn";
 let saveNewBtnId = tableId+"-saveNewBtn";
 
-
+//form elements
+let formId = tableId+"-form";
+let formIdView = tableIdView+"-form";
 
 export{
     tableId,
@@ -40,5 +42,8 @@ export{
     addBtnId,
     delBtnId,
     cleanBtnId,
-    saveNewBtnId
+    saveNewBtnId,
+
+    formId,
+    formIdView,
 };

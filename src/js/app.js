@@ -1,17 +1,18 @@
 //import {formLogin} from "./modules/login.js";
 import {
-    tableId, pagerId, searchId, exportBtn, findElementsId, 
-    tableIdView, pagerIdView, searchIdView, exportBtnView, findElementsIdView
+    tableId, pagerId, searchId, exportBtn, findElementsId, formId,
+    
+    tableIdView, pagerIdView, searchIdView, exportBtnView, 
+    findElementsIdView, formIdView
 } from './modules/setId.js';
+
 
 import * as header from "./modules/header.js";
 import * as treeSidebar from "./modules/sidebar.js";
 
 import  {dashboardLayout} from "./treeItems/dashboardView.js";
-import  {tableView} from "./treeItems/tableView.js";
-import  {formView} from "./treeItems/formView.js";
-import  {tableToolbar,table, onFuncTable, srcDataView} from "./treeItems/tableEdit.js";
-import  {formEdit} from "./treeItems/formEdit.js";
+import  {form,elementsFormView, elementsFormEdit} from "./treeItems/formTemplate.js";
+import  {tableToolbar,table, onFuncTable, onFuncTableView} from "./treeItems/tableTemplate.js";
 
 import {editTableBar} from "./modules/editTableForm.js";
 
@@ -22,6 +23,7 @@ webix.ready(function(){
 
     webix.ui({
         view:"scrollview",
+                type:"clean",
                 id:"layout", 
                 scroll:"y", 
                 body:{
@@ -38,53 +40,63 @@ webix.ready(function(){
                         // ]},
                         {id:"mainLayout", rows: [
                             
-                            header.header(),
+                            //header.header(),
                             {   id:"adaptive",
                                 rows:[ ]
                             },
                             {   id:"mainContent",
                                 responsive:"adaptive", 
                                 cols:[
-                                    treeSidebar.treeSidebar(),
+                                    
+                                    {css:"webix_side-container",rows:[ 
+                                        { view:"label",label:"<img src='/init/static/images/expalogo.png' style='height:30px; margin: 20px;'>", height:65 },
+                                        treeSidebar.treeSidebar(),
+                                    ]},
+                                    
+                                    //treeSidebar.treeSidebar(),
                                     {view:"resizer",class:"webix_resizers",},
-                                    {id:"tableEdit", hidden:true, cols:[
-                                        
-                                        {   id:"tableContainer",
+                                    
+                                    
+                                    {rows:[
+                                        header.header(),
+                                        {id:"webix__none-content"},
+                                        {id:"tableEdit", hidden:true, cols:[
+                                            
+                                            {   id:"tableContainer",
+                                                rows:[
+                                                    tableToolbar(pagerId, searchId, exportBtn, findElementsId, tableId ),
+                                                    table (tableId, pagerId, onFuncTable)
+                                                ]
+                                            },
+                                            {view:"resizer",class:"webix_resizers",},
+                                                editTableBar,
+                                        ]},
+
+                                        {id:"dashboardView", hidden:true,  
+                                            cols: dashboardLayout()
+                                        } ,
+
+                                        {id:"tableView",hidden:true, 
                                             rows:[
-                                                tableToolbar(pagerId, searchId, exportBtn, findElementsId, tableId ),
-                                                table (tableId, pagerId, onFuncTable)
+                                                tableToolbar(pagerIdView, searchIdView, exportBtnView, findElementsIdView, tableIdView ),
+                                                table (tableIdView, pagerIdView,onFuncTableView)
                                             ]
                                         },
-                                        {view:"resizer",class:"webix_resizers",},
-                                            editTableBar,
+                                        {id:"formEdit",hidden:true, 
+                                            cols:[
+                                                form(formId, elementsFormEdit),
+                                                {view:"resizer",class:"webix_resizers",},
+                                                form(formId, elementsFormEdit),
+                                            ]
+                                        },
+                                        {id:"formView",hidden:true, 
+                                            cols:[
+                                                form(formIdView, elementsFormView),
+                                                {view:"resizer",class:"webix_resizers",},
+                                                form(formIdView, elementsFormView)
+                                            ]
+                                        },
                                     ]},
-
-                                    {id:"dashboardView", hidden:true,  
-                                        cols: dashboardLayout()
-                                    } ,
-
-                                    {id:"tableView",hidden:true, 
-                                        rows:[
-                                            //tableToolbar("table-view"),
-                                            //tableView
-                                            tableToolbar(pagerIdView, searchIdView, exportBtnView, findElementsIdView, tableIdView ),
-                                            table (tableIdView, pagerIdView)
-                                        ]
-                                    },
-                                    {id:"formEdit",hidden:true, 
-                                        cols:[
-                                            formEdit,
-                                            {view:"resizer",class:"webix_resizers",},
-                                            formEdit
-                                        ]
-                                    },
-                                    {id:"formView",hidden:true, 
-                                        cols:[
-                                            formView,
-                                            {view:"resizer",class:"webix_resizers",},
-                                            formView
-                                        ]
-                                    },
                                 ]
                             },
                 

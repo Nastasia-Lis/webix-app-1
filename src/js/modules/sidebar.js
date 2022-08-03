@@ -5,10 +5,9 @@ import {tableId,editFormId,addBtnId,findElementsId, searchId,
 import {notify, checkFormSaved,clearItem} from "./editTableForm.js";
 
 import  {jsonDashboard } from "../treeItems/dashboardView.js";
-import  {jsonFormView } from "../treeItems/formView.js";
-import  {jsonFormEdit } from "../treeItems/formEdit.js";
-import  {jsonTableView } from "../treeItems/tableView.js";
-//import  {countRows} from "../treeItems/tableEdit.js";
+import  {jsonFormView, jsonFormEdit } from "../treeItems/formTemplate.js";
+import  {jsonTableView} from "../treeItems/tableTemplate.js";
+
 
 let itemTreeId = "";
 let prevCountRows ;
@@ -20,10 +19,11 @@ function treeSidebar () {
         width: 300,
         minHeight:150,
         editable:false,
+        select:"true",
         editor:"text",
         editValue:"value",
         activeTitle:true,
-        select: true,
+        //select: true,
         clipboard: true,
         data: webix.ajax().get("/init/default/api/fields.json").then(function (data) {
             let srcTree = data.json().content;
@@ -33,7 +33,8 @@ function treeSidebar () {
             obj.forEach(function(data) {
                 dataTreeTable.push({"id":data, "value":srcTree[data].plural}); 
             });
-            dataTree.push(  {id:"dashboardViewFolder", value:"Партнёры", data:jsonDashboard.treeHeadlines},
+            dataTree.push( 
+                            {id:"dashboardViewFolder",  value:"Партнёры", data:jsonDashboard.treeHeadlines},
                             {id:"tableEditFolder", value:"Таблицы", data:dataTreeTable},
                             {id:"tableViewFolder", value:"Таблицы (просмотр)", data:jsonTableView.treeHeadlines},
                             {id:"formEditFolder", value:"Формы", data:jsonFormEdit.treeHeadlines},
@@ -44,6 +45,10 @@ function treeSidebar () {
         
         on:{
             onSelectChange:function (ids) {
+                if (ids[0]){
+                    $$("webix__none-content").hide();
+                }
+            
                 console.log($$("tree").getSelectedItem());
 
                 itemTreeId = ids[0];
@@ -161,6 +166,7 @@ function treeSidebar () {
                 } else if(ids[0]=="tableViewFolder" || getItemParent=="tableViewFolder") {
                     $$(tableIdView).clearAll();
                     $$(searchIdView).setValue("");
+
                     
                     $$(tableIdView).refreshColumns([
                         { id:"rank", fillspace:true,    header:"",              width:50},
@@ -182,8 +188,9 @@ function treeSidebar () {
                         { id:11, title:"The Shawshank Redemption", year:1994, votes:678790, rank:1},
                         { id:12, title:"The Godfather", year:1972, votes:511495, rank:2}
                     ]);
-                    // countRows = $$(tableId).count();
-                    // $$(findElementsId).setValues(countRows.toString());
+
+                    let countRows = $$(tableIdView).count();
+                    $$(findElementsIdView).setValues(countRows.toString());
 
                 }else if(getItemParent=="formEditFolder") {
                    

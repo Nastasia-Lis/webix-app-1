@@ -7,19 +7,22 @@
     &_tree_item{
         cursor: pointer!important;
         padding: 5px 10px!important;
-        border-radius: 6px!important;
-        transition: .2s;
+        border-radius: 4px!important;
     }
     &_tree_item:hover{
-        background-color: var(--secondary)!important;
+        background-color: var(--gray-light)!important;
     }
 
     &_tree_folder_open{
         color: var(--primary-light)!important;
     }
+    &_tree_item.webix_selected > .webix_tree_file{
+        color: var(--primary-light)!important;
+    }
     
     &_tree .webix_tree_item.webix_selected{
-        background-color: var(--secondary-dark)!important;
+        background-color: var(--gray-light)!important;
+        font-weight: 500;
     }
 
     &_webix_selected .webix_tree_file{
@@ -72,18 +75,27 @@
         background: var(--gray) !important;
     }
 
-    
+    &_disabled_box .webix_img_btn  {
+        color: rgb(124, 124, 124)!important;
+    }
 
 
 
+    &_danger .webix_button .webix_icon_btn {
+        color: var(--danger)!important;
+    }
     &_danger .webix_button{
-        background: var(--danger)!important;
+        background: var(--danger-light)!important;
         transition: .2s;
-        border-radius: 6px!important;
+        border-radius: 4px!important;
     }
 
     &_danger:hover .webix_button{
-        background: var(--danger-light)!important;
+        background: var(--danger)!important;
+    }
+
+    &_danger .webix_button:hover .webix_icon_btn{
+        color:var(--white)!important;
     }
     &_danger:active .webix_button{
         background: var(--danger-dark)!important;
@@ -113,7 +125,7 @@
 
     &_pager_item_selected{
         cursor: pointer;
-        border-radius: 6px!important;
+        border-radius: 4px!important;
         @include primary-btn;
     }
     &_pager_item_selected:hover{
@@ -125,7 +137,7 @@
     }
 
     &_view .webix_pager_item{
-        border-radius: 6px!important;
+        border-radius: 4px!important;
         @include secondary-btn;
     }
     &_view .webix_pager_item:hover{
@@ -136,4 +148,10 @@
     }
 
     
+}
+
+
+
+.webix_disabled_box .webix_button .webix_icon_btn {
+    color: rgb(124, 124, 124)!important;
 }

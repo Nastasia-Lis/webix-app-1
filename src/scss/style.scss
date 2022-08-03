@@ -15,31 +15,63 @@
 
 
 @font-face {
-	font-family: 'Open Sans'; 
-	src: local('Open Sans'),
-		url(../fonts/OpenSans-Regular.ttf); 
-        //url(/fonts/OpenSans-Regular.ttf); 
+	font-family: 'NotoSans'; 
+    font-weight: 400;
+	src: local('NotoSans'),
+		url(../fonts/NotoSans-Regular.ttf); 
+}
+@font-face {
+	font-family: 'NotoSans'; 
+    font-weight: 500;
+	src: local('NotoSans'),
+		url(../fonts/NotoSans-SemiBold.ttf); 
 }
 
 .webix_view {
-    font-family: 'Open Sans', sans-serif!important;
+    font-family: 'NotoSans', sans-serif!important;
+    font-weight: 400;
+    font-size: 17px;
 }
 
 
-input:focus{
+input:focus,
+.webix_inp_static:focus{
     border: 1px solid var(--primary)!important;
 }
 
-input {
-    border-radius: 6px!important;
+input,
+.webix_inp_static {
+    border-radius: 4px!important;
 }
+
+
  
 .webix{
+    &_view{
+        border-color: var(--gray-light) !important;
+    }
+
+    &_dashboard-h2 .webix_template{
+        padding: 0px!important;
+    }
+
+    &_view .webix_tree{
+        background-color: var(--bg)!important;
+        border-width:0px!important;
+    }
+
+    &_header-style{
+        background-color: var(--bg)!important;
+    }
+    &_side-container{
+        background-color: var(--bg)!important;
+    }
 
     //--------------table
-    &_table-style .webix_hcell{
-        background:var(--secondary);
+    &_table-style .webix_hcell, &_style-template-count{
+        background:var(--bg)!important;;
     }
+ 
 
     &_dtable .webix_ss_header .webix_hcolumn div.webix_last_row,
     &_dtable div.webix_ss_vscroll_header,
@@ -124,8 +156,105 @@ input {
         @include secondary-btn--active ;
     }
     &_modal_box{
-        border-radius: 8px!important;
+        border-radius: 4px!important;
         padding: 15px 30px!important;
     }
     //--------------popup confirm
+
+    //--------------label-img
+    &_img-user > .webix_el_box{
+        line-height: 0px!important;
+    }
+    //--------------label-img
+
+    //--------------calendar
+    &_cal_body .webix_cal_today .webix_cal_day_inner{
+        box-shadow: inset 0 0 0 1px var(--primary)!important;
+    }
+    &_cal_body .webix_cal_event{
+        color: var(--primary)!important;
+    }
+
+    &_cal_body .webix_cal_block.webix_selected span:hover{
+        background-color: var(--primary-light)!important;
+    }
+    &_cal_body .webix_cal_block.webix_selected span{
+        background-color: var(--primary)!important;
+    }
+    &_cal_body .webix_cal_block.webix_selected span:active{
+        background-color: var(--primary-dark)!important;
+    }
+    &_cal_body .webix_cal_block span:hover{
+        background-color: var(--secondary)!important;
+    }
+
+    
+    &_cal_prev_button:hover{
+        color: var(--primary-light)!important;
+    }
+    &_cal_next_button:hover{
+        color: var(--primary-light)!important;
+    }
+
+    &_cal_next_button:focus{
+        color: var(--primary)!important;
+    }
+
+    &_cal_prev_button:focus{
+        color: var(--primary)!important;
+    }
+
+    &_cal_done {
+        @include secondary-btn;
+        height: 35px!important;
+        cursor: pointer;
+    }
+    &_cal_done:hover{
+        @include secondary-btn--hover;
+        border:none!important;
+    }
+    &_cal_done:active{
+        @include secondary-btn--active;
+        border:none!important;
+    }
+    &_win_body > .webix_view {
+        border-radius: 4px;
+    }
+
+    
 }
+.webix_cal_body .webix_cal_select .webix_cal_day_inner:hover,
+.webix_cal_body .webix_cal_today.webix_cal_select .webix_cal_day_inner:hover {
+    background: var(--primary-light)!important;
+}
+.webix_cal_body .webix_cal_select .webix_cal_day_inner,
+.webix_cal_body .webix_cal_today.webix_cal_select .webix_cal_day_inner {
+    background: var(--primary)!important;
+}
+.webix_cal_body .webix_cal_select .webix_cal_day_inner:active,
+.webix_cal_body .webix_cal_today.webix_cal_select .webix_cal_day_inner:active {
+    background: var(--primary-dark)!important;
+}
+
+.webix_cal_body .webix_cal_day_inner:hover{
+    background: var(--secondary)!important;
+}
+.webix_cal_icon:hover, .webix_cal_time:hover, .webix_cal_month_name:hover, 
+.webix_cal_icon:focus, .webix_cal_time:focus, .webix_cal_month_name:focus{
+    color: var(--primary)!important;
+}
+
+//--------------calendar
+
+//--------------radio
+.webix_el_radio .webix_radio_1 .webix_custom_radio{
+    color: var(--primary)!important;
+}
+.webix_el_radio .webix_radio_1 .webix_custom_radio:hover{
+    color: var(--primary-light)!important;
+}
+.webix_el_radio .webix_radio_1 .webix_custom_radio:active{
+    color: var(--primary-dark)!important;
+}
+
+//--------------radio

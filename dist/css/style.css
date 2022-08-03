@@ -1,16 +1,19 @@
 :root {
   --white: #fff;
   --gray: rgb(209, 209, 209);
+  --bg: #f7f7f7;
+  --gray-light: rgb(228, 228, 228);
   --primary: rgb(108, 160, 228);
   --primary-light:rgb(151, 190, 241);
   --primary-dark:rgb(91, 140, 204);
-  --secondary:rgb(222, 234, 252);
-  --secondary-dark:rgb(215, 232, 255);
+  --secondary-light:rgb(231, 239, 255);
+  --secondary:rgb(210, 224, 255);
+  --secondary-dark:rgb(199, 219, 255);
   --success: rgb(215, 255, 231);
   --error: rgb(255, 226, 215);
   --notify: rgb(254, 255, 215);
-  --danger: rgb(252, 145, 106);
-  --danger-light: rgb(247, 178, 152);
+  --danger: rgb(255, 127, 80);
+  --danger-light: rgb(255, 195, 173);
   --danger-dark: rgb(223, 126, 91);
   --add: rgb(141, 214, 169);
   --add-light: rgb(167, 230, 191);
@@ -23,17 +26,20 @@
 .webix_tree_item {
   cursor: pointer !important;
   padding: 5px 10px !important;
-  border-radius: 6px !important;
-  transition: 0.2s;
+  border-radius: 4px !important;
 }
 .webix_tree_item:hover {
-  background-color: var(--secondary) !important;
+  background-color: var(--gray-light) !important;
 }
 .webix_tree_folder_open {
   color: var(--primary-light) !important;
 }
+.webix_tree_item.webix_selected > .webix_tree_file {
+  color: var(--primary-light) !important;
+}
 .webix_tree .webix_tree_item.webix_selected {
-  background-color: var(--secondary-dark) !important;
+  background-color: var(--gray-light) !important;
+  font-weight: 500;
 }
 .webix_webix_selected .webix_tree_file {
   color: var(--primary-light) !important;
@@ -44,7 +50,7 @@
 .webix_primary .webix_button {
   background: var(--primary) !important;
   transition: 0.2s;
-  border-radius: 6px !important;
+  border-radius: 4px !important;
 }
 .webix_primary .webix_button:hover {
   background: var(--primary-light) !important;
@@ -56,7 +62,7 @@
   background: var(--secondary) !important;
   color: var(--primary) !important;
   transition: 0.2s;
-  border-radius: 6px !important;
+  border-radius: 4px !important;
 }
 .webix_secondary .webix_button .webix_icon_btn {
   color: var(--primary) !important;
@@ -75,13 +81,22 @@
   color: #7c7c7c !important;
   background: var(--gray) !important;
 }
+.webix_disabled_box .webix_img_btn {
+  color: #7c7c7c !important;
+}
+.webix_danger .webix_button .webix_icon_btn {
+  color: var(--danger) !important;
+}
 .webix_danger .webix_button {
-  background: var(--danger) !important;
+  background: var(--danger-light) !important;
   transition: 0.2s;
-  border-radius: 6px !important;
+  border-radius: 4px !important;
 }
 .webix_danger:hover .webix_button {
-  background: var(--danger-light) !important;
+  background: var(--danger) !important;
+}
+.webix_danger .webix_button:hover .webix_icon_btn {
+  color: var(--white) !important;
 }
 .webix_danger:active .webix_button {
   background: var(--danger-dark) !important;
@@ -104,10 +119,10 @@
 }
 .webix_pager_item_selected {
   cursor: pointer;
-  border-radius: 6px !important;
+  border-radius: 4px !important;
   background: var(--primary) !important;
   transition: 0.2s;
-  border-radius: 6px !important;
+  border-radius: 4px !important;
 }
 .webix_pager_item_selected:hover {
   cursor: pointer;
@@ -117,11 +132,11 @@
   background: var(--primary-dark) !important;
 }
 .webix_view .webix_pager_item {
-  border-radius: 6px !important;
+  border-radius: 4px !important;
   background: var(--secondary) !important;
   color: var(--primary) !important;
   transition: 0.2s;
-  border-radius: 6px !important;
+  border-radius: 4px !important;
 }
 .webix_view .webix_pager_item:hover {
   background: var(--primary) !important;
@@ -131,24 +146,54 @@
   background: var(--primary-dark) !important;
 }
 
-@font-face {
-  font-family: "Open Sans";
-  src: local("Open Sans"), url(../fonts/OpenSans-Regular.ttf);
-}
-.webix_view {
-  font-family: "Open Sans", sans-serif !important;
+.webix_disabled_box .webix_button .webix_icon_btn {
+  color: #7c7c7c !important;
 }
 
-input:focus {
+@font-face {
+  font-family: "NotoSans";
+  font-weight: 400;
+  src: local("NotoSans"), url(../fonts/NotoSans-Regular.ttf);
+}
+@font-face {
+  font-family: "NotoSans";
+  font-weight: 500;
+  src: local("NotoSans"), url(../fonts/NotoSans-SemiBold.ttf);
+}
+.webix_view {
+  font-family: "NotoSans", sans-serif !important;
+  font-weight: 400;
+  font-size: 17px;
+}
+
+input:focus,
+.webix_inp_static:focus {
   border: 1px solid var(--primary) !important;
 }
 
-input {
-  border-radius: 6px !important;
+input,
+.webix_inp_static {
+  border-radius: 4px !important;
 }
 
-.webix_table-style .webix_hcell {
-  background: var(--secondary);
+.webix_view {
+  border-color: var(--gray-light) !important;
+}
+.webix_dashboard-h2 .webix_template {
+  padding: 0px !important;
+}
+.webix_view .webix_tree {
+  background-color: var(--bg) !important;
+  border-width: 0px !important;
+}
+.webix_header-style {
+  background-color: var(--bg) !important;
+}
+.webix_side-container {
+  background-color: var(--bg) !important;
+}
+.webix_table-style .webix_hcell, .webix_style-template-count {
+  background: var(--bg) !important;
 }
 .webix_dtable .webix_ss_header .webix_hcolumn div.webix_last_row, .webix_dtable div.webix_ss_vscroll_header, .webix_dtable div.webix_ss_vscroll_footer {
   border-bottom-color: #dadee0 !important;
@@ -187,7 +232,7 @@ input {
 .webix_popup_button.confirm {
   background: var(--primary) !important;
   transition: 0.2s;
-  border-radius: 6px !important;
+  border-radius: 4px !important;
 }
 .webix_popup_button.confirm:hover {
   background: var(--primary-light) !important;
@@ -202,7 +247,7 @@ input {
   background: var(--secondary) !important;
   color: var(--primary) !important;
   transition: 0.2s;
-  border-radius: 6px !important;
+  border-radius: 4px !important;
 }
 .webix_popup_controls > :first-child:hover {
   background: var(--primary) !important;
@@ -212,6 +257,95 @@ input {
   background: var(--primary-dark) !important;
 }
 .webix_modal_box {
-  border-radius: 8px !important;
+  border-radius: 4px !important;
   padding: 15px 30px !important;
+}
+.webix_img-user > .webix_el_box {
+  line-height: 0px !important;
+}
+.webix_cal_body .webix_cal_today .webix_cal_day_inner {
+  box-shadow: inset 0 0 0 1px var(--primary) !important;
+}
+.webix_cal_body .webix_cal_event {
+  color: var(--primary) !important;
+}
+.webix_cal_body .webix_cal_block.webix_selected span:hover {
+  background-color: var(--primary-light) !important;
+}
+.webix_cal_body .webix_cal_block.webix_selected span {
+  background-color: var(--primary) !important;
+}
+.webix_cal_body .webix_cal_block.webix_selected span:active {
+  background-color: var(--primary-dark) !important;
+}
+.webix_cal_body .webix_cal_block span:hover {
+  background-color: var(--secondary) !important;
+}
+.webix_cal_prev_button:hover {
+  color: var(--primary-light) !important;
+}
+.webix_cal_next_button:hover {
+  color: var(--primary-light) !important;
+}
+.webix_cal_next_button:focus {
+  color: var(--primary) !important;
+}
+.webix_cal_prev_button:focus {
+  color: var(--primary) !important;
+}
+.webix_cal_done {
+  background: var(--secondary) !important;
+  color: var(--primary) !important;
+  transition: 0.2s;
+  border-radius: 4px !important;
+  height: 35px !important;
+  cursor: pointer;
+}
+.webix_cal_done:hover {
+  background: var(--primary) !important;
+  color: var(--white) !important;
+  border: none !important;
+}
+.webix_cal_done:active {
+  background: var(--primary-dark) !important;
+  border: none !important;
+}
+.webix_win_body > .webix_view {
+  border-radius: 4px;
+}
+
+.webix_cal_body .webix_cal_select .webix_cal_day_inner:hover,
+.webix_cal_body .webix_cal_today.webix_cal_select .webix_cal_day_inner:hover {
+  background: var(--primary-light) !important;
+}
+
+.webix_cal_body .webix_cal_select .webix_cal_day_inner,
+.webix_cal_body .webix_cal_today.webix_cal_select .webix_cal_day_inner {
+  background: var(--primary) !important;
+}
+
+.webix_cal_body .webix_cal_select .webix_cal_day_inner:active,
+.webix_cal_body .webix_cal_today.webix_cal_select .webix_cal_day_inner:active {
+  background: var(--primary-dark) !important;
+}
+
+.webix_cal_body .webix_cal_day_inner:hover {
+  background: var(--secondary) !important;
+}
+
+.webix_cal_icon:hover, .webix_cal_time:hover, .webix_cal_month_name:hover,
+.webix_cal_icon:focus, .webix_cal_time:focus, .webix_cal_month_name:focus {
+  color: var(--primary) !important;
+}
+
+.webix_el_radio .webix_radio_1 .webix_custom_radio {
+  color: var(--primary) !important;
+}
+
+.webix_el_radio .webix_radio_1 .webix_custom_radio:hover {
+  color: var(--primary-light) !important;
+}
+
+.webix_el_radio .webix_radio_1 .webix_custom_radio:active {
+  color: var(--primary-dark) !important;
 }

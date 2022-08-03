@@ -1,7 +1,7 @@
 @mixin primary-btn {
   background: var(--primary)!important;
   transition: .2s;
-  border-radius: 6px!important;
+  border-radius: 4px!important;
 }
 @mixin primary-btn--hover {
   background: var(--primary-light)!important;
@@ -15,7 +15,7 @@
   background: var(--secondary )!important;
   color:var(--primary)!important;
   transition: .2s;
-  border-radius: 6px!important;
+  border-radius: 4px!important;
 }
 @mixin secondary-btn--hover {
   background: var(--primary)!important;
