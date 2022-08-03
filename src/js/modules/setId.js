@@ -1,11 +1,17 @@
 
 let tableId = "table";
+let tableIdView = "table-view";
 
 //tooldarTable elements
 let pagerId = tableId+"-pager";
 let searchId = tableId+"-search";
-let findElemetsId = tableId+"-findElemets";
+let findElementsId = tableId+"-findElemets";
 let exportBtn = tableId+"exportBtn";
+
+let pagerIdView = tableIdView+"-pager";
+let searchIdView = tableIdView+"-search";
+let findElementsIdView = tableIdView+"-findElemets";
+let exportBtnView = tableIdView+"exportBtn";
 
 //editTable elements
 let editFormId = tableId+"-editForm";
@@ -21,8 +27,13 @@ export{
     tableId,
     pagerId,
     searchId,
-    findElemetsId,
+    findElementsId,
     exportBtn,
+    tableIdView,
+    pagerIdView,
+    searchIdView,
+    findElementsIdView,
+    exportBtnView,
 
     editFormId,
     saveBtnId,

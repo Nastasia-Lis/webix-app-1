@@ -1,10 +1,11 @@
-import {tableId, pagerId,editFormId, saveBtnId,saveNewBtnId, addBtnId, delBtnId, findElemetsId, searchId,  exportBtn} from '../modules/setId.js';
+import {tableId,editFormId, saveBtnId,saveNewBtnId, addBtnId, delBtnId, findElementsId} from '../modules/setId.js';
 import {defaultStateForm,createEditFields,popupExec,notify} from "../modules/editTableForm.js";
 
 
-function tableToolbar () {
+
+function tableToolbar (idPager, idSearch, idExport, idFindElements, idTable) {
     function exportToExcel(){
-        webix.toExcel(tableId, {
+        webix.toExcel(idTable, {
           filename:"Table",
           filterHTML:true,
           styles:true
@@ -17,15 +18,15 @@ function tableToolbar () {
                 cols: [
                 {   view:"search", 
                     placeholder:"Поиск", 
-                    id:searchId,
+                    id:idSearch,
                     css:"searchTable", 
                     maxWidth:250, 
                     minWidth:40, 
-                    disabled:true,
+                    //disabled:true,
                     on: {
                         onTimedKeyPress() {
                             let text = this.getValue().toLowerCase();
-                            let table = $$(tableId);
+                            let table = $$(idTable);
                             let columns = table.config.columns;
                             let findElements = 0;
                             table.filter(function(obj){
@@ -37,11 +38,11 @@ function tableToolbar () {
                                 return false;
                             });
                             if (!findElements){
-                                $$(tableId).showOverlay("Ничего не найдено");
+                                $$(idTable).showOverlay("Ничего не найдено");
                             } else if(findElements){
-                                $$(tableId).hideOverlay("Ничего не найдено");
+                                $$(idTable).hideOverlay("Ничего не найдено");
                             }
-                            $$(findElemetsId).setValues(findElements.toString());
+                            $$(idFindElements).setValues(findElements.toString());
                             
                         },
                         onAfterRender: function () {
@@ -53,7 +54,7 @@ function tableToolbar () {
  
                 {
                     view:"pager",
-                    id:pagerId,
+                    id:idPager,
                     size:10,
                     group:3,
                     template:`{common.prev()} 
@@ -63,13 +64,13 @@ function tableToolbar () {
                 {   view:"button",
                     width: 50, 
                     type:"icon",
-                    id:exportBtn,
+                    id:idExport,
                     icon:"wxi-download",
                     css:"webix_btn-download",
                     title:"текст",
                     height:50,
                     width:60,
-                    disabled:true,
+                    //disabled:true,
                     click:exportToExcel,
                     on: {
                         onAfterRender: function () {
@@ -80,11 +81,11 @@ function tableToolbar () {
                 ],
             },
             {   view:"template",
-                id:findElemetsId,
+                id:idFindElements,
                 height:30,
                 template:function () {
-                    if (Object.keys($$(findElemetsId).getValues()).length !==0){
-                        return "<div style='color:#999898'> Количество записей:"+" "+$$(findElemetsId).getValues()+" </div>";
+                    if (Object.keys($$(idFindElements).getValues()).length !==0){
+                        return "<div style='color:#999898'> Количество записей:"+" "+$$(idFindElements).getValues()+" </div>";
                     } else {
                         return "";
                     }
@@ -97,80 +98,73 @@ function tableToolbar () {
 }
 
 
+function table (idTable, idPager, onFunc, srcData) {
+    return {
+        view:"datatable",
+        id: idTable,
+        css:"webix_table-style webix_header_border webix_data_border",
+        resizeColumn: true,
+        autoConfig: true,
+        pager:idPager,
+        minHeight:300,
+        footer: true,
+        minWidth:500, 
+        select:true,
+        minColumnWidth:200,
+        on:onFunc,
+    };
+}
 
-let countRows;
-let tableTemplate = {
-    view:"datatable",
-    id: tableId,
-    css:"webix_table-style webix_header_border webix_data_border",
-    resizeColumn: true,
-    autoConfig: true,
-    pager:pagerId,
-    minHeight:300,
-    footer: true,
-    minWidth:500, 
-    select:true,
-    minColumnWidth:200,
-    on:{
-        onAfterSelect(id){
-
-            let values = $$(tableId).getItem(id); 
-            function toEditForm () {
-                console.log(values)
-                $$(editFormId).setValues(values);
-                $$(saveNewBtnId).hide();
-                $$(saveBtnId).show();
-                $$(addBtnId).hide(); 
-            }
-            
-            if($$(editFormId).isDirty()){
-                popupExec("Данные не сохранены").then(
-                    function(){
-                        $$(editFormId).clear();
-                        $$(delBtnId).enable();
-                        toEditForm();
-                }); 
-            } else {
-                createEditFields();
-                toEditForm();
-            }
-            
-        },
-
-        onAfterLoad:function(){
-            $$(editFormId).removeView("inputsTable");
-            defaultStateForm ();
-            
-            if (!this.count())
-                this.showOverlay("Ничего не найдено");
-            
-            if (this.count())
-                this.hideOverlay();  
-                
-        },  
-
-        onAfterDelete: function() {
-            if (!this.count())
-                this.showOverlay("Ничего не найдено");
-        },
-
-        onAfterAdd: function(id, index) {
-            countRows+=1;
-            $$(findElemetsId).setValues(countRows.toString());
-            this.hideOverlay();
-
-        },
-    },
-    ready:function(){
-        if (!this.count()){ 
-            webix.extend(this, webix.OverlayBox);
-            this.showOverlay("<div style='...'>Ничего не найдено</div>");
+//----- table edit parameters
+let onFuncTable = {
+    onAfterSelect(id){
+        let values = $$(tableId).getItem(id); 
+        function toEditForm () {
+            $$(editFormId).setValues(values);
+            $$(saveNewBtnId).hide();
+            $$(saveBtnId).show();
+            $$(addBtnId).hide(); 
         }
-    }
+        if($$(editFormId).isDirty()){
+            popupExec("Данные не сохранены").then(
+                function(){
+                    $$(editFormId).clear();
+                    $$(delBtnId).enable();
+                    toEditForm();
+            }); 
+        } else {
+            createEditFields();
+            toEditForm();
+        }   
+    },
+    onAfterLoad:function(){
+        $$(editFormId).removeView("inputsTable");
+        defaultStateForm ();
+    },  
+    onAfterDelete: function() {
+        $$(findElementsId).setValues($$(tableId).count().toString());
+        if (!this.count())
+            this.showOverlay("Ничего не найдено");
+        if (this.count())
+            this.hideOverlay();
+    },
+    onAfterAdd: function() {
+        $$(findElementsId).setValues($$(tableId).count().toString());
+        this.hideOverlay();
+    },
 };
+//----- table edit parameters
+
+
+
+//----- table view parameters
+
+
+//----- table view parameters
 
 
 export {
     tableToolbar,
-    tableTemplate
+    table,
+    onFuncTable,
 };

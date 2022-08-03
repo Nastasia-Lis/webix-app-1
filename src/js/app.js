@@ -1,22 +1,21 @@
 //import {formLogin} from "./modules/login.js";
-import {tableId} from './modules/setId.js';
+import {
+    tableId, pagerId, searchId, exportBtn, findElementsId, 
+    tableIdView, pagerIdView, searchIdView, exportBtnView, findElementsIdView
+} from './modules/setId.js';
 
 import * as header from "./modules/header.js";
 import * as treeSidebar from "./modules/sidebar.js";
-import {tableToolbar, tableTemplate} from "./treeItems/tableEdit.js";
-import {editTableBar} from "./modules/editTableForm.js";
-
 
 import  {dashboardLayout} from "./treeItems/dashboardView.js";
 import  {tableView} from "./treeItems/tableView.js";
 import  {formView} from "./treeItems/formView.js";
-import  {tableEdit} from "./treeItems/tableEdit.js";
+import  {tableToolbar,table, onFuncTable, srcDataView} from "./treeItems/tableEdit.js";
 import  {formEdit} from "./treeItems/formEdit.js";
 
+import {editTableBar} from "./modules/editTableForm.js";
 
 webix.ready(function(){
-    
-
     webix.protoUI({
         name:"edittree"
     }, webix.EditAbility, webix.ui.tree);
@@ -52,8 +51,8 @@ webix.ready(function(){
                                         
                                         {   id:"tableContainer",
                                             rows:[
-                                                tableToolbar(),
-                                                tableTemplate,
+                                                tableToolbar(pagerId, searchId, exportBtn, findElementsId, tableId ),
+                                                table (tableId, pagerId, onFuncTable)
                                             ]
                                         },
                                         {view:"resizer",class:"webix_resizers",},
@@ -66,10 +65,11 @@ webix.ready(function(){
 
                                     {id:"tableView",hidden:true, 
                                         rows:[
-                                            //tableToolbar(),
-                                            tableView
+                                            //tableToolbar("table-view"),
+                                            //tableView
+                                            tableToolbar(pagerIdView, searchIdView, exportBtnView, findElementsIdView, tableIdView ),
+                                            table (tableIdView, pagerIdView)
                                         ]
-                                    
                                     },
                                     {id:"formEdit",hidden:true, 
                                         cols:[

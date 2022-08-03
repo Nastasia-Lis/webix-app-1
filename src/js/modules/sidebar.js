@@ -1,13 +1,17 @@
-import {tableId,editFormId,addBtnId,findElemetsId, searchId,pagerId,  exportBtn} from './setId.js';
+import {tableId,editFormId,addBtnId,findElementsId, searchId,
+        tableIdView,findElementsIdView,searchIdView
+
+} from './setId.js';
 import {notify, checkFormSaved,clearItem} from "./editTableForm.js";
 
 import  {jsonDashboard } from "../treeItems/dashboardView.js";
 import  {jsonFormView } from "../treeItems/formView.js";
 import  {jsonFormEdit } from "../treeItems/formEdit.js";
 import  {jsonTableView } from "../treeItems/tableView.js";
+//import  {countRows} from "../treeItems/tableEdit.js";
 
 let itemTreeId = "";
-
+let prevCountRows ;
 function treeSidebar () {
     let tree = {
         view:"edittree",
@@ -40,25 +44,14 @@ function treeSidebar () {
         
         on:{
             onSelectChange:function (ids) {
-                
-                itemTreeId = ids[0];
+                console.log($$("tree").getSelectedItem());
 
-                console.log($$("tree").getSelectedItem())
+                itemTreeId = ids[0];
                 let treeItemId = $$("tree").getSelectedItem().id;
                 let getItemParent = $$("tree").getParentId(treeItemId);
-
-
                 var tree = $$("tree");
                 var titem = tree.getItem(ids[0]); //id,value tree item
-                $$(tableId).clearAll();
-                $$(searchId).setValue("");
-
-                if (getItemParent=="tableEditFolder"){
-                    $$(addBtnId).enable();
-                    $$(searchId).enable();
-                    $$(exportBtn).enable();
- 
-                }
+               
                 
                 
                 if(ids[0]=="tableEditFolder" || getItemParent=="tableEditFolder" ){
@@ -106,17 +99,24 @@ function treeSidebar () {
                 }
 
 
-                if(Object.keys($$(editFormId).elements).length!==0  ){
-                    $$("inputsTable").hide();
-                }
+              
 
                 if(getItemParent=="tableEditFolder"){
+                    $$(tableId).clearAll();
+                    $$(searchId).setValue("");
+                    $$(addBtnId).enable();
+
+                    if(Object.keys($$(editFormId).elements).length!==0  ){
+                        $$("inputsTable").hide();
+                    }
+
                     if (titem == undefined) {
                         webix.ajax().get("/init/default/api/fields.json").then(function (data) {
                             notify ("error","Данные не найдены");
                         });
                     } else {
                         webix.ajax().get("/init/default/api/fields.json").then(function (data) {
+                            
                             data = data.json().content[ids[0]]; //полный item
                             let dataFields = data.fields; //[id:{info},..]
                             let obj = Object.keys(data.fields) //[id,id,..]
@@ -134,24 +134,56 @@ function treeSidebar () {
                                 // }
                             });
                             $$(tableId).refreshColumns(columnsData);
+                            console.log(columnsData)
                         });
 
                         webix.ajax().get("/init/default/api/"+itemTreeId).then(function (data){
                             data = data.json().content;
                             if (data.length !== 0){
+                                $$(tableId).hideOverlay("Ничего не найдено");
                                 $$(tableId).parse(data);
                             } else {
                                 $$(tableId).showOverlay("Ничего не найдено");
                             }
-                            countRows = $$(tableId).count();
-                            $$(findElemetsId).setValues(countRows.toString());
+                            prevCountRows = $$(tableId).count();
+                            $$(findElementsId).setValues(prevCountRows.toString());
                         });
-                    } 
+                    }
+                    
+                    
+
                 } else if(getItemParent=="dashboardViewFolder") {
                    
  
-                } else if(getItemParent=="tableViewFolder") {
+
+
+
+                } else if(ids[0]=="tableViewFolder" || getItemParent=="tableViewFolder") {
+                    $$(tableIdView).clearAll();
+                    $$(searchIdView).setValue("");
                     
+                    $$(tableIdView).refreshColumns([
+                        { id:"rank", fillspace:true,    header:"",              width:50},
+                        { id:"title", fillspace:true,   header:"Film title",    width:200},
+                        { id:"year",  fillspace:true,   header:"Released",      width:80},
+                        { id:"votes", fillspace:true,   header:"Votes",         width:100}
+                    ]);
+                    $$(tableIdView).parse([
+                        { id:1, title:"The Shawshank Redemption", year:1994, votes:678790, rank:1},
+                        { id:2, title:"The Godfather", year:1972, votes:511495, rank:2},
+                        { id:3, title:"The Shawshank Redemption", year:1994, votes:678790, rank:1},
+                        { id:4, title:"The Godfather", year:1972, votes:511495, rank:2},
+                        { id:5, title:"The Shawshank Redemption", year:1994, votes:678790, rank:1},
+                        { id:6, title:"The Godfather", year:1972, votes:511495, rank:2},
+                        { id:7, title:"The Shawshank Redemption", year:1994, votes:678790, rank:1},
+                        { id:8, title:"The Godfather", year:1972, votes:511495, rank:2},
+                        { id:9, title:"The Shawshank Redemption", year:1994, votes:678790, rank:1},
+                        { id:10, title:"The Godfather", year:1972, votes:511495, rank:2},
+                        { id:11, title:"The Shawshank Redemption", year:1994, votes:678790, rank:1},
+                        { id:12, title:"The Godfather", year:1972, votes:511495, rank:2}
+                    ]);
+                    // countRows = $$(tableId).count();
+                    // $$(findElementsId).setValues(countRows.toString());
 
                 }else if(getItemParent=="formEditFolder") {
                    
@@ -165,17 +197,18 @@ function treeSidebar () {
   
 
             onBeforeSelect: function(data) {
-                
-                if($$(editFormId).isDirty()){
-                    checkFormSaved().then(function(result){
-                        if(result) {
-                            clearItem();
-                            $$("tree").select(data);
-                        } 
-                    });
-                    return false;
+                let getItemParent = $$("tree").getParentId(data);
+                if(getItemParent=="tableEditFolder"){
+                    if($$(editFormId).isDirty()){
+                        checkFormSaved().then(function(result){
+                            if(result) {
+                                clearItem();
+                                $$("tree").select(data);
+                            } 
+                        });
+                        return false;
+                    }
                 }
-
             },
         },
 
