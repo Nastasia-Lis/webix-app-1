@@ -27,12 +27,19 @@
 		url(../fonts/NotoSans-SemiBold.ttf); 
 }
 
-.webix_view {
+.webix_view,
+.webix_confirm  {
     font-family: 'NotoSans', sans-serif!important;
-    font-weight: 400;
-    font-size: 17px;
+    font-weight: 400!important;
+    font-size: 14px!important;
 }
 
+
+
+h1, h2, h3, h4, h5, h6{
+    font-family: 'NotoSans', sans-serif!important;
+    color:var(--dark)!important;
+}
 
 input:focus,
 .webix_inp_static:focus{
@@ -42,9 +49,14 @@ input:focus,
 input,
 .webix_inp_static {
     border-radius: 4px!important;
+    font-family: 'NotoSans', sans-serif!important;
+    font-weight: 400!important;
 }
 
-
+label, button{
+    font-family: 'NotoSans', sans-serif!important;
+    font-weight: 500!important;
+}
  
 .webix{
     &_view{
@@ -67,11 +79,53 @@ input,
         background-color: var(--bg)!important;
     }
 
-    //--------------table
-    &_table-style .webix_hcell, &_style-template-count{
-        background:var(--bg)!important;;
-    }
+
+    //--------------dashboard
  
+    &_accordion-container > .webix_accordionitem.collapsed .webix_accordionitem_header{
+        color:var(--dark)!important;
+        background-color: var(--bg)!important;
+    }
+    &_accordion-container > .webix_accordionitem .webix_accordionitem_header{
+        font-family: 'NotoSans', sans-serif!important;
+        font-weight: 400!important;
+        font-size: 15px!important;
+        background-color: var(--gray-light)!important;
+    }
+
+    &_accordion-container > .webix_accordionitem.collapsed .webix_accordionitem_header .webix_accordionitem_button{
+        color:var(--dark)!important;
+    }
+    &_accordion-container > .webix_accordionitem .webix_accordionitem_header .webix_accordionitem_button{
+        color:var(--primary)!important;
+    }
+    
+    
+    &_timeline_node{
+        stroke: var(--primary)!important;
+    }
+
+
+    //--------------dashboard
+
+   
+    //--------------forms tree item
+    &_form-template > .webix_template{
+        padding: 0px!important;
+    }
+    //--------------forms tree item
+
+    //--------------table
+
+    &_hcolumn, &_pager_item_selected{
+        font-family: 'NotoSans', sans-serif!important;
+        font-weight: 500!important;
+        font-size: 14px!important;
+    }
+    &_table-style .webix_hcell, &_style-template-count{
+        background:var(--bg)!important;
+    }
+
 
     &_dtable .webix_ss_header .webix_hcolumn div.webix_last_row,
     &_dtable div.webix_ss_vscroll_header,
@@ -98,7 +152,8 @@ input,
 
     //--------------notify
     &_success{
-        border-radius: 10px!important;
+        border-radius: 4px!important;
+        font-weight: 500!important;
     }
     &_success div{
         background-color: var( --success);
@@ -106,14 +161,16 @@ input,
 
 
     &_error{
-        border-radius: 10px!important;
+        border-radius: 4px!important;
+        font-weight: 500!important;
     }
     &_error div{
         background-color: var( --error);
     }
 
     &_debug{
-        border-radius: 10px!important;
+        border-radius: 4px!important;
+        font-weight: 500!important;
     }
     &_debug div{
         background-color: var(--notify);
@@ -255,6 +312,10 @@ input,
 }
 .webix_el_radio .webix_radio_1 .webix_custom_radio:active{
     color: var(--primary-dark)!important;
+}
+
+.webix_radio_option label{
+    font-weight: 400!important;
 }
 
 //--------------radio

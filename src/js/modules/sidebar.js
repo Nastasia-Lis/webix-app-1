@@ -15,13 +15,14 @@ function treeSidebar () {
     let tree = {
         view:"edittree",
         id:"tree",
-        minWidth:200,
+        minWidth:100,
         width: 300,
         minHeight:150,
         editable:false,
         select:"true",
         editor:"text",
         editValue:"value",
+       
         activeTitle:true,
         //select: true,
         clipboard: true,
@@ -49,7 +50,7 @@ function treeSidebar () {
                     $$("webix__none-content").hide();
                 }
             
-                console.log($$("tree").getSelectedItem());
+                //console.log($$("tree").getSelectedItem());
 
                 itemTreeId = ids[0];
                 let treeItemId = $$("tree").getSelectedItem().id;
@@ -72,7 +73,6 @@ function treeSidebar () {
                     $$("formEdit").hide();
                     $$("tableView").hide();
                     $$("formView").hide();
-   
                     $$("dashboardView").show();
                 }
 
@@ -81,7 +81,6 @@ function treeSidebar () {
                     $$("formEdit").hide();
                     $$("formView").hide();
                     $$("dashboardView").hide();
-
                     $$("tableView").show();
                 }
 
@@ -90,7 +89,6 @@ function treeSidebar () {
                     $$("tableView").hide();
                     $$("formView").hide();
                     $$("dashboardView").hide();
-
                     $$("formEdit").show();
                 }
 
@@ -99,7 +97,6 @@ function treeSidebar () {
                     $$("formEdit").hide();
                     $$("tableView").hide();
                     $$("dashboardView").hide();
-
                     $$("formView").show();
                 }
 
@@ -111,7 +108,7 @@ function treeSidebar () {
                     $$(searchId).setValue("");
                     $$(addBtnId).enable();
 
-                    if(Object.keys($$(editFormId).elements).length!==0  ){
+                    if(Object.keys($$(editFormId).elements).length!==0){
                         $$("inputsTable").hide();
                     }
 
@@ -121,12 +118,31 @@ function treeSidebar () {
                         });
                     } else {
                         webix.ajax().get("/init/default/api/fields.json").then(function (data) {
-                            
+                            let fullFields = data.json().content;
                             data = data.json().content[ids[0]]; //полный item
                             let dataFields = data.fields; //[id:{info},..]
                             let obj = Object.keys(data.fields) //[id,id,..]
                             let columnsData = []; // [{cols data}]
+                            //console.log(fullFields, "wet4")
+                            let searchCol;
+
                             obj.forEach(function(data,i) {
+                                // searchCol =dataFields[data].type;
+
+                                // if (searchCol.includes("reference") ){
+                                //     searchCol.slice(10);
+                                //     console.log(searchCol.slice(10))
+                                //     console.log(fullFields["hosts"]); // получили колонки референса
+                                //     //console.log(dataFields[data])
+
+                                //     console.log(dataFields[data], "eeee")
+                                // }
+                                
+
+                                if (dataFields[data].type == "datetime"){
+                                    dataFields[data].format = webix.i18n.fullDateFormatStr;
+                                }
+                
                                 dataFields[data].id = data;
                                 dataFields[data].fillspace = true;
                                 dataFields[data].header= dataFields[data]["label"];
@@ -134,16 +150,20 @@ function treeSidebar () {
                                     dataFields[data].hidden = true;
                                 }
                                 columnsData.push(dataFields[data]);
-                                // if (columnsData[i].id == "cdt"){
-                                //     console.log(dataFields[data]);
-                                // }
+                                if (columnsData[i].id == "cdt"){
+                                    
+                                   // columnsData[i].format=webix.i18n.dateFormatStr;
+                                    //console.log(columnsData[i]);
+                                }
                             });
-                            $$(tableId).refreshColumns(columnsData);
                             console.log(columnsData)
+                            $$(tableId).refreshColumns(columnsData);
+                            //console.log(columnsData)
                         });
 
                         webix.ajax().get("/init/default/api/"+itemTreeId).then(function (data){
                             data = data.json().content;
+                            console.log(data)
                             if (data.length !== 0){
                                 $$(tableId).hideOverlay("Ничего не найдено");
                                 $$(tableId).parse(data);
@@ -218,6 +238,7 @@ function treeSidebar () {
                 }
             },
         },
+        
 
     };
 

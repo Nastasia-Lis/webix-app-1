@@ -131,6 +131,7 @@ let onFuncTable = {
             $$(saveNewBtnId).hide();
             $$(saveBtnId).show();
             $$(addBtnId).hide(); 
+            $$(editFormId).clearValidation();
         }
         if($$(editFormId).isDirty()){
             popupExec("Данные не сохранены").then(

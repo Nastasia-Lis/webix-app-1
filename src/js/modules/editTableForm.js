@@ -132,16 +132,101 @@ function clearForm(){
 function createEditFields () {
 
     let columnsData = $$(tableId).getColumns();
+    //if (columnsData.type)
+    let idSelect;
     if(Object.keys($$(editFormId).elements).length==0  ){
         let inputsArray = [];
-        columnsData.forEach((el) => {
-            inputsArray.push(
-                {
-                view:"text", 
-                name:el.id, 
-                label:el.label, 
-                }
-            );
+        columnsData.forEach((el,i) => {
+            console.log(inputsArray)
+            if (el.type == "datetime"){
+                inputsArray.push({   
+                    view: "datepicker",
+                    format: webix.Date.strToDate("%d.%m.%Y"),
+                    name:el.id, 
+                    label:el.label, 
+                    placeholder:"дд.мм.гг", 
+                    timepicker: true,
+                    labelPosition:"top"
+                });
+            } 
+            
+            
+            
+            else if (el.type.includes("reference")) {
+                //idSelect= i+1;
+                let findTableId = el.type.slice(10);
+                
+                // webix.ajax().get("/init/default/api/"+findTableId).then(function (data){
+                //     data = data.json().content;
+                //     let dataArray=[];
+                //     data.forEach((elem,i) =>{
+                //         //console.log(elem.name);
+                //         dataArray.push({ "id":elem.id, "value":elem.name});
+                //     });
+                //     //console.log(data, "таблица"+findTableId );
+                //     //console.log(dataArray);
+                
+                //     inputsArray.push({ 
+                //         view:"select",
+                //         name:el.id, 
+                //         label:el.label, 
+                //         options:[ { value:"Master", id:1 },
+                //         { value:"Release", id:2 }],
+                //         labelPosition:"top"
+                //     });
+                  
+                // });
+          
+                
+                inputsArray.push({ 
+                    view:"select",
+                    name:el.id, 
+                    label:el.label, 
+                    options:
+                     webix.ajax().get("/init/default/api/"+findTableId).then(function (data){
+                            data = data.json().content;
+                            let dataArray=[];
+                            data.forEach((el,i) =>{
+                                console.log(el.name);
+                                dataArray.push({ "id":el.id, "value":el.name});
+                            });
+                            //console.log(data, "таблица"+findTableId );
+                            console.log(dataArray);
+                            console.log(inputsArray[i]);
+                            return dataArray;
+                        }),
+                    labelPosition:"top"
+                });
+
+                console.log(inputsArray);
+
+                // inputsArray.push({ 
+                //     view:"select",
+                //     name:el.id, 
+                //     label:el.label, 
+                //     options:[  
+                //         { "id":1, "value":"Master" },
+                //         { "id":2, "value":"Release" }],
+                //     labelPosition:"top"
+                // });
+            } else{
+                inputsArray.push(
+                    {
+                    view:"text", 
+                    name:el.id, 
+                    label:el.label, 
+                    labelPosition:"top"
+                    }
+                );
+            }
+            //console.log(el.type == "datetime");
+            // inputsArray.push(
+            //     {
+            //     view:"text", 
+            //     name:el.id, 
+            //     label:el.label, 
+            //     }
+            // );
         });
         let inpObj = {margin:8,id:"inputsTable", rows:inputsArray};
         $$(cleanBtnId).enable(); 
@@ -233,6 +318,7 @@ let editTableBar = {
                         id:cleanBtnId,
                         height:48, 
                         disabled:true,
+                        hotkey: "esc",
                         value:"Очистить форму", click:clearForm},
                         
                     {   view:"button", 
@@ -240,6 +326,7 @@ let editTableBar = {
                         disabled:true,
                         height:48,
                         width:100,
+                        hotkey: "shift+esc",
                         css:"webix_danger", 
                         type:"icon", 
                         icon:"wxi-trash", 
@@ -263,7 +350,8 @@ let editTableBar = {
             value:"Сохранить", 
             height:48, 
             css:"webix_primary", 
-            click:saveItem
+            click:saveItem,
+            hotkey: "enter" 
         },
         { 
             view:"button", 
@@ -271,6 +359,7 @@ let editTableBar = {
             value:"Добавить новую запись", 
             height:48,
             disabled:true,
+            hotkey: "shift",
             css:"webix_primary", 
             click:addItem
         },
@@ -280,6 +369,7 @@ let editTableBar = {
             value:"Сохранить новую запись",
             hidden:true,  
             height:48,
+            hotkey: "enter" ,
             css:"webix_primary", 
             click:saveNewItem
         },

@@ -9,24 +9,20 @@ let jsonDashboard = {
         },
         "property": {
             "data": [
-                { "label":"Информация", "type":"label" },
-                { "label":"Инф 1", "type":"text", "id":"width", "value": 250},
-                { "label":"Инф 2", "type":"text", "id":"height", "value": 11},
-                { "label":"Инф 3", "type":"password", "id":"pass", "value": 64636}
+                { "label":"Информация о партнёре",css:"webix_property-dashboard", "type":"label" },
+                { "label":"Фамилия", "type":"text", "id":"name", "value": "Иванов"},
+                { "label":"Имя", "type":"text", "id":"surname", "value": "Иван"},
+                { "label":"Отчество", "type":"text", "id":"patronymic", "value": "Иванович"}
             ],
         },
         "timeline":{
             "data":[
-                { id:1, value:"Available", date:"2017-08-01"},
-                { id:2, value:"Taken", details:"by Malcolm Merlyn", date:"2017-09-10" },
-                { id:3, value:"Broken", date:"2017-12-11" },
-                { id:5, value:"Fixed", date:"2018-02-10" },
-                { id:6, value:"Available", date:"2018-03-15" },
-                { id:7, value:"Taken", details:"by Rosa White", date:"2018-03-21"},
-                { id:8, value:"Broken", date:"2019-05-16" },
-                { id:9, value:"Fixed", date:"2019-06-02" },
-                { id:10, value:"Available", date:"2019-09-10"},
-                { id:11, value:"Deprecated", date:"2019-09-23" }
+                { id:1, value:"Действие №1", date:"2017-08-01"},
+                { id:2, value:"Действие №2", details:"Пояснение", date:"2017-09-10" },
+                { id:3, value:"Действие №3", date:"2017-12-11" },
+                { id:5, value:"Действие №4", details:"Пояснение", date:"2018-02-10" },
+                { id:6, value:"Действие №5", date:"2018-03-15" },
+                { id:7, value:"Действие №6", date:"2018-03-21"},
               ]
         },
         "diagramBar": {
@@ -62,22 +58,22 @@ let jsonDashboard = {
 
 function dashboardLayout () {
     
-    webix.i18n.setLocale("ru-RU");   
+    
     const form = {
         view:"form", 
         container:"webix__form-container", 
         minHeight:350,
         width:400,
         margin:15,
-        scroll:false,
+        scroll:true,
         elements:[
-           {},
-            {template:"<div style='color:#313131; font-weight:500;font-size:20px'>Личные данные</div>", css:"webix_dashboard-h2",borderless:true},
+           
+            //{template:"<div style='color:#313131; font-weight:500;font-size:18px'>Личные данные</div>", css:"webix_dashboard-h2",borderless:true},
             {   view:"text",
                 placeholder:"Введите фамилию",  
                 label:"Фамилия",
                 text:"Иванов",
-                width: 300,
+                //width: 300,
                 height:70,
                 labelPosition:"top"    
             },
@@ -85,23 +81,23 @@ function dashboardLayout () {
                 placeholder:"Введите имя",  
                 label:"Имя",
                 text:"Иван",
-                width: 300,
+                //width: 300,
                 height:70,
                 labelPosition:"top"    
             },
-            // {   view:"text",
-            //     placeholder:"Введите отчество",  
-            //     label:"Отчество",
-            //     text:"Иванович",
-            //     width: 300,
-            //     height:70,
-            //     labelPosition:"top"    
-            // },
+            {   view:"text",
+                placeholder:"Введите отчество",  
+                label:"Отчество",
+                text:"Иванович",
+                //width: 300,
+                height:70,
+                labelPosition:"top"    
+            },
             {   view: "datepicker",
-                label: "Выберите дату",
+                label: "Дата",
                 value:"23.03.2021",
                 placeholder:"дд.мм.гг", 
-                width: 300,
+                //width: 300,
                 height:70,
                 labelWidth: 90,
                 timepicker: true,
@@ -125,30 +121,52 @@ function dashboardLayout () {
                 css:"webix_primary", 
                 disabled:true,
                 height:48,
-                width:300,
+                //width:300,
             },
             {}
 
         ],
     };
 
-    const diagramBar = {
+    const timeline = {
+        view:"timeline",
+        data:jsonDashboard.peopleOne.timeline.data
+    };
 
+    const property = {
+        css:"webix_accordion-container",
+        view:"accordion",
+        //multi:true,
+        minHeight:100,
+        type:"line",
+        collapsed:true,
+        rows:[ //or rows 
+            { header:"Личная Информация", body:form }, 
+            { header:"Данные №1", body:timeline },
+            { header:"Данные №2", body:"content 3" },
+            { header:"Данные №3", body:"content 4" },
+            { header:"Данные №4", body:"content 5" }
+        ]
+    };
+
+  
+
+    const diagramBar = {
         view:"chart",
         type:"bar",
         value:"#sales#",
-        barWidth:30,
-        radius:0,
+        radius:3,
+        minHeight:170,
         height:250,
         tooltip:{
             template:"#sales#"
         },
         xAxis:{
             template:"'#year#",
-            title:"Year"
+            title:"Год"
         },
         yAxis:{
-            title:"Profit"
+            title:"Свойство"
         },
         data: jsonDashboard.peopleOne.diagramBar.data
 
@@ -156,8 +174,8 @@ function dashboardLayout () {
     
     const diagramArea = {
         view:"chart",
- 
-        minHeight:250,
+        minHeight:170,
+        height:250,
         type:"area",
         xAxis:{
             template:"'#year#"
@@ -168,14 +186,15 @@ function dashboardLayout () {
             end:100
         },
         legend:{
-            values:[{text:"Type A",color:"#58dccd"},{text:"Type B",color:"#914ad8"},{text:"Type C",color:"#36abee"}],
+            values:[{text:"Пар. №1",color:"#58dccd"},{text:"Пар. №2",color:"#914ad8"},{text:"Пар. №3",color:"#36abee"}],
             valign:"middle",
             align:"right",
-            width:90,
+            width:80,
             layout:"y"
         },
         eventRadius: 5,
         series:[
+        
             {
             alpha:0.7,
             value:"#sales#",
@@ -207,18 +226,17 @@ function dashboardLayout () {
 
     return [
         { type:"clean",rows:[
-            { type:"clean",cols:[{width:30},form, ]},
-          
-            //form ,
-     
-            // { view:"resizer", class:"webix_resizers",},
-            // property
+            property,
+            
         ]},
           
         { view:"resizer", class:"webix_resizers",},
-        
+        //{width:30,borderless:true}, 
+       
+         
         {rows:[
             diagramBar,
+            //{width:3},
             { view:"resizer", class:"webix_resizers",},
             diagramArea
         ]},

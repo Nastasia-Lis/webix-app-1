@@ -21,14 +21,16 @@ let jsonFormView = {
 let elementsFormView = [
     {margin:15,
         rows:[
-            { template:"<h3>Информация №1</h3>", borderless:true},
+            { template:"<h3>Информация №1</h3>", css:"webix_form-template",borderless:true},
             {   view:"text",
                 disabled:true,
+                text:"Информация 1",
                 placeholder:"Введите ...",  
                 label:"Название"    
             },
             {   view:"text",
                 disabled:true,
+                text:"Информация 2",
                 placeholder:"Введите ...",  
                 label:"Название"    
             },
@@ -36,7 +38,7 @@ let elementsFormView = [
         ]},
         {margin:15,
             rows:[
-                { template:"<h3>Информация №2</h3>", borderless:true},
+                { template:"<h3>Информация №2</h3>",css:"webix_form-template", borderless:true},
                 {   view:"text",
                     disabled:true,
                     text:"Информация 1",
@@ -75,7 +77,7 @@ let jsonFormEdit = {
 let elementsFormEdit = [
     {margin:15,
         rows:[
-            { template:"<h3>Информация №1</h3>", borderless:true},
+            { template:"<h3>Информация №1</h3>", css:"webix_form-template",borderless:true},
             {   view:"text",
                 placeholder:"Введите ...",  
                 label:"Название"    
@@ -83,12 +85,19 @@ let elementsFormEdit = [
             {   view:"text",
                 placeholder:"Введите ...",  
                 label:"Название"    
+            },
+            { 
+                view:"button", 
+                value:"Сохранить", 
+                height:48, 
+                css:"webix_primary", 
+                hotkey: "enter" 
             },
             {}
         ]},
         {margin:15,
             rows:[
-                { template:"<h3>Информация №2</h3>", borderless:true},
+                { template:"<h3>Информация №2</h3>",css:"webix_form-template", borderless:true},
                 {   view:"text",
                     text:"Информация 1",
                     placeholder:"Введите ...",  
@@ -99,10 +108,13 @@ let elementsFormEdit = [
                     placeholder:"Введите ...",  
                     label:"Название"    
                 },
-                {   view:"text",
-                    text:"Информация 3",
-                    placeholder:"Введите ...",  
-                    label:"Название"    
+                { 
+                    view:"button", 
+                    value:"Сохранить", 
+                    height:48, 
+                    css:"webix_primary", 
+                    hotkey: "enter" ,
+                    disabled:true,
                 },
                 {}
         ]},

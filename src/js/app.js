@@ -6,7 +6,6 @@ import {
     findElementsIdView, formIdView
 } from './modules/setId.js';
 
-
 import * as header from "./modules/header.js";
 import * as treeSidebar from "./modules/sidebar.js";
 
@@ -72,7 +71,7 @@ webix.ready(function(){
                                                 editTableBar,
                                         ]},
 
-                                        {id:"dashboardView", hidden:true,  
+                                        {id:"dashboardView", hidden:true, scroll:true,
                                             cols: dashboardLayout()
                                         } ,
 
@@ -85,15 +84,11 @@ webix.ready(function(){
                                         {id:"formEdit",hidden:true, 
                                             cols:[
                                                 form(formId, elementsFormEdit),
-                                                {view:"resizer",class:"webix_resizers",},
-                                                form(formId, elementsFormEdit),
                                             ]
                                         },
                                         {id:"formView",hidden:true, 
                                             cols:[
                                                 form(formIdView, elementsFormView),
-                                                {view:"resizer",class:"webix_resizers",},
-                                                form(formIdView, elementsFormView)
                                             ]
                                         },
                                     ]},
@@ -109,5 +104,9 @@ webix.ready(function(){
    
     //Backbone.history.start();
   
+    //webix.UIMananger.tabControl = true;
 
+    webix.i18n.setLocale("ru-RU");   
+   webix.i18n.parseFormat = "%d.%m.%Y %H:%i:%s";
+    webix.i18n.setLocale();
 });
