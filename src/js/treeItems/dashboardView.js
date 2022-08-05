@@ -74,7 +74,7 @@ function dashboardLayout () {
                 label:"Фамилия",
                 text:"Иванов",
                 //width: 300,
-                height:70,
+                height:65,
                 labelPosition:"top"    
             },
             {   view:"text",
@@ -82,7 +82,7 @@ function dashboardLayout () {
                 label:"Имя",
                 text:"Иван",
                 //width: 300,
-                height:70,
+                height:65,
                 labelPosition:"top"    
             },
             {   view:"text",
@@ -90,7 +90,7 @@ function dashboardLayout () {
                 label:"Отчество",
                 text:"Иванович",
                 //width: 300,
-                height:70,
+                height:65,
                 labelPosition:"top"    
             },
             {   view: "datepicker",
@@ -98,7 +98,7 @@ function dashboardLayout () {
                 value:"23.03.2021",
                 placeholder:"дд.мм.гг", 
                 //width: 300,
-                height:70,
+                height:65,
                 labelWidth: 90,
                 timepicker: true,
                 format: "%d.%m.%Y",

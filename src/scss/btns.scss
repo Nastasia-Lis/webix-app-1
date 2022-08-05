@@ -1,7 +1,8 @@
 .webix{
 
-    &_button, .webixbutton{
+    &_button, .webix_button{
         font-weight: 400!important;
+        //max-height: 45px!important;
     }
 
     &_tree_item{

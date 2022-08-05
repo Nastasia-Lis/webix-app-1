@@ -5,12 +5,143 @@ import {tableId,editFormId,addBtnId,findElementsId, searchId,
 import {notify, checkFormSaved,clearItem} from "./editTableForm.js";
 
 import  {jsonDashboard } from "../treeItems/dashboardView.js";
-import  {jsonFormView, jsonFormEdit } from "../treeItems/formTemplate.js";
-import  {jsonTableView} from "../treeItems/tableTemplate.js";
+// import  {jsonFormView, jsonFormEdit } from "../treeItems/formTemplate.js";
+// import  {jsonTableView} from "../treeItems/tableTemplate.js";
 
 
 let itemTreeId = "";
 let prevCountRows ;
+
+function getInfoTable (idCurrTable, idSearch, idsParam) {
+    itemTreeId = idsParam;
+    let titem = $$("tree").getItem(idsParam); //id,value tree item
+   
+    $$(idCurrTable).clearAll();
+    $$(idSearch).setValue("");
+
+
+    if (titem == undefined) {
+        webix.ajax().get("/init/default/api/fields.json").then(function (data) {
+            notify ("error","Данные не найдены");
+        });
+    } else {
+        let inpObj;
+        if (idCurrTable == tableIdView){
+            ($$("tableToolbarItem").removeView( "customInputs" ));
+        }
+
+        webix.ajax().get("/init/default/api/fields.json").then(function (data) {
+
+            data = data.json().content[idsParam];
+            let dataFields = data.fields;
+            let obj = Object.keys(data.fields);
+            let columnsData = [];
+
+            obj.forEach(function(data,i) {
+                if (dataFields[data].type == "datetime"){
+                    dataFields[data].format = webix.i18n.fullDateFormatStr;
+                }
+                dataFields[data].id = data;
+                dataFields[data].fillspace = true;
+                dataFields[data].header= dataFields[data]["label"];
+                if(dataFields[data].id == "id"){
+                    dataFields[data].hidden = true;
+                }
+                columnsData.push(dataFields[data]);
+            });
+            $$(idCurrTable).refreshColumns(columnsData);
+            //($$("tableToolbarItem").removeView( inpObj, 1));
+
+            let objInuts = Object.keys(data.inputs)
+            
+            let customInputs = [];
+
+            let dataInputsArray = data.inputs; //дата с сервера, объекты с инпутами
+            
+
+            objInuts.forEach((el,i) => {
+                customInputs.push({width:20});
+                if (dataInputsArray[el].type == "string"){
+                    customInputs.push(
+                    {   view:"text", 
+                        width:300,
+                        height:60,
+                        label:dataInputsArray[el].label, 
+                        labelPosition:"top",
+                    }
+                    );
+                } else if (dataInputsArray[el].type == "apiselect") {
+                    customInputs.push(
+                    { view:"combo",placeholder:"Введите текст",  label:dataInputsArray[el].label,labelPosition:"top", options:{
+                        body:{
+                          template: "#value#",
+                          dataFeed:{
+                            $proxy: true, 
+                            load: function(view, params){
+                              return ( webix.ajax().get("/init/default/api/"+dataInputsArray[el].apiname).then(function (data) {
+                                        let dataSrc = data.json().content;
+                                        let dataOptions=[];
+                                        dataSrc.forEach(function(data, i) {
+                                            dataOptions.push( 
+                                                {id:i+1, value:data},
+                                            );
+                                        });
+                                        return dataOptions;
+                                    })
+                                );
+                            }
+                          }	
+                        }
+                      }}
+                    );
+                } else if (dataInputsArray[el].type == "submit") {
+                    customInputs.push(
+                        {rows:[
+                            {},
+                            {   view:"button", 
+                                css:"webix_primary", 
+                                //id:cleanBtnId,
+                                height:48, 
+                                value:dataInputsArray[el].label,
+                                //click:clearForm
+                            }, 
+                        ]}
+                        
+                    );
+                   
+                }
+                customInputs.push({width:20});
+
+            });
+
+            inpObj = { id:"customInputs", rows:[{height:15},
+                    {   view:"form", 
+                        id:"tableToolbarForm",
+                        //elements:[{cols:customInputs}]
+                        elements: [{cols:customInputs}]
+                    },
+                    {height:15}]
+            };
+            ($$("tableToolbarItem").addView( inpObj));
+        });
+
+        webix.ajax().get("/init/default/api/"+itemTreeId).then(function (data){
+            data = data.json().content;
+            if (data.length !== 0){
+                $$(idCurrTable).hideOverlay("Ничего не найдено");
+                $$(idCurrTable).parse(data);
+            } else {
+                $$(idCurrTable).showOverlay("Ничего не найдено");
+            }
+
+            prevCountRows = $$(idCurrTable).count();
+            $$(findElementsId).setValues(prevCountRows.toString());
+        });
+    }
+    
+}
+
+
 function treeSidebar () {
     let tree = {
         view:"edittree",
@@ -19,27 +150,44 @@ function treeSidebar () {
         width: 300,
         minHeight:150,
         editable:false,
-        select:"true",
+        select:true,
         editor:"text",
         editValue:"value",
-       
         activeTitle:true,
-        //select: true,
         clipboard: true,
         data: webix.ajax().get("/init/default/api/fields.json").then(function (data) {
             let srcTree = data.json().content;
             let obj = Object.keys(srcTree);
+            let actionsCheck;
             let dataTree = [];
-            let dataTreeTable = [];
+            console.log(srcTree, "fields")
+            let dataTable = [];
+            let dataForm = [];
+            
+            console.log(srcTree["monitor"], "123");
+        
             obj.forEach(function(data) {
-                dataTreeTable.push({"id":data, "value":srcTree[data].plural}); 
+                //console.log(Object.values(srcTree[data].actions), "1111")
+                if (srcTree[data].actions){
+                    actionsCheck = Object.keys(srcTree[data].actions)[0]; 
+                } 
+                if (srcTree[data].type == "dbtable"){
+                    dataTable.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type}); 
+                } else if (srcTree[data].type == "tform"){
+                    dataForm.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type}); 
+
+                    //console.log(srcTree[data], "u");
+                }      
             });
+           
+
             dataTree.push( 
                             {id:"dashboardViewFolder",  value:"Партнёры", data:jsonDashboard.treeHeadlines},
-                            {id:"tableEditFolder", value:"Таблицы", data:dataTreeTable},
-                            {id:"tableViewFolder", value:"Таблицы (просмотр)", data:jsonTableView.treeHeadlines},
-                            {id:"formEditFolder", value:"Формы", data:jsonFormEdit.treeHeadlines},
-                            {id:"formViewFolder", value:"Формы (просмотр)", data:jsonFormView.treeHeadlines});
+                            {id:"tableEditFolder", value:"Таблицы", data:dataTable},
+                            {id:"tableViewFolder", value:"Информация", data:dataForm},
+                            //{id:"formEditFolder", value:"Формы", data:jsonFormEdit.treeHeadlines},
+                            //{id:"formViewFolder", value:"Формы (просмотр)", data:jsonFormView.treeHeadlines}
+                            );
             return dataTree;
         }), 
          
@@ -55,162 +203,49 @@ function treeSidebar () {
                 itemTreeId = ids[0];
                 let treeItemId = $$("tree").getSelectedItem().id;
                 let getItemParent = $$("tree").getParentId(treeItemId);
-                var tree = $$("tree");
-                var titem = tree.getItem(ids[0]); //id,value tree item
+                //var tree = $$("tree");
+                //var titem = tree.getItem(ids[0]); //id,value tree item
                
                 
                 
                 if(ids[0]=="tableEditFolder" || getItemParent=="tableEditFolder" ){
                     $$("dashboardView").hide();
                     $$("tableView").hide();
-                    $$("formEdit").hide();
-                    $$("formView").hide();
                     $$("tableEdit").show();
                 }
                 if(ids[0]=="dashboardViewFolder" || getItemParent=="dashboardViewFolder"){
                    
                     $$("tableEdit").hide();
-                    $$("formEdit").hide();
                     $$("tableView").hide();
-                    $$("formView").hide();
                     $$("dashboardView").show();
                 }
 
                 if(ids[0]=="tableViewFolder" || getItemParent=="tableViewFolder"){
                     $$("tableEdit").hide();
-                    $$("formEdit").hide();
-                    $$("formView").hide();
                     $$("dashboardView").hide();
                     $$("tableView").show();
                 }
 
-                if(ids[0]=="formEditFolder" || getItemParent=="formEditFolder"){
-                    $$("tableEdit").hide();
-                    $$("tableView").hide();
-                    $$("formView").hide();
-                    $$("dashboardView").hide();
-                    $$("formEdit").show();
-                }
-
-                if(ids[0]=="formViewFolder" || getItemParent=="formViewFolder"){
-                    $$("tableEdit").hide();
-                    $$("formEdit").hide();
-                    $$("tableView").hide();
-                    $$("dashboardView").hide();
-                    $$("formView").show();
-                }
-
-
-              
 
                 if(getItemParent=="tableEditFolder"){
-                    $$(tableId).clearAll();
-                    $$(searchId).setValue("");
+                   
                     $$(addBtnId).enable();
-
+                
                     if(Object.keys($$(editFormId).elements).length!==0){
                         $$("inputsTable").hide();
                     }
 
-                    if (titem == undefined) {
-                        webix.ajax().get("/init/default/api/fields.json").then(function (data) {
-                            notify ("error","Данные не найдены");
-                        });
-                    } else {
-                        webix.ajax().get("/init/default/api/fields.json").then(function (data) {
-                            let fullFields = data.json().content;
-                            data = data.json().content[ids[0]]; //полный item
-                            let dataFields = data.fields; //[id:{info},..]
-                            let obj = Object.keys(data.fields) //[id,id,..]
-                            let columnsData = []; // [{cols data}]
-                            //console.log(fullFields, "wet4")
-                            let searchCol;
-
-                            obj.forEach(function(data,i) {
-                                // searchCol =dataFields[data].type;
-
-                                // if (searchCol.includes("reference") ){
-                                //     searchCol.slice(10);
-                                //     console.log(searchCol.slice(10))
-                                //     console.log(fullFields["hosts"]); // получили колонки референса
-                                //     //console.log(dataFields[data])
-
-                                //     console.log(dataFields[data], "eeee")
-                                // }
-                                
-
-                                if (dataFields[data].type == "datetime"){
-                                    dataFields[data].format = webix.i18n.fullDateFormatStr;
-                                }
-                
-                                dataFields[data].id = data;
-                                dataFields[data].fillspace = true;
-                                dataFields[data].header= dataFields[data]["label"];
-                                if(dataFields[data].id == "id"){
-                                    dataFields[data].hidden = true;
-                                }
-                                columnsData.push(dataFields[data]);
-                                if (columnsData[i].id == "cdt"){
-                                    
-                                   // columnsData[i].format=webix.i18n.dateFormatStr;
-                                    //console.log(columnsData[i]);
-                                }
-                            });
-                            console.log(columnsData)
-                            $$(tableId).refreshColumns(columnsData);
-                            //console.log(columnsData)
-                        });
-
-                        webix.ajax().get("/init/default/api/"+itemTreeId).then(function (data){
-                            data = data.json().content;
-                            console.log(data)
-                            if (data.length !== 0){
-                                $$(tableId).hideOverlay("Ничего не найдено");
-                                $$(tableId).parse(data);
-                            } else {
-                                $$(tableId).showOverlay("Ничего не найдено");
-                            }
-                            prevCountRows = $$(tableId).count();
-                            $$(findElementsId).setValues(prevCountRows.toString());
-                        });
-                    }
-                    
-                    
+                    getInfoTable (tableId, searchId, ids[0]);
 
                 } else if(getItemParent=="dashboardViewFolder") {
                    
- 
-
 
 
                 } else if(ids[0]=="tableViewFolder" || getItemParent=="tableViewFolder") {
-                    $$(tableIdView).clearAll();
-                    $$(searchIdView).setValue("");
+                    getInfoTable (tableIdView, searchIdView, ids[0]);
 
-                    
-                    $$(tableIdView).refreshColumns([
-                        { id:"rank", fillspace:true,    header:"",              width:50},
-                        { id:"title", fillspace:true,   header:"Film title",    width:200},
-                        { id:"year",  fillspace:true,   header:"Released",      width:80},
-                        { id:"votes", fillspace:true,   header:"Votes",         width:100}
-                    ]);
-                    $$(tableIdView).parse([
-                        { id:1, title:"The Shawshank Redemption", year:1994, votes:678790, rank:1},
-                        { id:2, title:"The Godfather", year:1972, votes:511495, rank:2},
-                        { id:3, title:"The Shawshank Redemption", year:1994, votes:678790, rank:1},
-                        { id:4, title:"The Godfather", year:1972, votes:511495, rank:2},
-                        { id:5, title:"The Shawshank Redemption", year:1994, votes:678790, rank:1},
-                        { id:6, title:"The Godfather", year:1972, votes:511495, rank:2},
-                        { id:7, title:"The Shawshank Redemption", year:1994, votes:678790, rank:1},
-                        { id:8, title:"The Godfather", year:1972, votes:511495, rank:2},
-                        { id:9, title:"The Shawshank Redemption", year:1994, votes:678790, rank:1},
-                        { id:10, title:"The Godfather", year:1972, votes:511495, rank:2},
-                        { id:11, title:"The Shawshank Redemption", year:1994, votes:678790, rank:1},
-                        { id:12, title:"The Godfather", year:1972, votes:511495, rank:2}
-                    ]);
-
-                    let countRows = $$(tableIdView).count();
-                    $$(findElementsIdView).setValues(countRows.toString());
+                    // let countRows = $$(tableIdView).count();
+                    // $$(findElementsIdView).setValues(countRows.toString());
 
                 }else if(getItemParent=="formEditFolder") {
                    

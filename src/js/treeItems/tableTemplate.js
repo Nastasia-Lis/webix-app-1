@@ -13,7 +13,7 @@ function tableToolbar (idPager, idSearch, idExport, idFindElements, idTable) {
         notify ("success","Таблица сохранена");
     }
     return { 
-        rows:[
+       id:"tableToolbarItem", rows:[
             {padding:17, margin:5, 
                 cols: [
                 {   view:"search", 
@@ -78,6 +78,8 @@ function tableToolbar (idPager, idSearch, idExport, idFindElements, idTable) {
                         }
                     } 
                 },
+
+
                 ],
             },
             {   view:"template",

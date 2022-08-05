@@ -21,7 +21,7 @@
   --add-dark: rgb(108, 192, 140);
 }
 
-.webix_button, .webix .webixbutton {
+.webix_button, .webix .webix_button {
   font-weight: 400 !important;
 }
 .webix_tree_item {
@@ -182,11 +182,12 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 input:focus,
-.webix_inp_static:focus {
+.webix_inp_static:focus,
+select:focus {
   border: 1px solid var(--primary) !important;
 }
 
-input,
+input, select,
 .webix_inp_static {
   border-radius: 4px !important;
   font-family: "NotoSans", sans-serif !important;
@@ -370,6 +371,9 @@ label, button {
 }
 .webix_win_body > .webix_view {
   border-radius: 4px;
+}
+.webix_list_item.webix_selected {
+  box-shadow: inset 2px 0 var(--primary) !important;
 }
 
 .webix_cal_body .webix_cal_select .webix_cal_day_inner:hover,

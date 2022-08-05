@@ -49,6 +49,7 @@ function addItem () {
 
 
 function saveNewItem (){
+   
     if($$( editFormId ).validate() ) {
         if($$(editFormId).isDirty()){
             let newValues = $$(editFormId).getValues();
@@ -152,54 +153,46 @@ function createEditFields () {
             
             
             
-            else if (el.type.includes("reference")) {
-                //idSelect= i+1;
+           else if (el.type.includes("reference")) {
+
+                idSelect= i+1;
                 let findTableId = el.type.slice(10);
                 
-                // webix.ajax().get("/init/default/api/"+findTableId).then(function (data){
-                //     data = data.json().content;
-                //     let dataArray=[];
-                //     data.forEach((elem,i) =>{
-                //         //console.log(elem.name);
-                //         dataArray.push({ "id":elem.id, "value":elem.name});
-                //     });
-                //     //console.log(data, "таблица"+findTableId );
-                //     //console.log(dataArray);
-                
-                //     inputsArray.push({ 
-                //         view:"select",
-                //         name:el.id, 
-                //         label:el.label, 
-                //         options:[ { value:"Master", id:1 },
-                //         { value:"Release", id:2 }],
-                //         labelPosition:"top"
-                //     });
-                  
-                // });
-          
-                
-                inputsArray.push({ 
-                    view:"select",
-                    name:el.id, 
-                    label:el.label, 
-                    options:
-                     webix.ajax().get("/init/default/api/"+findTableId).then(function (data){
-                            data = data.json().content;
-                            let dataArray=[];
-                            data.forEach((el,i) =>{
-                                console.log(el.name);
-                                dataArray.push({ "id":el.id, "value":el.name});
-                            });
-                            //console.log(data, "таблица"+findTableId );
-                            console.log(dataArray);
-                            console.log(inputsArray[i]);
-                            return dataArray;
-                        }),
-                    labelPosition:"top"
-                });
+                inputsArray.push(
+                    
+                    { view:"combo",placeholder:"Введите текст",  label:el.label, name:el.id, labelPosition:"top",  options:{
+                        body:{
+                          template: "#value#",
+                          dataFeed:{
+                            $proxy: true, 
+                            load: function(view, params){
+                              return ( webix.ajax().get("/init/default/api/"+findTableId).then(function (data) {
+                                        data = data.json().content;
+                                        let dataArray=[];
+                                        let keyArray;
+                                        data.forEach((el,i) =>{
+                                            let l = 0;
+                                            while (l <= Object.values(el).length) {
+                                                if (typeof Object.values(el)[1] == "string"){
+                                                    keyArray = Object.keys(el)[1];
+                                                    break;
+                                                } 
+                                                l++;
+                                            }
+                                            dataArray.push({ "id":el.id, "value":el[keyArray]});
+                                        });
+                                        return dataArray;
+                                    })
+                                );
+                            }
+                          }	
+                        }
+                      }}
 
-                console.log(inputsArray);
+                );
 
+                // console.log(inputsArray);
+////
                 // inputsArray.push({ 
                 //     view:"select",
                 //     name:el.id, 
@@ -209,7 +202,9 @@ function createEditFields () {
                 //         { "id":2, "value":"Release" }],
                 //     labelPosition:"top"
                 // });
-            } else{
+            
+            } 
+            else{
                 inputsArray.push(
                     {
                     view:"text", 
