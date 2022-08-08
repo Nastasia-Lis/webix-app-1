@@ -2,8 +2,21 @@ import {tableId,editFormId, saveBtnId,saveNewBtnId, addBtnId, delBtnId, findElem
 import {defaultStateForm,createEditFields,popupExec,notify} from "../modules/editTableForm.js";
 
 
+// function accordionFilter () {
+//     const accordion = {
+//         css:"webix_accordion-container",
+//         view:"accordion",
+//         id:"accordionFilterTable",
+//         minHeight:100,
+//         type:"line",
+//         collapsed:true,
+//         rows:[ 
+//         ]
+//     };
+//     return accordion;
+// }
 
-function tableToolbar (idPager, idSearch, idExport, idFindElements, idTable) {
+function tableToolbar (idPager, idSearch, idExport, idFindElements, idTable,searchVisible=false) {
     function exportToExcel(){
         webix.toExcel(idTable, {
           filename:"Table",
@@ -13,12 +26,13 @@ function tableToolbar (idPager, idSearch, idExport, idFindElements, idTable) {
         notify ("success","Таблица сохранена");
     }
     return { 
-       id:"tableToolbarItem", rows:[
+       id:"filterBar", rows:[
             {padding:17, margin:5, 
                 cols: [
                 {   view:"search", 
                     placeholder:"Поиск", 
                     id:idSearch,
+                    hidden:searchVisible,
                     css:"searchTable", 
                     maxWidth:250, 
                     minWidth:40, 
@@ -93,7 +107,8 @@ function tableToolbar (idPager, idSearch, idExport, idFindElements, idTable) {
                         return "";
                     }
                 },
-            }
+            },
+            //accordionFilter()
         ]
 
         
@@ -105,7 +120,7 @@ function tableToolbar (idPager, idSearch, idExport, idFindElements, idTable) {
 
 function table (idTable, idPager, onFunc, srcData) {
     return {
-        view:"datatable",
+        view:"treetable",
         id: idTable,
         css:"webix_table-style webix_header_border webix_data_border",
         resizeColumn: true,

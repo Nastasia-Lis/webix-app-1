@@ -73,6 +73,7 @@ function saveNewItem (){
     } else {
         notify ("error","Заполните пустые поля");
     }
+   
 }
 
 
@@ -105,6 +106,8 @@ function removeItem() {
 
 
 function clearForm(){
+    
+
     if ($$(saveBtnId).isVisible()){
         $$(editFormId).setDirty(true);
     } 
@@ -138,7 +141,7 @@ function createEditFields () {
     if(Object.keys($$(editFormId).elements).length==0  ){
         let inputsArray = [];
         columnsData.forEach((el,i) => {
-            console.log(inputsArray)
+            //console.log(inputsArray)
             if (el.type == "datetime"){
                 inputsArray.push({   
                     view: "datepicker",
@@ -151,15 +154,11 @@ function createEditFields () {
                 });
             } 
             
-            
-            
-           else if (el.type.includes("reference")) {
 
+           else if (el.type.includes("reference")) {
                 idSelect= i+1;
                 let findTableId = el.type.slice(10);
-                
                 inputsArray.push(
-                    
                     { view:"combo",placeholder:"Введите текст",  label:el.label, name:el.id, labelPosition:"top",  options:{
                         body:{
                           template: "#value#",
@@ -190,18 +189,6 @@ function createEditFields () {
                       }}
 
                 );
-
-                // console.log(inputsArray);
-////
-                // inputsArray.push({ 
-                //     view:"select",
-                //     name:el.id, 
-                //     label:el.label, 
-                //     options:[  
-                //         { "id":1, "value":"Master" },
-                //         { "id":2, "value":"Release" }],
-                //     labelPosition:"top"
-                // });
             
             } 
             else{
@@ -214,19 +201,14 @@ function createEditFields () {
                     }
                 );
             }
-            //console.log(el.type == "datetime");
-            // inputsArray.push(
-            //     {
-            //     view:"text", 
-            //     name:el.id, 
-            //     label:el.label, 
-            //     }
-            // );
         });
+
         let inpObj = {margin:8,id:"inputsTable", rows:inputsArray};
         $$(cleanBtnId).enable(); 
         $$(delBtnId).enable();
+        console.log(inpObj,"edit")
         return ($$(editFormId).addView( inpObj, 1));
+        
     } else {
         $$(cleanBtnId).enable(); 
         $$(delBtnId).enable();
@@ -385,17 +367,11 @@ let editTableBar = {
        
         
         if (newv != oldv){
-            //console.log("new")
-            // obj = getCurObj();
-            // obj[item.id] = state.value;
-            // obj = setCurObj(obj);
-             
         } 
         
     }},
     ready:function(){
         this.validate();
-        //console.log(window.innerWidth);
     },
 
 };

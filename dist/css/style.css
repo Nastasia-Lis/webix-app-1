@@ -159,6 +159,20 @@
   color: #7c7c7c !important;
 }
 
+.webix_collapse .webix_button {
+  padding-left: 15px;
+}
+
+.webix_collapse .webix_button,
+.webix_collapse .webix_button:hover,
+.webix_collapse .webix_button:active {
+  background: transparent !important;
+}
+
+.webix_collapse .webix_button:hover .webix_icon_btn {
+  color: var(--dark) !important;
+}
+
 @font-face {
   font-family: "NotoSans";
   font-weight: 400;

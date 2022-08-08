@@ -7,13 +7,14 @@ import {
 } from './modules/setId.js';
 
 import * as header from "./modules/header.js";
-import * as treeSidebar from "./modules/sidebar.js";
+import {headerSidebar,treeSidebar} from "./modules/sidebar.js";
 
 import  {dashboardLayout} from "./treeItems/dashboardView.js";
 import  {form,elementsFormView, elementsFormEdit} from "./treeItems/formTemplate.js";
 import  {tableToolbar,table, onFuncTable, onFuncTableView} from "./treeItems/tableTemplate.js";
 
 import {editTableBar} from "./modules/editTableForm.js";
+import {filterForm} from "./modules/filterTableBar.js";
 
 webix.ready(function(){
     webix.protoUI({
@@ -47,13 +48,15 @@ webix.ready(function(){
                                 responsive:"adaptive", 
                                 cols:[
                                     
-                                    {css:"webix_side-container",rows:[ 
-                                        { view:"label",label:"<img src='/init/static/images/expalogo.png' style='height:30px; margin: 20px;'>", height:65 },
-                                        treeSidebar.treeSidebar(),
+                                    {id:"sideMenu",width:250,css:"webix_side-container",rows:[ 
+                                        //{ view:"label",label:"<img src='/init/static/images/expalogo.png' style='height:30px; margin: 20px;'>", height:65 },
+                                        headerSidebar(),
+                                        treeSidebar(),
+                                        {id:"sideMenuHidden", hidden:true}
                                     ]},
                                     
                                     //treeSidebar.treeSidebar(),
-                                    {view:"resizer",class:"webix_resizers",},
+                                    {id:"sideMenuResizer",view:"resizer",class:"webix_resizers",},
                                     
                                     
                                     {rows:[
@@ -76,20 +79,13 @@ webix.ready(function(){
                                         } ,
 
                                         {id:"tableView",hidden:true, 
-                                            rows:[
-                                                tableToolbar(pagerIdView, searchIdView, exportBtnView, findElementsIdView, tableIdView ),
-                                                table (tableIdView, pagerIdView,onFuncTableView)
-                                            ]
-                                        },
-                                        {id:"formEdit",hidden:true, 
-                                            cols:[
-                                                form(formId, elementsFormEdit),
-                                            ]
-                                        },
-                                        {id:"formView",hidden:true, 
-                                            cols:[
-                                                form(formIdView, elementsFormView),
-                                            ]
+                                         
+                                                rows:[
+                                                    tableToolbar(pagerIdView, searchIdView, exportBtnView, findElementsIdView, tableIdView, true ),
+                                                    table (tableIdView, pagerIdView,onFuncTableView),
+                                                ],
+
+                                            
                                         },
                                     ]},
                                 ]
