@@ -1,63 +1,100 @@
 import {tableId,editFormId,addBtnId,findElementsId, searchId,
         tableIdView,findElementsIdView,searchIdView
 } from './setId.js';
-import {notify, checkFormSaved,clearItem} from "./editTableForm.js";
 
+import {notify, checkFormSaved,clearItem,popupExec} from "./editTableForm.js";
 import  {jsonDashboard } from "../treeItems/dashboardView.js";
-// import  {jsonFormView, jsonFormEdit } from "../treeItems/formTemplate.js";
-// import  {jsonTableView} from "../treeItems/tableTemplate.js";
+
 
 
 let itemTreeId = "";
 let prevCountRows ;
 let inpObj={};
 let customInputs = [];
+let urlFieldAction ;
 
-let idElements = [];
-function submitBtn (url, verb){
+function getPopupInfo (urlRow,idRow){
+//D.200601.250131.ANY_HOST.000001
+    //webix.ajax(urlRow+"/"+idRow+".json",{
+        
+    webix.ajax("http://localhost:3000/init/default/api/lic/D.200601.250131.ANY_HOST.000001.json",{
+        success:function(text, data, XmlHttpRequest){
+            console.log(data.json());
+            data = data.json().content;
+            let propertyArray = [];
+            data.forEach(function(el,i){
+                //console.log(el);
+                propertyArray.push({label:el.name, value:el.value})
+                
+            });
+            $$("propTable").parse(propertyArray);
+            $$("propTable").refresh();
+            console.log($$("propTable"))
+            //notify ("success","Данные успешно загружены");
+        },
+        error:function(text, data, XmlHttpRequest){
+            //notify ("success","Ошибка при загрузке файла");
+            console.log("error");
+        }
+    });
+
+}
+
+
+function submitBtn (idElements, url, verb, rtype, idBtn=""){
+    
     let valuesArray = [];
 
     if (verb=="get"){ 
-        idElements.forEach((el,i) => {
-            if (el.id.includes("customCombo")){
-                console.log(el);
-                valuesArray.push(el.name+"="+$$(el.id).getText());
-            } else if (el.id.includes("customInputs")) {
-                valuesArray.push(el.name+"="+$$(el.id).getValue());
-            }
-            
-        });
 
-        webix.ajax(url+"?"+valuesArray.join("&")).then(function(data) {
-            console.log(data.json());
-            $$(tableIdView).clearAll();
+        if(rtype=="refresh"){
+            idElements.forEach((el,i) => {
+                if (el.id.includes("customCombo")){
+                    console.log(el);
+                    valuesArray.push(el.name+"="+$$(el.id).getText());
+                } else if (el.id.includes("customInputs")) {
+                    console.log(el)
+                    valuesArray.push(el.name+"="+$$(el.id).getValue());
+                } else if (el.id.includes("customDatepicker")) {
+                    console.log(el);
+                    valuesArray.push(el.name+"="+$$(el.id).getValue());
+                }
+                
+            });
+            webix.ajax(url+"?"+valuesArray.join("&")).then(function(data) {
+                console.log(data.json());
+                $$(tableIdView).clearAll();
 
-            data = data.json().content;
-            if (data.length !== 0){
-                $$(tableIdView).hideOverlay("Ничего не найдено");
-                $$(tableIdView).parse(data);
-            } else {
-                $$(tableIdView).showOverlay("Ничего не найдено");
-            }
+                data = data.json().content;
+                if (data.length !== 0){
+                    $$(tableIdView).hideOverlay("Ничего не найдено");
+                    $$(tableIdView).parse(data);
+                } else {
+                    $$(tableIdView).showOverlay("Ничего не найдено");
+                }
+                prevCountRows = $$(tableIdView).count();
+                $$(findElementsIdView).setValues(prevCountRows.toString());
+            });
 
-            prevCountRows = $$(tableIdView).count();
-            $$(findElementsIdView).setValues(prevCountRows.toString());
-        });
-    } else if (verb=="post") {
-        let uploadFile;
-        console.log(idElements)
-        console.log("post");
-        
-        idElements.forEach((el,i) => {
-            if (el.id.includes("customUploader")){
-                console.log(el);
-                uploadFile = $$(el.id).getValue();
-            } 
-            
-        });
+        } else if (rtype=="download"){
+            webix.ajax().response("blob").get(url, function(text, blob, xhr) {
+                webix.html.download(blob, "table.docx");
+            });
+        } else if (rtype=="delete") {
 
-        webix.ajax().post(url,{uploadFile});
-    }
+        }
+
+    } 
+    // else if (verb=="post") {
+    //     let uploadFile;
+    //     idElements.forEach((el,i) => {
+    //         if (el.id.includes("customUploader")){
+    //             console.log(el);
+    //             uploadFile = $$(el.id).getValue();
+    //         } 
+    //     });
+    //     webix.ajax().post(url,{uploadFile});
+    // }
     
 }
 
@@ -100,25 +137,51 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
                 }
                 columnsData.push(dataFields[data]);
             });
+
             $$(idCurrTable).refreshColumns(columnsData);
-            //($$("tableToolbarItem").removeView( inpObj, 1));
 
             let objInuts = Object.keys(data.inputs)
             
             let customInputs = [];
+            let idElements = [];
 
-            let dataInputsArray = data.inputs; //дата с сервера, объекты с инпутами
-            //console.log(data.actions.submit)
-            customInputs.push({width:20});
+            let dataInputsArray = data.inputs;
+
+
+            let checkAction = false;
+            let idCol;
+            
+            columnsData.forEach(function(field,i){
+                if(field.type !== undefined && field.type == "action"){
+                    checkAction = true;
+                    idCol = i;
+                    urlFieldAction = data.actions[field.id].url;
+
+                    //console.log(data.actions[field.id].url)
+                    
+                }
+            });
+           
+             
+            if (checkAction){
+                let columns = $$(idCurrTable).config.columns;
+                columns.splice(0,0,{ id:"action-first"+idCol, maxWidth:130, header:"Подробнее", template:"<span class='webix_icon wxi-angle-down'></span> "});
+                $$(idCurrTable).refreshColumns();
+            }
+       
+
+           // customInputs.push({width:20});
+            
             objInuts.forEach((el,i) => {
-                //console.log(data.actions.submit.verb)
                 if (dataInputsArray[el].type == "string"){
                     customInputs.push(
                     {   view:"text",
+                        placeholder:dataInputsArray[el].label, 
                         id: "customInputs"+i,
-                        width:300,
+                        maxWidth:300,
+                        minWidth:150,
                         height:60,
-                        label:dataInputsArray[el].label, 
+                        //label:dataInputsArray[el].label, 
                         labelPosition:"top",
                         on: {
                             onAfterRender: function () {
@@ -129,9 +192,11 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
                 } else if (dataInputsArray[el].type == "apiselect") {
                     customInputs.push(
                     { view:"combo",
+                    width:250,
                     id: "customCombo"+i,
-                    placeholder:"Введите текст",  
-                    label:dataInputsArray[el].label,
+                    //placeholder:"Введите текст",  
+                    //label:dataInputsArray[el].label,
+                    placeholder:dataInputsArray[el].label, 
                     labelPosition:"top", 
                     options:{
                         body:{
@@ -140,14 +205,28 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
                             $proxy: true, 
                             load: function(view, params){
                               return ( webix.ajax().get("/init/default/api/"+dataInputsArray[el].apiname).then(function (data) {
-                                        let dataSrc = data.json().content;
-                                        let dataOptions=[];
-                                        dataSrc.forEach(function(data, i) {
-                                            dataOptions.push( 
-                                                {id:i+1, value:data},
-                                            );
-                                        });
+                                console.log(data.json())        
+                                let dataSrc = data.json().content;
                                         
+                                        let dataOptions=[];
+                                        if (dataSrc[0].name !== undefined){
+                                            
+                                            dataSrc.forEach(function(data, i) {
+                                                console.log(data);
+                                                dataOptions.push( 
+                                                    {id:i+1, value:data.name},
+                                                );
+                                            });
+                                           
+                                        } else {
+                                            dataSrc.forEach(function (data, i) {
+                                                dataOptions.push(
+                                                    { id: i + 1, value: data },
+                                                );
+                                            });
+
+                                        }
+                                       
                                         return dataOptions;
                                     })
                                 );
@@ -162,33 +241,98 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
                     }               
                     });
 
-                } else if (dataInputsArray[el].type == "submit") {
-                    console.log(data )
-                    customInputs.push(
-                        {rows:[
-                            {},
-                            {   view:"button", 
-                                css:"webix_primary", 
-                                //id:cleanBtnId,
-                                height:48, 
-                                value:dataInputsArray[el].label,
-                                click:function () {
-                                    if (data.actions.submit.verb == "GET"){
-                                        submitBtn(data.actions.submit.url, "get");
-                                    } else if (data.actions.submit.verb == "POST"){
-                                        submitBtn(data.actions.submit.url,"post");
-                                    }
+                } else if (dataInputsArray[el].type == "submit" || dataInputsArray[el].type == "button") {
+                    let actionType = dataInputsArray[el].action;
+                    let findAction = data.actions[actionType]; // сопоставить действие кнопки и ключ в actions
+
+                    if (findAction.verb == "DELETE" && actionType !== "submit"){
+                        let countCols = $$(idCurrTable).getColumns().length;
+                        let columns = $$(idCurrTable).config.columns;
+                        columns.splice(countCols,0,{ id:"action"+i, header:"Действие",maxWidth:100, template:"{common.trashIcon()}"});
+
+                        $$(idCurrTable).refreshColumns();
+                    } else if (findAction.verb == "DELETE") {
+                        customInputs.push(
+                            //{rows:[
+                                //{},
+                                {   view:"button", 
+                                    id:"customBtnDel"+i,
+                                    css:"webix_danger", 
+                                    type:"icon", 
+                                    icon:"wxi-trash", 
+                                    inputHeight:48,
+                                    //height:48,
+                                    width:100,
+                                    value:dataInputsArray[el].label,
+                                    click:function (id) {
+                                        submitBtn(idElements,findAction.url,"delete");
+                                        console.log("delete");  
+                                    },
+                                    on: {
+                                        onAfterRender: function () {
+                                            this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
+                                        },
+                                    },
                                     
-                                },
-                                on: {
-                                    onAfterRender: function () {
-                                        this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
-                                     },
-                                }
-                                
-                            }, 
-                        ]}
-                    );
+                                    
+                                }, 
+                                //{},
+                            //]}
+                        );
+                    } else {
+                        customInputs.push(
+                            //{rows:[
+                                //{},
+                                {   view:"button", 
+                                    css:"webix_primary", 
+                                    id:"customBtn"+i,
+                                    inputHeight:48,
+                                    height:48, 
+                                    minWidth:100,
+                                    maxWidth:250,
+                                    value:dataInputsArray[el].label,
+                                    click:function (id) {
+                                        
+
+                                        if (findAction.verb== "GET"){
+                                            if ( findAction.rtype== "refresh") {
+                                                submitBtn(idElements,findAction.url, "get", "refresh");
+                                                console.log("get");
+                                            } else if (findAction.rtype== "download") {
+                                                submitBtn(idElements,findAction.url, "get", "download");
+                                                console.log("get");
+                                            }
+                                            
+
+                                        } else if (findAction.verb == "POST"){
+                                            submitBtn(idElements,findAction.url,"post");
+                                            console.log("post");
+
+                                        } 
+                                        // else if (findAction.verb == "DELETE"){
+                                        //     submitBtn(idElements,findAction.url,"delete");
+                                        //     console.log("delete");
+
+                                        // } 
+                                        else if (findAction.verb == "download"){
+                                            submitBtn(idElements,findAction.url, "get", "download",id);
+                                            console.log("download");
+                                        }
+                                    
+                                        
+                                    },
+                                    on: {
+                                        onAfterRender: function () {
+                                            this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
+                                        },
+                                    },
+                                    
+                                    
+                                }, 
+                                //{},
+                            //]}
+                        );
+                    }
                 } else if (dataInputsArray[el].type == "upload"){
                     customInputs.push(
                         {rows:[
@@ -196,28 +340,75 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
                             {   view: "uploader", 
                                 value: "Upload file", 
                                 id:"customUploader"+i, 
-                                height:48, 
+                                height:50, 
                                 link:tableIdView,  
-                                //upload:"//docs.webix.com/samples/server/upload",
+                                upload: data.actions.submit.url,
                                 label:dataInputsArray[el].label, 
                                 labelPosition:"top",
                                 on: {
                                     onAfterRender: function () {
                                         this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
                                     },
+                                    onFileUpload: function () {
+                                        notify ("success","Файл успешно загружен");
+                                    },
+                                    onFileUploadError: function () {
+                                        notify ("error","Ошибка при загрузке файла");
+                                    }
                                 }
                             }
                         ]}
                     );
+                } else if (dataInputsArray[el].type == "datetime"){
+                    customInputs.push(
+                            {   view: "datepicker",
+                                format: webix.Date.strToDate("%d.%m.%Y"),
+                                //placeholder:"дд.мм.гг",
+                                placeholder:dataInputsArray[el].label,  
+                                id:"customDatepicker"+i, 
+                                timepicker: true,
+                                labelPosition:"top",
+                                width:300,
+                                height:60,
+                                //label:dataInputsArray[el].label, 
+                                on: {
+                                    onAfterRender: function () {
+                                        this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
+                                    },
+                                }
+                            }
+                    );
+                }else if (dataInputsArray[el].type == "checkbox"){
+                   
+                    customInputs.push(
+                            {   view:"checkbox", 
+                                id:"customСheckbox"+i, 
+                                css:"webix_checkbox-style",
+                                //labelPosition:"top",
+                                //labelWidth: "auto",
+                                labelRight:dataInputsArray[el].label, 
+                                //label:dataInputsArray[el].label, 
+                                on: {
+                                    onAfterRender: function () {
+                                        this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
+                                    },
+                                }
+                            }
+                    );
+
+                } 
+            
+                if (dataInputsArray[el].type == "checkbox"){
+                   
                 }
                 customInputs.push({width:20});
             });
             
-       
+          
+
             customInputs.forEach((el,i) => {
                 
                 if (el.id !== undefined){
-                    console.log(el);
                     if (el.view=="text"){
                         idElements.push({id:el.id, name:"substr"});
                     } 
@@ -225,35 +416,20 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
                         idElements.push({id:el.id, name:"valtype"});
                     } else if (el.view=="uploader"){
                         idElements.push({id:el.id});
+                    } else if (el.view=="datepicker"){
+                        idElements.push({id:el.id});
                     }
                 }
+
             });
            
 
             inpObj = {id:"customInputs", cols:customInputs};
-            ($$("filterBar").addView( inpObj,1));
+            ($$("filterBar").addView( inpObj,2));
         });
 
         webix.ajax().get("/init/default/api/"+itemTreeId).then(function (data){
             data = data.json().content;
-
-            // el.append({data:[]});
-            // console.log(el)
-            // data.forEach((el,i) => {
-            //     if (el.srv){
-            //         console.log(el);
-                    
-            //         console.log(el);
-            //          webix.ajax().get("/init/default/api/"+itemTreeId+"/"+el.id+".json").then(function (data){
-            //             data = data.json().content
-            //             //el.append("data":[{ "value":"Part 1"]);
-            //             el.data = [ {id:"1.1",value:"Part 1"}];
-            //             el.append(data);
-            //             });
-            //         el.id //ссылка на доп инфу
-            //         //el.append("data":[{ "value":"Part 1"]);
-            //     }
-            // });
         
             if (data.length !== 0){
                 $$(idCurrTable).hideOverlay("Ничего не найдено");
@@ -447,5 +623,7 @@ export{
     treeSidebar,
     itemTreeId,
     inpObj,
-    customInputs
+    customInputs,
+    getPopupInfo,
+    urlFieldAction
 };

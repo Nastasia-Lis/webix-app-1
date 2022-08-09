@@ -8,25 +8,31 @@
 //***
 //login, import
 // tabs
-// upload кнопка
+
 
 //**
 // expa
 // адаптив (+hide collaps sidebar)
 //баг с видимостью кнопок editForm
 
+// tree datatable
+
+// combo для чисел
+// undefined у элементов дерева
 
 
-// шаблоны tform
-// обернуть форму в лист, убрать отсуп от тулбара
-// ключ order 
+// datepicker чекнуть
+// ключ order
 
+//toolbar - скрывается то, что не вмещается
 
 //*
+// popup css
 // иконку меню найти
 // кастомизация -- сайдбар
 
 
+// upload : не нужна кнопка submit
 
 @font-face {
 	font-family: 'NotoSans'; 
@@ -48,11 +54,26 @@
     font-size: 14px!important;
 }
 
-
+.webix_inp_top_label{
+    font-size: 12px!important;
+ 
+}
 
 h1, h2, h3, h4, h5, h6{
     font-family: 'NotoSans', sans-serif!important;
     color:var(--dark)!important;
+}
+
+.webix_custom_checkbox {
+    color:  var(--primary)!important;
+}
+
+.webix_custom_checkbox:focus {
+    color:  var(--primary)!important;
+}
+.webix_el_checkbox .webix_label_right{
+    font-size: 14px!important;
+    font-weight: 400!important;
 }
 
 input:focus,
@@ -77,7 +98,13 @@ label, button{
     &_view{
         border-color: var(--gray-light) !important;
     }
-
+    &_popup{
+        border-radius: 6px!important;
+       // padding: 10px 20px!important;
+    }
+    &_win_body > .webix_view{
+        border-radius: 6px!important;
+    }
     &_dashboard-h2 .webix_template{
         padding: 0px!important;
     }
@@ -299,7 +326,13 @@ label, button{
         box-shadow: inset 2px 0 var(--primary)!important;
     }
     //------select
-    
+
+
+    //------checkbox
+    // &_checkbox-style{
+
+    // }
+     //------checkbox
 }
 .webix_cal_body .webix_cal_select .webix_cal_day_inner:hover,
 .webix_cal_body .webix_cal_today.webix_cal_select .webix_cal_day_inner:hover {

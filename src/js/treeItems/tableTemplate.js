@@ -1,6 +1,6 @@
 import {tableId,editFormId, saveBtnId,saveNewBtnId, addBtnId, delBtnId, findElementsId} from '../modules/setId.js';
 import {defaultStateForm,createEditFields,popupExec,notify} from "../modules/editTableForm.js";
-
+import { itemTreeId,  getPopupInfo, urlFieldAction} from "../modules/sidebar.js";
 
 // function accordionFilter () {
 //     const accordion = {
@@ -16,7 +16,7 @@ import {defaultStateForm,createEditFields,popupExec,notify} from "../modules/edi
 //     return accordion;
 // }
 
-function tableToolbar (idPager, idSearch, idExport, idFindElements, idTable,searchVisible=false) {
+function tableToolbar (idPager, idSearch, idExport, idFindElements, idTable,visible=false) {
     function exportToExcel(){
         webix.toExcel(idTable, {
           filename:"Table",
@@ -26,17 +26,16 @@ function tableToolbar (idPager, idSearch, idExport, idFindElements, idTable,sear
         notify ("success","Таблица сохранена");
     }
     return { 
-       id:"filterBar", rows:[
-            {padding:17, margin:5, 
+         rows:[
+            {id:"filterBar",padding:17, height: 80,margin:5, 
                 cols: [
                 {   view:"search", 
                     placeholder:"Поиск", 
                     id:idSearch,
-                    hidden:searchVisible,
+                    hidden:visible,
                     css:"searchTable", 
                     maxWidth:250, 
                     minWidth:40, 
-                    //disabled:true,
                     on: {
                         onTimedKeyPress() {
                             let text = this.getValue().toLowerCase();
@@ -70,7 +69,9 @@ function tableToolbar (idPager, idSearch, idExport, idFindElements, idTable,sear
                     view:"pager",
                     id:idPager,
                     size:10,
+                    inputHeight:48,
                     group:3,
+                    height:50,
                     template:`{common.prev()} 
                 {common.pages()} {common.next()}`
                 },
@@ -79,12 +80,11 @@ function tableToolbar (idPager, idSearch, idExport, idFindElements, idTable,sear
                     width: 50, 
                     type:"icon",
                     id:idExport,
+                    hidden:visible,
                     icon:"wxi-download",
                     css:"webix_btn-download",
                     title:"текст",
                     height:50,
-                    width:60,
-                    //disabled:true,
                     click:exportToExcel,
                     on: {
                         onAfterRender: function () {
@@ -120,7 +120,7 @@ function tableToolbar (idPager, idSearch, idExport, idFindElements, idTable,sear
 
 function table (idTable, idPager, onFunc, srcData) {
     return {
-        view:"treetable",
+        view:"datatable",
         id: idTable,
         css:"webix_table-style webix_header_border webix_data_border",
         resizeColumn: true,
@@ -132,6 +132,30 @@ function table (idTable, idPager, onFunc, srcData) {
         select:true,
         minColumnWidth:200,
         on:onFunc,
+        onClick:{
+            "wxi-trash":function(){
+                popupExec("Запись будет удалена").then(
+                    function(){
+                        let formValues = $$(idTable).getItem(id);
+                        webix.ajax().del("/init/default/api/"+itemTreeId+"/"+formValues.id+".json", formValues,{
+                            success:function(){
+                                $$(idTable).remove($$(idTable).getSelectedId());
+                                notify ("success","Данные успешно удалены");
+                            },
+                            error:function(){
+                                notify ("error","Ошибка при удалении записи");
+                            }
+                        });
+                });
+            },
+
+            "wxi-angle-down":function(event, cell, target){
+                console.log(cell.row)
+                let id = cell.row;
+                getPopupInfo(urlFieldAction, cell.row);
+                $$("popupTable").show( );
+            },
+        }
     };
 }
 
@@ -177,6 +201,7 @@ let onFuncTable = {
         $$(findElementsId).setValues($$(tableId).count().toString());
         this.hideOverlay();
     },
+ 
 };
 //----- table edit parameters
 
@@ -185,25 +210,22 @@ let onFuncTable = {
 
 
 //----- table view parameters
-let jsonTableView = {
-    treeHeadlines :[
-        {"id": 'tableOne', "value": "Таблица 101"}
-    ],
-};
+
 
 let onFuncTableView = {
-    onAfterDelete: function() {
-        $$(findElementsId).setValues($$(tableId).count().toString());
-        if (!this.count())
-            this.showOverlay("Ничего не найдено");
-        if (this.count())
-            this.hideOverlay();
-    },
-    onAfterAdd: function() {
-        $$(findElementsId).setValues($$(tableId).count().toString());
-        this.hideOverlay();
-    },
-}
+    // onAfterDelete: function() {
+    //     $$(findElementsId).setValues($$(tableId).count().toString());
+    //     if (!this.count())
+    //         this.showOverlay("Ничего не найдено");
+    //     if (this.count())
+    //         this.hideOverlay();
+    // },
+    // onAfterAdd: function() {
+    //     $$(findElementsId).setValues($$(tableId).count().toString());
+    //     this.hideOverlay();
+    // },
+  
+};
 
 //----- table view parameters
 
@@ -212,6 +234,6 @@ export {
     tableToolbar,
     table,
     onFuncTable,
-    jsonTableView,
+
     onFuncTableView
 };

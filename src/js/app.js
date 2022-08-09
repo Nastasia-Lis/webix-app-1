@@ -21,6 +21,24 @@ webix.ready(function(){
         name:"edittree"
     }, webix.EditAbility, webix.ui.tree);
 
+
+    webix.ui({ 
+        id:"popupTable", 
+        view:"popup", 
+        height:250,
+        width:300,
+        padding:15,
+        scroll:true,
+        position:"center",
+        body:{
+            view:"property",
+            id:"propTable",
+            editable:false,
+            elements:[]
+    }});
+
+
+
     webix.ui({
         view:"scrollview",
                 type:"clean",
@@ -67,10 +85,11 @@ webix.ready(function(){
                                             {   id:"tableContainer",
                                                 rows:[
                                                     tableToolbar(pagerId, searchId, exportBtn, findElementsId, tableId ),
+                                                    { view:"resizer",class:"webix_resizers",},
                                                     table (tableId, pagerId, onFuncTable)
                                                 ]
                                             },
-                                            {view:"resizer",class:"webix_resizers",},
+                                            //{view:"resizer",class:"webix_resizers",},
                                                 editTableBar,
                                         ]},
 
@@ -82,7 +101,8 @@ webix.ready(function(){
                                          
                                                 rows:[
                                                     tableToolbar(pagerIdView, searchIdView, exportBtnView, findElementsIdView, tableIdView, true ),
-                                                    table (tableIdView, pagerIdView,onFuncTableView),
+                                                    { view:"resizer",class:"webix_resizers",},
+                                                    table (tableIdView, pagerIdView ),
                                                 ],
 
                                             

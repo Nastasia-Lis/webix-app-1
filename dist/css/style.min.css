@@ -190,9 +190,26 @@
   font-size: 14px !important;
 }
 
+.webix_inp_top_label {
+  font-size: 12px !important;
+}
+
 h1, h2, h3, h4, h5, h6 {
   font-family: "NotoSans", sans-serif !important;
   color: var(--dark) !important;
+}
+
+.webix_custom_checkbox {
+  color: var(--primary) !important;
+}
+
+.webix_custom_checkbox:focus {
+  color: var(--primary) !important;
+}
+
+.webix_el_checkbox .webix_label_right {
+  font-size: 14px !important;
+  font-weight: 400 !important;
 }
 
 input:focus,
@@ -215,6 +232,12 @@ label, button {
 
 .webix_view {
   border-color: var(--gray-light) !important;
+}
+.webix_popup {
+  border-radius: 6px !important;
+}
+.webix_win_body > .webix_view {
+  border-radius: 6px !important;
 }
 .webix_dashboard-h2 .webix_template {
   padding: 0px !important;
