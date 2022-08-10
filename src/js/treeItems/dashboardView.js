@@ -137,7 +137,8 @@ function dashboardLayout () {
         css:"webix_accordion-container",
         view:"accordion",
         //multi:true,
-        minHeight:100,
+        //minHeight:200,
+        //height:200,
         type:"line",
         collapsed:true,
         rows:[ //or rows 
@@ -156,6 +157,7 @@ function dashboardLayout () {
         type:"bar",
         value:"#sales#",
         radius:3,
+        minWidth:250,
         minHeight:170,
         height:250,
         tooltip:{
@@ -175,7 +177,9 @@ function dashboardLayout () {
     const diagramArea = {
         view:"chart",
         minHeight:170,
+        minWidth:250,
         height:250,
+        scroll:"auto",
         type:"area",
         xAxis:{
             template:"'#year#"
@@ -223,23 +227,27 @@ function dashboardLayout () {
         data:jsonDashboard.peopleOne.diagramArea.data,
         
     };
-
+    //{view:"scrollview", body: { view:"flexlayout", cols:[
     return [
-        { type:"clean",rows:[
-            property,
+
+       {view:"scrollview", body: {view:"flexlayout",//responsive:"dashboardView",
+        cols:[
+                {  type:"clean",rows:[
+                    property,
+                ]},
             
-        ]},
-          
-        { view:"resizer", class:"webix_resizers",},
-        //{width:30,borderless:true}, 
-       
-         
-        {rows:[
-            diagramBar,
-            //{width:3},
-            { view:"resizer", class:"webix_resizers",},
-            diagramArea
-        ]},
+                { view:"resizer", class:"webix_resizers",},
+
+            
+                {rows:[
+                    diagramBar,
+                    { view:"resizer", class:"webix_resizers",},
+                    diagramArea
+                ]}
+            ]
+        },
+        //{}
+    }
     ];
 }
     

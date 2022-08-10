@@ -1,8 +1,8 @@
 import {tableId,editFormId,addBtnId,findElementsId, searchId,
-        tableIdView,findElementsIdView,searchIdView
+        tableIdView,findElementsIdView,searchIdView, saveNewBtnId
 } from './setId.js';
 
-import {notify, checkFormSaved,clearItem,popupExec} from "./editTableForm.js";
+import {notify, checkFormSaved,clearItem,popupExec, defaultStateForm} from "./editTableForm.js";
 import  {jsonDashboard } from "../treeItems/dashboardView.js";
 
 
@@ -12,31 +12,32 @@ let prevCountRows ;
 let inpObj={};
 let customInputs = [];
 let urlFieldAction ;
+let checkAction = false;
 
 function getPopupInfo (urlRow,idRow){
 //D.200601.250131.ANY_HOST.000001
     //webix.ajax(urlRow+"/"+idRow+".json",{
         
-    webix.ajax("http://localhost:3000/init/default/api/lic/D.200601.250131.ANY_HOST.000001.json",{
-        success:function(text, data, XmlHttpRequest){
-            console.log(data.json());
-            data = data.json().content;
-            let propertyArray = [];
-            data.forEach(function(el,i){
-                //console.log(el);
-                propertyArray.push({label:el.name, value:el.value})
+    // webix.ajax("http://localhost:3000/init/default/api/lic/D.200601.250131.ANY_HOST.000001.json",{
+    //     success:function(text, data, XmlHttpRequest){
+    //         console.log(data.json());
+    //         data = data.json().content;
+    //         let propertyArray = [];
+    //         data.forEach(function(el,i){
+    //             //console.log(el);
+    //             propertyArray.push({label:el.name, value:el.value})
                 
-            });
-            $$("propTable").parse(propertyArray);
-            $$("propTable").refresh();
-            console.log($$("propTable"))
-            //notify ("success","Данные успешно загружены");
-        },
-        error:function(text, data, XmlHttpRequest){
-            //notify ("success","Ошибка при загрузке файла");
-            console.log("error");
-        }
-    });
+    //         });
+    //         $$("propTable").parse(propertyArray);
+    //         $$("propTable").refresh();
+    //         console.log($$("propTable"))
+    //         //notify ("success","Данные успешно загружены");
+    //     },
+    //     error:function(text, data, XmlHttpRequest){
+    //         //notify ("success","Ошибка при загрузке файла");
+    //         console.log("error");
+    //     }
+    // });
 
 }
 
@@ -120,6 +121,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
 
         webix.ajax().get("/init/default/api/fields.json").then(function (data) {
 
+// ---- Таблица - данные cols           
             data = data.json().content[idsParam];
             let dataFields = data.fields;
             let obj = Object.keys(data.fields);
@@ -140,15 +142,9 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
 
             $$(idCurrTable).refreshColumns(columnsData);
 
-            let objInuts = Object.keys(data.inputs)
-            
-            let customInputs = [];
-            let idElements = [];
 
-            let dataInputsArray = data.inputs;
+// ---- Таблица - проверить наличие actions у fields            
 
-
-            let checkAction = false;
             let idCol;
             
             columnsData.forEach(function(field,i){
@@ -156,22 +152,30 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
                     checkAction = true;
                     idCol = i;
                     urlFieldAction = data.actions[field.id].url;
-
                     //console.log(data.actions[field.id].url)
                     
                 }
             });
            
              
-            if (checkAction){
-                let columns = $$(idCurrTable).config.columns;
-                columns.splice(0,0,{ id:"action-first"+idCol, maxWidth:130, header:"Подробнее", template:"<span class='webix_icon wxi-angle-down'></span> "});
-                $$(idCurrTable).refreshColumns();
-            }
+            // if (checkAction){
+            //     let columns = $$(idCurrTable).config.columns;
+            //     columns.splice(0,0,{ id:"action-first"+idCol, maxWidth:130, header:"Подробнее", template:"<span class='webix_icon wxi-angle-down'></span> "});
+            //     $$(idCurrTable).refreshColumns();
+            // }
        
 
-           // customInputs.push({width:20});
+
+ // -----  Array с кастомными полями
+
+            let objInuts = Object.keys(data.inputs);
             
+            let customInputs = [];
+            let idElements = [];
+
+            let dataInputsArray = data.inputs;
+
+
             objInuts.forEach((el,i) => {
                 if (dataInputsArray[el].type == "string"){
                     customInputs.push(
@@ -190,21 +194,11 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
                         }
                     });
                 } else if (dataInputsArray[el].type == "apiselect") {
-                    customInputs.push(
-                    { view:"combo",
-                    width:250,
-                    id: "customCombo"+i,
-                    //placeholder:"Введите текст",  
-                    //label:dataInputsArray[el].label,
-                    placeholder:dataInputsArray[el].label, 
-                    labelPosition:"top", 
-                    options:{
-                        body:{
-                          template: "#value#",
-                          dataFeed:{
-                            $proxy: true, 
-                            load: function(view, params){
-                              return ( webix.ajax().get("/init/default/api/"+dataInputsArray[el].apiname).then(function (data) {
+
+                    let optionData = new webix.DataCollection({url:{
+                        $proxy:true,
+                        load: function(){
+                            return ( webix.ajax().get("/init/default/api/"+dataInputsArray[el].apiname).then(function (data) {
                                 console.log(data.json())        
                                 let dataSrc = data.json().content;
                                         
@@ -230,9 +224,23 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
                                         return dataOptions;
                                     })
                                 );
-                            }
-                          }	
+                            
+                           
+                            
                         }
+                    }});
+
+
+                    customInputs.push(
+                    { view:"combo",
+                    width:250,
+                    id: "customCombo"+i,
+                    //placeholder:"Введите текст",  
+                    //label:dataInputsArray[el].label,
+                    placeholder:dataInputsArray[el].label, 
+                    labelPosition:"top", 
+                    options:{
+                        data:optionData
                       } ,
                       on: {
                         onAfterRender: function () {
@@ -428,9 +436,12 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
             ($$("filterBar").addView( inpObj,2));
         });
 
+
+// ----- Таблица - получение данных rows
+
         webix.ajax().get("/init/default/api/"+itemTreeId).then(function (data){
             data = data.json().content;
-        
+
             if (data.length !== 0){
                 $$(idCurrTable).hideOverlay("Ничего не найдено");
                 $$(idCurrTable).parse(data);
@@ -444,6 +455,8 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
     }
     
 }
+
+
 
 function headerSidebar () {
     const headerLogo = {
@@ -504,41 +517,54 @@ function treeSidebar () {
         clipboard: true,
         data: webix.ajax().get("/init/default/api/fields.json").then(function (data) {
             let srcTree = data.json().content;
+            console.log(data.json())
             let obj = Object.keys(srcTree);
             let actionsCheck;
             let dataTree = [];
             let dataTable = [];
             let dataForm = [];
-            
-            //console.log(srcTree["monitor"], "123");
-            //console.log(srcTree, "123");
+
         
             obj.forEach(function(data) {
                 if (srcTree[data].actions){
                     actionsCheck = Object.keys(srcTree[data].actions)[0]; 
                 } 
                 if (srcTree[data].type == "dbtable"){
-                    dataTable.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type}); 
+                    if(srcTree[data].plural){
+                        dataTable.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type}); 
+                    } else if (srcTree[data].singular) {
+                        dataTable.push({"id":data, "value":srcTree[data].singular, "type":srcTree[data].type}); 
+                    }
                 } else if (srcTree[data].type == "tform"){
-                    dataForm.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type}); 
+                    if(srcTree[data].plural){
+                        dataForm.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type}); 
+                    }else if (srcTree[data].singular) {
+                        dataForm.push({"id":data, "value":srcTree[data].singular, "type":srcTree[data].type}); 
+
+                    }
                 }      
             });
            
 
             dataTree.push( 
-                            {id:"dashboardViewFolder",  value:"Партнёры", data:jsonDashboard.treeHeadlines},
-                            {id:"tableEditFolder", value:"Таблицы", data:dataTable},
-                            {id:"tableViewFolder", value:"Информация", data:dataForm},
-                            );
+                {id:"dashboardViewFolder",  value:"Партнёры", data:jsonDashboard.treeHeadlines},
+                {id:"tableEditFolder", value:"Таблицы", data:dataTable},
+                {id:"tableViewFolder", value:"Информация", data:dataForm},
+                );
             return dataTree;
         }), 
          
         
         on:{
             onSelectChange:function (ids) {
+               
                 if (ids[0]){
                     $$("webix__none-content").hide();
                 }
+                if($$("inputsTable")){
+                    $$(editFormId).removeView($$("inputsTable"));
+                }
+                
                 itemTreeId = ids[0];
                 let treeItemId = $$("tree").getSelectedItem().id;
                 let getItemParent = $$("tree").getParentId(treeItemId);
@@ -557,6 +583,9 @@ function treeSidebar () {
                 }
 
                 if(ids[0]=="tableViewFolder" || getItemParent=="tableViewFolder"){
+                    if ($$("propTableView") && $$("propTableView").isVisible()){
+                        $$("propTableView").hide();
+                    }
                     $$("tableEdit").hide();
                     $$("dashboardView").hide();
                     $$("tableView").show();
@@ -566,7 +595,8 @@ function treeSidebar () {
                 if(getItemParent=="tableEditFolder"){
                    
                     $$(addBtnId).enable();
-                
+                    defaultStateForm();
+                    
                     if(Object.keys($$(editFormId).elements).length!==0){
                         $$("inputsTable").hide();
                     }

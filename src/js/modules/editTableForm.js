@@ -84,12 +84,14 @@ function removeItem() {
             let formValues = $$(editFormId).getValues();
             webix.ajax().del("/init/default/api/"+itemTreeId+"/"+formValues.id+".json", formValues,{
                 success:function(){
-                    $$( tableId ).remove(formValues.id);
+                    console.log(formValues.id)
+                    //$$( tableId ).remove(formValues.id);
                     clearItem();
-                    if ($$(saveBtnId)) {
-                        $$(saveBtnId).hide();
-                        $$(addBtnId).show();
-                    }
+                    defaultStateForm ();
+                    // if ($$(saveBtnId)) {
+                    //     $$(saveBtnId).hide();
+                    //     $$(addBtnId).show();
+                    // }
                     $$("inputsTable").hide();
                     notify ("success","Данные успешно удалены");
                 },
@@ -97,7 +99,7 @@ function removeItem() {
                     notify ("error","Ошибка при удалении записи");
                 }
             });
-            defaultStateForm ();
+            
     });
     
     
@@ -136,8 +138,9 @@ function clearForm(){
 function createEditFields () {
 
     let columnsData = $$(tableId).getColumns();
-    //if (columnsData.type)
-    let idSelect;
+    //console.log(columnsData)
+
+    //let idSelect;
     if(Object.keys($$(editFormId).elements).length==0  ){
         let inputsArray = [];
         columnsData.forEach((el,i) => {
@@ -156,37 +159,59 @@ function createEditFields () {
             
 
            else if (el.type.includes("reference")) {
-                idSelect= i+1;
-                let findTableId = el.type.slice(10);
-                inputsArray.push(
-                    { view:"combo",placeholder:"Введите текст",  label:el.label, name:el.id, labelPosition:"top",  options:{
-                        body:{
-                          template: "#value#",
-                          dataFeed:{
-                            $proxy: true, 
-                            load: function(view, params){
-                              return ( webix.ajax().get("/init/default/api/"+findTableId).then(function (data) {
-                                        data = data.json().content;
-                                        let dataArray=[];
-                                        let keyArray;
-                                        data.forEach((el,i) =>{
-                                            let l = 0;
-                                            while (l <= Object.values(el).length) {
-                                                if (typeof Object.values(el)[1] == "string"){
-                                                    keyArray = Object.keys(el)[1];
-                                                    break;
-                                                } 
-                                                l++;
+            let findTableId = el.type.slice(10);
+            let optionData = new webix.DataCollection({url:{
+                $proxy:true,
+                load: function(){
+                    return ( webix.ajax().get("/init/default/api/"+findTableId).then(function (data) {
+                                data = data.json().content;
+                                let dataArray=[];
+                                let keyArray;
+                                data.forEach((el,i) =>{
+                                    
+                                    let l = 0;
+                                    console.log("1213",Object.keys(el)[1])
+                                    while (l <= Object.values(el).length) {
+                                        
+                                        if (typeof Object.values(el)[l] == "string"){
+                                            keyArray = Object.keys(el)[l];
+                                            break;
+                                        } 
+                                        l++;
+                                    }
+
+                                    if (el[keyArray] == undefined){
+                                        console.log("undef")
+
+                                        while (l <= Object.values(el).length) {
+                                            if (typeof Object.values(el)[1] == "number"){
+                                                keyArray = Object.keys(el)[1];
+                                                break;
                                             }
-                                            dataArray.push({ "id":el.id, "value":el[keyArray]});
-                                        });
-                                        return dataArray;
-                                    })
-                                );
-                            }
-                          }	
-                        }
-                      }}
+                                            l++;
+                                        }
+                                    }
+                                    dataArray.push({ "id":el.id, "value":el[keyArray]});
+                                    console.log(dataArray)   
+                                });
+                                return dataArray;
+                            })
+                        );
+                    
+                }
+            }});
+                //idSelect= i+1;
+               
+                inputsArray.push(
+                    {   view:"combo",
+                        placeholder:"Введите текст",  
+                        label:el.label, 
+                        name:el.id, 
+                        labelPosition:"top",  
+                        options:{
+                           data:optionData
+                      }
+                    }
 
                 );
             
@@ -281,27 +306,35 @@ function checkFormSaved() {
 let editTableBar = {
     view:"form", 
     id:editFormId,
+    css:"webix_form-edit",
     container:"webix__form-container", 
     minHeight:350,
-    minWidth:350,
-    width: 350,
+    minWidth:210,
+    width: 320,
     scroll:true,
     elements:[
-        {margin:5,rows:[{margin:5, rows:[
-                {margin:5, 
+
+        {id:"form-adaptive",margin:5,rows:[{margin:5, rows:[
+           
+            {responsive:"form-adaptive", margin:5, 
                 borderless:true,
+      
                 cols: [
-                    {   view:"button", 
+                    {   view:"button",
+                        
                         id:cleanBtnId,
-                        height:48, 
+                        height:48,
+                        minWidth:90, 
                         disabled:true,
                         hotkey: "esc",
                         value:"Очистить форму", click:clearForm},
                         
-                    {   view:"button", 
+                    {   view:"button",
+
                         id:delBtnId,
                         disabled:true,
                         height:48,
+                        minWidth:90,
                         width:100,
                         hotkey: "shift+esc",
                         css:"webix_danger", 
@@ -317,7 +350,6 @@ let editTableBar = {
                 ]
         },
             
-       
         ]},
 
        {margin:10, rows:[ { 

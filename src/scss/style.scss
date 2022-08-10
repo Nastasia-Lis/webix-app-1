@@ -4,35 +4,27 @@
 
 @import "src/scss/btns";
 
+//*** expa
 
-//***
-//login, import
+
+
+// адаптив (+hide collaps sidebar), toolbar - скрывается то, что не вмещается
 // tabs
 
 
-//**
-// expa
-// адаптив (+hide collaps sidebar)
-//баг с видимостью кнопок editForm
 
-// tree datatable
-
-// combo для чисел
-// undefined у элементов дерева
-
-
-// datepicker чекнуть
-// ключ order
-
-//toolbar - скрывается то, что не вмещается
-
-//*
-// popup css
-// иконку меню найти
 // кастомизация -- сайдбар
 
-
+// иконку меню найти
 // upload : не нужна кнопка submit
+// datepicker чекнуть
+//property
+
+
+//----
+//login, import
+
+// adaptive: editTableForm btns
 
 @font-face {
 	font-family: 'NotoSans'; 
@@ -58,6 +50,21 @@
     font-size: 12px!important;
  
 }
+
+
+
+// //*** expa
+// .webix_form-edit > .webix_scroll_cont> .webix_view.webix_scrollview{
+//     overflow-y: hidden !important;
+// }
+
+
+
+// //*** expa
+
+
+
+
 
 h1, h2, h3, h4, h5, h6{
     font-family: 'NotoSans', sans-serif!important;
@@ -120,7 +127,6 @@ label, button{
     &_side-container{
         background-color: var(--bg)!important;
     }
-
 
     //--------------dashboard
  
@@ -190,6 +196,8 @@ label, button{
 
 
     //--------------table
+
+
 
 
     //--------------notify
@@ -373,3 +381,6 @@ label, button{
 }
 
 //--------------radio
+.webix_property_line  {
+    word-wrap:break-word!important;
+}

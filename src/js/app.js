@@ -14,7 +14,7 @@ import  {form,elementsFormView, elementsFormEdit} from "./treeItems/formTemplate
 import  {tableToolbar,table, onFuncTable, onFuncTableView} from "./treeItems/tableTemplate.js";
 
 import {editTableBar} from "./modules/editTableForm.js";
-import {filterForm} from "./modules/filterTableBar.js";
+import {propertyTemplate} from "./modules/viewPropertyTable.js";
 
 webix.ready(function(){
     webix.protoUI({
@@ -22,20 +22,20 @@ webix.ready(function(){
     }, webix.EditAbility, webix.ui.tree);
 
 
-    webix.ui({ 
-        id:"popupTable", 
-        view:"popup", 
-        height:250,
-        width:300,
-        padding:15,
-        scroll:true,
-        position:"center",
-        body:{
-            view:"property",
-            id:"propTable",
-            editable:false,
-            elements:[]
-    }});
+    // webix.ui({ 
+    //     id:"popupTable", 
+    //     view:"popup", 
+    //     height:250,
+    //     width:300,
+    //     padding:15,
+    //     scroll:true,
+    //     position:"center",
+    //     body:{
+    //         view:"property",
+    //         id:"propTable",
+    //         editable:false,
+    //         elements:[]
+    // }});
 
 
 
@@ -58,43 +58,59 @@ webix.ready(function(){
                         // ]},
                         {id:"mainLayout", rows: [
                             
-                            //header.header(),
                             {   id:"adaptive",
                                 rows:[ ]
                             },
+                            
                             {   id:"mainContent",
                                 responsive:"adaptive", 
+                                
+                                
                                 cols:[
                                     
                                     {id:"sideMenu",width:250,css:"webix_side-container",rows:[ 
-                                        //{ view:"label",label:"<img src='/init/static/images/expalogo.png' style='height:30px; margin: 20px;'>", height:65 },
                                         headerSidebar(),
                                         treeSidebar(),
                                         {id:"sideMenuHidden", hidden:true}
                                     ]},
                                     
-                                    //treeSidebar.treeSidebar(),
                                     {id:"sideMenuResizer",view:"resizer",class:"webix_resizers",},
                                     
                                     
                                     {rows:[
                                         header.header(),
+                                        
                                         {id:"webix__none-content"},
-                                        {id:"tableEdit", hidden:true, cols:[
+                                        {   id:"adaptive-tableEdit",
+                                        rows:[ ]
+                                         },
+                                         
+                                        {id:"tableEdit", hidden:true, 
+   
+                                            cols:[
+                                                
+                                               {view:"scrollview", body: { view:"flexlayout", cols:[
+                                                
+                                               {   id:"tableContainer",
+                                                    rows:[
+                                                        tableToolbar(pagerId, searchId, exportBtn, findElementsId, tableId ),
+                                                        { view:"resizer",class:"webix_resizers",},
+                                                        table (tableId, pagerId, onFuncTable)
+                                                    ]
+                                                },
                                             
-                                            {   id:"tableContainer",
-                                                rows:[
-                                                    tableToolbar(pagerId, searchId, exportBtn, findElementsId, tableId ),
-                                                    { view:"resizer",class:"webix_resizers",},
-                                                    table (tableId, pagerId, onFuncTable)
-                                                ]
-                                            },
-                                            //{view:"resizer",class:"webix_resizers",},
-                                                editTableBar,
-                                        ]},
+                                                {  view:"resizer",class:"webix_resizers",},
+                                                
+                                                editTableBar,]
+                                            }
+                                            }
 
-                                        {id:"dashboardView", hidden:true, scroll:true,
-                                            cols: dashboardLayout()
+                                            ]
+                                        
+                                        },
+
+                                        {id:"dashboardView", hidden:true, scroll:"auto",
+                                           rows: dashboardLayout()
                                         } ,
 
                                         {id:"tableView",hidden:true, 
@@ -102,12 +118,22 @@ webix.ready(function(){
                                                 rows:[
                                                     tableToolbar(pagerIdView, searchIdView, exportBtnView, findElementsIdView, tableIdView, true ),
                                                     { view:"resizer",class:"webix_resizers",},
-                                                    table (tableIdView, pagerIdView ),
+                                                    
+                                                    {view:"scrollview", body:  
+                                                    
+                                                    {view:"flexlayout",cols:[
+                                                        table (tableIdView, pagerIdView, onFuncTableView ),
+                                                        { view:"resizer",class:"webix_resizers",},
+                                                        propertyTemplate("propTableView")
+                                                    ]}}, 
                                                 ],
 
                                             
                                         },
                                     ]},
+
+
+
                                 ]
                             },
                 

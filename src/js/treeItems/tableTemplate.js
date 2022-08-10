@@ -120,7 +120,7 @@ function tableToolbar (idPager, idSearch, idExport, idFindElements, idTable,visi
 
 function table (idTable, idPager, onFunc, srcData) {
     return {
-        view:"datatable",
+        view:"treetable",
         id: idTable,
         css:"webix_table-style webix_header_border webix_data_border",
         resizeColumn: true,
@@ -149,12 +149,12 @@ function table (idTable, idPager, onFunc, srcData) {
                 });
             },
 
-            "wxi-angle-down":function(event, cell, target){
-                console.log(cell.row)
-                let id = cell.row;
-                getPopupInfo(urlFieldAction, cell.row);
-                $$("popupTable").show( );
-            },
+            // "wxi-angle-down":function(event, cell, target){
+            //     console.log(cell.row)
+            //     let id = cell.row;
+            //     getPopupInfo(urlFieldAction, cell.row);
+            //     $$("popupTable").show( );
+            // },
         }
     };
 }
@@ -166,9 +166,11 @@ function table (idTable, idPager, onFunc, srcData) {
 //----- table edit parameters
 let onFuncTable = {
     onAfterSelect(id){
+      
         let values = $$(tableId).getItem(id); 
         function toEditForm () {
             $$(editFormId).setValues(values);
+            console.log(values);
             $$(saveNewBtnId).hide();
             $$(saveBtnId).show();
             $$(addBtnId).hide(); 
@@ -213,6 +215,29 @@ let onFuncTable = {
 
 
 let onFuncTableView = {
+    onAfterSelect:function(id){
+        console.log(id);let idRow = "D.200601.250131.ANY_HOST.000001";
+        // --- поменять ссылку, достать id  curr row
+        webix.ajax("http://localhost:3000/init/default/api/lic/"+idRow+".json",{
+            success:function(text, data, XmlHttpRequest){
+                console.log(data.json());
+                data = data.json().content;
+                let arrayProperty = [];
+                data.forEach(function(el,i){
+                    //console.log(el);
+                    arrayProperty.push({type:"text", id:i+1,label:el.name, value:el.value})
+                    
+                });
+                $$("propTableView").define("elements", arrayProperty);
+                $$("propTableView").show();
+            },
+            // error:function(text, data, XmlHttpRequest){
+                
+            //     console.log("error");
+            // }
+        });
+        
+    }
     // onAfterDelete: function() {
     //     $$(findElementsId).setValues($$(tableId).count().toString());
     //     if (!this.count())
