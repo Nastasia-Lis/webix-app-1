@@ -16,6 +16,13 @@ import  {tableToolbar,table, onFuncTable, onFuncTableView} from "./treeItems/tab
 import {editTableBar} from "./modules/editTableForm.js";
 import {propertyTemplate} from "./modules/viewPropertyTable.js";
 
+function adaptiveResizers (){
+    //console.log($$("sideMenu").getParentView().config.id); 
+
+}
+
+
+
 webix.ready(function(){
     webix.protoUI({
         name:"edittree"
@@ -59,33 +66,33 @@ webix.ready(function(){
                         {id:"mainLayout", rows: [
                             
                             {   id:"adaptive",
-                                rows:[ ]
+                                rows:[]
                             },
                             
                             {   id:"mainContent",
                                 responsive:"adaptive", 
-                                
-                                
+                                                                
                                 cols:[
-                                    
                                     {id:"sideMenu",width:250,css:"webix_side-container",rows:[ 
                                         headerSidebar(),
                                         treeSidebar(),
-                                        {id:"sideMenuHidden", hidden:true}
                                     ]},
                                     
-                                    {id:"sideMenuResizer",view:"resizer",class:"webix_resizers",},
+                                    {id:"sideMenuResizer",view:"resizer",css:"webix_resizer-hide",},
                                     
                                     
                                     {rows:[
                                         header.header(),
                                         
+                                        
                                         {id:"webix__none-content"},
+                                        
+
                                         {   id:"adaptive-tableEdit",
                                         rows:[ ]
                                          },
                                          
-                                        {id:"tableEdit", hidden:true, 
+                                        {id:"tables", hidden:true, 
    
                                             cols:[
                                                 
@@ -109,11 +116,11 @@ webix.ready(function(){
                                         
                                         },
 
-                                        {id:"dashboardView", hidden:true, scroll:"auto",
-                                           rows: dashboardLayout()
+                                        {id:"dashboards", hidden:true, scroll:"auto",
+                                          rows: dashboardLayout()
                                         } ,
 
-                                        {id:"tableView",hidden:true, 
+                                        {id:"forms", css:"webix_tableView",hidden:true, 
                                          
                                                 rows:[
                                                     tableToolbar(pagerIdView, searchIdView, exportBtnView, findElementsIdView, tableIdView, true ),
@@ -143,12 +150,44 @@ webix.ready(function(){
 
     });
 
+    window.addEventListener('resize', function(event) {
+ 
+        if ($$("tree").isVisible()){
+            if(window.innerWidth >= 800){
+                $$("sideMenu").config.width = 250;
+            }
+        } else {
+            if(window.innerWidth >= 800){
+                
+                if($$("sideMenuHidden")){
+
+                } else {
+                    $$("sideMenu").config.width = 55;
+                    $$("sideMenu").addView({id:"sideMenuHidden"}, 3);
+                }
+
+            } else  if(window.innerWidth <= 600){
+                if($$("sideMenuHidden")){
+                    $$("sideMenu").removeView($$("sideMenuHidden"));
+                } 
+                if($$("sideMenuResizer")){
+                    $$("sideMenuResizer").hide(); 
+                 }
+                
+            }
+        }
+
+
+    }, true);
    
     //Backbone.history.start();
   
     //webix.UIMananger.tabControl = true;
-
+    adaptiveResizers ();
     webix.i18n.setLocale("ru-RU");   
    webix.i18n.parseFormat = "%d.%m.%Y %H:%i:%s";
     webix.i18n.setLocale();
 });
+
+
+

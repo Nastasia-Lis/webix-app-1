@@ -316,8 +316,9 @@ let editTableBar = {
 
         {id:"form-adaptive",margin:5,rows:[{margin:5, rows:[
            
+            
             {responsive:"form-adaptive", margin:5, 
-                borderless:true,
+                //borderless:true,
       
                 cols: [
                     {   view:"button",
@@ -348,7 +349,7 @@ let editTableBar = {
                         } 
                     },
                 ]
-        },
+            },
             
         ]},
 

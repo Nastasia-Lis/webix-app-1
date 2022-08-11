@@ -26,8 +26,14 @@ function tableToolbar (idPager, idSearch, idExport, idFindElements, idTable,visi
         notify ("success","Таблица сохранена");
     }
     return { 
-         rows:[
-            {id:"filterBar",padding:17, height: 80,margin:5, 
+
+       
+         id:"adaptive-toolbar",rows:[
+             
+        
+            
+             {id:"filterBar",responsive:"adaptive-toolbar", css:"webix_filterBar",padding:17, height: 80,margin:5, 
+                
                 cols: [
                 {   view:"search", 
                     placeholder:"Поиск", 
@@ -70,6 +76,7 @@ function tableToolbar (idPager, idSearch, idExport, idFindElements, idTable,visi
                     id:idPager,
                     size:10,
                     inputHeight:48,
+                    inputWidth:50,
                     group:3,
                     height:50,
                     template:`{common.prev()} 
@@ -126,7 +133,7 @@ function table (idTable, idPager, onFunc, srcData) {
         resizeColumn: true,
         autoConfig: true,
         pager:idPager,
-        minHeight:300,
+        minHeight:400,
         footer: true,
         minWidth:500, 
         select:true,

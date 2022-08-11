@@ -14,33 +14,6 @@ let customInputs = [];
 let urlFieldAction ;
 let checkAction = false;
 
-function getPopupInfo (urlRow,idRow){
-//D.200601.250131.ANY_HOST.000001
-    //webix.ajax(urlRow+"/"+idRow+".json",{
-        
-    // webix.ajax("http://localhost:3000/init/default/api/lic/D.200601.250131.ANY_HOST.000001.json",{
-    //     success:function(text, data, XmlHttpRequest){
-    //         console.log(data.json());
-    //         data = data.json().content;
-    //         let propertyArray = [];
-    //         data.forEach(function(el,i){
-    //             //console.log(el);
-    //             propertyArray.push({label:el.name, value:el.value})
-                
-    //         });
-    //         $$("propTable").parse(propertyArray);
-    //         $$("propTable").refresh();
-    //         console.log($$("propTable"))
-    //         //notify ("success","Данные успешно загружены");
-    //     },
-    //     error:function(text, data, XmlHttpRequest){
-    //         //notify ("success","Ошибка при загрузке файла");
-    //         console.log("error");
-    //     }
-    // });
-
-}
-
 
 function submitBtn (idElements, url, verb, rtype, idBtn=""){
     
@@ -99,9 +72,11 @@ function submitBtn (idElements, url, verb, rtype, idBtn=""){
     
 }
 
+
+
 function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
    
-
+    
     itemTreeId = idsParam;
     let titem = $$("tree").getItem(idsParam); //id,value tree item
    
@@ -184,7 +159,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
                         id: "customInputs"+i,
                         maxWidth:300,
                         minWidth:150,
-                        height:60,
+                        height:48,
                         //label:dataInputsArray[el].label, 
                         labelPosition:"top",
                         on: {
@@ -234,6 +209,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
                     customInputs.push(
                     { view:"combo",
                     width:250,
+                    height:48,
                     id: "customCombo"+i,
                     //placeholder:"Введите текст",  
                     //label:dataInputsArray[el].label,
@@ -269,6 +245,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
                                     type:"icon", 
                                     icon:"wxi-trash", 
                                     inputHeight:48,
+                                    height:48,
                                     //height:48,
                                     width:100,
                                     value:dataInputsArray[el].label,
@@ -297,7 +274,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
                                     inputHeight:48,
                                     height:48, 
                                     minWidth:100,
-                                    maxWidth:250,
+                                    maxWidth:550,
                                     value:dataInputsArray[el].label,
                                     click:function (id) {
                                         
@@ -348,7 +325,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
                             {   view: "uploader", 
                                 value: "Upload file", 
                                 id:"customUploader"+i, 
-                                height:50, 
+                                height:48,
                                 link:tableIdView,  
                                 upload: data.actions.submit.url,
                                 label:dataInputsArray[el].label, 
@@ -377,7 +354,8 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
                                 timepicker: true,
                                 labelPosition:"top",
                                 width:300,
-                                height:60,
+                                minWidth:100,
+                                height:48,
                                 //label:dataInputsArray[el].label, 
                                 on: {
                                     onAfterRender: function () {
@@ -432,7 +410,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
             });
            
 
-            inpObj = {id:"customInputs", cols:customInputs};
+            inpObj = {id:"customInputs",css:"webix_custom-inp", cols:customInputs};
             ($$("filterBar").addView( inpObj,2));
         });
 
@@ -457,6 +435,87 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
 }
 
 
+function getInfoDashboard (){
+
+    if(!($$("dashboard-charts"))){
+       
+        
+        
+        webix.ajax().get("/init/default/api/fields").then(function (data){
+            let fields = data.json().content;
+            let inputsArray=[];
+            Object.values(fields) .forEach(function(el,i){
+                //console.log(el.type)
+                if (el.type == "dashboard"){
+                    //console.log(el.inputs)
+                    let inputs = el.inputs;
+                    Object.values(inputs).forEach(function(input,i){
+                        //console.log(input.type)
+                        if (input.type == "datetime"){
+                            inputsArray.push(
+                                    {   view: "datepicker",
+                                        format: webix.Date.strToDate("%d.%m.%Y"),
+                                        placeholder:"дд.мм.гг",
+                                        //placeholder:dataInputsArray[el].label,  
+                                        id:"dashDatepicker"+i, 
+                                        timepicker: true,
+                                        labelPosition:"top",
+                                        width:300,
+                                        minWidth:100,
+                                        height:48,
+                                        label:input.label, 
+                                        on: {
+                                            onAfterRender: function () {
+                                                this.getInputNode().setAttribute("title",input.comment);
+                                            },
+                                        }
+                                    }
+                            );
+                        } 
+                        
+        
+                    });
+                }
+            });
+     
+            //console.log( inputsArray)
+
+
+
+            webix.ajax().get("/init/default/api/dash_sales").then(function (data){
+
+                let dashLayout=[];
+                 
+               
+                dashLayout.push({rows:[{rows:inputsArray}]});
+                console.log(dashLayout[0].rows, "das")
+                let dataCharts = data.json().charts;
+                console.log(data.json())
+                let titleTemplate = {};
+                dataCharts.forEach(function(el,i){
+                    titleTemplate = el.title;
+                    delete el.title;
+                    el.borderless = true;
+                    el.minWidth = 300;
+                    dashLayout[0].rows.push({rows:[ {template:titleTemplate,borderless:true,css:{"margin-top":"20px!important", "font-weight":"500!important", "font-size":"17px!important"}, height:30},el]});
+    
+                });
+                $$("dashboardBody").addView({view:"scrollview",id:"dashboard-charts",borderless:true,css:{"margin":"20px!important"},body: {view:"flexlayout",cols:dashLayout}},0);
+                $$("dashboardBody").removeView($$("dashEmpty"));
+             
+            });
+         
+        });
+
+
+       
+
+    }
+
+
+    
+}
+
 
 function headerSidebar () {
     const headerLogo = {
@@ -480,15 +539,34 @@ function headerSidebar () {
                 $$("collapseBtn").refresh();
                 $$("tree").hide();
                 $$("sideMenu").config.width = 55;
-                $$("sideMenuHidden").show();
-                $$("sideMenuResizer").hide();
+
+                //$$("sideMenuHidden").show();
+                if(window.innerWidth >= 800){
+                    $$("sideMenu").addView({id:"sideMenuHidden"}, 3);
+                } 
+                
+
+                if($$("sideMenuResizer")){
+                    console.log("есть")
+                    $$("sideMenuResizer").hide();
+                }  else{
+                    console.log("ytn")
+                }
+                
             } else {
                 $$("tree").show();
                 $$("collapseBtn").config.icon ="wxi-angle-double-left";
                 $$("collapseBtn").refresh();
                 $$("sideMenu").config.width = 250;
-                $$("sideMenuHidden").hide();
-                $$("sideMenuResizer").show();
+                //$$("sideMenuHidden").hide();
+                if(window.innerWidth >= 800){
+                    $$("sideMenu").removeView($$("sideMenuHidden"));
+                    if($$("sideMenuResizer")){
+                        $$("sideMenuResizer").show();
+                    }
+                } 
+              
+                
             }
             
         },
@@ -508,7 +586,7 @@ function treeSidebar () {
         id:"tree",
         minWidth:100,
         width: 300,
-        minHeight:150,
+        //minHeight:150,
         editable:false,
         select:true,
         editor:"text",
@@ -517,50 +595,71 @@ function treeSidebar () {
         clipboard: true,
         data: webix.ajax().get("/init/default/api/fields.json").then(function (data) {
             let srcTree = data.json().content;
-            console.log(data.json())
+            //console.log(data.json())
             let obj = Object.keys(srcTree);
             let actionsCheck;
-            let dataTree = [];
-            let dataTable = [];
-            let dataForm = [];
-
-        
+            //let dataTree = [];
+            let dataChilds = {tables:[], forms:[], dashboards:[]};
+            //let dataForms = {forms:[]};
+            
             obj.forEach(function(data) {
                 if (srcTree[data].actions){
                     actionsCheck = Object.keys(srcTree[data].actions)[0]; 
                 } 
                 if (srcTree[data].type == "dbtable"){
                     if(srcTree[data].plural){
-                        dataTable.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type}); 
+                        dataChilds.tables.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type}); 
                     } else if (srcTree[data].singular) {
-                        dataTable.push({"id":data, "value":srcTree[data].singular, "type":srcTree[data].type}); 
+                        dataChilds.tables.push({"id":data, "value":srcTree[data].singular, "type":srcTree[data].type}); 
                     }
                 } else if (srcTree[data].type == "tform"){
                     if(srcTree[data].plural){
-                        dataForm.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type}); 
+                        dataChilds.forms.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type}); 
                     }else if (srcTree[data].singular) {
-                        dataForm.push({"id":data, "value":srcTree[data].singular, "type":srcTree[data].type}); 
+                        dataChilds.forms.push({"id":data, "value":srcTree[data].singular, "type":srcTree[data].type}); 
 
                     }
-                }      
-            });
-           
+                }  else if (srcTree[data].type == "dashboard"){
+                    if(srcTree[data].plural){
+                        dataChilds.dashboards.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type}); 
+                    }else if (srcTree[data].singular) {
+                        dataChilds.dashboards.push({"id":data, "value":srcTree[data].singular, "type":srcTree[data].type}); 
 
-            dataTree.push( 
-                {id:"dashboardViewFolder",  value:"Партнёры", data:jsonDashboard.treeHeadlines},
-                {id:"tableEditFolder", value:"Таблицы", data:dataTable},
-                {id:"tableViewFolder", value:"Информация", data:dataForm},
-                );
-            return dataTree;
+                    }
+                }   
+            });
+
+
+            // dataTree.push( 
+            //     {id:"dashboardViewFolder",  value:"Партнёры", data:jsonDashboard.treeHeadlines},
+            //     {id:"tableEditFolder", value:"Таблицы", data:dataChilds.tables},
+            //     {id:"tableViewFolder", value:"Информация", data:dataChilds.forms},
+            //     );
+            //return dataTree;
+            return webix.ajax().get("/init/default/api/mmenu.json").then(function (data) {
+
+                let menu = data.json().mmenu;
+                let menuTree = [];
+                menu.forEach(function(el,i){
+                    if (el.title){
+                        menuTree.push({id:el.name, value:el.title, data:dataChilds[el.name]});
+                    } else {
+                        menuTree.push({id:el.name, value:"Без названия", data:dataChilds[el.name]});
+                    }
+                        
+                });
+
+                return menuTree;
+            });
+                
+            
         }), 
          
         
         on:{
             onSelectChange:function (ids) {
                
-                if (ids[0]){
-                    $$("webix__none-content").hide();
-                }
+               
                 if($$("inputsTable")){
                     $$(editFormId).removeView($$("inputsTable"));
                 }
@@ -568,31 +667,35 @@ function treeSidebar () {
                 itemTreeId = ids[0];
                 let treeItemId = $$("tree").getSelectedItem().id;
                 let getItemParent = $$("tree").getParentId(treeItemId);
-                
-                
-                if(ids[0]=="tableEditFolder" || getItemParent=="tableEditFolder" ){
-                    $$("dashboardView").hide();
-                    $$("tableView").hide();
-                    $$("tableEdit").show();
-                }
-                if(ids[0]=="dashboardViewFolder" || getItemParent=="dashboardViewFolder"){
-                   
-                    $$("tableEdit").hide();
-                    $$("tableView").hide();
-                    $$("dashboardView").show();
+
+                if (ids[0]&&getItemParent!==0){
+                    $$("webix__none-content").hide();
                 }
 
-                if(ids[0]=="tableViewFolder" || getItemParent=="tableViewFolder"){
+                if(getItemParent=="tables" ){
+                    $$("dashboards").hide();
+                    $$("forms").hide();
+                    $$("tables").show();
+                }
+
+                if(getItemParent=="dashboards"){
+                   
+                    $$("tables").hide();
+                    $$("forms").hide();
+                    $$("dashboards").show();
+                }
+
+                if(getItemParent=="forms"){
                     if ($$("propTableView") && $$("propTableView").isVisible()){
                         $$("propTableView").hide();
                     }
-                    $$("tableEdit").hide();
-                    $$("dashboardView").hide();
-                    $$("tableView").show();
+                    $$("tables").hide();
+                    $$("dashboards").hide();
+                    $$("forms").show();
                 }
 
 
-                if(getItemParent=="tableEditFolder"){
+                if(getItemParent=="tables"){
                    
                     $$(addBtnId).enable();
                     defaultStateForm();
@@ -603,31 +706,20 @@ function treeSidebar () {
 
                     getInfoTable (tableId, searchId, ids[0], findElementsId);
 
-                } else if(getItemParent=="dashboardViewFolder") {
-                   
+                } else if(getItemParent=="dashboards") {
+                   getInfoDashboard ();
 
-
-                } else if(getItemParent=="tableViewFolder") {
-                    
+                } else if(getItemParent=="forms") {
                     getInfoTable (tableIdView, searchIdView, ids[0], findElementsIdView);
-
-                    // let countRows = $$(tableIdView).count();
-                    // $$(findElementsIdView).setValues(countRows.toString());
-
-                }else if(getItemParent=="formEditFolder") {
-                   
- 
-                }else if(getItemParent=="formViewFolder") {
-                   
- 
                 }
 
             },
   
 
             onBeforeSelect: function(data) {
+                
                 let getItemParent = $$("tree").getParentId(data);
-                if(getItemParent=="tableEditFolder"){
+                if(getItemParent=="tables"){
                     if($$(editFormId).isDirty()){
                         checkFormSaved().then(function(result){
                             if(result) {
@@ -639,6 +731,16 @@ function treeSidebar () {
                     }
                 }
             },
+
+            onBeforeRender:function() {
+                if(window.innerWidth <= 550){
+                    $$("sideMenuResizer").hide();
+                } else {
+                    $$("sideMenuResizer").show();
+                }
+               
+            }
+
         },
         
 
@@ -654,6 +756,5 @@ export{
     itemTreeId,
     inpObj,
     customInputs,
-    getPopupInfo,
     urlFieldAction
 };
