@@ -42,7 +42,7 @@ export function header() {
                 click: function() {
                     history.back();
                 }
-            }
+            },
             
         ]
     };

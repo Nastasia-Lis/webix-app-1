@@ -74,7 +74,7 @@ function tableToolbar (idPager, idSearch, idExport, idFindElements, idTable,visi
                 {
                     view:"pager",
                     id:idPager,
-                    size:10,
+                    size:100,
                     inputHeight:48,
                     inputWidth:50,
                     group:3,
@@ -133,7 +133,7 @@ function table (idTable, idPager, onFunc, srcData) {
         resizeColumn: true,
         autoConfig: true,
         pager:idPager,
-        minHeight:400,
+        minHeight:200,
         footer: true,
         minWidth:500, 
         select:true,
@@ -156,12 +156,46 @@ function table (idTable, idPager, onFunc, srcData) {
                 });
             },
 
-            // "wxi-angle-down":function(event, cell, target){
-            //     console.log(cell.row)
-            //     let id = cell.row;
-            //     getPopupInfo(urlFieldAction, cell.row);
-            //     $$("popupTable").show( );
-            // },
+            "wxi-angle-down":function(event, cell, target){
+                //console.log(cell.row)
+                
+               
+            if (!($$("propTableView").isVisible()))   {
+                let id = cell.row;
+              
+
+                let url = "http://localhost:3000/init/default/api/lic/"; //urlFieldAction
+                let idRow = "D.200601.250131.ANY_HOST.000001"; //id
+
+
+                let urlArgEnd = urlFieldAction.search("{");
+                let findUrl = urlFieldAction.slice(0,urlArgEnd); 
+                
+                // --- поменять ссылку, достать id  curr row
+                webix.ajax(findUrl+id+".json",{
+                    success:function(text, data, XmlHttpRequest){
+                        console.log(data.json());
+                        data = data.json().content;
+                        let arrayProperty = [];
+                        data.forEach(function(el,i){
+                            arrayProperty.push({type:"text", id:i+1,label:el.name, value:el.value})
+                        });
+                        $$("propTableView").define("elements", arrayProperty);
+                        $$("propTableView").show();
+                        $$("propResize").show();
+                    },
+                    error:function(text, data, XmlHttpRequest){
+                        notify ("error","Ошибка при загрузке");
+
+                    }
+                });
+            } else {
+                $$("propTableView").hide();
+                $$("propResize").hide();
+            }
+
+            },
+            
         }
     };
 }
@@ -223,40 +257,32 @@ let onFuncTable = {
 
 let onFuncTableView = {
     onAfterSelect:function(id){
-        console.log(id);let idRow = "D.200601.250131.ANY_HOST.000001";
-        // --- поменять ссылку, достать id  curr row
-        webix.ajax("http://localhost:3000/init/default/api/lic/"+idRow+".json",{
-            success:function(text, data, XmlHttpRequest){
-                console.log(data.json());
-                data = data.json().content;
-                let arrayProperty = [];
-                data.forEach(function(el,i){
-                    //console.log(el);
-                    arrayProperty.push({type:"text", id:i+1,label:el.name, value:el.value})
+      
+        console.log(this.getItem(id))
+        
+     
+        // let idRow = "D.200601.250131.ANY_HOST.000001";
+        // // --- поменять ссылку, достать id  curr row
+        // webix.ajax("http://localhost:3000/init/default/api/lic/"+idRow+".json",{
+        //     success:function(text, data, XmlHttpRequest){
+        //         console.log(data.json());
+        //         data = data.json().content;
+        //         let arrayProperty = [];
+        //         data.forEach(function(el,i){
+        //             //console.log(el);
+        //             arrayProperty.push({type:"text", id:i+1,label:el.name, value:el.value})
                     
-                });
-                $$("propTableView").define("elements", arrayProperty);
-                $$("propTableView").show();
-            },
-            // error:function(text, data, XmlHttpRequest){
+        //         });
+        //         $$("propTableView").define("elements", arrayProperty);
+        //         $$("propTableView").show();
+        //     },
+        //     // error:function(text, data, XmlHttpRequest){
                 
-            //     console.log("error");
-            // }
-        });
+        //     //     console.log("error");
+        //     // }
+        // });
         
     }
-    // onAfterDelete: function() {
-    //     $$(findElementsId).setValues($$(tableId).count().toString());
-    //     if (!this.count())
-    //         this.showOverlay("Ничего не найдено");
-    //     if (this.count())
-    //         this.hideOverlay();
-    // },
-    // onAfterAdd: function() {
-    //     $$(findElementsId).setValues($$(tableId).count().toString());
-    //     this.hideOverlay();
-    // },
-  
 };
 
 //----- table view parameters

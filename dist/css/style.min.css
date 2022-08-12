@@ -194,6 +194,10 @@
   font-size: 12px !important;
 }
 
+.webix_dashTool {
+  height: 125px !important;
+}
+
 h1, h2, h3, h4, h5, h6 {
   font-family: "NotoSans", sans-serif !important;
   color: var(--dark) !important;
@@ -228,6 +232,10 @@ input, select,
 label, button {
   font-family: "NotoSans", sans-serif !important;
   font-weight: 500 !important;
+}
+
+.webix_mainContent > .webix_view.webix_layout_line {
+  margin-left: 0px !important;
 }
 
 .webix_view {

@@ -4,29 +4,24 @@
 
 @import "src/scss/btns";
 
-//*** expa
-
-
-
-// адаптив (+hide collaps sidebar), toolbar - скрывается то, что не вмещается
-// tabs
-
-
 
 // кастомизация -- сайдбар
 
-// иконка в таблицах с property
 // заменить prop на datatable
-// иконку меню найти
 // upload : не нужна кнопка submit
 // datepicker чекнуть
-//property
+// property
 
+// загрузка данных (отложенная + граф обозначение)
+// сепаратор
+// header
+// log с действиями
+// кол-во записей = 100
+// кнопка очистить форму - заменить на создать запись
 
 //----
 //login, import
-//баг collapse sidebar resize
-// adaptive: editTableForm btns
+
 
 @font-face {
 	font-family: 'NotoSans'; 
@@ -56,7 +51,9 @@
 
 
 // //*** expa
-
+.webix_dashTool{
+    height: 125px!important;
+}
 
 // //*** expa
 
@@ -98,6 +95,12 @@ label, button{
     font-family: 'NotoSans', sans-serif!important;
     font-weight: 500!important;
 }
+
+
+.webix_mainContent > .webix_view.webix_layout_line{
+    margin-left: 0px!important;
+  }
+
  
 .webix{
     &_view{

@@ -1,10 +1,8 @@
 import {tableId,editFormId,addBtnId,findElementsId, searchId,
-        tableIdView,findElementsIdView,searchIdView, saveNewBtnId
+        tableIdView,findElementsIdView,searchIdView
 } from './setId.js';
 
 import {notify, checkFormSaved,clearItem,popupExec, defaultStateForm} from "./editTableForm.js";
-import  {jsonDashboard } from "../treeItems/dashboardView.js";
-
 
 
 let itemTreeId = "";
@@ -15,7 +13,7 @@ let urlFieldAction ;
 let checkAction = false;
 
 
-function submitBtn (idElements, url, verb, rtype, idBtn=""){
+function submitBtn (idElements, url, verb, rtype){
     
     let valuesArray = [];
 
@@ -32,9 +30,9 @@ function submitBtn (idElements, url, verb, rtype, idBtn=""){
                 } else if (el.id.includes("customDatepicker")) {
                     console.log(el);
                     valuesArray.push(el.name+"="+$$(el.id).getValue());
-                }
-                
+                }    
             });
+
             webix.ajax(url+"?"+valuesArray.join("&")).then(function(data) {
                 console.log(data.json());
                 $$(tableIdView).clearAll();
@@ -50,25 +48,13 @@ function submitBtn (idElements, url, verb, rtype, idBtn=""){
                 $$(findElementsIdView).setValues(prevCountRows.toString());
             });
 
+
         } else if (rtype=="download"){
             webix.ajax().response("blob").get(url, function(text, blob, xhr) {
                 webix.html.download(blob, "table.docx");
             });
-        } else if (rtype=="delete") {
-
-        }
-
+        } 
     } 
-    // else if (verb=="post") {
-    //     let uploadFile;
-    //     idElements.forEach((el,i) => {
-    //         if (el.id.includes("customUploader")){
-    //             console.log(el);
-    //             uploadFile = $$(el.id).getValue();
-    //         } 
-    //     });
-    //     webix.ajax().post(url,{uploadFile});
-    // }
     
 }
 
@@ -78,7 +64,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
    
     
     itemTreeId = idsParam;
-    let titem = $$("tree").getItem(idsParam); //id,value tree item
+    let titem = $$("tree").getItem(idsParam);
    
     $$(idCurrTable).clearAll();
     $$(idSearch).setValue("");
@@ -88,6 +74,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
         webix.ajax().get("/init/default/api/fields.json").then(function (data) {
             notify ("error","Данные не найдены");
         });
+
     } else {
         let inpObj;
         if (idCurrTable == tableIdView){
@@ -95,14 +82,16 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
         }
 
         webix.ajax().get("/init/default/api/fields.json").then(function (data) {
+      
+// ---- Таблица - данные cols      
 
-// ---- Таблица - данные cols           
             data = data.json().content[idsParam];
+            
             let dataFields = data.fields;
             let obj = Object.keys(data.fields);
             let columnsData = [];
-
-            obj.forEach(function(data,i) {
+           
+            obj.forEach(function(data) {
                 if (dataFields[data].type == "datetime"){
                     dataFields[data].format = webix.i18n.fullDateFormatStr;
                 }
@@ -118,27 +107,31 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
             $$(idCurrTable).refreshColumns(columnsData);
 
 
-// ---- Таблица - проверить наличие actions у fields            
+
+// ---- Таблица - action detail у fields            
 
             let idCol;
-            
+            let actionKey;
+            checkAction = false;
+
+            console.log( data)
+
             columnsData.forEach(function(field,i){
-                if(field.type !== undefined && field.type == "action"){
+                if( field.type == "action" && data.actions[field.id].rtype == "detail"){
                     checkAction = true;
                     idCol = i;
-                    urlFieldAction = data.actions[field.id].url;
-                    //console.log(data.actions[field.id].url)
-                    
-                }
+                    actionKey = field.id;
+                } 
             });
-           
-             
-            // if (checkAction){
-            //     let columns = $$(idCurrTable).config.columns;
-            //     columns.splice(0,0,{ id:"action-first"+idCol, maxWidth:130, header:"Подробнее", template:"<span class='webix_icon wxi-angle-down'></span> "});
-            //     $$(idCurrTable).refreshColumns();
-            // }
-       
+
+            urlFieldAction = data.actions[actionKey].url;
+
+            if (checkAction){
+                let columns = $$(idCurrTable).config.columns;
+                columns.splice(0,0,{ id:"action-first"+idCol, maxWidth:130, header:"Подробнее", template:"<span class='webix_icon wxi-angle-down'></span> "});
+                $$(idCurrTable).refreshColumns();
+            }
+
 
 
  // -----  Array с кастомными полями
@@ -149,7 +142,6 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
             let idElements = [];
 
             let dataInputsArray = data.inputs;
-
 
             objInuts.forEach((el,i) => {
                 if (dataInputsArray[el].type == "string"){
@@ -207,27 +199,27 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
 
 
                     customInputs.push(
-                    { view:"combo",
-                    width:250,
-                    height:48,
-                    id: "customCombo"+i,
-                    //placeholder:"Введите текст",  
-                    //label:dataInputsArray[el].label,
-                    placeholder:dataInputsArray[el].label, 
-                    labelPosition:"top", 
-                    options:{
-                        data:optionData
-                      } ,
-                      on: {
-                        onAfterRender: function () {
-                            this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
-                         },
-                    }               
+                        { view:"combo",
+                        width:250,
+                        height:48,
+                        id: "customCombo"+i,
+                        //placeholder:"Введите текст",  
+                        //label:dataInputsArray[el].label,
+                        placeholder:dataInputsArray[el].label, 
+                        labelPosition:"top", 
+                        options:{
+                            data:optionData
+                        },
+                        on: {
+                            onAfterRender: function () {
+                                this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
+                            },
+                        }               
                     });
 
                 } else if (dataInputsArray[el].type == "submit" || dataInputsArray[el].type == "button") {
                     let actionType = dataInputsArray[el].action;
-                    let findAction = data.actions[actionType]; // сопоставить действие кнопки и ключ в actions
+                    let findAction = data.actions[actionType];
 
                     if (findAction.verb == "DELETE" && actionType !== "submit"){
                         let countCols = $$(idCurrTable).getColumns().length;
@@ -237,8 +229,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
                         $$(idCurrTable).refreshColumns();
                     } else if (findAction.verb == "DELETE") {
                         customInputs.push(
-                            //{rows:[
-                                //{},
+
                                 {   view:"button", 
                                     id:"customBtnDel"+i,
                                     css:"webix_danger", 
@@ -246,7 +237,6 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
                                     icon:"wxi-trash", 
                                     inputHeight:48,
                                     height:48,
-                                    //height:48,
                                     width:100,
                                     value:dataInputsArray[el].label,
                                     click:function (id) {
@@ -261,13 +251,11 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
                                     
                                     
                                 }, 
-                                //{},
-                            //]}
+
                         );
                     } else {
                         customInputs.push(
-                            //{rows:[
-                                //{},
+
                                 {   view:"button", 
                                     css:"webix_primary", 
                                     id:"customBtn"+i,
@@ -277,7 +265,6 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
                                     maxWidth:550,
                                     value:dataInputsArray[el].label,
                                     click:function (id) {
-                                        
 
                                         if (findAction.verb== "GET"){
                                             if ( findAction.rtype== "refresh") {
@@ -294,11 +281,6 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
                                             console.log("post");
 
                                         } 
-                                        // else if (findAction.verb == "DELETE"){
-                                        //     submitBtn(idElements,findAction.url,"delete");
-                                        //     console.log("delete");
-
-                                        // } 
                                         else if (findAction.verb == "download"){
                                             submitBtn(idElements,findAction.url, "get", "download",id);
                                             console.log("download");
@@ -311,11 +293,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
                                             this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
                                         },
                                     },
-                                    
-                                    
                                 }, 
-                                //{},
-                            //]}
                         );
                     }
                 } else if (dataInputsArray[el].type == "upload"){
@@ -426,7 +404,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
             } else {
                 $$(idCurrTable).showOverlay("Ничего не найдено");
             }
-
+          
             prevCountRows = $$(idCurrTable).count();
             $$(idFindElem).setValues(prevCountRows.toString());
         });
@@ -435,35 +413,124 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
 }
 
 
+
 function getInfoDashboard (){
 
+    function getAjax(url,inputsArray, action=false) {
+                
+           
+        webix.ajax().get(url).then(function (data){
+
+            let dashLayout=[];
+            let dataCharts = data.json().charts;
+            let titleTemplate = {};
+
+            dataCharts.forEach(function(el,i){
+                titleTemplate = el.title;
+                delete el.title;
+                el.borderless = true;
+                el.minWidth = 300;
+                dashLayout.push({rows:[ {template:titleTemplate,borderless:true,css:{"margin-top":"20px!important", "font-weight":"600!important", "font-size":"18px!important"}, height:30},el]});
+            });
+
+
+            if (!(action)){
+                $$("dashboardTool").addView({
+                    view:"scrollview",
+                    id:"dashboard-tool",
+                    borderless:true,
+                    css:{"margin":"20px!important","height":"50px!important"},
+                    body: {
+                        view:"flexlayout",
+                        rows:inputsArray
+                    }
+                },0);
+
+                $$("dashboardTool").addView({
+                    rows:[{
+                        template:"",
+                        css:"webix_style-template-count",
+                        borderless:false,
+                        height:30,
+                    }]
+                },1);
+
+                $$("dashboardBody").addView({
+                    view:"scrollview", 
+                    height:300,  
+                    id:"dashboard-charts",
+                    borderless:true,
+                    body: {
+                        view:"flexlayout",
+                        cols:dashLayout
+                    }
+                },2);
+                
+                $$("dashboardBody").removeView($$("dashEmpty"));
+            
+            } else {
+
+   
+                $$("dashboardBody").removeView( $$("dashboard-charts"));
+                
+                $$("dashboardBody").addView({
+                    view:"scrollview", 
+                    id:"dashboard-charts", 
+                    height:300, 
+                    borderless:true,
+                    css:{"margin":"10px!important"},
+                    body: {
+                        view:"flexlayout",
+                        cols:dashLayout
+                    }
+                },2);
+
+
+                if ($$("dashboard-charts")){
+                    notify ("success","Данные обновлены");
+                } else {
+                    notify ("error","Ошибка при загрузке данных");
+                }
+            }
+           
+        });
+    }
+
+
+
     if(!($$("dashboard-charts"))){
-       
-        
-        
+
+
         webix.ajax().get("/init/default/api/fields").then(function (data){
             let fields = data.json().content;
             let inputsArray=[];
+            let actionType ;
+            let findAction;
+
             Object.values(fields) .forEach(function(el,i){
                 //console.log(el.type)
                 if (el.type == "dashboard"){
                     //console.log(el.inputs)
                     let inputs = el.inputs;
+                    
+                    inputsArray.push({width:20});
                     Object.values(inputs).forEach(function(input,i){
-                        //console.log(input.type)
+                        
+                        
                         if (input.type == "datetime"){
                             inputsArray.push(
                                     {   view: "datepicker",
                                         format: webix.Date.strToDate("%d.%m.%Y"),
-                                        placeholder:"дд.мм.гг",
+                                        //placeholder:"дд.мм.гг",
                                         //placeholder:dataInputsArray[el].label,  
                                         id:"dashDatepicker"+i, 
                                         timepicker: true,
-                                        labelPosition:"top",
+                                        //labelPosition:"top",
+                                        placeholder:input.label,
                                         width:300,
                                         minWidth:100,
                                         height:48,
-                                        label:input.label, 
+                                        //label:input.label, 
                                         on: {
                                             onAfterRender: function () {
                                                 this.getInputNode().setAttribute("title",input.comment);
@@ -471,44 +538,43 @@ function getInfoDashboard (){
                                         }
                                     }
                             );
-                        } 
-                        
-        
+                           
+                        } else if (input.type == "submit"){
+                            actionType = input.action;
+                            findAction = el.actions[actionType];
+                            console.log(findAction);
+                            inputsArray.push(
+
+                                    {   view:"button", 
+                                        css:"webix_primary", 
+                                        id:"dashBtn"+i,
+                                        inputHeight:48,
+                                        height:48, 
+                                        minWidth:100,
+                                        maxWidth:200,
+                                        value:input.label,
+                                        click:function () {
+                                            getAjax(findAction.url, inputsArray,true);
+                                            
+                                        },
+                                        on: {
+                                            onAfterRender: function () {
+                                                this.getInputNode().setAttribute("title",input.comment);
+                                            },
+                                        },
+
+                                    }, 
+                            );
+                        }
+                        inputsArray.push({width:20});
                     });
+                    
                 }
             });
-     
-            //console.log( inputsArray)
 
-
-
-            webix.ajax().get("/init/default/api/dash_sales").then(function (data){
-
-                let dashLayout=[];
-                 
-               
-                dashLayout.push({rows:[{rows:inputsArray}]});
-                console.log(dashLayout[0].rows, "das")
-                let dataCharts = data.json().charts;
-                console.log(data.json())
-                let titleTemplate = {};
-                dataCharts.forEach(function(el,i){
-                    titleTemplate = el.title;
-                    delete el.title;
-                    el.borderless = true;
-                    el.minWidth = 300;
-                    dashLayout[0].rows.push({rows:[ {template:titleTemplate,borderless:true,css:{"margin-top":"20px!important", "font-weight":"500!important", "font-size":"17px!important"}, height:30},el]});
-    
-                });
-                $$("dashboardBody").addView({view:"scrollview",id:"dashboard-charts",borderless:true,css:{"margin":"20px!important"},body: {view:"flexlayout",cols:dashLayout}},0);
-                $$("dashboardBody").removeView($$("dashEmpty"));
-             
-            });
-         
+            getAjax(findAction.url, inputsArray);
+            
         });
-
-
-       
 
     }
 
@@ -601,11 +667,12 @@ function treeSidebar () {
             //let dataTree = [];
             let dataChilds = {tables:[], forms:[], dashboards:[]};
             //let dataForms = {forms:[]};
-            
+    
             obj.forEach(function(data) {
                 if (srcTree[data].actions){
                     actionsCheck = Object.keys(srcTree[data].actions)[0]; 
                 } 
+
                 if (srcTree[data].type == "dbtable"){
                     if(srcTree[data].plural){
                         dataChilds.tables.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type}); 
@@ -619,7 +686,8 @@ function treeSidebar () {
                         dataChilds.forms.push({"id":data, "value":srcTree[data].singular, "type":srcTree[data].type}); 
 
                     }
-                }  else if (srcTree[data].type == "dashboard"){
+                }  else if (srcTree[data].type == "dashboard" ){
+           
                     if(srcTree[data].plural){
                         dataChilds.dashboards.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type}); 
                     }else if (srcTree[data].singular) {
@@ -637,22 +705,29 @@ function treeSidebar () {
             //     );
             //return dataTree;
             return webix.ajax().get("/init/default/api/mmenu.json").then(function (data) {
-
+              
                 let menu = data.json().mmenu;
                 let menuTree = [];
                 menu.forEach(function(el,i){
-                    if (el.title){
-                        menuTree.push({id:el.name, value:el.title, data:dataChilds[el.name]});
+                    if (el.name.includes("delim")){
+                        console.log(el);
+                        menuTree.push({"value":"⠀"});
                     } else {
-                        menuTree.push({id:el.name, value:"Без названия", data:dataChilds[el.name]});
+                
+                        if (el.title){
+                            menuTree.push({id:el.name, value:el.title, data:dataChilds[el.name]});
+                        } else {
+                            menuTree.push({id:el.name, value:"Без названия", data:dataChilds[el.name]});
+                        }
                     }
                         
                 });
-
+                console.log(menuTree)
+                //console.log($$("tree"))
                 return menuTree;
             });
                 
-            
+           
         }), 
          
         

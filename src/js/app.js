@@ -16,10 +16,7 @@ import  {tableToolbar,table, onFuncTable, onFuncTableView} from "./treeItems/tab
 import {editTableBar} from "./modules/editTableForm.js";
 import {propertyTemplate} from "./modules/viewPropertyTable.js";
 
-function adaptiveResizers (){
-    //console.log($$("sideMenu").getParentView().config.id); 
 
-}
 
 
 
@@ -70,6 +67,7 @@ webix.ready(function(){
                             },
                             
                             {   id:"mainContent",
+                                css:"webix_mainContent",
                                 responsive:"adaptive", 
                                                                 
                                 cols:[
@@ -83,7 +81,7 @@ webix.ready(function(){
                                     
                                     {rows:[
                                         header.header(),
-                                        
+                                        //{id:"sideMenuResizer",view:"resizer" },
                                         
                                         {id:"webix__none-content"},
                                         
@@ -130,7 +128,7 @@ webix.ready(function(){
                                                     
                                                     {view:"flexlayout",cols:[
                                                         table (tableIdView, pagerIdView, onFuncTableView ),
-                                                        { view:"resizer",class:"webix_resizers",},
+                                                        { view:"resizer",class:"webix_resizers", id:"propResize", hidden:true},
                                                         propertyTemplate("propTableView")
                                                     ]}}, 
                                                 ],
@@ -183,9 +181,9 @@ webix.ready(function(){
     //Backbone.history.start();
   
     //webix.UIMananger.tabControl = true;
-    adaptiveResizers ();
+
     webix.i18n.setLocale("ru-RU");   
-   webix.i18n.parseFormat = "%d.%m.%Y %H:%i:%s";
+    webix.i18n.parseFormat = "%d.%m.%Y %H:%i:%s";
     webix.i18n.setLocale();
 });
 
