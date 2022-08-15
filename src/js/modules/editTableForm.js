@@ -1,5 +1,6 @@
-import {tableId, editFormId, saveBtnId,searchId, addBtnId, delBtnId, cleanBtnId, saveNewBtnId} from './setId.js';
+import {tableId, editFormId, saveBtnId,searchId, addBtnId, delBtnId, cleanBtnId, saveNewBtnId,newAddBtnId} from './setId.js';
 import {itemTreeId} from './sidebar.js';
+import {setLogValue} from './logBlock.js';
 
 
 //--- bns
@@ -10,46 +11,62 @@ function saveItem(){
         if( itemData.id ) {
             webix.ajax().put("/init/default/api/"+itemTreeId+"/"+itemData.id, itemData, {
                 success:function(){
-                    console.log("success");
                     $$( tableId ).updateItem(itemData.id, itemData);
                     clearItem();
-                    notify ("success","Данные сохранены");
+                    notify ("success","Данные сохранены",true);
                     defaultStateForm ();
                     $$("inputsTable").hide();
                     $$(tableId).clearSelection();
+                    $$(newAddBtnId).enable();
                 },
                 error:function(){
-                    notify ("error","Ошибка при сохранении данных");
+                    notify ("error","Ошибка при сохранении данных",true);
                 }
             });
         }    
-        else {
-            $$( tableId ).add( itemData );
-            clearItem();
-            notify ("success","Данные добавлены");
-        }    
+        // else {
+        //     $$( tableId ).add( itemData );
+        //     $$(newAddBtnId).enable();
+        //     clearItem();
+        //     notify ("success","Данные добавлены",true);
+        // }    
     } else {
-        notify ("error","Заполните пустые поля");
+        notify ("error","Заполните пустые поля",true);
     }
 }
 
 
 
 function addItem () {
-    $$(tableId).filter(false);
-    $$(tableId).hideOverlay("Ничего не найдено");
-    $$(searchId).setValue("");
-    createEditFields();
-    $$(delBtnId).disable();
-    $$(saveBtnId).hide();
-    $$(addBtnId).hide();
-    $$(saveNewBtnId).show();
+    if($$(editFormId).isDirty()){
+        popupExec("Данные не сохранены").then(
+        function(){
+            $$(tableId).filter(false);
+            $$(tableId).hideOverlay("Ничего не найдено");
+            $$(searchId).setValue("");
+            createEditFields();
+            $$(delBtnId).disable();
+            $$(saveBtnId).hide();
+            $$(saveNewBtnId).show();
+        });
+
+    } else {
+        $$(tableId).filter(false);
+        $$(tableId).hideOverlay("Ничего не найдено");
+        $$(searchId).setValue("");
+        createEditFields();
+        $$(delBtnId).disable();
+        $$(saveBtnId).hide();
+        $$(saveNewBtnId).show();
+        $$(newAddBtnId).disable();
+    }
+
+
 }
 
 
 
 function saveNewItem (){
-   
     if($$( editFormId ).validate() ) {
         if($$(editFormId).isDirty()){
             let newValues = $$(editFormId).getValues();
@@ -61,17 +78,18 @@ function saveNewItem (){
                     clearItem();
                     defaultStateForm ();
                     $$("inputsTable").hide();
-                    notify ("success","Данные успешно добавлены");
+                    $$(newAddBtnId).enable();
+                    notify ("success","Данные успешно добавлены", true);
                 },
                 error:function(){
-                    notify ("error","Ошибка при добавлении данных");
+                    notify ("error","Ошибка при добавлении данных", true);
                 }
             });
         }else {
             notify ("debug","Форма пуста");
         }
     } else {
-        notify ("error","Заполните пустые поля");
+        notify ("error","Заполните пустые поля",true);
     }
    
 }
@@ -85,18 +103,13 @@ function removeItem() {
             webix.ajax().del("/init/default/api/"+itemTreeId+"/"+formValues.id+".json", formValues,{
                 success:function(){
                     console.log(formValues.id)
-                    //$$( tableId ).remove(formValues.id);
                     clearItem();
                     defaultStateForm ();
-                    // if ($$(saveBtnId)) {
-                    //     $$(saveBtnId).hide();
-                    //     $$(addBtnId).show();
-                    // }
                     $$("inputsTable").hide();
-                    notify ("success","Данные успешно удалены");
+                    notify ("success","Данные успешно удалены",true);
                 },
                 error:function(){
-                    notify ("error","Ошибка при удалении записи");
+                    notify ("error","Ошибка при удалении записи",true);
                 }
             });
             
@@ -107,26 +120,26 @@ function removeItem() {
 
 
 
-function clearForm(){
+// function clearForm(){
     
 
-    if ($$(saveBtnId).isVisible()){
-        $$(editFormId).setDirty(true);
-    } 
+//     if ($$(saveBtnId).isVisible()){
+//         $$(editFormId).setDirty(true);
+//     } 
     
-    if($$(editFormId).isDirty()){
-        popupExec("Форма будет очищена").then(
-            function(){
-                clearItem();
-                $$(tableId).clearSelection();
-                defaultStateForm ();
-                $$("inputsTable").hide();
-                notify ("success","Форма очищена");
-        });
-    } else {
-        notify ("debug","Форма пуста");
-    }
-}
+//     if($$(editFormId).isDirty()){
+//         popupExec("Данные не сохранены").then(
+//             function(){
+//                 clearItem();
+//                 $$(tableId).clearSelection();
+//                 defaultStateForm ();
+//                 $$("inputsTable").hide();
+//                 //notify ("success","Форма очищена");
+//         });
+//     } else {
+//         notify ("debug","Форма пуста");
+//     }
+// }
 
 //--- bns
 
@@ -170,7 +183,6 @@ function createEditFields () {
                                 data.forEach((el,i) =>{
                                     
                                     let l = 0;
-                                    console.log("1213",Object.keys(el)[1])
                                     while (l <= Object.values(el).length) {
                                         
                                         if (typeof Object.values(el)[l] == "string"){
@@ -196,7 +208,7 @@ function createEditFields () {
                                 });
                                 return dataArray;
                             })
-                        );
+                    );
                     
                 }
             }});
@@ -229,13 +241,18 @@ function createEditFields () {
         });
 
         let inpObj = {margin:8,id:"inputsTable", rows:inputsArray};
-        $$(cleanBtnId).enable(); 
+        //$$(cleanBtnId).enable(); 
         $$(delBtnId).enable();
-        console.log(inpObj,"edit")
         return ($$(editFormId).addView( inpObj, 1));
         
     } else {
-        $$(cleanBtnId).enable(); 
+        console.log($$(editFormId).isDirty());
+
+        $$(editFormId).clear();
+        $$(editFormId).clearValidation();
+        
+
+        //$$(cleanBtnId).enable(); 
         $$(delBtnId).enable();
         $$("inputsTable").show();
     }
@@ -255,12 +272,13 @@ function defaultStateForm () {
     } else if ($$(saveBtnId).isVisible()){
         $$(saveBtnId).hide();
     }
-    $$(addBtnId).show();
+    //$$(addBtnId).show();
     $$(delBtnId).disable();
-    $$(cleanBtnId).disable();
+    //$$(cleanBtnId).disable();
 }
 
 function popupExec (titleText) { 
+
     return webix.confirm({
         width:300,
         ok: 'Да',
@@ -270,9 +288,13 @@ function popupExec (titleText) {
     });
 }
 
-function notify (typeNotify,textMessage) {
+function notify (typeNotify,textMessage, log = false) {
     webix.message.position = "bottom";
     webix.message({type:typeNotify,  text:textMessage});
+    if(log){
+        setLogValue(typeNotify, textMessage);
+    }
+
 }
 
 
@@ -314,24 +336,20 @@ let editTableBar = {
     scroll:true,
     elements:[
 
-        {id:"form-adaptive",margin:5,rows:[{margin:5, rows:[
+        {id:"form-adaptive",minHeight:48, margin:5, rows:[{margin:5, rows:[
            
             
-            {responsive:"form-adaptive", margin:5, 
-                //borderless:true,
-      
+            {responsive:"form-adaptive",  margin:5, 
+
                 cols: [
                     {   view:"button",
-                        
-                        id:cleanBtnId,
+                        id:newAddBtnId,
                         height:48,
                         minWidth:90, 
-                        disabled:true,
-                        hotkey: "esc",
-                        value:"Очистить форму", click:clearForm},
+                        hotkey: "shift",
+                        value:"Новая запись", click:addItem},
                         
                     {   view:"button",
-
                         id:delBtnId,
                         disabled:true,
                         height:48,
@@ -363,16 +381,16 @@ let editTableBar = {
             click:saveItem,
             hotkey: "enter" 
         },
-        { 
-            view:"button", 
-            id:addBtnId,
-            value:"Добавить новую запись", 
-            height:48,
-            disabled:true,
-            hotkey: "shift",
-            css:"webix_primary", 
-            click:addItem
-        },
+        // { 
+        //     view:"button", 
+        //     id:addBtnId,
+        //     value:"Добавить новую запись", 
+        //     height:48,
+        //     disabled:true,
+        //     hotkey: "shift",
+        //     css:"webix_primary", 
+        //     click:addItem
+        // },
         { 
             view:"button", 
             id:saveNewBtnId,

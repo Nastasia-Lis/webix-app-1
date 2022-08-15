@@ -1,4 +1,4 @@
-
+import {notify} from "./editTableForm.js";
 var routes = new (Backbone.Router.extend({
     routes:{
         "":"index", 
@@ -15,13 +15,37 @@ var routes = new (Backbone.Router.extend({
 
 
 function submit(){
-    // $$("formAuth").attachEvent("onAfterSelect", function(){
-    //     routes.navigate("app/", { trigger:true });
-    //     $$("mainContent").show();
-    // });
+    
+    //un=admin&np=admin
+    //{username: '235', password: '35'}
 
-    // routes.navigate("content", { trigger:true});
-    // $$("mainContent").show();
+    let userData = $$("formAuth").getValues();
+    
+    let loginData = [];
+
+
+    loginData.push("un"+"="+userData.username);
+    loginData.push("np"+"="+userData.password);
+
+
+    webix.ajax("/init/default/login"+"?"+loginData.join("&"),{
+        success:function(text, data, XmlHttpRequest){
+            console.log(data.json());
+        },
+        error:function(text, data, XmlHttpRequest){
+            notify ("error","Ошибка");
+        }
+    });
+
+    //"err_type i , e
+    
+    $$("formAuth").attachEvent("onAfterSelect", function(){
+        routes.navigate("app/", { trigger:true });
+        $$("mainContent").show();
+    });
+
+    routes.navigate("content", { trigger:true});
+    $$("mainContent").show();
 
 
     

@@ -23,7 +23,7 @@ function tableToolbar (idPager, idSearch, idExport, idFindElements, idTable,visi
           filterHTML:true,
           styles:true
         });
-        notify ("success","Таблица сохранена");
+        notify ("success","Таблица сохранена",true);
     }
     return { 
 
@@ -127,13 +127,13 @@ function tableToolbar (idPager, idSearch, idExport, idFindElements, idTable,visi
 
 function table (idTable, idPager, onFunc, srcData) {
     return {
-        view:"treetable",
+        view:"datatable",
         id: idTable,
         css:"webix_table-style webix_header_border webix_data_border",
         resizeColumn: true,
         autoConfig: true,
         pager:idPager,
-        minHeight:200,
+        minHeight:350,
         footer: true,
         minWidth:500, 
         select:true,
@@ -147,10 +147,10 @@ function table (idTable, idPager, onFunc, srcData) {
                         webix.ajax().del("/init/default/api/"+itemTreeId+"/"+formValues.id+".json", formValues,{
                             success:function(){
                                 $$(idTable).remove($$(idTable).getSelectedId());
-                                notify ("success","Данные успешно удалены");
+                                notify ("success","Данные успешно удалены",true);
                             },
                             error:function(){
-                                notify ("error","Ошибка при удалении записи");
+                                notify ("error","Ошибка при удалении записи",true);
                             }
                         });
                 });
@@ -206,6 +206,15 @@ function table (idTable, idPager, onFunc, srcData) {
 
 //----- table edit parameters
 let onFuncTable = {
+    onBeforeLoad:function(){
+        this.showOverlay("Loading...");
+    },
+
+    // onAfterLoad:function(){
+    //     console.log('1')
+    //     this.hideOverlay("Loading...");
+    // },
+
     onAfterSelect(id){
       
         let values = $$(tableId).getItem(id); 
@@ -214,7 +223,7 @@ let onFuncTable = {
             console.log(values);
             $$(saveNewBtnId).hide();
             $$(saveBtnId).show();
-            $$(addBtnId).hide(); 
+            //$$(addBtnId).hide(); 
             $$(editFormId).clearValidation();
         }
         if($$(editFormId).isDirty()){
@@ -230,6 +239,7 @@ let onFuncTable = {
         }   
     },
     onAfterLoad:function(){
+        this.hideOverlay();
         $$(editFormId).removeView("inputsTable");
         defaultStateForm ();
     },  
@@ -244,6 +254,8 @@ let onFuncTable = {
         $$(findElementsId).setValues($$(tableId).count().toString());
         this.hideOverlay();
     },
+
+    
  
 };
 //----- table edit parameters

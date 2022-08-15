@@ -106,7 +106,7 @@
 .webix_danger:active .webix_button {
   background: var(--danger-dark) !important;
 }
-.webix_danger .webix_icon_btn, .webix_btn-download .webix_icon_btn {
+.webix_danger .webix_icon_btn, .webix_btn-download .webix_icon_btn, .webix_log-btn .webix_icon_btn {
   margin: 0px !important;
 }
 .webix_add-btn > .webix_el_box > .webix_button {
@@ -173,19 +173,8 @@
   color: var(--dark) !important;
 }
 
-@font-face {
-  font-family: "NotoSans";
-  font-weight: 400;
-  src: local("NotoSans"), url(../fonts/NotoSans-Regular.ttf);
-}
-@font-face {
-  font-family: "NotoSans";
-  font-weight: 500;
-  src: local("NotoSans"), url(../fonts/NotoSans-SemiBold.ttf);
-}
 .webix_view,
 .webix_confirm {
-  font-family: "NotoSans", sans-serif !important;
   font-weight: 400 !important;
   font-size: 14px !important;
 }
@@ -198,8 +187,16 @@
   height: 125px !important;
 }
 
+.webix_progress_top .webix_progress_state, .webix_progress_bottom .webix_progress_state {
+  background: var(--primary-light) !important;
+  background-image: none !important;
+}
+
+.webix_progress_bottom .webix_progress_state {
+  height: 8px !important;
+}
+
 h1, h2, h3, h4, h5, h6 {
-  font-family: "NotoSans", sans-serif !important;
   color: var(--dark) !important;
 }
 
@@ -225,17 +222,20 @@ select:focus {
 input, select,
 .webix_inp_static {
   border-radius: 4px !important;
-  font-family: "NotoSans", sans-serif !important;
   font-weight: 400 !important;
 }
 
 label, button {
-  font-family: "NotoSans", sans-serif !important;
   font-weight: 500 !important;
 }
 
 .webix_mainContent > .webix_view.webix_layout_line {
   margin-left: 0px !important;
+}
+
+.webix_log-block .webix_list_item {
+  cursor: default !important;
+  font-size: 13px !important;
 }
 
 .webix_view {
@@ -265,7 +265,6 @@ label, button {
   background-color: var(--bg) !important;
 }
 .webix_accordion-container > .webix_accordionitem .webix_accordionitem_header {
-  font-family: "NotoSans", sans-serif !important;
   font-weight: 400 !important;
   font-size: 15px !important;
   background-color: var(--gray-light) !important;
@@ -283,7 +282,6 @@ label, button {
   padding: 0px !important;
 }
 .webix_hcolumn, .webix_pager_item_selected {
-  font-family: "NotoSans", sans-serif !important;
   font-weight: 500 !important;
   font-size: 14px !important;
 }
