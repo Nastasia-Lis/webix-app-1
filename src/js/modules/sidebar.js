@@ -1,5 +1,5 @@
 import {tableId,editFormId,addBtnId,findElementsId, searchId,
-        tableIdView,findElementsIdView,searchIdView
+        tableIdView,findElementsIdView,searchIdView,newAddBtnId
 } from './setId.js';
 
 import {notify, checkFormSaved,clearItem,popupExec, defaultStateForm} from "./editTableForm.js";
@@ -36,9 +36,7 @@ function submitBtn (idElements, url, verb, rtype){
 
             webix.ajax(url+"?"+valuesArray.join("&"),{
                 success:function(text, data, XmlHttpRequest){
-                    console.log("yeee");
                     $$(tableIdView).clearAll();
-    
                     data = data.json().content;
                     if (data.length !== 0){
                         $$(tableIdView).hideOverlay("Ничего не найдено");
@@ -51,6 +49,9 @@ function submitBtn (idElements, url, verb, rtype){
                 },
                 error:function(text, data, XmlHttpRequest){
                     notify ("error","Ошибка при загрузке данных",true);
+                    if(!($$(newAddBtnId).isEnabled())){
+                        $$(newAddBtnId).enable();
+                    }
                 }
             });
 
@@ -149,7 +150,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
             let idElements = [];
 
             let dataInputsArray = data.inputs;
-
+            //console.log(dataInputsArray, "e")
             objInuts.forEach((el,i) => {
                 if (dataInputsArray[el].type == "string"){
                     customInputs.push(
@@ -353,6 +354,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
                     customInputs.push(
                             {   view:"checkbox", 
                                 id:"customСheckbox"+i, 
+                                minWidth:220,
                                 css:"webix_checkbox-style",
                                 //labelPosition:"top",
                                 //labelWidth: "auto",
@@ -367,11 +369,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
                     );
 
                 } 
-            
-                if (dataInputsArray[el].type == "checkbox"){
-                   
-                }
-                customInputs.push({width:20});
+               customInputs.push({width:10});
             });
             
           
@@ -404,6 +402,9 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
 
         webix.ajax().get("/init/default/api/"+itemTreeId,{
             success:function(text, data, XmlHttpRequest){
+                if(!($$(newAddBtnId).isEnabled())){
+                    $$(newAddBtnId).enable();
+                }
                 $$(idCurrTable).showProgress({
                     type:"bottom",
                     hide:true
@@ -425,6 +426,9 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem) {
             },
             error:function(text, data, XmlHttpRequest){
                 notify ("error","Ошибка при загрузке данных",true);
+                if($$(newAddBtnId).isEnabled()){
+                    $$(newAddBtnId).disable();
+                }
             }, 
         });
     } 

@@ -1,12 +1,8 @@
-//import {hideInterfaceElements} from './userLogin.js';
 import {headerSidebar} from "./sidebar.js";
+import {setStorageData} from "./userSettings.js";
+
 
 export function header() {
-    // function logoutClick () {
-    //     localStorage.setItem("authSuccess", 0);
-    //     hideInterfaceElements ();
-    // }
-    
     const header = {
         view: "toolbar", 
         id: "header",
@@ -30,6 +26,7 @@ export function header() {
             //     }  
             // },
             {   view:"button",  
+                id:"webix_log-btn",
                 type:"icon", 
                 icon:"wxi-eye-slash",
                 //label:"Системные сообщения", 
@@ -47,11 +44,13 @@ export function header() {
                         $$("log-resizer").hide();
                         this.config.icon ="wxi-eye";
                         this.refresh();
+                        setStorageData("LogVisible", JSON.stringify("hide"));
                     } else {
                         $$("logLayout").show();
                         $$("log-resizer").show();
                         this.config.icon ="wxi-eye-slash";
                         this.refresh();
+                        setStorageData("LogVisible", JSON.stringify("show"));
                     }
                 }
             },
@@ -65,6 +64,7 @@ export function header() {
                     }
                 } ,
                 click: function() {
+                    webix.ajax().post("/init/default/logout/");
                     history.back();
                 }
             },

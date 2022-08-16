@@ -1,5 +1,8 @@
-import {formLogin} from "./modules/login.js";
-console.log("expa 1.0.0")
+console.log("expa 1.0.1");
+
+import {formLogin, checkUserLogin, getLogin} from "./modules/login.js";
+import {getStorageData} from "./modules/userSettings.js";
+
 import {
     tableId, pagerId, searchId, exportBtn, findElementsId, formId,
     
@@ -16,16 +19,22 @@ import  {tableToolbar,table, onFuncTable, onFuncTableView} from "./treeItems/tab
 
 // other blocks
 import {editTableBar} from "./modules/editTableForm.js";
-import {logBlock, logLayout} from "./modules/logBlock.js";
+import {logLayout} from "./modules/logBlock.js";
 import {propertyTemplate} from "./modules/viewPropertyTable.js";
 
 
 
 
 webix.ready(function(){
-
     
-
+    //window.location.replace('http://localhost:3000/index.html#content');
+    //checkUserLogin ();
+    // console.log(checkUserLogin ())
+    // if (checkUserLogin ()){
+    //     console.log("yes")
+    // }else {
+    //     console.log("no")
+    // }
 
     webix.protoUI({
         name:"edittree"
@@ -86,9 +95,7 @@ webix.ready(function(){
                                                 }
                                             
                                             },
-                                      
-                                            //logBlock,
-                                            
+
                                             {id:"dashboards", hidden:true, scroll:"auto",
                                             rows: dashboardLayout()
                                             } ,
@@ -118,7 +125,6 @@ webix.ready(function(){
                                 ]
                             },
                             {view:"resizer", id:"log-resizer"},
-                            //logBlock
                             logLayout
                 
                         ]}
@@ -126,7 +132,7 @@ webix.ready(function(){
                 },
 
     });
- 
+    getStorageData();
     window.addEventListener('resize', function(event) {
  
         if ($$("tree").isVisible()){
@@ -143,11 +149,9 @@ webix.ready(function(){
 
 
     }, true);
-   
+
     Backbone.history.start();
   
-    //webix.UIMananger.tabControl = true;
-
     webix.extend($$(tableId), webix.ProgressBar);
     webix.extend($$(tableIdView), webix.ProgressBar);
 

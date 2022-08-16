@@ -29,7 +29,7 @@ function setLogValue (typeNotify,notifyText) {
         $$("logBlock-list").add({
             date:currentDate,
             value:notifyText,
-            src:"Expa v1.0.0"
+            src:"Expa v1.0.1"
         });
     }
 
@@ -65,7 +65,7 @@ const logBlock = {
 
 const logLayout = {
     id:"logLayout",height:80,rows:[
-        {template:"<b>Системные сообщения</b>", height:30},
+        {template:"<div class='webix_log-headline'>Системные сообщения</div>", height:30},
         logBlock
     ]
 };

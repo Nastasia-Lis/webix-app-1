@@ -2,7 +2,7 @@ import {notify} from "./editTableForm.js";
 var routes = new (Backbone.Router.extend({
     routes:{
         "":"index", 
-        "content":"content" 
+        "content":"content" ,
     },
     content:function(){
         $$("mainLayout").show(); 
@@ -14,45 +14,59 @@ var routes = new (Backbone.Router.extend({
 }));
 
 
-function submit(){
-    
-    //un=admin&np=admin
-    //{username: '235', password: '35'}
 
+function checkUserLogin () {
+    //let userAuthSuccess;
+    webix.ajax("/init/default/api/whoami",{
+        success:function(text, data, XmlHttpRequest){
+            window.location.replace('http://localhost:3000/index.html#content');
+            //return userAuthSuccess == true;
+        },
+        error:function(text, data, XmlHttpRequest){
+           
+        }
+    });
+}
+
+
+
+function getLogin(){
+    $$("formAuth").validate();
     let userData = $$("formAuth").getValues();
     
     let loginData = [];
 
-
     loginData.push("un"+"="+userData.username);
     loginData.push("np"+"="+userData.password);
 
-
     webix.ajax("/init/default/login"+"?"+loginData.join("&"),{
         success:function(text, data, XmlHttpRequest){
-            console.log(data.json());
+            console.log(data.json(), "login");
+            webix.ajax("/init/default/api/whoami",{
+                success:function(text, data, XmlHttpRequest){
+                    routes.navigate("content", { trigger:true});
+                    console.log(data.json())
+                   
+                },
+                error:function(text, data, XmlHttpRequest){
+                    if ($$("formAuth").isDirty()){
+                        notify ("error","Неверный логин или пароль");
+                    }
+                }
+            });
+            //checkUserLogin ();
+
         },
         error:function(text, data, XmlHttpRequest){
-            notify ("error","Ошибка");
+           
+            //notify ("error","Ошибка");
         }
     });
 
-    //"err_type i , e
+ 
     
-    $$("formAuth").attachEvent("onAfterSelect", function(){
-        routes.navigate("app/", { trigger:true });
-        $$("mainContent").show();
-    });
-
-    routes.navigate("content", { trigger:true});
-    $$("mainContent").show();
 
 
-    
-    //Backbone.Transitions.transit(content, slideUpDown);
-    //$$("mainContent").show();
-
-    //Backbone.history.start();
 }
 
 
@@ -62,23 +76,20 @@ const formLogin = {
     maxWidth: 300,
     borderless:true,
     elements: [
-        {view:"text", label:"Логин", name:"username", },
-        {view:"text", label:"Пароль", name:"password",
+        {view:"text", label:"Логин", name:"username",invalidMessage:"Поле должно быть заполнено"  },
+        {view:"text", label:"Пароль", name:"password",invalidMessage:"Поле должно быть заполнено",
         type:"password"},
         {view:"button", value: "Войти", css:"webix_primary",
-        hotkey: "enter", align:"center", click:submit}, 
+        hotkey: "enter", align:"center", click:getLogin}, 
     ],
 
-    on:{
-        onValidationError:function(key, obj){
-            var text;
-            if (key == "username")
-            text = "Username can't be empty";
-            if (key == "password")
-            text = "Password can't be empty";
-            webix.message({ type:"error", text:text });
-        }
-    },
+    rules:{
+
+        "username":webix.rules.isNotEmpty,
+        "password":webix.rules.isNotEmpty,
+
+      },
+
 
     elementsConfig:{
         labelPosition:"top"
@@ -91,5 +102,7 @@ export {
     //loginCheck ,
     //hideInterfaceElements,
     formLogin, 
-    //routes
+    checkUserLogin,
+    getLogin,
+    routes
 };

@@ -166,7 +166,12 @@ function createEditFields () {
                     label:el.label, 
                     placeholder:"дд.мм.гг", 
                     timepicker: true,
-                    labelPosition:"top"
+                    labelPosition:"top",
+                    on:{
+                        onItemClick:function(){
+                            $$(editFormId).clearValidation();
+                        }
+                    }
                 });
             } 
             
@@ -193,7 +198,6 @@ function createEditFields () {
                                     }
 
                                     if (el[keyArray] == undefined){
-                                        console.log("undef")
 
                                         while (l <= Object.values(el).length) {
                                             if (typeof Object.values(el)[1] == "number"){
@@ -204,7 +208,6 @@ function createEditFields () {
                                         }
                                     }
                                     dataArray.push({ "id":el.id, "value":el[keyArray]});
-                                    console.log(dataArray)   
                                 });
                                 return dataArray;
                             })
@@ -222,7 +225,12 @@ function createEditFields () {
                         labelPosition:"top",  
                         options:{
                            data:optionData
-                      }
+                        },
+                        on:{
+                            onItemClick:function(){
+                                $$(editFormId).clearValidation();
+                            }
+                        }
                     }
 
                 );
@@ -234,7 +242,12 @@ function createEditFields () {
                     view:"text", 
                     name:el.id, 
                     label:el.label, 
-                    labelPosition:"top"
+                    labelPosition:"top",
+                    on:{
+                        onKeyPress:function(){
+                            $$(editFormId).clearValidation();
+                        }
+                    }
                     }
                 );
             }
@@ -336,7 +349,7 @@ let editTableBar = {
     scroll:true,
     elements:[
 
-        {id:"form-adaptive",minHeight:48, margin:5, rows:[{margin:5, rows:[
+        {id:"form-adaptive",minHeight:48,css:"webix_form-adaptive", margin:5, rows:[{margin:5, rows:[
            
             
             {responsive:"form-adaptive",  margin:5, 
@@ -414,13 +427,7 @@ let editTableBar = {
         $all:webix.rules.isNotEmpty
     },
 
-    on:{ onChange:function( newv,oldv) {
-       
-        
-        if (newv != oldv){
-        } 
-        
-    }},
+
     ready:function(){
         this.validate();
     },
