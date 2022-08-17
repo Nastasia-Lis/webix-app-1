@@ -1,6 +1,6 @@
 import {headerSidebar} from "./sidebar.js";
 import {setStorageData} from "./userSettings.js";
-
+ 
 
 export function header() {
     const header = {
@@ -64,8 +64,14 @@ export function header() {
                     }
                 } ,
                 click: function() {
-                    webix.ajax().post("/init/default/logout/");
-                    history.back();
+                    webix.ajax().post("/init/default/logout/",{
+                        success:function(text, data, XmlHttpRequest){
+                            history.back();
+                        },
+
+                    });
+                    
+                    //routes().navigate("login", { trigger:true});
                 }
             },
             

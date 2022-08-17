@@ -1,5 +1,5 @@
-import {tableNames,itemTreeId} from "./sidebar.js";
-
+import {itemTreeId} from "./sidebar.js";
+import {tableNames} from "./login.js";
 function setLogValue (typeNotify,notifyText) {
     const date = new Date();
     let day = date.getDate();
@@ -29,7 +29,7 @@ function setLogValue (typeNotify,notifyText) {
         $$("logBlock-list").add({
             date:currentDate,
             value:notifyText,
-            src:"Expa v1.0.1"
+            src:"Expa v1.0.2"
         });
     }
 
@@ -45,10 +45,7 @@ function setLogValue (typeNotify,notifyText) {
         item.style.setProperty('color', 'red', 'important');
     }
     
-};
-
-// empty!!
-
+}
 
 const logBlock = {
     id:"logBlock-list",

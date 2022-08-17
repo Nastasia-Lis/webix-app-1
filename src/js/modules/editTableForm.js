@@ -161,7 +161,8 @@ function createEditFields () {
             if (el.type == "datetime"){
                 inputsArray.push({   
                     view: "datepicker",
-                    format: webix.Date.strToDate("%d.%m.%Y"),
+                    //format: webix.Date.strToDate("%d.%m.%Y"),
+                    format:"%d.%m.%Y %H:%i:%s",
                     name:el.id, 
                     label:el.label, 
                     placeholder:"дд.мм.гг", 

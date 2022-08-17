@@ -7,15 +7,13 @@
 
 
 //----
-// login
 // файл с иконками
 // кастомизация -- сайдбар
-// загрузка данных (отложенная + граф обозначение)
 
-
+// progress bar
+ 
 //-----------
 // выделение в таблице и удаление (multiselect)
-// local storage - resizer
 // upload : не нужна кнопка submit
 // сепаратор
 // datepicker чекнуть
@@ -37,14 +35,40 @@
 
 
 // //*** expa
+.webix_tree_item{
+    height: 31px!important;
+    line-height: 20px!important;
+  }
+  
+  .webix_modal_box.webix_confirm{
+    width: 400px!important;
+  }
+  .webix_popup_button{
+    height: 35px!important;
+    line-height: 26px!important;
+  }
+  .webix_popup_title{
+    font-weight: 600!important;
+  }
+  .webix_resizer {
+    border-width: 1px!important;
+  }
+  
+  .webix_dashTool{
+    height: 135px!important;
+  }
+  
+  .webix_mainContent > .webix_view.webix_layout_line{
+    margin-left: 0px!important;
+  }
+
+// //*** expa
+
 .webix_view.webix_layout_line{
     transition: none!important;
 }   
 
 
-.webix_dashTool{
-    height: 125px!important;
-}
 
 
 .webix_progress_top .webix_progress_state, .webix_progress_bottom .webix_progress_state{
@@ -77,8 +101,6 @@
 .webix_template{
     padding: 6px 12px!important;
 }
-// //*** expa
-
 
 
 
@@ -358,12 +380,15 @@ label, button{
     }
     //------select
 
+    &_dash-title{
+        font-weight: 600!important;
+        font-size: 16px!important;
+        padding-left: 25px !important;
+    }
 
-    //------checkbox
-    // &_checkbox-style{
-
-    // }
-     //------checkbox
+    &_dash-title > .webix_template{
+        padding: 10px 12px !important;
+    }
 }
 .webix_cal_body .webix_cal_select .webix_cal_day_inner:hover,
 .webix_cal_body .webix_cal_today.webix_cal_select .webix_cal_day_inner:hover {

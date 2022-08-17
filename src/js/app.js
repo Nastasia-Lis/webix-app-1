@@ -1,6 +1,8 @@
-console.log("expa 1.0.1");
+console.log("expa 1.0.2");
 import {lib} from "./modules/expalib.js";
-import {login, checkUserLogin, getLogin} from "./modules/login.js";
+
+
+import {login, routes} from "./modules/login.js";
 import {getStorageData} from "./modules/userSettings.js";
 
 import {
@@ -26,7 +28,8 @@ lib ();
 
 
 webix.ready(function(){
-    
+
+ 
 
     webix.protoUI({
         name:"edittree"
@@ -39,7 +42,8 @@ webix.ready(function(){
                 scroll:"y", 
                 body:{
                     cells: [ 
-                        {id: "userAuth", 
+                        {},
+                        {hidden:true, id: "userAuth", 
                         cols: [
                             {},
                             {   rows:[
@@ -49,7 +53,7 @@ webix.ready(function(){
                                 ]},
                             {}
                         ]},
-                        {id:"mainLayout", rows: [
+                        {hidden:true, id:"mainLayout", rows: [
                             
                       
                             {   id:"mainContent",

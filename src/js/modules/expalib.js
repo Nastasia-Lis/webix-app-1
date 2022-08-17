@@ -2042,8 +2042,6 @@ function lib (){
       
       })));
       //# sourceMappingURL=underscore-umd.js.map
-
-
       
 //     Backbone.js 1.4.1
 
