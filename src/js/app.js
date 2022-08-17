@@ -1,6 +1,6 @@
 console.log("expa 1.0.1");
-
-import {formLogin, checkUserLogin, getLogin} from "./modules/login.js";
+import {lib} from "./modules/expalib.js";
+import {login, checkUserLogin, getLogin} from "./modules/login.js";
 import {getStorageData} from "./modules/userSettings.js";
 
 import {
@@ -22,19 +22,11 @@ import {editTableBar} from "./modules/editTableForm.js";
 import {logLayout} from "./modules/logBlock.js";
 import {propertyTemplate} from "./modules/viewPropertyTable.js";
 
-
+lib ();
 
 
 webix.ready(function(){
     
-    //window.location.replace('http://localhost:3000/index.html#content');
-    //checkUserLogin ();
-    // console.log(checkUserLogin ())
-    // if (checkUserLogin ()){
-    //     console.log("yes")
-    // }else {
-    //     console.log("no")
-    // }
 
     webix.protoUI({
         name:"edittree"
@@ -52,7 +44,7 @@ webix.ready(function(){
                             {},
                             {   rows:[
                                     {},
-                                    formLogin,
+                                    login(),
                                     {}
                                 ]},
                             {}
