@@ -108,14 +108,16 @@ function login () {
                 });
             },
             error:function(text, data, XmlHttpRequest){
-                window.location.replace('http://localhost:3000/index.html');
+               // window.location.replace('/index.html');
+                routes.navigate("", { trigger:true});
             }
         });
     },
     index:function(){
         webix.ajax("/init/default/api/whoami",{
             success:function(text, data, XmlHttpRequest){
-                window.location.replace('http://localhost:3000/index.html#content'); 
+               // window.location.replace('/index.html#content'); 
+               routes.navigate("content", { trigger:true});
             },
             error:function(text, data, XmlHttpRequest){
                 $$("mainLayout").hide();
