@@ -217,6 +217,23 @@
   transition: none !important;
 }
 
+.webix_auth {
+  margin: 1px 0px 0px 1px !important;
+}
+
+.webix_cp-form {
+  font-weight: 600 !important;
+  font-size: 18px !important;
+}
+
+.webix_cp-form > .webix_template {
+  padding-left: 0px !important;
+}
+
+.webix_cp-form {
+  margin-bottom: 10px !important;
+}
+
 .webix_progress_top .webix_progress_state, .webix_progress_bottom .webix_progress_state {
   background: var(--primary-light) !important;
   background-image: none !important;

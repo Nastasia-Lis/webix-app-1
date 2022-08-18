@@ -20,9 +20,10 @@ function login () {
                 webix.ajax().get("/init/default/api/fields.json",false).then(function (data) {
 
                     let srcTree = data.json().content;
+
                     let obj = Object.keys(srcTree);
                     let actionsCheck;
-                    //let dataTree = [];
+ 
                     let dataChilds = {tables:[], forms:[], dashboards:[]};
 
                     obj.forEach(function(data) {
@@ -49,7 +50,7 @@ function login () {
         
                             }
                         }  else if (srcTree[data].type == "dashboard" ){
-                   
+                       
                             if(srcTree[data].plural){
                                 dataChilds.dashboards.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type});
                                 tableNames.push({name:srcTree[data].plural , id:data}); 
@@ -73,7 +74,9 @@ function login () {
                             if (el.childs.length > 0){
                                 dataChilds[el.name]=[];
                                 el.childs.forEach(function(child,i){
-                                    dataChilds[el.name].push({id:child.name, value:child.title });
+                                    if(child.name !== "login" && child.name !=="logout"){
+                                        dataChilds[el.name].push({id:child.name, value:child.title });
+                                    }
                                 });
                             }
         
@@ -84,13 +87,14 @@ function login () {
                                  
                                     if (data==el.name){
                                         singleItem = el.title;
-                             
                                         menuTree.push({id:el.name+"-single", value:el.title, typeof:srcTree[data].type});
+                                       
                                     }
                                 });
                                 if (!singleItem){
                                     if (el.title){
                                         menuTree.push({id:el.name, value:el.title, data:dataChilds[el.name]});
+                                       
                                     } else {
                                         menuTree.push({id:el.name, value:"Без названия", data:dataChilds[el.name]});
                                     }
@@ -101,14 +105,12 @@ function login () {
  
                         $$("tree").clearAll();
                         $$("tree").parse(menuTree);
- 
                     });
                         
                    
                 });
             },
             error:function(text, data, XmlHttpRequest){
-               // window.location.replace('/index.html');
                 routes.navigate("", { trigger:true});
             }
         });
@@ -116,7 +118,6 @@ function login () {
     index:function(){
         webix.ajax("/init/default/api/whoami",{
             success:function(text, data, XmlHttpRequest){
-               // window.location.replace('/index.html#content'); 
                routes.navigate("content", { trigger:true});
             },
             error:function(text, data, XmlHttpRequest){
@@ -140,7 +141,9 @@ function login () {
             success:function(text, data, XmlHttpRequest){
                 webix.ajax("/init/default/api/whoami",{
                     success:function(text, data, XmlHttpRequest){
+                        
                         routes.navigate("content", { trigger:true});
+                        $$('formAuth').clear();
                     },
                     error:function(text, data, XmlHttpRequest){
                         if ($$("formAuth").isDirty()){

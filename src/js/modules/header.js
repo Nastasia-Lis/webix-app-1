@@ -67,11 +67,11 @@ export function header() {
                     webix.ajax().post("/init/default/logout/",{
                         success:function(text, data, XmlHttpRequest){
                             history.back();
+                            $$("tree").clearAll();
                         },
 
                     });
                     
-                    //routes().navigate("login", { trigger:true});
                 }
             },
             

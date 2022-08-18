@@ -18,6 +18,7 @@ import {headerSidebar,treeSidebar} from "./modules/sidebar.js";
 // tree elements
 import  {dashboardLayout} from "./treeItems/dashboardView.js";
 import  {tableToolbar,table, onFuncTable, onFuncTableView} from "./treeItems/tableTemplate.js";
+import {authCpLayout} from "./treeItems/authItems.js";
 
 // other blocks
 import {editTableBar} from "./modules/editTableForm.js";
@@ -66,7 +67,7 @@ webix.ready(function(){
                                             rows:[]
                                         },
                                     
-                                       {responsive:"adaptive",cols:[
+                                       {id:"container",responsive:"adaptive",cols:[
                                             treeSidebar(), 
 
                                             {id:"sideMenuResizer",view:"resizer",css:"webix_resizer-hide",},
@@ -109,6 +110,16 @@ webix.ready(function(){
                                                             { view:"resizer",class:"webix_resizers", id:"propResize", hidden:true},
                                                             propertyTemplate("propTableView")
                                                         ]}}, 
+                                                    ],
+
+                                                
+                                            },
+
+                                            {id:"user_auth", css:"webix_auth",hidden:true, 
+                                            
+                                                    rows:[
+                                                        authCpLayout,
+                                                        {}
                                                     ],
 
                                                 
