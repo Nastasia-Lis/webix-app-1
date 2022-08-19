@@ -1,6 +1,5 @@
 import {headerSidebar} from "./sidebar.js";
 import {setStorageData} from "./userSettings.js";
- 
 
 export function header() {
     const header = {
@@ -8,28 +7,19 @@ export function header() {
         id: "header",
         padding:10,
         css:"webix_header-style",
-        //hidden:true, 
         elements: [
             headerSidebar(),
             {},
-            // {   view:"button",  
-            //     type:"icon", 
-            //     icon:"wxi-file",
-            //     css:"webix_btn-import", 
-            //     label:"Импорт", 
-            //     height:48,
-            //     width: 130,
-            //     on: {
-            //         onAfterRender: function () {
-            //             this.getInputNode().setAttribute("title","Импорт файла с таблицами");
-            //         }
-            //     }  
-            // },
+                {view:"search", 
+                placeholder:"Поиск", 
+                css:"searchTable", 
+                maxWidth:250, 
+                minWidth:40, 
+            },
             {   view:"button",  
                 id:"webix_log-btn",
                 type:"icon", 
                 icon:"wxi-eye-slash",
-                //label:"Системные сообщения", 
                 height:48,
                 width: 60,
                 css:"webix_log-btn",
@@ -39,15 +29,15 @@ export function header() {
                     }
                 },
                 click: function() {
-                    if ($$("logLayout").isVisible()){
-                        $$("logLayout").hide();
-                        $$("log-resizer").hide();
+                    if ( this.config.icon =="wxi-eye-slash"){
+                        $$("logLayout").config.height = 5;
+                        $$("logLayout").resize();
                         this.config.icon ="wxi-eye";
                         this.refresh();
                         setStorageData("LogVisible", JSON.stringify("hide"));
-                    } else {
-                        $$("logLayout").show();
-                        $$("log-resizer").show();
+                    } else if (this.config.icon =="wxi-eye"){
+                        $$("logLayout").config.height = 90;
+                        $$("logLayout").resize();
                         this.config.icon ="wxi-eye-slash";
                         this.refresh();
                         setStorageData("LogVisible", JSON.stringify("show"));
@@ -67,7 +57,23 @@ export function header() {
                     webix.ajax().post("/init/default/logout/",{
                         success:function(text, data, XmlHttpRequest){
                             history.back();
+
+                            let treeArray = $$("tree").data.order;
+                            let parentsArray = [];
+                            treeArray.forEach(function(el,i){
+                                if ($$("tree").getParentId(el) == 0){
+                                    parentsArray.push(el);
+                                }
+                            });
+                            parentsArray.forEach(function(el,i){
+                                if (!(el.includes("single"))){
+                                    $$(el).hide();
+                                } 
+                            });  
+                            $$("webix__none-content").show();
+
                             $$("tree").clearAll();
+
                         },
 
                     });

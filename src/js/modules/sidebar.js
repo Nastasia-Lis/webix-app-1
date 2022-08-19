@@ -59,27 +59,20 @@ function submitBtn (idElements, url, verb, rtype){
             });
         } 
     } else if (verb=="post"){
-        // webix.ajax().post("some.php",{
-       
-       
-        //     error:function(text, data, XmlHttpRequest){
-        //         console.log("error");
-        //     },
-        //     success:function(text, data, XmlHttpRequest){
-        //         console.log("success");
-        //     }
-        // });
-        
- 
         idElements.forEach((el,i) => {
             if (el.id.includes("customUploader")){
-                     console.log( $$(el.id).getValue(), "132434")
                      $$(el.id).send(function(data){
-                        webix.message(data );
+                        if (data.err_type == "e"){
+                            $$(tableIdView).parse($$(el.id).getValue())
+                            notify ("error",data.err,true);
+                        } else if (data.err_type == "i"){
+                            notify ("success",data.err,true);
+                            $$(tableIdView).refresh();
+                        } else if (data.err_type == "x"){
+                            notify ("debug",data.err,true);
+                        }
+                     
                     });
-                    // webix.ajax().post(url, $$(el.id).getValue(), function(text){  
-                    //     webix.message(text);
-                    // });
             }
         });
         
@@ -319,7 +312,6 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                                 value: "Upload file", 
                                 id:"customUploader"+i, 
                                 height:48,
-                                link:tableIdView,  
                                 autosend:false,
                                 upload: data.actions.submit.url,
                                 label:dataInputsArray[el].label, 
@@ -328,12 +320,6 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                                     onAfterRender: function () {
                                         this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
                                     },
-                                    // onFileUpload: function () {
-                                    //     notify ("success","Файл успешно загружен",true);
-                                    // },
-                                    // onFileUploadError: function () {
-                                    //     notify ("error","Ошибка при загрузке файла",true);
-                                    // }
                                 }
                             }
                     );
@@ -341,7 +327,6 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                     customInputs.push(
                             {   view: "datepicker",
                                 format: "%d.%m.%Y %H:%i:%s",
-                                //placeholder:"дд.мм.гг",
                                 placeholder:dataInputsArray[el].label,  
                                 id:"customDatepicker"+i, 
                                 timepicker: true,
@@ -349,7 +334,6 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                                 width:300,
                                 minWidth:100,
                                 height:48,
-                                //label:dataInputsArray[el].label, 
                                 on: {
                                     onAfterRender: function () {
                                         this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
@@ -364,10 +348,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                                 id:"customСheckbox"+i, 
                                 minWidth:220,
                                 css:"webix_checkbox-style",
-                                //labelPosition:"top",
-                                //labelWidth: "auto",
                                 labelRight:dataInputsArray[el].label, 
-                                //label:dataInputsArray[el].label, 
                                 on: {
                                     onAfterRender: function () {
                                         this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
@@ -402,49 +383,61 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
             inpObj = {id:"customInputs",css:"webix_custom-inp", cols:customInputs};
             
             ($$("filterBar").addView( inpObj,2));
-        });
+        
+            
+       
 
 
 // ----- Таблица - получение данных rows
-   
-        if (single){
-            let searchSingle = idsParam.search("-single");
-            itemTreeId = idsParam.slice(0,searchSingle);
-        }
-        webix.ajax().get("/init/default/api/"+itemTreeId,{
-            success:function(text, data, XmlHttpRequest){
-                if(!($$(newAddBtnId).isEnabled())){
-                    $$(newAddBtnId).enable();
-                }
-                $$(idCurrTable).showProgress({
-                    type:"bottom",
-                    hide:true
-                });
-   
-                data = data.json().content;
-                
-              
-                if (data.length !== 0){
+
+            if (single){
+                let searchSingle = idsParam.search("-single");
+                itemTreeId = idsParam.slice(0,searchSingle);
+            }
+            function getItemData (){
+                webix.ajax().get("/init/default/api/"+itemTreeId,{
+                    success:function(text, data, XmlHttpRequest){
+                        if(!($$(newAddBtnId).isEnabled())){
+                            $$(newAddBtnId).enable();
+                        }
+                        $$(idCurrTable).showProgress({
+                            type:"bottom",
+                            hide:true
+                        });
+        
+                        data = data.json().content;
+                        
                     
-                    $$(idCurrTable).hideOverlay("Ничего не найдено");
-                 
-                    $$(idCurrTable).parse(data);
-               
-                   
-                } else {
-                    $$(idCurrTable).showOverlay("Ничего не найдено");
-                }
-            
-                prevCountRows = $$(idCurrTable).count();
-                $$(idFindElem).setValues(prevCountRows.toString());
-              
-            },
-            error:function(text, data, XmlHttpRequest){
-                notify ("error","Ошибка при загрузке данных",true);
-                if($$(newAddBtnId).isEnabled()){
-                    $$(newAddBtnId).disable();
-                }
-            }, 
+                        if (data.length !== 0){
+                            
+                            $$(idCurrTable).hideOverlay("Ничего не найдено");
+                        
+                            $$(idCurrTable).parse(data);
+                    
+                        
+                        } else {
+                            $$(idCurrTable).showOverlay("Ничего не найдено");
+                        }
+                    
+                        prevCountRows = $$(idCurrTable).count();
+                        $$(idFindElem).setValues(prevCountRows.toString());
+                    
+                    },
+                    error:function(text, data, XmlHttpRequest){
+                        notify ("error","Ошибка при загрузке данных",true);
+                        if($$(newAddBtnId).isEnabled()){
+                            $$(newAddBtnId).disable();
+                        }
+                    }, 
+                });
+            }
+
+            getItemData ();
+            if (data.autorefresh){
+                setInterval(function(){
+                    getItemData ();
+                 }, 50000);
+            }
         });
     } 
 }
@@ -452,6 +445,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
 
 
 function getInfoDashboard (idsParam,single=false){
+    
     function getAjax(url,inputsArray, action=false) {
         webix.ajax().get(url, {
             success:function(text, data, XmlHttpRequest){
@@ -505,81 +499,56 @@ function getInfoDashboard (idsParam,single=false){
                         el.minWidth = 300;
                         dashLayout.push({rows:[ {template:titleTemplate,borderless:true,css:{"padding-left":"25px!important","margin-top":"20px!important", "font-weight":"400!important", "font-size":"17px!important"}, height:30},el]});
                     });
-        
-        
-                    if (!(action)){
-                        $$("dashboardTool").addView({
-                            view:"scrollview",
-                            id:"dashboard-tool",
-                            borderless:true,
-                            css:{"margin":"20px!important","height":"50px!important"},
-                            body: {
-                                view:"flexlayout",
-                                rows:inputsArray
-                            }
-                        },0);
-        
-                        let dashTitle;
-                        tableNames.forEach(function(el,i){
-                            if (el.id == itemTreeId){
-                                dashTitle= el.name;
-                            }
-                        });
 
-                        $$("dashboardTool").addView({
-                            rows:[{
-                                template:dashTitle,
-                                id:"dash-temlate",
-                                css:"webix_style-template-count webix_dash-title",
-                                borderless:false,
-                                height:40,
-                            }]
-                        },1);
-        
-                        $$("dashboardBody").addView({
-                            view:"scrollview", 
-                            height:300,  
-                            id:"dashboard-charts",
-                            borderless:true,
-                            body: {
-                                view:"flexlayout",
-                                cols:dashLayout
-                            }
-                        },2);
-                        
-                        $$("dashboardBody").removeView($$("dashEmpty"));
                     
-                    } else {
-        
-            
-                        $$("dashboardBody").removeView( $$("dashboard-charts"));
-                        
-                        $$("dashboardBody").addView({
-                            view:"scrollview", 
-                            id:"dashboard-charts", 
-                            height:300, 
-                            borderless:true,
-                            css:{"margin":"10px!important"},
-                            body: {
-                                view:"flexlayout",
-                                cols:dashLayout
-                            }
-                        },2);
-        
-        
-                        if ($$("dashboard-charts")){
-                            notify ("success","Данные обновлены",true);
-                        } else {
-                            notify ("error","Ошибка при загрузке данных",true);
+                    $$("dashboardTool").addView({
+                        view:"scrollview",
+                        id:"dashboard-tool",
+                        borderless:true,
+                        css:{"margin":"20px!important","height":"50px!important"},
+                        body: {
+                            view:"flexlayout",
+                            rows:inputsArray
                         }
-                    }
+                    },0);
+
+                    let dashTitle;
+                    itemTreeId = itemTreeId.slice(0,itemTreeId.search("-single")); 
+                    tableNames.forEach(function(el,i){
+                        if (el.id == itemTreeId){
+                            dashTitle= el.name;
+                        }
+                    });
+
+                    $$("dashboardTool").addView({
+                        rows:[{
+                            template:dashTitle,
+                            id:"dash-temlate",
+                            css:"webix_style-template-count webix_dash-title",
+                            borderless:false,
+                            height:40,
+                        }]
+                    },1);
+
+                    $$("dashboardBody").addView({
+                        view:"scrollview", 
+                        height:300,  
+                        id:"dashboard-charts",
+                        borderless:true,
+                        body: {
+                            view:"flexlayout",
+                            cols:dashLayout
+                        }
+                    },2);
+                    
+                    $$("dashboardBody").removeView($$("dashEmpty"));
+                
                 }
             },
             error:function(text, data, XmlHttpRequest){
                 notify ("error","Ошибка при сохранении данных",true);
             }
-        });
-        
+        }); 
     }
 
     if ($$("dashboard-charts")){
@@ -587,33 +556,41 @@ function getInfoDashboard (idsParam,single=false){
     }
 
     if(!($$("dashboard-charts"))){
-
         webix.ajax().get("/init/default/api/fields",{
             success:function(text, data, XmlHttpRequest){
-               let inputsArray=[];
+                console.log(data.json().content)
+
+                let inputsArray=[];
                 let actionType ;
                 let findAction;
+                let singleItemContent;
+                
+                if (single){
+                    let singleSearch = idsParam.search("-single");
+                    idsParam = idsParam.slice(0,singleSearch); 
+                }
+               
                 data = data.json().content;
                 Object.values(data).forEach(function(el,i){
                     el.nameObj = Object.keys(data)[i];
+                    if (el.nameObj== idsParam){
+                        singleItemContent =el;
+                    }
                 });
 
-
+                
              if (single){
-                let singleSearch = idsParam.search("-single");
-                idsParam = idsParam.slice(0,singleSearch); 
-                let field = data[idsParam];
-
-                let inputs = field.inputs;
+                let inputs = singleItemContent.inputs;
                         
                         inputsArray.push({width:20});
+                        let keys = Object.keys(inputs);
                         Object.values(inputs).forEach(function(input,i){
 
                             if (input.type == "datetime"){
                                 inputsArray.push(
                                         {   view: "datepicker",
                                             format:"%d.%m.%Y %H:%i:%s",  
-                                            id:"dashDatepicker"+i, 
+                                            id:"dashDatepicker_"+keys[i], 
                                             timepicker: true,
                                             placeholder:input.label,
                                             width:300,
@@ -629,7 +606,7 @@ function getInfoDashboard (idsParam,single=false){
                             
                             } else if (input.type == "submit"){
                                 actionType = input.action;
-                                findAction = field.actions[actionType];
+                                findAction = singleItemContent.actions[actionType];
                                 inputsArray.push(
 
                                         {   view:"button", 
@@ -641,7 +618,22 @@ function getInfoDashboard (idsParam,single=false){
                                             maxWidth:200,
                                             value:input.label,
                                             click:function () {
-                                                getAjax(findAction.url, inputsArray,true);
+                                                let dateArray = [];
+                                                let postFormatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
+                                                let getUrl;
+                                                inputsArray.forEach(function(el,i){
+                                                    
+                                                    //14.01.2025 11:07:00
+                                                    if (el.id.includes("sdt")){
+                                                        
+                                                        dateArray.push("sdt"+"="+postFormatData($$(el.id).getValue()));
+                                                        
+                                                    }else if (el.id.includes("edt")) {
+                                                        dateArray.push("edt"+"="+postFormatData($$(el.id).getValue()));
+                                                    }
+                                                });
+                                                getUrl = findAction.url+"?"+dateArray.join("&");
+                                                getAjax(getUrl, inputsArray);
                                             },
                                             on: {
                                                 onAfterRender: function () {
@@ -654,6 +646,12 @@ function getInfoDashboard (idsParam,single=false){
                             }
                             inputsArray.push({width:20});
                         });
+                        getAjax(singleItemContent.actions.submit.url, inputsArray);
+                        if (singleItemContent.autorefresh){
+                            setInterval(function(){
+                                getAjax(singleItemContent.actions.submit.url, inputsArray);
+                             }, 50000);
+                        }
 
             } else {
              
@@ -696,7 +694,6 @@ function getInfoDashboard (idsParam,single=false){
                                
                                 actionType = input.action;
                                 findAction = el.actions[actionType];
-                                //let actionUrl = findAction.url;
                                
                                 inputsArray.push(
 
@@ -723,9 +720,15 @@ function getInfoDashboard (idsParam,single=false){
                                 );
                             }
                             inputsArray.push({width:20});
+                         
+
                         });
-                        //console.log(el.actions.submit.url)
                         getAjax(el.actions.submit.url, inputsArray);
+                        if (el.autorefresh){
+                            setInterval(function(){
+                                getAjax(singleItemContent.actions.submit.url, inputsArray);
+                             }, 50000);
+                        }
                     }
                     
                     
@@ -843,41 +846,68 @@ function treeSidebar () {
                 }
 
                 
-                function visibleTreeItem(singleType){
-                  
-                    return parentsArray.forEach(function(el,i){
-                        if (el.includes("single")){
-                            if (singleType){
-                                $$(singleType).show();
-                            } 
-                        } else {
-                            if (el == getItemParent){
-                               
-                                $$(el).show();
+                function visibleTreeItem(singleType, idsUndefined){
+                    if(idsUndefined !== undefined){
+                        return parentsArray.forEach(function(el,i){
+                            if (el.includes("single")){
+                                $$(singleType).hide();
                             } else {
-                                $$(el).hide();
+                            //    if (el == getItemParent){
+                            //         $$(el).show();
+                            //     } else {
+                            //         $$(el).hide();
+                            //     } 
+                                if (el=="tables" || el=="dashboards" || el=="forms" || el=="user_auth"){
+                                    $$(el).hide();
+                               
+                                }
+                            }     
+                        });  
+                    } else {
+                    
+                        return parentsArray.forEach(function(el,i){
+                            if (el.includes("single")){
+                                if (singleType){
+                                    $$(singleType).show();
+                                } 
+                            } else {
+                            //    if (el == getItemParent){
+                            //         $$(el).show();
+                            //     } else {
+                            //         $$(el).hide();
+                            //     } 
+                                if (el == getItemParent){
+                                
+                                        $$(el).show();
+                                } else if (el=="tables" || el=="dashboards" || el=="forms" || el=="user_auth"){
+                                    $$(el).hide();
+                                } else {
+                                   
+                                }
+                        
                             }
-                        }
-                         
-                    });  
+                                
+                            
+                        });  
+                    }
+                 
+                   
                 }
-                if(getItemParent=="tables" || singleItemContent == "dbtable"){
+            
+                if (getItemParent=="tables" || singleItemContent == "dbtable"){
                     visibleTreeItem("tables"); 
-                }
-
-                if(getItemParent=="dashboards" || singleItemContent == "dashboard"){
+                }else if(getItemParent=="dashboards" || singleItemContent == "dashboard"){
                     visibleTreeItem("dashboards"); 
-                }
-
-                if(getItemParent=="forms" || singleItemContent == "tform"){
+                } else if(getItemParent=="forms" || singleItemContent == "tform"){
                     if ($$("propTableView") && $$("propTableView").isVisible()){
                         $$("propTableView").hide();
                     }
                     visibleTreeItem("forms"); 
-                }
-
-                if (getItemParent=="user_auth"){
+                } else if (getItemParent=="user_auth"){
                     visibleTreeItem(); 
+                } else if (getItemParent == 0 && treeItemId!=="tables"&& treeItemId!=="user_auth"&& treeItemId!=="dashboards" && treeItemId!=="forms" && !singleItemContent){
+                    console.log("0000");
+                    visibleTreeItem(false, ids[0]); 
                 }
 
               
@@ -887,7 +917,6 @@ function treeSidebar () {
 
                 if(getItemParent=="tables" || singleItemContent == "dbtable"){
                    
-                    //$$(addBtnId).enable();
                     defaultStateForm();
                     
                     if(Object.keys($$(editFormId).elements).length!==0){
@@ -900,7 +929,7 @@ function treeSidebar () {
                     }
                     
 
-                } else if(getItemParent=="dashboards" || singleItemContent == "dashboard") {
+                } else if(getItemParent=="dashboards") {
                    getInfoDashboard ();
 
                 } else if(singleItemContent == "dashboard") {
@@ -909,13 +938,9 @@ function treeSidebar () {
                     getInfoTable (tableIdView, searchIdView, ids[0], findElementsIdView);
                 }else if(singleItemContent == "tform") {
                     getInfoTable (tableIdView, searchIdView, ids[0], findElementsIdView, true);
-                } 
-                // else {
-                //     $$("tables").hide();
-                //     $$("dashboards").hide();
-                //     $$("forms").hide();
-                //     $$("webix__none-content").show();
-                // }
+                } else {
+             
+                }
                 
             },
   

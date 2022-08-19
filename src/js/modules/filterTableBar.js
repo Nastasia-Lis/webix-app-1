@@ -19,14 +19,12 @@ const filterForm =  {
                     
                     let customInputs = [];
         
-                    let dataInputsArray = data.inputs; //дата с сервера, объекты с инпутами
+                    let dataInputsArray = data.inputs;
         
                     objInuts.forEach((el,i) => {
-                        //customInputs.push({width:20});
                         if (dataInputsArray[el].type == "string"){
                             customInputs.push(
                             {   view:"text", 
-                                //id:"input"+i,
                                 width:300,
                                 height:60,
                                 label:dataInputsArray[el].label, 
@@ -42,7 +40,6 @@ const filterForm =  {
                         else if (dataInputsArray[el].type == "apiselect") {
                             customInputs.push({ 
                                 view:"combo",
-                                //id:"input"+i,
                                 placeholder:"Введите текст",  
                                 label:dataInputsArray[el].label,
                                 labelPosition:"top", 
@@ -76,50 +73,22 @@ const filterForm =  {
                         } 
                         else if (dataInputsArray[el].type == "submit") {
                             customInputs.push(
-                                //{rows:[
-                                    //{},
                                     {   view:"button", 
                                         css:"webix_primary", 
-                                        //id:cleanBtnId,
                                         height:48, 
                                         value:dataInputsArray[el].label,
-                                        //click:function() {
-                                            //console.log($$("tableToolbarForm"));
-                                            //console.log($$("tableToolbarForm").getValues());
-                                            
-                                            //console.log($$("filterTableForm").getValues(), "val");
-                                            //webix.ajax(data.actions.submit.url);
-                                            //webix.ajax().get(data.actions.submit.url, "action=info&id=123");
-                                        //},
-                                        // on: {
-                                        //     onAfterRender: function () {
-                                        //         this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
-                                        //     }
-                                        // } 
                                     }
-                                //]}
-                                
                             );
                         
                         }
-                        //customInputs.push({width:20});
-        
+
                     });
-                    //console.log(customInputs)
-                    // inpObj = { id:"customInputs", rows:[{height:15},
-                    //         {   view:"form", 
-                    //             id:"tableToolbarForm",
-                    //             //elements:[{cols:customInputs}]
-                    //             elements: [{cols:customInputs}]
-                    //         },
-                    //         {height:15}]
-                    // };
+
                     let inpObj = [{id:"customInputs", rows:customInputs}];
                     console.log(inpObj)
-                    //this.addView( inpObj, 1);
+
                     return inpObj;
-                    
-                //this.setValues(data);
+
                 });
             }
         }

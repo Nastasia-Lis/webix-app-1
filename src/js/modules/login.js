@@ -15,8 +15,6 @@ function login () {
                 $$("userAuth").hide();
                 $$("mainLayout").show();
                
-                
-                
                 webix.ajax().get("/init/default/api/fields.json",false).then(function (data) {
 
                     let srcTree = data.json().content;
@@ -68,7 +66,17 @@ function login () {
  
                         let menu = data.json().mmenu;
                         let menuTree = [];
-                     
+                   
+                        menu.push({
+                            "id": 7,
+                            "name": "sales11",
+                            "title": "sales11",
+                            "mtype": 1,
+                            "ltype": 1,
+                            "action": "all_aa",
+                            "childs": []
+                        });
+           
                         menu.forEach(function(el,i){
                                
                             if (el.childs.length > 0){
@@ -76,6 +84,7 @@ function login () {
                                 el.childs.forEach(function(child,i){
                                     if(child.name !== "login" && child.name !=="logout"){
                                         dataChilds[el.name].push({id:child.name, value:child.title });
+                                        tableNames.push({name:child.title , id:child.name}); 
                                     }
                                 });
                             }
@@ -84,7 +93,7 @@ function login () {
                             } else {
                                 let singleItem;
                                 obj.forEach(function(data) {
-                                 
+                                
                                     if (data==el.name){
                                         singleItem = el.title;
                                         menuTree.push({id:el.name+"-single", value:el.title, typeof:srcTree[data].type});
@@ -92,6 +101,9 @@ function login () {
                                     }
                                 });
                                 if (!singleItem){
+                                    // if (dataChilds[el.name] == undefined){
+                                    //     console.log("udn")
+                                    // }
                                     if (el.title){
                                         menuTree.push({id:el.name, value:el.title, data:dataChilds[el.name]});
                                        
@@ -102,7 +114,6 @@ function login () {
                             }
                                 
                         });
- 
                         $$("tree").clearAll();
                         $$("tree").parse(menuTree);
                     });

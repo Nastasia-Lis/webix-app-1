@@ -4,14 +4,14 @@ function getStorageData () {
     if (logBtnVal){
 
         if(logBtnVal=="hide"){
-            $$("logLayout").hide();
-            $$("log-resizer").hide();
+            $$("logLayout").config.height = 5;
+            $$("logLayout").resize();
             $$("webix_log-btn").config.icon ="wxi-eye";
             $$("webix_log-btn").refresh();
 
         } else if(logBtnVal=="show"){
-            $$("logLayout").show();
-            $$("log-resizer").show();
+            $$("logLayout").config.height = 90;
+            $$("logLayout").resize();
             $$("webix_log-btn").config.icon ="wxi-eye-slash";
             $$("webix_log-btn").refresh();
         }

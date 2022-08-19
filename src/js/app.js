@@ -1,6 +1,6 @@
-console.log("expa 1.0.2");
+console.log("expa 1.0.4");
 import {lib} from "./modules/expalib.js";
-
+import * as textInputClean from "./modules/textInput.js";
 
 import {login, routes} from "./modules/login.js";
 import {getStorageData} from "./modules/userSettings.js";
@@ -158,7 +158,9 @@ webix.ready(function(){
     }, true);
 
     Backbone.history.start();
-  
+
+    textInputClean.textInputClean();
+
     webix.extend($$(tableId), webix.ProgressBar);
     webix.extend($$(tableIdView), webix.ProgressBar);
 
