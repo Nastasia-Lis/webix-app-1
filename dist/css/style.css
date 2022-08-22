@@ -268,6 +268,18 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--dark) !important;
 }
 
+a {
+  color: var(--dark);
+}
+
+a:hover {
+  color: var(--primary);
+}
+
+a:active {
+  color: var(--primary-dark);
+}
+
 .webix_custom_checkbox {
   color: var(--primary) !important;
 }
@@ -304,6 +316,10 @@ label, button {
 .webix_log-block .webix_list_item {
   cursor: default !important;
   font-size: 13px !important;
+}
+
+.webix_template-user {
+  width: auto !important;
 }
 
 .webix_view {

@@ -157,9 +157,7 @@ function table (idTable, idPager, onFunc, srcData) {
             },
 
             "wxi-angle-down":function(event, cell, target){
-                //console.log(cell.row)
-                
-               
+
             if (!($$("propTableView").isVisible()))   {
                 let id = cell.row;
               
@@ -174,7 +172,6 @@ function table (idTable, idPager, onFunc, srcData) {
                 // --- поменять ссылку, достать id  curr row
                 webix.ajax(findUrl+id+".json",{
                     success:function(text, data, XmlHttpRequest){
-                        console.log(data.json());
                         data = data.json().content;
                         let arrayProperty = [];
                         data.forEach(function(el,i){
@@ -210,17 +207,11 @@ let onFuncTable = {
         this.showOverlay("Loading...");
     },
 
-    // onAfterLoad:function(){
-    //     console.log('1')
-    //     this.hideOverlay("Loading...");
-    // },
-
     onAfterSelect(id){
       
         let values = $$(tableId).getItem(id); 
         function toEditForm () {
             $$(editFormId).setValues(values);
-            console.log(values);
             $$(saveNewBtnId).hide();
             $$(saveBtnId).show();
             //$$(addBtnId).hide(); 
@@ -270,9 +261,6 @@ let onFuncTable = {
 let onFuncTableView = {
     onAfterSelect:function(id){
       
-        console.log(this.getItem(id))
-        
-     
         // let idRow = "D.200601.250131.ANY_HOST.000001";
         // // --- поменять ссылку, достать id  curr row
         // webix.ajax("http://localhost:3000/init/default/api/lic/"+idRow+".json",{
@@ -304,6 +292,5 @@ export {
     tableToolbar,
     table,
     onFuncTable,
-
     onFuncTableView
 };

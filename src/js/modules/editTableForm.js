@@ -1,15 +1,26 @@
 import {tableId, editFormId, saveBtnId,searchId, addBtnId, delBtnId, cleanBtnId, saveNewBtnId,newAddBtnId} from './setId.js';
 import {itemTreeId} from './sidebar.js';
 import {setLogValue} from './logBlock.js';
+import {headerContextId} from './header.js';
+
+let currId;
+
+function getCurrId (){
+    if ( itemTreeId.length == 0){
+        currId=headerContextId;
+    } else {
+        currId=itemTreeId;
+    }
+}
 
 
 //--- bns
 function saveItem(){        
-
+    getCurrId ();
     let itemData = $$(editFormId).getValues();   
     if($$(editFormId).validate() ){
         if( itemData.id ) {
-            webix.ajax().put("/init/default/api/"+itemTreeId+"/"+itemData.id, itemData, {
+            webix.ajax().put("/init/default/api/"+currId+"/"+itemData.id, itemData, {
                 success:function(){
                     $$( tableId ).updateItem(itemData.id, itemData);
                     clearItem();
@@ -24,12 +35,7 @@ function saveItem(){
                 }
             });
         }    
-        // else {
-        //     $$( tableId ).add( itemData );
-        //     $$(newAddBtnId).enable();
-        //     clearItem();
-        //     notify ("success","Данные добавлены",true);
-        // }    
+  
     } else {
         notify ("error","Заполните пустые поля",true);
     }
@@ -67,12 +73,14 @@ function addItem () {
 
 
 function saveNewItem (){
+    getCurrId ();
+    
     if($$( editFormId ).validate() ) {
         if($$(editFormId).isDirty()){
             let newValues = $$(editFormId).getValues();
             newValues.id= $$(tableId).count()+1;
-            console.log(newValues)
-            webix.ajax().post("/init/default/api/"+itemTreeId, newValues,{
+
+            webix.ajax().post("/init/default/api/"+currId, newValues,{
                 success:function( ){
                     $$(tableId).add(newValues);
                     clearItem();
@@ -96,11 +104,12 @@ function saveNewItem (){
 
 
 function removeItem() {
+    getCurrId ();
     popupExec("Запись будет удалена").then(
         function(){
             $$( tableId ).remove($$(editFormId).getValues().id);
             let formValues = $$(editFormId).getValues();
-            webix.ajax().del("/init/default/api/"+itemTreeId+"/"+formValues.id+".json", formValues,{
+            webix.ajax().del("/init/default/api/"+currId+"/"+formValues.id+".json", formValues,{
                 success:function(){
                     console.log(formValues.id)
                     clearItem();
@@ -119,28 +128,6 @@ function removeItem() {
 }
 
 
-
-// function clearForm(){
-    
-
-//     if ($$(saveBtnId).isVisible()){
-//         $$(editFormId).setDirty(true);
-//     } 
-    
-//     if($$(editFormId).isDirty()){
-//         popupExec("Данные не сохранены").then(
-//             function(){
-//                 clearItem();
-//                 $$(tableId).clearSelection();
-//                 defaultStateForm ();
-//                 $$("inputsTable").hide();
-//                 //notify ("success","Форма очищена");
-//         });
-//     } else {
-//         notify ("debug","Форма пуста");
-//     }
-// }
-
 //--- bns
 
 
@@ -151,17 +138,13 @@ function removeItem() {
 function createEditFields () {
 
     let columnsData = $$(tableId).getColumns();
-    //console.log(columnsData)
 
-    //let idSelect;
     if(Object.keys($$(editFormId).elements).length==0  ){
         let inputsArray = [];
         columnsData.forEach((el,i) => {
-            //console.log(inputsArray)
             if (el.type == "datetime"){
                 inputsArray.push({   
                     view: "datepicker",
-                    //format: webix.Date.strToDate("%d.%m.%Y"),
                     format:"%d.%m.%Y %H:%i:%s",
                     name:el.id, 
                     label:el.label, 
@@ -216,7 +199,6 @@ function createEditFields () {
                     
                 }
             }});
-                //idSelect= i+1;
                
                 inputsArray.push(
                     {   view:"combo",
@@ -255,7 +237,7 @@ function createEditFields () {
         });
 
         let inpObj = {margin:8,id:"inputsTable", rows:inputsArray};
-        //$$(cleanBtnId).enable(); 
+
         $$(delBtnId).enable();
         return ($$(editFormId).addView( inpObj, 1));
         
@@ -264,9 +246,7 @@ function createEditFields () {
 
         $$(editFormId).clear();
         $$(editFormId).clearValidation();
-        
 
-        //$$(cleanBtnId).enable(); 
         $$(delBtnId).enable();
         $$("inputsTable").show();
     }
@@ -286,9 +266,7 @@ function defaultStateForm () {
     } else if ($$(saveBtnId).isVisible()){
         $$(saveBtnId).hide();
     }
-    //$$(addBtnId).show();
     $$(delBtnId).disable();
-    //$$(cleanBtnId).disable();
 }
 
 function popupExec (titleText) { 

@@ -1,7 +1,48 @@
+import { tableId,tableIdView,newAddBtnId, findElementsId} from "./setId.js";
+import {notify} from "./editTableForm.js";
 import {headerSidebar} from "./sidebar.js";
 import {setStorageData} from "./userSettings.js";
 
-export function header() {
+
+function typeTable (type,columnsData, id){
+    $$(type).refreshColumns(columnsData);
+    webix.ajax().get("/init/default/api/"+id,{
+        success:function(text, data, XmlHttpRequest){
+            
+            if(!($$(newAddBtnId).isEnabled())){
+                $$(newAddBtnId).enable();
+            }
+
+            $$(type).showProgress({
+                type:"bottom",
+                hide:true
+            });
+
+            data = data.json().content;
+            
+            if (data.length !== 0){
+                
+                $$(type).hideOverlay("Ничего не найдено");
+                $$(type).parse(data);
+        
+            
+            } else {
+                $$(type).showOverlay("Ничего не найдено");
+            }
+        
+            let countRows = $$(type).count();
+            $$(findElementsId).setValues(countRows.toString());
+        
+        },
+        error:function(text, data, XmlHttpRequest){
+            notify ("error","Ошибка при загрузке данных",true);
+        }, 
+    });
+}
+
+
+let headerContextId ;
+function header() {
     const header = {
         view: "toolbar", 
         id: "header",
@@ -10,7 +51,7 @@ export function header() {
         elements: [
             headerSidebar(),
             {},
-                {view:"search", 
+            {view:"search", 
                 placeholder:"Поиск", 
                 css:"searchTable", 
                 maxWidth:250, 
@@ -44,45 +85,68 @@ export function header() {
                     }
                 }
             },
-            {   view:"button", 
-                label:"Выйти",
-                height:48, 
-                width: 120,
-                on: {
-                    onAfterRender: function () {
-                        this.getInputNode().setAttribute("title","Выйти из аккаунта");
-                    }
-                } ,
-                click: function() {
-                    webix.ajax().post("/init/default/logout/",{
-                        success:function(text, data, XmlHttpRequest){
-                            history.back();
 
-                            let treeArray = $$("tree").data.order;
-                            let parentsArray = [];
-                            treeArray.forEach(function(el,i){
-                                if ($$("tree").getParentId(el) == 0){
-                                    parentsArray.push(el);
+            {   view:"button",
+                id:"button-context-menu",
+                type:"icon",
+                icon: 'wxi-user',
+                height:48,
+                width: 60,
+                popup: {
+                    view: 'contextmenu',
+                    id:"contextmenu",
+                    css:"webix_contextmenu",
+                    data: [],
+                    on:{
+                        onItemClick:function(id, e, node){
+                            headerContextId = id;
+                            webix.ajax().get("/init/default/api/fields.json").then(function (data) {
+                                data = data.json().content;
+                                let currentFields;
+                                if(data[id]){
+                                    currentFields=data[id];
                                 }
+                                
+                                let dataFields = currentFields.fields;
+                                let obj = Object.keys(dataFields);
+                                let columnsData = [];
+                               
+                                obj.forEach(function(data) {
+                                    if (dataFields[data].type == "datetime"){
+                                        dataFields[data].format = webix.i18n.fullDateFormatStr;
+                                    }
+                                    dataFields[data].id = data;
+                                    dataFields[data].fillspace = true;
+                                    dataFields[data].header= dataFields[data]["label"];
+                                    if(dataFields[data].id == "id"){
+                                        dataFields[data].hidden = true;
+                                    }
+                                    columnsData.push(dataFields[data]);
+                                });
+
+                                if (data[id].type=="dbtable"){
+                                    typeTable (tableId,columnsData, id);
+    
+                                } else if (data[id].type=="tform"){
+                                    typeTable (tableIdView,columnsData, id);
+                                }
+
                             });
-                            parentsArray.forEach(function(el,i){
-                                if (!(el.includes("single"))){
-                                    $$(el).hide();
-                                } 
-                            });  
-                            $$("webix__none-content").show();
-
-                            $$("tree").clearAll();
-
-                        },
-
-                    });
-                    
-                }
+ 
+                        }
+                    }
+                },
             },
-            
+
         ]
     };
 
     return header;
+
 }
+
+export {
+    header,
+    headerContextId,
+    typeTable
+};

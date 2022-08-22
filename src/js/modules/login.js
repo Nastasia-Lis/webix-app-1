@@ -1,91 +1,115 @@
 import {notify} from "./editTableForm.js";
+import {headerContextId, typeTable} from "./header.js";
+import { tableId, tableIdView,newAddBtnId, findElementsId } from "./setId.js";
+// import {lib} from "./modules/expalib.js";
+// lib ();
 let tableNames = [];
+let userInfo=[];
 
-function login () {
-
-    let routes = new (Backbone.Router.extend({
-    routes:{
-        "":"index" ,
-        "content":"content", 
-        
-    },
-    content:function(){
-        webix.ajax("/init/default/api/whoami",{
-            success:function(text, data, XmlHttpRequest){
-                $$("userAuth").hide();
-                $$("mainLayout").show();
-               
-                webix.ajax().get("/init/default/api/fields.json",false).then(function (data) {
-
-                    let srcTree = data.json().content;
-
-                    let obj = Object.keys(srcTree);
-                    let actionsCheck;
- 
-                    let dataChilds = {tables:[], forms:[], dashboards:[]};
-
-                    obj.forEach(function(data) {
-                        if (srcTree[data].actions){
-                            actionsCheck = Object.keys(srcTree[data].actions)[0]; 
-                        } 
-                        
-                        if (srcTree[data].type == "dbtable"){
-                            if(srcTree[data].plural){
-                                dataChilds.tables.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type});
-                                tableNames.push({name:srcTree[data].plural , id:data});
-                            } else if (srcTree[data].singular) {
-                                dataChilds.tables.push({"id":data, "value":srcTree[data].singular, "type":srcTree[data].type});
-                                tableNames.push({name:srcTree[data].singular , id:data});
-                            }
-        
-                        } else if (srcTree[data].type == "tform"){
-                            if(srcTree[data].plural){
-                                dataChilds.forms.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type});
-                                tableNames.push({name:srcTree[data].plural , id:data}); 
-                            }else if (srcTree[data].singular) {
-                                dataChilds.forms.push({"id":data, "value":srcTree[data].singular, "type":srcTree[data].type});
-                                tableNames.push({name:srcTree[data].singular , id:data}); 
-        
-                            }
-                        }  else if (srcTree[data].type == "dashboard" ){
-                       
-                            if(srcTree[data].plural){
-                                dataChilds.dashboards.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type});
-                                tableNames.push({name:srcTree[data].plural , id:data}); 
-                            }else if (srcTree[data].singular) {
-                                dataChilds.dashboards.push({"id":data, "value":srcTree[data].singular, "type":srcTree[data].type});
-                                tableNames.push({name:srcTree[data].singular , id:data}); 
-        
-                            }
-                        }   
-                        
-                    });
-        
-        
-                    webix.ajax().get("/init/default/api/mmenu.json").then(function (data) {
- 
-                        let menu = data.json().mmenu;
-                        let menuTree = [];
-                   
-                        menu.push({
-                            "id": 7,
-                            "name": "sales11",
-                            "title": "sales11",
-                            "mtype": 1,
-                            "ltype": 1,
-                            "action": "all_aa",
-                            "childs": []
-                        });
+function getDataFields (routes, menuItem){
+   return  webix.ajax("/init/default/api/whoami",{
+        success:function(text, data, XmlHttpRequest){
+            $$("userAuth").hide();
+            $$("mainLayout").show();
+            userInfo=data.json();
            
-                        menu.forEach(function(el,i){
-                               
+            webix.ajax().get("/init/default/api/fields.json",false).then(function (data) {
+                $$("tree").unselectAll();
+                let srcTree = data.json().content;
+
+                let obj = Object.keys(srcTree);
+                let actionsCheck;
+
+                let dataChilds = {tables:[], forms:[], dashboards:[]};
+
+                obj.forEach(function(data) {
+                    if (srcTree[data].actions){
+                        actionsCheck = Object.keys(srcTree[data].actions)[0]; 
+                    } 
+                    
+                    if (srcTree[data].type == "dbtable"){
+                        if(srcTree[data].plural){
+                            dataChilds.tables.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type});
+                            tableNames.push({name:srcTree[data].plural , id:data});
+                        } else if (srcTree[data].singular) {
+                            dataChilds.tables.push({"id":data, "value":srcTree[data].singular, "type":srcTree[data].type});
+                            tableNames.push({name:srcTree[data].singular , id:data});
+                        }
+    
+                    } else if (srcTree[data].type == "tform"){
+                        if(srcTree[data].plural){
+                            dataChilds.forms.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type});
+                            tableNames.push({name:srcTree[data].plural , id:data}); 
+                        }else if (srcTree[data].singular) {
+                            dataChilds.forms.push({"id":data, "value":srcTree[data].singular, "type":srcTree[data].type});
+                            tableNames.push({name:srcTree[data].singular , id:data}); 
+    
+                        }
+                    }  else if (srcTree[data].type == "dashboard" ){
+                   
+                        if(srcTree[data].plural){
+                            dataChilds.dashboards.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type});
+                            tableNames.push({name:srcTree[data].plural , id:data}); 
+                        }else if (srcTree[data].singular) {
+                            dataChilds.dashboards.push({"id":data, "value":srcTree[data].singular, "type":srcTree[data].type});
+                            tableNames.push({name:srcTree[data].singular , id:data}); 
+    
+                        }
+                    }   
+                    
+                });
+    
+    
+                webix.ajax().get("/init/default/api/mmenu.json").then(function (data) {
+
+                    let menu = data.json().mmenu;
+                    let menuTree = [];
+               
+                    menu.push({
+                        "id": 7,
+                        "name": "sales11",
+                        "title": "sales11",
+                        "mtype": 1,
+                        "ltype": 1,
+                        "typeof":"dashboard",
+                        "action": "all_aa",
+                        "childs": []
+                    });
+
+                    let dataAuth=[];
+                    let dataNotAuth=[];
+                    menu.forEach(function(el,i){
+                       
+                        if (el.name == "user_auth" || el.name=="userprefs" ){
+                            if (el.childs.length > 0){
+                                el.childs.forEach(function(child,i){
+                                        if(child.name == "login"){
+                                            dataNotAuth.push({id:child.name,value:child.title, href:"#"+child.name });
+                                        }else if (child.name !== "logout") {
+                                         dataAuth.push({id:child.name,value:child.title, href:"#"+child.name });
+                                        }
+                                        tableNames.push({name:child.title , id:child.name}); 
+                                });
+                                el.childs.forEach(function(child,i){
+                                    if (child.name == "logout") {
+                                     dataAuth.push({id:child.name,value:child.title, href:"#"+child.name });
+                                    }
+                                    tableNames.push({name:child.title , id:child.name}); 
+                                });
+                            } 
+                            
+                            if (el.childs.length <= 0){
+                                dataAuth.push({id:el.name, value:el.title, href:"#"+el.name });
+                            }
+
+
+                        } else {
+                       
                             if (el.childs.length > 0){
                                 dataChilds[el.name]=[];
                                 el.childs.forEach(function(child,i){
-                                    if(child.name !== "login" && child.name !=="logout"){
-                                        dataChilds[el.name].push({id:child.name, value:child.title });
-                                        tableNames.push({name:child.title , id:child.name}); 
-                                    }
+                                    dataChilds[el.name].push({id:child.name, value:child.title });
+                                    tableNames.push({name:child.title , id:child.name}); 
                                 });
                             }
         
@@ -93,38 +117,107 @@ function login () {
                             } else {
                                 let singleItem;
                                 obj.forEach(function(data) {
-                                
                                     if (data==el.name){
                                         singleItem = el.title;
                                         menuTree.push({id:el.name+"-single", value:el.title, typeof:srcTree[data].type});
-                                       
                                     }
                                 });
                                 if (!singleItem){
-                                    // if (dataChilds[el.name] == undefined){
-                                    //     console.log("udn")
-                                    // }
                                     if (el.title){
-                                        menuTree.push({id:el.name, value:el.title, data:dataChilds[el.name]});
-                                       
+                                        if (el.typeof){
+                                            menuTree.push({id:el.name, value:el.title,typeof:el.typeof, data:dataChilds[el.name]});
+                                        }else {
+                                            menuTree.push({id:el.name, value:el.title, data:dataChilds[el.name]});
+                                        }
+                                        
+                                    
                                     } else {
                                         menuTree.push({id:el.name, value:"Без названия", data:dataChilds[el.name]});
                                     }
                                 }
                             }
-                                
-                        });
-                        $$("tree").clearAll();
-                        $$("tree").parse(menuTree);
+                        }
+
                     });
-                        
+
+                    $$("tree").clearAll();
                    
+                    $$("tree").parse(menuTree);
+
+                    $$("button-context-menu").config.popup.data = dataAuth;
                 });
-            },
-            error:function(text, data, XmlHttpRequest){
-                routes.navigate("", { trigger:true});
-            }
-        });
+
+                
+                $$("tree").attachEvent("onAfterSelect", function (id) {
+                    routes.navigate("tree/"+id, { trigger:true }); 
+                });
+
+
+                if (menuItem == "userprefs"){
+                    let prefsFields = data.json().content.userprefs.fields;
+                    let columnsData=[];
+                   
+                    Object.keys(prefsFields).forEach(function(data) {
+                   
+                        if (prefsFields[data].type == "datetime"){
+                            prefsFields[data].format = webix.i18n.fullDateFormatStr;
+                        }
+                        prefsFields[data].id = data;
+                     
+                        prefsFields[data].fillspace = true;
+                        prefsFields[data].header= prefsFields[data]["label"];
+                        if(prefsFields[data].id == "id"){
+                            prefsFields[data].hidden = true;
+                        }
+                        columnsData.push(prefsFields[data]);
+                    });
+
+
+
+                    $$(tableId).refreshColumns(columnsData);
+                    typeTable(tableId,columnsData,"userprefs")
+                }
+ 
+            });
+        },
+        error:function(text, data, XmlHttpRequest){
+            routes.navigate("", { trigger:true});
+        }
+    });
+}
+
+
+function login () {
+
+    let routes = new (Backbone.Router.extend({
+    routes:{
+        "": "index" ,
+        "content": "content", 
+        "userprefs": "userprefs",
+        "cp": "cp",
+        "logout": "logout",
+        "tree/:id": "tree",
+    },
+    tree: function(id){
+
+        if ($$("tree").data.order.length == 0){
+            getDataFields (routes);
+            let idTree = id;
+            
+            $$("tree").attachEvent("onAfterLoad", function (id) {
+                id = idTree;
+                let parentId = $$("tree").getParentId(id);
+
+                $$("tree").open(parentId);
+                $$("tree").select(id);
+            });
+
+        }
+      
+
+    },
+    content:function(){
+        getDataFields (routes);
     },
     index:function(){
         webix.ajax("/init/default/api/whoami",{
@@ -137,6 +230,98 @@ function login () {
             }
         });      
     }, 
+    
+    cp: function(){
+        if($$("webix__none-content").isVisible()){
+            $$("webix__none-content").hide();
+        } 
+        
+        $$("container").getChildViews().forEach(function(el,i){
+            if(el.config.view=="scrollview"|| el.config.view=="layout"){
+
+                if ($$(el.config.id).isVisible()){
+                    $$(el.config.id).hide();
+                }
+
+            }
+       });
+
+
+        if ($$("tree").data.order.length == 0){
+            getDataFields (routes);
+            $$("user_auth").show();
+        } else {
+            $$("user_auth").show();
+        }
+        $$("tree").closeAll();
+
+    },
+
+    userprefs: function(){
+
+       $$("container").getChildViews().forEach(function(el,i){
+            if(el.config.view=="scrollview"|| el.config.view=="layout"){
+
+                if ($$(el.config.id).isVisible()){
+                    $$(el.config.id).hide();
+                    console.log(el.config.id)
+                }
+
+            }
+       });
+        if ($$("forms").isVisible()){
+            $$(tableIdView).clearAll();
+            $$("forms").hide();
+        } else if ($$("dashboards").isVisible()){
+            $$("dashboardBody").removeView( $$("dashboard-charts"));
+            $$("dashboards").hide();
+        }
+
+       
+        if ($$("tree").data.order.length == 0){
+            getDataFields (routes,"userprefs");
+            $$("tables").show();
+            $$("webix__none-content").hide();
+
+        } else {
+            if ($$(tableId)){
+                $$(tableId).clearAll();
+            }else if ( $$(tableIdView)){
+                $$(tableIdView).clearAll();
+            }
+            
+            $$("tables").show();
+            $$("webix__none-content").hide();
+        }
+        
+        $$("tree").closeAll();
+     
+    },
+
+    logout: function (){
+
+        webix.ajax().post("/init/default/logout/",{
+            success:function(text, data, XmlHttpRequest){
+                history.back();
+
+
+                 $$("container").getChildViews().forEach(function(el,i){
+                    if(el.config.view=="scrollview"|| el.config.view=="layout"){
+
+                    if ($$(el.config.id).isVisible()){
+                        $$(el.config.id).hide();
+                    }
+
+                }
+       });
+                $$("webix__none-content").show();
+
+                $$("tree").clearAll();
+
+            },
+
+        });
+    }
 
     }));
 

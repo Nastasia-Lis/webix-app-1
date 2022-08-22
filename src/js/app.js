@@ -1,5 +1,6 @@
-console.log("expa 1.0.4");
+console.log("expa 1.0.5");
 import {lib} from "./modules/expalib.js";
+lib ();
 import * as textInputClean from "./modules/textInput.js";
 
 import {login, routes} from "./modules/login.js";
@@ -12,7 +13,7 @@ import {
     findElementsIdView, formIdView
 } from './modules/setId.js';
 
-import * as header from "./modules/header.js";
+import {header} from "./modules/header.js";
 import {headerSidebar,treeSidebar} from "./modules/sidebar.js";
 
 // tree elements
@@ -25,7 +26,7 @@ import {editTableBar} from "./modules/editTableForm.js";
 import {logLayout} from "./modules/logBlock.js";
 import {propertyTemplate} from "./modules/viewPropertyTable.js";
 
-lib ();
+
 
 
 webix.ready(function(){
@@ -62,7 +63,7 @@ webix.ready(function(){
                                                                 
                                cols:[
                                     { rows:[
-                                        header.header(),
+                                        header(),
                                         {   id:"adaptive",
                                             rows:[]
                                         },
@@ -73,7 +74,8 @@ webix.ready(function(){
                                             {id:"sideMenuResizer",view:"resizer",css:"webix_resizer-hide",},
                             
                                             
-                                            {id:"webix__none-content"},
+                                           {id:"webix__none-content"},
+                                           {id:"webix__null-content", template:"Блок в процессе разработки",margin:10, hidden:true},
                                             
                                                     
                                             {id:"tables", hidden:true, view:"scrollview", body: { view:"flexlayout", cols:[
@@ -93,11 +95,11 @@ webix.ready(function(){
                                             
                                             },
 
-                                            {id:"dashboards", hidden:true, scroll:"auto",
+                                            {view:"layout",id:"dashboards", hidden:true, scroll:"auto",
                                             rows: dashboardLayout()
                                             } ,
 
-                                            {id:"forms", css:"webix_tableView",hidden:true, 
+                                            {view:"layout",id:"forms", css:"webix_tableView",hidden:true, 
                                             
                                                     rows:[
                                                         tableToolbar(pagerIdView, searchIdView, exportBtnView, findElementsIdView, tableIdView, true ),
@@ -115,7 +117,7 @@ webix.ready(function(){
                                                 
                                             },
 
-                                            {id:"user_auth", css:"webix_auth",hidden:true, 
+                                            {view:"layout",id:"user_auth", css:"webix_auth",hidden:true, 
                                             
                                                     rows:[
                                                         authCpLayout,

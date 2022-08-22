@@ -41,7 +41,7 @@ const authCp = {
               return false;
             }
 
-            if (data.newPass == data.oldPass){
+            if (data.newPass == data.oldPass && $$("cp-form").isDirty() ){
                 notify ("error","Новый пароль должен отличаться от старого",true);
               return false;
             }

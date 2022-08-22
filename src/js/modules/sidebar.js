@@ -1,7 +1,8 @@
 import {tableId,editFormId,addBtnId,findElementsId, searchId,
         tableIdView,findElementsIdView,searchIdView,newAddBtnId
 } from './setId.js';
-
+// import {lib} from "./expalib.js";
+// lib ();
 import {notify, checkFormSaved,clearItem,popupExec, defaultStateForm} from "./editTableForm.js";
 import {tableNames} from "./login.js";
 import {logBlock} from "./logBlock.js";
@@ -12,7 +13,6 @@ let inpObj={};
 let customInputs = [];
 let urlFieldAction ;
 let checkAction = false;
-
 
 function submitBtn (idElements, url, verb, rtype){
    
@@ -84,7 +84,7 @@ function submitBtn (idElements, url, verb, rtype){
 
 
 function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false) {
-    
+  
     itemTreeId = idsParam;
     let titem = $$("tree").getItem(idsParam);
     $$(idCurrTable).clearAll();
@@ -99,7 +99,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
         }
 
         webix.ajax().get("/init/default/api/fields.json").then(function (data) {
-     
+       
 // ---- Таблица - данные cols      
             if (single){
                 let singleSearch = idsParam.search("-single");
@@ -126,6 +126,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
             });
             $$(idCurrTable).refreshColumns(columnsData);
 
+           
 
 
 // ---- Таблица - action detail у fields            
@@ -152,251 +153,255 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                 }
             }
 
-          
+ 
 
  // -----  Array с кастомными полями
-
-            let objInuts = Object.keys(data.inputs);
+            if (data.inputs){
+                let objInuts = Object.keys(data.inputs);
+                
+                let customInputs = [];
+                let idElements = [];
             
-            let customInputs = [];
-            let idElements = [];
+                let dataInputsArray = data.inputs;
 
-            let dataInputsArray = data.inputs;
-            objInuts.forEach((el,i) => {
-                if (dataInputsArray[el].type == "string"){
-                    customInputs.push(
-                    {   view:"text",
-                        placeholder:dataInputsArray[el].label, 
-                        id: "customInputs"+i,
-                        maxWidth:300,
-                        minWidth:150,
-                        height:48,
-                        //label:dataInputsArray[el].label, 
-                        labelPosition:"top",
-                        on: {
-                            onAfterRender: function () {
-                                this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
-                             },
-                        }
-                    });
-                } else if (dataInputsArray[el].type == "apiselect") {
+            
+                objInuts.forEach((el,i) => {
+                    if (dataInputsArray[el].type == "string"){
+                        customInputs.push(
+                        {   view:"text",
+                            placeholder:dataInputsArray[el].label, 
+                            id: "customInputs"+i,
+                            maxWidth:300,
+                            minWidth:150,
+                            height:48,
+                            //label:dataInputsArray[el].label, 
+                            labelPosition:"top",
+                            on: {
+                                onAfterRender: function () {
+                                    this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
+                                },
+                            }
+                        });
+                    } else if (dataInputsArray[el].type == "apiselect") {
 
-                    let optionData = new webix.DataCollection({url:{
-                        $proxy:true,
-                        load: function(){
-                            return ( webix.ajax().get("/init/default/api/"+dataInputsArray[el].apiname).then(function (data) {   
-                                let dataSrc = data.json().content;
-                                        
-                                        let dataOptions=[];
-                                        if (dataSrc[0].name !== undefined){
+                        let optionData = new webix.DataCollection({url:{
+                            $proxy:true,
+                            load: function(){
+                                return ( webix.ajax().get("/init/default/api/"+dataInputsArray[el].apiname).then(function (data) {   
+                                    let dataSrc = data.json().content;
                                             
-                                            dataSrc.forEach(function(data, i) {
-                                                dataOptions.push( 
-                                                    {id:i+1, value:data.name},
-                                                );
-                                            });
-                                           
-                                        } else {
-                                            dataSrc.forEach(function (data, i) {
-                                                dataOptions.push(
-                                                    { id: i + 1, value: data },
-                                                );
-                                            });
+                                            let dataOptions=[];
+                                            if (dataSrc[0].name !== undefined){
+                                                
+                                                dataSrc.forEach(function(data, i) {
+                                                    dataOptions.push( 
+                                                        {id:i+1, value:data.name},
+                                                    );
+                                                });
+                                            
+                                            } else {
+                                                dataSrc.forEach(function (data, i) {
+                                                    dataOptions.push(
+                                                        { id: i + 1, value: data },
+                                                    );
+                                                });
 
-                                        }
-                                       
-                                        return dataOptions;
-                                    })
-                                );
-                            
-                           
-                            
-                        }
-                    }});
-
-
-                    customInputs.push(
-                        { view:"combo",
-                        width:250,
-                        height:48,
-                        id: "customCombo"+i,
-                        //placeholder:"Введите текст",  
-                        //label:dataInputsArray[el].label,
-                        placeholder:dataInputsArray[el].label, 
-                        labelPosition:"top", 
-                        options:{
-                            data:optionData
-                        },
-                        on: {
-                            onAfterRender: function () {
-                                this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
-                            },
-                        }               
-                    });
-
-                } else if (dataInputsArray[el].type == "submit" || dataInputsArray[el].type == "button") {
-                    let actionType = dataInputsArray[el].action;
-                    let findAction = data.actions[actionType];
-
-                    if (findAction.verb == "DELETE" && actionType !== "submit"){
-                        let countCols = $$(idCurrTable).getColumns().length;
-                        let columns = $$(idCurrTable).config.columns;
-                        columns.splice(countCols,0,{ id:"action"+i, header:"Действие",maxWidth:100, template:"{common.trashIcon()}"});
-
-                        $$(idCurrTable).refreshColumns();
-                    } else if (findAction.verb == "DELETE") {
-                        customInputs.push(
-
-                                {   view:"button", 
-                                    id:"customBtnDel"+i,
-                                    css:"webix_danger", 
-                                    type:"icon", 
-                                    icon:"wxi-trash", 
-                                    inputHeight:48,
-                                    height:48,
-                                    width:100,
-                                    value:dataInputsArray[el].label,
-                                    click:function (id) {
-                                        submitBtn(idElements,findAction.url,"delete");
-                                    },
-                                    on: {
-                                        onAfterRender: function () {
-                                            this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
-                                        },
-                                    },
-                                    
-                                    
-                                }, 
-
-                        );
-                    } else {
-                        customInputs.push(
-
-                                {   view:"button", 
-                                    css:"webix_primary", 
-                                    id:"customBtn"+i,
-                                    inputHeight:48,
-                                    height:48, 
-                                    minWidth:100,
-                                    maxWidth:550,
-                                    value:dataInputsArray[el].label,
-                                    click:function (id) {
-
-                                        if (findAction.verb== "GET"){
-                                            if ( findAction.rtype== "refresh") {
-                                                submitBtn(idElements,findAction.url, "get", "refresh");
-                                            } else if (findAction.rtype== "download") {
-                                                submitBtn(idElements,findAction.url, "get", "download");
                                             }
+                                        
+                                            return dataOptions;
+                                        })
+                                    );
+                                
+                            
+                                
+                            }
+                        }});
+
+
+                        customInputs.push(
+                            { view:"combo",
+                            width:250,
+                            height:48,
+                            id: "customCombo"+i,
+                            //placeholder:"Введите текст",  
+                            //label:dataInputsArray[el].label,
+                            placeholder:dataInputsArray[el].label, 
+                            labelPosition:"top", 
+                            options:{
+                                data:optionData
+                            },
+                            on: {
+                                onAfterRender: function () {
+                                    this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
+                                },
+                            }               
+                        });
+
+                    } else if (dataInputsArray[el].type == "submit" || dataInputsArray[el].type == "button") {
+                        let actionType = dataInputsArray[el].action;
+                        let findAction = data.actions[actionType];
+
+                        if (findAction.verb == "DELETE" && actionType !== "submit"){
+                            let countCols = $$(idCurrTable).getColumns().length;
+                            let columns = $$(idCurrTable).config.columns;
+                            columns.splice(countCols,0,{ id:"action"+i, header:"Действие",maxWidth:100, template:"{common.trashIcon()}"});
+
+                            $$(idCurrTable).refreshColumns();
+                        } else if (findAction.verb == "DELETE") {
+                            customInputs.push(
+
+                                    {   view:"button", 
+                                        id:"customBtnDel"+i,
+                                        css:"webix_danger", 
+                                        type:"icon", 
+                                        icon:"wxi-trash", 
+                                        inputHeight:48,
+                                        height:48,
+                                        width:100,
+                                        value:dataInputsArray[el].label,
+                                        click:function (id) {
+                                            submitBtn(idElements,findAction.url,"delete");
+                                        },
+                                        on: {
+                                            onAfterRender: function () {
+                                                this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
+                                            },
+                                        },
+                                        
+                                        
+                                    }, 
+
+                            );
+                        } else {
+                            customInputs.push(
+
+                                    {   view:"button", 
+                                        css:"webix_primary", 
+                                        id:"customBtn"+i,
+                                        inputHeight:48,
+                                        height:48, 
+                                        minWidth:100,
+                                        maxWidth:550,
+                                        value:dataInputsArray[el].label,
+                                        click:function (id) {
+
+                                            if (findAction.verb== "GET"){
+                                                if ( findAction.rtype== "refresh") {
+                                                    submitBtn(idElements,findAction.url, "get", "refresh");
+                                                } else if (findAction.rtype== "download") {
+                                                    submitBtn(idElements,findAction.url, "get", "download");
+                                                }
+                                                
+                                            } else if (findAction.verb == "POST"){
+                                                submitBtn(idElements,findAction.url,"post");
                                             
-                                        } else if (findAction.verb == "POST"){
-                                            submitBtn(idElements,findAction.url,"post");
-                                           
-                                        } 
-                                        else if (findAction.verb == "download"){
-                                            submitBtn(idElements,findAction.url, "get", "download",id);
-                                        }
-                                    
-                                    },
+                                            } 
+                                            else if (findAction.verb == "download"){
+                                                submitBtn(idElements,findAction.url, "get", "download",id);
+                                            }
+                                        
+                                        },
+                                        on: {
+                                            onAfterRender: function () {
+                                                this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
+                                            },
+                                        },
+                                    }, 
+                            );
+                        }
+                    } else if (dataInputsArray[el].type == "upload"){
+                        customInputs.push(
+                                {   view: "uploader", 
+                                    value: "Upload file", 
+                                    id:"customUploader"+i, 
+                                    height:48,
+                                    autosend:false,
+                                    upload: data.actions.submit.url,
+                                    label:dataInputsArray[el].label, 
+                                    labelPosition:"top",
                                     on: {
                                         onAfterRender: function () {
                                             this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
                                         },
-                                    },
-                                }, 
+                                    }
+                                }
                         );
-                    }
-                } else if (dataInputsArray[el].type == "upload"){
-                    customInputs.push(
-                            {   view: "uploader", 
-                                value: "Upload file", 
-                                id:"customUploader"+i, 
-                                height:48,
-                                autosend:false,
-                                upload: data.actions.submit.url,
-                                label:dataInputsArray[el].label, 
-                                labelPosition:"top",
-                                on: {
-                                    onAfterRender: function () {
-                                        this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
-                                    },
+                    } else if (dataInputsArray[el].type == "datetime"){
+                        customInputs.push(
+                                {   view: "datepicker",
+                                    format: "%d.%m.%Y %H:%i:%s",
+                                    placeholder:dataInputsArray[el].label,  
+                                    id:"customDatepicker"+i, 
+                                    timepicker: true,
+                                    labelPosition:"top",
+                                    width:300,
+                                    minWidth:100,
+                                    height:48,
+                                    on: {
+                                        onAfterRender: function () {
+                                            this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
+                                        },
+                                    }
                                 }
-                            }
-                    );
-                } else if (dataInputsArray[el].type == "datetime"){
-                    customInputs.push(
-                            {   view: "datepicker",
-                                format: "%d.%m.%Y %H:%i:%s",
-                                placeholder:dataInputsArray[el].label,  
-                                id:"customDatepicker"+i, 
-                                timepicker: true,
-                                labelPosition:"top",
-                                width:300,
-                                minWidth:100,
-                                height:48,
-                                on: {
-                                    onAfterRender: function () {
-                                        this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
-                                    },
+                        );
+                    }else if (dataInputsArray[el].type == "checkbox"){
+                    
+                        customInputs.push(
+                                {   view:"checkbox", 
+                                    id:"customСheckbox"+i, 
+                                    minWidth:220,
+                                    css:"webix_checkbox-style",
+                                    labelRight:dataInputsArray[el].label, 
+                                    on: {
+                                        onAfterRender: function () {
+                                            this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
+                                        },
+                                    }
                                 }
-                            }
-                    );
-                }else if (dataInputsArray[el].type == "checkbox"){
-                   
-                    customInputs.push(
-                            {   view:"checkbox", 
-                                id:"customСheckbox"+i, 
-                                minWidth:220,
-                                css:"webix_checkbox-style",
-                                labelRight:dataInputsArray[el].label, 
-                                on: {
-                                    onAfterRender: function () {
-                                        this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
-                                    },
-                                }
-                            }
-                    );
+                        );
 
-                } 
-               customInputs.push({width:10});
-            });
-            
-          
-
-            customInputs.forEach((el,i) => {
-                if (el.id !== undefined){
-                    if (el.view=="text"){
-                        idElements.push({id:el.id, name:"substr"});
                     } 
-                    else if (el.view=="combo") {
-                        idElements.push({id:el.id, name:"valtype"});
-                    } else if (el.view=="uploader"){
-                        idElements.push({id:el.id});
-                    } else if (el.view=="datepicker"){
-                        idElements.push({id:el.id});
-                    }
-                }
+                customInputs.push({width:10});
+                });
+                
+            
 
-            });
-           
-           
-            inpObj = {id:"customInputs",css:"webix_custom-inp", cols:customInputs};
+                customInputs.forEach((el,i) => {
+                    if (el.id !== undefined){
+                        if (el.view=="text"){
+                            idElements.push({id:el.id, name:"substr"});
+                        } 
+                        else if (el.view=="combo") {
+                            idElements.push({id:el.id, name:"valtype"});
+                        } else if (el.view=="uploader"){
+                            idElements.push({id:el.id});
+                        } else if (el.view=="datepicker"){
+                            idElements.push({id:el.id});
+                        }
+                    }
+
+                });
             
-            ($$("filterBar").addView( inpObj,2));
-        
             
-       
+                inpObj = {id:"customInputs",css:"webix_custom-inp", cols:customInputs};
+                
+                ($$("filterBar").addView( inpObj,2));
+        }
+            
+         
 
 
 // ----- Таблица - получение данных rows
 
             if (single){
-                let searchSingle = idsParam.search("-single");
-                itemTreeId = idsParam.slice(0,searchSingle);
+                itemTreeId = idsParam;
+              
             }
             function getItemData (){
+
                 webix.ajax().get("/init/default/api/"+itemTreeId,{
                     success:function(text, data, XmlHttpRequest){
+                        
                         if(!($$(newAddBtnId).isEnabled())){
                             $$(newAddBtnId).enable();
                         }
@@ -431,7 +436,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                     }, 
                 });
             }
-
+            
             getItemData ();
             if (data.autorefresh){
                 setInterval(function(){
@@ -736,7 +741,7 @@ function getInfoDashboard (idsParam,single=false){
 
             }
 
-             },
+            },
              
             error:function(text, data, XmlHttpRequest){
                 notify ("error","Ошибка при загрузке данных", true);
@@ -803,19 +808,17 @@ function treeSidebar () {
         id:"tree",
         minWidth:100,
         width: 250,
-        //minHeight:150,
         editable:false,
         select:true,
         editor:"text",
         editValue:"value",
-        delimiter:{
-            rows:"\n", // the rows delimiter
-        },
         activeTitle:true,
         clipboard: true,
         data:[],
         on:{
-  
+            // onAfterSelect:function(id){
+            //     routes.navigate("tree/"+id, { trigger:true }); 
+            // },
             onSelectChange:function (ids) {
 
                 if($$("inputsTable")){
@@ -847,22 +850,38 @@ function treeSidebar () {
 
                 
                 function visibleTreeItem(singleType, idsUndefined){
+                    if($$("webix__null-content").isVisible()){
+                        $$("webix__null-content").hide();
+                    }
+
+                    if ($$("user_auth").isVisible()){
+                        $$("user_auth").hide();
+                    }
+
                     if(idsUndefined !== undefined){
                         return parentsArray.forEach(function(el,i){
                             if (el.includes("single")){
-                                $$(singleType).hide();
+                                if(singleType){
+                                    $$(singleType).hide();
+                                }
                             } else {
-                            //    if (el == getItemParent){
-                            //         $$(el).show();
-                            //     } else {
-                            //         $$(el).hide();
-                            //     } 
+
+                                if($$("webix__none-content").isVisible()){
+                                    $$("webix__none-content").hide();
+                                } 
+                                
+                                if(!($$("webix__null-content").isVisible())){
+                                    $$("webix__null-content").show();
+                                } 
+                               
+                               
                                 if (el=="tables" || el=="dashboards" || el=="forms" || el=="user_auth"){
                                     $$(el).hide();
                                
                                 }
                             }     
                         });  
+                        
                     } else {
                     
                         return parentsArray.forEach(function(el,i){
@@ -871,18 +890,10 @@ function treeSidebar () {
                                     $$(singleType).show();
                                 } 
                             } else {
-                            //    if (el == getItemParent){
-                            //         $$(el).show();
-                            //     } else {
-                            //         $$(el).hide();
-                            //     } 
                                 if (el == getItemParent){
-                                
-                                        $$(el).show();
+                                    $$(el).show();
                                 } else if (el=="tables" || el=="dashboards" || el=="forms" || el=="user_auth"){
                                     $$(el).hide();
-                                } else {
-                                   
                                 }
                         
                             }
@@ -890,7 +901,6 @@ function treeSidebar () {
                             
                         });  
                     }
-                 
                    
                 }
             
@@ -906,7 +916,6 @@ function treeSidebar () {
                 } else if (getItemParent=="user_auth"){
                     visibleTreeItem(); 
                 } else if (getItemParent == 0 && treeItemId!=="tables"&& treeItemId!=="user_auth"&& treeItemId!=="dashboards" && treeItemId!=="forms" && !singleItemContent){
-                    console.log("0000");
                     visibleTreeItem(false, ids[0]); 
                 }
 

@@ -15,7 +15,6 @@ function setLogValue (typeNotify,notifyText) {
 
         let srcTable;
         tableNames.forEach(function(el,i){
-            console.log(tableNames)
             if (el.id == itemTreeId){
                
                 srcTable= el.name;
@@ -32,7 +31,7 @@ function setLogValue (typeNotify,notifyText) {
         $$("logBlock-list").add({
             date:currentDate,
             value:notifyText,
-            src:"Expa v1.0.4"
+            src:"Expa v1.0.5"
         });
     }
 
