@@ -261,7 +261,11 @@
 }
 
 .webix_template {
-  padding: 6px 12px !important;
+  padding: 10px 12px !important;
+}
+
+.webix_layout_space {
+  background-color: var(--bg) !important;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -320,6 +324,14 @@ label, button {
 
 .webix_template-user {
   width: auto !important;
+}
+
+.webix_contextmenu a:last-child {
+  color: var(--danger-dark) !important;
+}
+
+.webix_contextmenu a:last-child:hover {
+  color: var(--dark) !important;
 }
 
 .webix_view {

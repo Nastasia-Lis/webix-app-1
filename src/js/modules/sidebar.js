@@ -395,8 +395,8 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
 
             if (single){
                 itemTreeId = idsParam;
-              
             }
+
             function getItemData (){
 
                 webix.ajax().get("/init/default/api/"+itemTreeId,{
@@ -405,10 +405,11 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                         if(!($$(newAddBtnId).isEnabled())){
                             $$(newAddBtnId).enable();
                         }
-                        $$(idCurrTable).showProgress({
-                            type:"bottom",
-                            hide:true
-                        });
+                       
+                        // $$(idCurrTable).showProgress({
+                        //     type:"bottom",
+                        //     hide:true
+                        // });
         
                         data = data.json().content;
                         
@@ -501,7 +502,7 @@ function getInfoDashboard (idsParam,single=false){
                         titleTemplate = el.title;
                         delete el.title;
                         el.borderless = true;
-                        el.minWidth = 300;
+                        el.width = 520;
                         dashLayout.push({rows:[ {template:titleTemplate,borderless:true,css:{"padding-left":"25px!important","margin-top":"20px!important", "font-weight":"400!important", "font-size":"17px!important"}, height:30},el]});
                     });
 
@@ -542,6 +543,7 @@ function getInfoDashboard (idsParam,single=false){
                         borderless:true,
                         body: {
                             view:"flexlayout",
+                            type: "space", 
                             cols:dashLayout
                         }
                     },2);
@@ -563,7 +565,6 @@ function getInfoDashboard (idsParam,single=false){
     if(!($$("dashboard-charts"))){
         webix.ajax().get("/init/default/api/fields",{
             success:function(text, data, XmlHttpRequest){
-                console.log(data.json().content)
 
                 let inputsArray=[];
                 let actionType ;
@@ -814,7 +815,15 @@ function treeSidebar () {
         editValue:"value",
         activeTitle:true,
         clipboard: true,
+       // onContext:{},
         data:[],
+        // onContext:{
+        //     "webix_tree_item":function(event, id, target){
+        //         console.log(id)
+
+        //         webix.message("Active area was right-clicked");
+        //     }
+        // },
         on:{
             // onAfterSelect:function(id){
             //     routes.navigate("tree/"+id, { trigger:true }); 
@@ -850,13 +859,16 @@ function treeSidebar () {
 
                 
                 function visibleTreeItem(singleType, idsUndefined){
-                    if($$("webix__null-content").isVisible()){
-                        $$("webix__null-content").hide();
+                    if($$("webix__null-content")){
+                        $$("container").removeView($$("webix__null-content"));
                     }
 
-                    if ($$("user_auth").isVisible()){
-                        $$("user_auth").hide();
+                    if($$("user_auth")){
+                        if ($$("user_auth").isVisible()){
+                            $$("user_auth").hide();
+                        }
                     }
+                    
 
                     if(idsUndefined !== undefined){
                         return parentsArray.forEach(function(el,i){
@@ -870,10 +882,11 @@ function treeSidebar () {
                                     $$("webix__none-content").hide();
                                 } 
                                 
-                                if(!($$("webix__null-content").isVisible())){
-                                    $$("webix__null-content").show();
+                                if(!($$("webix__null-content"))){
+                                    $$("container").addView(
+                                        {id:"webix__null-content", template:"Блок в процессе разработки",margin:10},
+                                    2);
                                 } 
-                               
                                
                                 if (el=="tables" || el=="dashboards" || el=="forms" || el=="user_auth"){
                                     $$(el).hide();
@@ -952,7 +965,6 @@ function treeSidebar () {
                 }
                 
             },
-  
 
             onBeforeSelect: function(data) {
                 
@@ -977,19 +989,19 @@ function treeSidebar () {
                     $$("sideMenuResizer").show();
                 }
                
-            }
+            },
+
+            onBeforeDrop:function(context){
+                console.log("Drop context:", context);
+                context.parent = context.target; //drop as child
+                context.index = -1;              //as last child
+              }
 
         },
         
 
     };
 
-    const treeLayout = {
-        rows:[tree,
-            {view:"resizer"},
-            logBlock
-        ]
-    };
     return tree;
 }
 

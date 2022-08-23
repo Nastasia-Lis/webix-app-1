@@ -111,7 +111,6 @@ function removeItem() {
             let formValues = $$(editFormId).getValues();
             webix.ajax().del("/init/default/api/"+currId+"/"+formValues.id+".json", formValues,{
                 success:function(){
-                    console.log(formValues.id)
                     clearItem();
                     defaultStateForm ();
                     $$("inputsTable").hide();
@@ -280,9 +279,9 @@ function popupExec (titleText) {
     });
 }
 
-function notify (typeNotify,textMessage, log = false) {
+function notify (typeNotify,textMessage, log = false, expireTime=4000) {
     webix.message.position = "bottom";
-    webix.message({type:typeNotify,  text:textMessage});
+    webix.message({type:typeNotify,expire: expireTime,  text:textMessage});
     if(log){
         setLogValue(typeNotify, textMessage);
     }

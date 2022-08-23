@@ -1,31 +1,19 @@
 console.log("expa 1.0.5");
+
 import {lib} from "./modules/expalib.js";
 lib ();
 import * as textInputClean from "./modules/textInput.js";
 
-import {login, routes} from "./modules/login.js";
+import {login} from "./modules/login.js";
 import {getStorageData} from "./modules/userSettings.js";
 
-import {
-    tableId, pagerId, searchId, exportBtn, findElementsId, formId,
-    
-    tableIdView, pagerIdView, searchIdView, exportBtnView, 
-    findElementsIdView, formIdView
-} from './modules/setId.js';
-
 import {header} from "./modules/header.js";
-import {headerSidebar,treeSidebar} from "./modules/sidebar.js";
+import {treeSidebar} from "./modules/sidebar.js";
 
-// tree elements
-import  {dashboardLayout} from "./treeItems/dashboardView.js";
-import  {tableToolbar,table, onFuncTable, onFuncTableView} from "./treeItems/tableTemplate.js";
-import {authCpLayout} from "./treeItems/authItems.js";
-
-// other blocks
-import {editTableBar} from "./modules/editTableForm.js";
 import {logLayout} from "./modules/logBlock.js";
-import {propertyTemplate} from "./modules/viewPropertyTable.js";
 
+import * as resetTimer from  "./modules/resetTimer.js";
+import { contextMenu } from "./modules/contextMenuTree.js";
 
 
 
@@ -75,57 +63,6 @@ webix.ready(function(){
                             
                                             
                                            {id:"webix__none-content"},
-                                           {id:"webix__null-content", template:"Блок в процессе разработки",margin:10, hidden:true},
-                                            
-                                                    
-                                            {id:"tables", hidden:true, view:"scrollview", body: { view:"flexlayout", cols:[
-                                                
-                                                {   id:"tableContainer",
-                                                        rows:[
-                                                            tableToolbar(pagerId, searchId, exportBtn, findElementsId, tableId ),
-                                                            { view:"resizer",class:"webix_resizers",},
-                                                            table (tableId, pagerId, onFuncTable)
-                                                        ]
-                                                    },
-                                                
-                                                    {  view:"resizer",class:"webix_resizers",},
-                                                    
-                                                    editTableBar,]
-                                                }
-                                            
-                                            },
-
-                                            {view:"layout",id:"dashboards", hidden:true, scroll:"auto",
-                                            rows: dashboardLayout()
-                                            } ,
-
-                                            {view:"layout",id:"forms", css:"webix_tableView",hidden:true, 
-                                            
-                                                    rows:[
-                                                        tableToolbar(pagerIdView, searchIdView, exportBtnView, findElementsIdView, tableIdView, true ),
-                                                        { view:"resizer",class:"webix_resizers",},
-                                                        
-                                                        {view:"scrollview", body:  
-                                                        
-                                                        {view:"flexlayout",cols:[
-                                                            table (tableIdView, pagerIdView, onFuncTableView ),
-                                                            { view:"resizer",class:"webix_resizers", id:"propResize", hidden:true},
-                                                            propertyTemplate("propTableView")
-                                                        ]}}, 
-                                                    ],
-
-                                                
-                                            },
-
-                                            {view:"layout",id:"user_auth", css:"webix_auth",hidden:true, 
-                                            
-                                                    rows:[
-                                                        authCpLayout,
-                                                        {}
-                                                    ],
-
-                                                
-                                            },
                                         ]},
                                     ]}, 
 
@@ -145,9 +82,6 @@ webix.ready(function(){
     window.addEventListener('resize', function(event) {
  
         if ($$("tree").isVisible()){
-            // if(window.innerWidth >= 800){
-            //     $$("sideMenu").config.width = 250;
-            // }
         } else {
             if(window.innerWidth <= 600){
                 if($$("sideMenuResizer")){
@@ -159,16 +93,23 @@ webix.ready(function(){
 
     }, true);
 
+
+    webix.ui(contextMenu());
+
     Backbone.history.start();
 
     textInputClean.textInputClean();
 
-    webix.extend($$(tableId), webix.ProgressBar);
-    webix.extend($$(tableIdView), webix.ProgressBar);
+    resetTimer.resetTimer();
+
+    // webix.extend($$(tableId), webix.ProgressBar);
+    // webix.extend($$(tableIdView), webix.ProgressBar);
 
     webix.i18n.setLocale("ru-RU");   
     webix.i18n.parseFormat = "%d.%m.%Y %H:%i:%s";
     webix.i18n.setLocale();
+
+
 });
 
 

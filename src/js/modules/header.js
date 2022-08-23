@@ -1,7 +1,9 @@
-import { tableId,tableIdView,newAddBtnId, findElementsId} from "./setId.js";
+import { tableId,tableIdView,newAddBtnId, editFormId,findElementsId} from "./setId.js";
 import {notify} from "./editTableForm.js";
 import {headerSidebar} from "./sidebar.js";
 import {setStorageData} from "./userSettings.js";
+
+import {editTableBar, clearItem,checkFormSaved} from "./editTableForm.js";
 
 
 function typeTable (type,columnsData, id){
@@ -13,10 +15,10 @@ function typeTable (type,columnsData, id){
                 $$(newAddBtnId).enable();
             }
 
-            $$(type).showProgress({
-                type:"bottom",
-                hide:true
-            });
+            // $$(type).showProgress({
+            //     type:"bottom",
+            //     hide:true
+            // });
 
             data = data.json().content;
             
@@ -89,6 +91,7 @@ function header() {
             {   view:"button",
                 id:"button-context-menu",
                 type:"icon",
+                disabled:true,
                 icon: 'wxi-user',
                 height:48,
                 width: 60,
@@ -99,6 +102,22 @@ function header() {
                     data: [],
                     on:{
                         onItemClick:function(id, e, node){
+
+                            if (id=="logout"){
+                                if($$(editFormId) && $$(editFormId).isDirty() ||$$("cp-form") && $$("cp-form").isDirty()){
+                                    checkFormSaved().then(function(result){
+                                        if(result){
+                                            window.location.replace("#logout");
+                                        }
+                                        
+                                    });
+                                    return false;
+                                } else {
+                                    window.location.replace("#logout");
+                                }
+                            }
+
+
                             headerContextId = id;
                             webix.ajax().get("/init/default/api/fields.json").then(function (data) {
                                 data = data.json().content;
@@ -136,6 +155,9 @@ function header() {
                         }
                     }
                 },
+                on:{
+
+                }
             },
 
         ]
@@ -148,5 +170,5 @@ function header() {
 export {
     header,
     headerContextId,
-    typeTable
+    typeTable,
 };

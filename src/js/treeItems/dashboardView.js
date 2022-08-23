@@ -1,4 +1,4 @@
-const dashboardBody = {id:"dashboardBody", rows:[
+const dashboardBody = {id:"dashboardBody",rows:[
  
     {id:"dashEmpty"},
 ]};

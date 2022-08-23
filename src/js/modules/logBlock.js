@@ -37,13 +37,22 @@ function setLogValue (typeNotify,notifyText) {
 
     let itemListIndex;
     
-    document.querySelectorAll(".webix_list_item").forEach(function(el,i){
-        itemListIndex = i;
-    });
+    // document.querySelectorAll(".webix_list_item").forEach(function(el,i){
+    //     itemListIndex = i;
+    // });
+    
+    let blockContainer = document.querySelector(".webix_log-block");
+    if (blockContainer){
+        blockContainer.querySelectorAll(".webix_list_item").forEach(function(el,i){
+            itemListIndex = i;
+        });
+    }
     
     let item = document.querySelectorAll(".webix_list_item")[itemListIndex];
     if (typeNotify == "error"){
+        console.log(item)
         item.style.setProperty('color', 'red', 'important');
+        console.log("11")
     }
     
 }

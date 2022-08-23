@@ -1,30 +1,123 @@
 import {notify} from "./editTableForm.js";
-import {headerContextId, typeTable} from "./header.js";
-import { tableId, tableIdView,newAddBtnId, findElementsId } from "./setId.js";
-// import {lib} from "./modules/expalib.js";
-// lib ();
+import {typeTable} from "./header.js";
+import { tableId, tableIdView,editFormId,findElementsId, pagerIdView, searchIdView, exportBtnView, 
+    findElementsIdView, pagerId, searchId, exportBtn} from "./setId.js";
+
+import {lib} from "./expalib.js";
+lib ();
+
+// tree elements
+import  {dashboardLayout} from "../treeItems/dashboardView.js";
+import  {tableToolbar,table, onFuncTable, onFuncTableView} from "../treeItems/tableTemplate.js";
+import {authCpLayout} from "../treeItems/authItems.js";
+
+// other blocks
+import {editTableBar} from "./editTableForm.js";
+import {propertyTemplate} from "./viewPropertyTable.js";
+
+
+
+
 let tableNames = [];
 let userInfo=[];
+
+function createElements(specificElement){
+
+    $$("container").addView(
+        {id:"tables", hidden:true, view:"scrollview", body: { view:"flexlayout", cols:[
+                                        
+            {   id:"tableContainer",
+                    rows:[
+                        tableToolbar(pagerId, searchId, exportBtn, findElementsId, tableId ),
+                        { view:"resizer",class:"webix_resizers",},
+                        table (tableId, pagerId, onFuncTable)
+                    ]
+                },
+            
+                {  view:"resizer",class:"webix_resizers",},
+                
+                editTableBar,]
+            }
+        
+        },
+    3);
+    
+  
+    $$("container").addView(
+        {view:"layout",id:"dashboards", hidden:true, scroll:"auto",
+            rows: dashboardLayout()
+        },
+    4);
+
+
+    $$("container").addView(
+        {view:"layout",id:"forms", css:"webix_tableView",hidden:true, 
+                                    
+            rows:[
+                tableToolbar(pagerIdView, searchIdView, exportBtnView, findElementsIdView, tableIdView, true ),
+                { view:"resizer",class:"webix_resizers",},
+                
+                {view:"scrollview", body:  
+                
+                {view:"flexlayout",cols:[
+                    table (tableIdView, pagerIdView, onFuncTableView ),
+                    { view:"resizer",class:"webix_resizers", id:"propResize", hidden:true},
+                    propertyTemplate("propTableView")
+                ]}}, 
+            ],
+
+            
+        },
+    5);
+   
+    if (specificElement == "cp"){
+        $$("container").addView(
+            {view:"layout",id:"user_auth", css:"webix_auth",hidden:true, 
+                rows:[
+                    authCpLayout,
+                    {}
+                ],
+            }, 
+        6);
+    }
+    
+
+}
+
+function removeElements(){
+    if ($$("tables")){
+        $$("container").removeView($$("tables"));
+    }
+    if ($$("dashboards")){
+        $$("container").removeView($$("dashboards"));
+    }
+    if ($$("forms")){
+        $$("container").removeView($$("forms"));
+    }
+    if ($$("user_auth")){
+        $$("container").removeView($$("user_auth"));
+    }
+}
 
 function getDataFields (routes, menuItem){
    return  webix.ajax("/init/default/api/whoami",{
         success:function(text, data, XmlHttpRequest){
             $$("userAuth").hide();
             $$("mainLayout").show();
-            userInfo=data.json();
-           
+            userInfo = data.json();
+            createElements();
             webix.ajax().get("/init/default/api/fields.json",false).then(function (data) {
                 $$("tree").unselectAll();
                 let srcTree = data.json().content;
 
                 let obj = Object.keys(srcTree);
-                let actionsCheck;
+                //let actionsCheck;
 
                 let dataChilds = {tables:[], forms:[], dashboards:[]};
 
                 obj.forEach(function(data) {
                     if (srcTree[data].actions){
-                        actionsCheck = Object.keys(srcTree[data].actions)[0]; 
+                       // actionsCheck = Object.keys(srcTree[data].actions)[0]; 
                     } 
                     
                     if (srcTree[data].type == "dbtable"){
@@ -92,7 +185,7 @@ function getDataFields (routes, menuItem){
                                 });
                                 el.childs.forEach(function(child,i){
                                     if (child.name == "logout") {
-                                     dataAuth.push({id:child.name,value:child.title, href:"#"+child.name });
+                                     dataAuth.push({id:child.name,value:child.title, css:"webix_logout" });
                                     }
                                     tableNames.push({name:child.title , id:child.name}); 
                                 });
@@ -143,8 +236,8 @@ function getDataFields (routes, menuItem){
                     $$("tree").clearAll();
                    
                     $$("tree").parse(menuTree);
-
                     $$("button-context-menu").config.popup.data = dataAuth;
+                    $$("button-context-menu").enable();
                 });
 
                 
@@ -172,10 +265,11 @@ function getDataFields (routes, menuItem){
                         columnsData.push(prefsFields[data]);
                     });
 
-
+                    $$("tables").show();
+                    $$("webix__none-content").hide();
 
                     $$(tableId).refreshColumns(columnsData);
-                    typeTable(tableId,columnsData,"userprefs")
+                    typeTable(tableId,columnsData,"userprefs");
                 }
  
             });
@@ -183,6 +277,20 @@ function getDataFields (routes, menuItem){
         error:function(text, data, XmlHttpRequest){
             routes.navigate("", { trigger:true});
         }
+    });
+}
+
+
+
+function hideAllElements (){
+    $$("container").getChildViews().forEach(function(el,i){
+            if(el.config.view=="scrollview"|| el.config.view=="layout"){
+
+                if ($$(el.config.id).isVisible()){
+                    $$(el.config.id).hide();
+                }
+
+            }
     });
 }
 
@@ -198,6 +306,21 @@ function login () {
         "logout": "logout",
         "tree/:id": "tree",
     },
+  
+    content:function(){
+        getDataFields (routes);
+    },
+    index:function(){
+        webix.ajax("/init/default/api/whoami",{
+            success:function(text, data, XmlHttpRequest){
+               routes.navigate("content", { trigger:true});
+            },
+            error:function(text, data, XmlHttpRequest){
+                $$("mainLayout").hide();
+                $$("userAuth").show();
+            }
+        });      
+    }, 
     tree: function(id){
 
         if ($$("tree").data.order.length == 0){
@@ -216,80 +339,47 @@ function login () {
       
 
     },
-    content:function(){
-        getDataFields (routes);
-    },
-    index:function(){
-        webix.ajax("/init/default/api/whoami",{
-            success:function(text, data, XmlHttpRequest){
-               routes.navigate("content", { trigger:true});
-            },
-            error:function(text, data, XmlHttpRequest){
-                $$("mainLayout").hide();
-                $$("userAuth").show();
-            }
-        });      
-    }, 
     
     cp: function(){
-        if($$("webix__none-content").isVisible()){
-            $$("webix__none-content").hide();
-        } 
         
-        $$("container").getChildViews().forEach(function(el,i){
-            if(el.config.view=="scrollview"|| el.config.view=="layout"){
+        if($$("webix__null-content")){
+            $$("container").removeView($$("webix__null-content"));
+        }
 
-                if ($$(el.config.id).isVisible()){
-                    $$(el.config.id).hide();
-                }
-
-            }
-       });
+        hideAllElements ();
 
 
+        $$("webix__none-content").hide();
         if ($$("tree").data.order.length == 0){
             getDataFields (routes);
+        }
+
+        if($$("user_auth")){
             $$("user_auth").show();
-        } else {
+        }else {
+            createElements("cp");
             $$("user_auth").show();
         }
-        $$("tree").closeAll();
 
+        $$("tree").closeAll();
+     
     },
 
     userprefs: function(){
 
-       $$("container").getChildViews().forEach(function(el,i){
-            if(el.config.view=="scrollview"|| el.config.view=="layout"){
-
-                if ($$(el.config.id).isVisible()){
-                    $$(el.config.id).hide();
-                    console.log(el.config.id)
-                }
-
-            }
-       });
-        if ($$("forms").isVisible()){
-            $$(tableIdView).clearAll();
-            $$("forms").hide();
-        } else if ($$("dashboards").isVisible()){
-            $$("dashboardBody").removeView( $$("dashboard-charts"));
-            $$("dashboards").hide();
+        if($$("webix__null-content")){
+            $$("container").removeView($$("webix__null-content"));
         }
-
        
+        hideAllElements ();
         if ($$("tree").data.order.length == 0){
             getDataFields (routes,"userprefs");
-            $$("tables").show();
-            $$("webix__none-content").hide();
-
         } else {
             if ($$(tableId)){
                 $$(tableId).clearAll();
             }else if ( $$(tableIdView)){
                 $$(tableIdView).clearAll();
             }
-            
             $$("tables").show();
             $$("webix__none-content").hide();
         }
@@ -303,24 +393,15 @@ function login () {
         webix.ajax().post("/init/default/logout/",{
             success:function(text, data, XmlHttpRequest){
                 history.back();
-
-
-                 $$("container").getChildViews().forEach(function(el,i){
-                    if(el.config.view=="scrollview"|| el.config.view=="layout"){
-
-                    if ($$(el.config.id).isVisible()){
-                        $$(el.config.id).hide();
-                    }
-
-                }
-       });
+                removeElements();
                 $$("webix__none-content").show();
-
                 $$("tree").clearAll();
-
             },
-
+            error:function(text, data, XmlHttpRequest){
+                notify ("error","Не удалось выполнить выход",true);
+            }
         });
+        
     }
 
     }));
@@ -337,9 +418,10 @@ function login () {
             success:function(text, data, XmlHttpRequest){
                 webix.ajax("/init/default/api/whoami",{
                     success:function(text, data, XmlHttpRequest){
-                        
+                        routes.navigate("");
                         routes.navigate("content", { trigger:true});
                         $$('formAuth').clear();
+                        window.location.reload();
                     },
                     error:function(text, data, XmlHttpRequest){
                         if ($$("formAuth").isDirty()){
@@ -391,5 +473,7 @@ function login () {
 
 export {
     login,
-    tableNames
+    tableNames,
+    createElements,
+    removeElements
 };
