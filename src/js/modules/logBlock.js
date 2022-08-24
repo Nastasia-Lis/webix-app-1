@@ -31,7 +31,7 @@ function setLogValue (typeNotify,notifyText) {
         $$("logBlock-list").add({
             date:currentDate,
             value:notifyText,
-            src:"Expa v1.0.5"
+            src:"Expa v1.0.6"
         });
     }
 
@@ -50,9 +50,7 @@ function setLogValue (typeNotify,notifyText) {
     
     let item = document.querySelectorAll(".webix_list_item")[itemListIndex];
     if (typeNotify == "error"){
-        console.log(item)
         item.style.setProperty('color', 'red', 'important');
-        console.log("11")
     }
     
 }

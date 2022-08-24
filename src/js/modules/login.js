@@ -10,6 +10,7 @@ lib ();
 import  {dashboardLayout} from "../treeItems/dashboardView.js";
 import  {tableToolbar,table, onFuncTable, onFuncTableView} from "../treeItems/tableTemplate.js";
 import {authCpLayout} from "../treeItems/authItems.js";
+import {userprefsLayout} from "../treeItems/userprefsItems.js";
 
 // other blocks
 import {editTableBar} from "./editTableForm.js";
@@ -30,7 +31,7 @@ function createElements(specificElement){
                     rows:[
                         tableToolbar(pagerId, searchId, exportBtn, findElementsId, tableId ),
                         { view:"resizer",class:"webix_resizers",},
-                        table (tableId, pagerId, onFuncTable)
+                        table (tableId, pagerId, onFuncTable,true)
                     ]
                 },
             
@@ -60,7 +61,7 @@ function createElements(specificElement){
                 {view:"scrollview", body:  
                 
                 {view:"flexlayout",cols:[
-                    table (tableIdView, pagerIdView, onFuncTableView ),
+                    table (tableIdView, pagerIdView),
                     { view:"resizer",class:"webix_resizers", id:"propResize", hidden:true},
                     propertyTemplate("propTableView")
                 ]}}, 
@@ -75,6 +76,17 @@ function createElements(specificElement){
             {view:"layout",id:"user_auth", css:"webix_auth",hidden:true, 
                 rows:[
                     authCpLayout,
+                    {}
+                ],
+            }, 
+        6);
+    }
+
+    if (specificElement == "userprefs"){
+        $$("container").addView(
+            {view:"layout",id:"userprefs", css:"webix_auth",hidden:true, 
+                rows:[
+                    userprefsLayout,
                     {}
                 ],
             }, 
@@ -104,21 +116,18 @@ function getDataFields (routes, menuItem){
         success:function(text, data, XmlHttpRequest){
             $$("userAuth").hide();
             $$("mainLayout").show();
-            userInfo = data.json();
+            userInfo.push(data.json().content.first_name, data.json().content.username)
+
             createElements();
             webix.ajax().get("/init/default/api/fields.json",false).then(function (data) {
                 $$("tree").unselectAll();
                 let srcTree = data.json().content;
 
                 let obj = Object.keys(srcTree);
-                //let actionsCheck;
 
                 let dataChilds = {tables:[], forms:[], dashboards:[]};
 
                 obj.forEach(function(data) {
-                    if (srcTree[data].actions){
-                       // actionsCheck = Object.keys(srcTree[data].actions)[0]; 
-                    } 
                     
                     if (srcTree[data].type == "dbtable"){
                         if(srcTree[data].plural){
@@ -247,29 +256,34 @@ function getDataFields (routes, menuItem){
 
 
                 if (menuItem == "userprefs"){
-                    let prefsFields = data.json().content.userprefs.fields;
-                    let columnsData=[];
+                    //console.log(userInfo)
+   
+                //    $$("userprefsInfo").setValues(userInfo.toString())
+                //     console.log( $$("userprefsInfo").getValues())
+                    // let prefsFields = data.json().content.userprefs.fields;
+                    // let columnsData=[];
                    
-                    Object.keys(prefsFields).forEach(function(data) {
+                    // Object.keys(prefsFields).forEach(function(data) {
                    
-                        if (prefsFields[data].type == "datetime"){
-                            prefsFields[data].format = webix.i18n.fullDateFormatStr;
-                        }
-                        prefsFields[data].id = data;
+                    //     if (prefsFields[data].type == "datetime"){
+                    //         prefsFields[data].format = webix.i18n.fullDateFormatStr;
+                    //     }
+                    //     prefsFields[data].id = data;
                      
-                        prefsFields[data].fillspace = true;
-                        prefsFields[data].header= prefsFields[data]["label"];
-                        if(prefsFields[data].id == "id"){
-                            prefsFields[data].hidden = true;
-                        }
-                        columnsData.push(prefsFields[data]);
-                    });
+                    //     prefsFields[data].fillspace = true;
+                    //     prefsFields[data].header= prefsFields[data]["label"];
+                    //     if(prefsFields[data].id == "id"){
+                    //         prefsFields[data].hidden = true;
+                    //     }
+                    //     columnsData.push(prefsFields[data]);
+                    // });  
 
-                    $$("tables").show();
-                    $$("webix__none-content").hide();
+                    // $$("tables").show();
+                    // $$("webix__none-content").hide();
+                   
 
-                    $$(tableId).refreshColumns(columnsData);
-                    typeTable(tableId,columnsData,"userprefs");
+                    // $$(tableId).refreshColumns(columnsData);
+                    // typeTable(tableId,columnsData,"userprefs");
                 }
  
             });
@@ -366,24 +380,39 @@ function login () {
     },
 
     userprefs: function(){
-
         if($$("webix__null-content")){
             $$("container").removeView($$("webix__null-content"));
         }
        
         hideAllElements ();
+
+        // if ($$("tree").data.order.length == 0){
+        //     getDataFields (routes,"userprefs");
+        // } else {
+        //     if ($$(tableId)){
+        //         $$(tableId).clearAll();
+        //     }else if ( $$(tableIdView)){
+        //         $$(tableIdView).clearAll();
+        //     }
+        //     $$("tables").show();
+        //     $$("webix__none-content").hide();
+        // }
+        
+        // $$("tree").closeAll();
+
+        
+        $$("webix__none-content").hide();
         if ($$("tree").data.order.length == 0){
             getDataFields (routes,"userprefs");
-        } else {
-            if ($$(tableId)){
-                $$(tableId).clearAll();
-            }else if ( $$(tableIdView)){
-                $$(tableIdView).clearAll();
-            }
-            $$("tables").show();
-            $$("webix__none-content").hide();
         }
-        
+
+        if($$("userprefs")){
+            $$("userprefs").show();
+        }else {
+            createElements("userprefs");
+            $$("userprefs").show();
+        }
+
         $$("tree").closeAll();
      
     },
@@ -396,6 +425,7 @@ function login () {
                 removeElements();
                 $$("webix__none-content").show();
                 $$("tree").clearAll();
+                
             },
             error:function(text, data, XmlHttpRequest){
                 notify ("error","Не удалось выполнить выход",true);
@@ -473,7 +503,7 @@ function login () {
 
 export {
     login,
-    tableNames,
     createElements,
-    removeElements
+    removeElements,
+    tableNames
 };

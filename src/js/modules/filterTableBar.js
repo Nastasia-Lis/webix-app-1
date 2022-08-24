@@ -1,11 +1,3 @@
-import {itemTreeId,} from "./sidebar.js";
-import {
-    tableId, pagerId, searchId, exportBtn, findElementsId, formId,editFormId,
-    
-    tableIdView, pagerIdView, searchIdView, exportBtnView, 
-    findElementsIdView, formIdView
-} from './setId.js';
-
 const filterForm =  {   
     view:"form", 
     id:"filterTableForm",
@@ -29,11 +21,7 @@ const filterForm =  {
                                 height:60,
                                 label:dataInputsArray[el].label, 
                                 labelPosition:"top",
-                                // on: {
-                                //     onAfterRender: function () {
-                                //         this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
-                                //     }
-                                // } 
+
                             }
                             );
                         } 

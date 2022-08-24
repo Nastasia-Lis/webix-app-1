@@ -5,6 +5,7 @@ import {setStorageData} from "./userSettings.js";
 
 import {editTableBar, clearItem,checkFormSaved} from "./editTableForm.js";
 
+let userLocation;
 
 function typeTable (type,columnsData, id){
     $$(type).refreshColumns(columnsData);
@@ -156,7 +157,15 @@ function header() {
                     }
                 },
                 on:{
-
+                    onItemClick:function(){
+                        userLocation = window.location.href;
+                        let url = userLocation.search("#");
+                        userLocation = userLocation.slice(url);
+                        if (userLocation !== "#content"){
+                            setStorageData ("userLocation", JSON.stringify(userLocation));
+                        }
+                        
+                    }
                 }
             },
 
@@ -169,6 +178,7 @@ function header() {
 
 export {
     header,
-    headerContextId,
     typeTable,
+    headerContextId,
+    userLocation
 };

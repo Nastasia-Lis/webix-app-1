@@ -1,20 +1,6 @@
 import {tableId,editFormId, saveBtnId,saveNewBtnId, addBtnId, delBtnId, findElementsId} from '../modules/setId.js';
-import {defaultStateForm,createEditFields,popupExec,notify} from "../modules/editTableForm.js";
+import {defaultStateForm,createEditFields,popupExec,notify,saveItem} from "../modules/editTableForm.js";
 import { itemTreeId,  getPopupInfo, urlFieldAction} from "../modules/sidebar.js";
-
-// function accordionFilter () {
-//     const accordion = {
-//         css:"webix_accordion-container",
-//         view:"accordion",
-//         id:"accordionFilterTable",
-//         minHeight:100,
-//         type:"line",
-//         collapsed:true,
-//         rows:[ 
-//         ]
-//     };
-//     return accordion;
-// }
 
 function tableToolbar (idPager, idSearch, idExport, idFindElements, idTable,visible=false) {
     function exportToExcel(){
@@ -115,7 +101,6 @@ function tableToolbar (idPager, idSearch, idExport, idFindElements, idTable,visi
                     }
                 },
             },
-            //accordionFilter()
         ]
 
         
@@ -124,14 +109,15 @@ function tableToolbar (idPager, idSearch, idExport, idFindElements, idTable,visi
 
 
 
-
-function table (idTable, idPager, onFunc, srcData) {
+function table (idTable, idPager, onFunc, editableParam=false) {
     return {
         view:"datatable",
         id: idTable,
         css:"webix_table-style webix_header_border webix_data_border",
         resizeColumn: true,
         autoConfig: true,
+        editable:editableParam,
+        editaction:"dblclick",
         pager:idPager,
         minHeight:350,
         footer: true,
@@ -161,15 +147,10 @@ function table (idTable, idPager, onFunc, srcData) {
             if (!($$("propTableView").isVisible()))   {
                 let id = cell.row;
               
-
-                let url = "http://localhost:3000/init/default/api/lic/"; //urlFieldAction
-                let idRow = "D.200601.250131.ANY_HOST.000001"; //id
-
-
                 let urlArgEnd = urlFieldAction.search("{");
                 let findUrl = urlFieldAction.slice(0,urlArgEnd); 
-                
-                // --- поменять ссылку, достать id  curr row
+
+
                 webix.ajax(findUrl+id+".json",{
                     success:function(text, data, XmlHttpRequest){
                         data = data.json().content;
@@ -206,6 +187,13 @@ let onFuncTable = {
     onBeforeLoad:function(){
         this.showOverlay("Loading...");
     },
+    onAfterEditStop:function(state, editor, ignoreUpdate){
+      
+        if(state.value != state.old){
+            $$(editor.column).setValue(state.value);
+            saveItem();
+        }
+    },
 
     onAfterSelect(id){
       
@@ -214,7 +202,6 @@ let onFuncTable = {
             $$(editFormId).setValues(values);
             $$(saveNewBtnId).hide();
             $$(saveBtnId).show();
-            //$$(addBtnId).hide(); 
             $$(editFormId).clearValidation();
         }
         if($$(editFormId).isDirty()){
@@ -252,45 +239,9 @@ let onFuncTable = {
 //----- table edit parameters
 
 
-
-
-
-//----- table view parameters
-
-
-let onFuncTableView = {
-    onAfterSelect:function(id){
-      
-        // let idRow = "D.200601.250131.ANY_HOST.000001";
-        // // --- поменять ссылку, достать id  curr row
-        // webix.ajax("http://localhost:3000/init/default/api/lic/"+idRow+".json",{
-        //     success:function(text, data, XmlHttpRequest){
-        //         console.log(data.json());
-        //         data = data.json().content;
-        //         let arrayProperty = [];
-        //         data.forEach(function(el,i){
-        //             //console.log(el);
-        //             arrayProperty.push({type:"text", id:i+1,label:el.name, value:el.value})
-                    
-        //         });
-        //         $$("propTableView").define("elements", arrayProperty);
-        //         $$("propTableView").show();
-        //     },
-        //     // error:function(text, data, XmlHttpRequest){
-                
-        //     //     console.log("error");
-        //     // }
-        // });
-        
-    }
-};
-
-//----- table view parameters
-
-
 export {
     tableToolbar,
     table,
     onFuncTable,
-    onFuncTableView
+    //onFuncTableView
 };

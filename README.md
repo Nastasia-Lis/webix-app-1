@@ -1,1 +1,1 @@
-Expa version 1.0.5
+Expa version 1.0.6

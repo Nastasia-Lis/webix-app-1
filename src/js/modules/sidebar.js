@@ -3,9 +3,8 @@ import {tableId,editFormId,addBtnId,findElementsId, searchId,
 } from './setId.js';
 // import {lib} from "./expalib.js";
 // lib ();
-import {notify, checkFormSaved,clearItem,popupExec, defaultStateForm} from "./editTableForm.js";
+import {notify, checkFormSaved,clearItem,defaultStateForm} from "./editTableForm.js";
 import {tableNames} from "./login.js";
-import {logBlock} from "./logBlock.js";
 
 let itemTreeId = "";
 let prevCountRows ;
@@ -81,7 +80,43 @@ function submitBtn (idElements, url, verb, rtype){
     
 }
 
+function getComboOptions (refTable){
+    return new webix.DataCollection({url:{
+        $proxy:true,
+        load: function(){
+            return ( webix.ajax().get("/init/default/api/"+refTable).then(function (data) {
+                        data = data.json().content;
+                        let dataArray=[];
+                        let keyArray;
+                        data.forEach((el,i) =>{
+                            let l = 0;
+                            while (l <= Object.values(el).length){
+                                if (typeof Object.values(el)[l] == "string"){
+                                    keyArray = Object.keys(el)[l];
+                                    break;
+                                } 
+                                l++;
+                            }
 
+                            if (el[keyArray] == undefined){
+
+                                while (l <= Object.values(el).length) {
+                                    if (typeof Object.values(el)[1] == "number"){
+                                        keyArray = Object.keys(el)[1];
+                                        break;
+                                    }
+                                    l++;
+                                }
+                            }
+                            dataArray.push({ "id":el.id, "value":el[keyArray]});
+                        });
+                        return dataArray;
+                    })
+            );
+            
+        }
+    }});
+}
 
 function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false) {
   
@@ -107,14 +142,26 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
             }
           
             data = data.json().content[idsParam];
-        
+
             let dataFields = data.fields;
             let obj = Object.keys(data.fields);
             let columnsData = [];
-           
+
             obj.forEach(function(data) {
-                if (dataFields[data].type == "datetime"){
-                    dataFields[data].format = webix.i18n.fullDateFormatStr;
+ 
+                if (dataFields[data].type.includes("reference")){
+                    let findTableId = dataFields[data].type.slice(10);
+                    dataFields[data].editor = "combo";
+                    dataFields[data].collection = getComboOptions (findTableId);
+                    dataFields[data].template = function(obj, common, val, config){
+                    let item = config.collection.getItem(obj[config.id]);
+                    return item ? item.value : "";
+                    };
+                } else if (dataFields[data].type == "datetime"){
+                    dataFields[data].format = webix.i18n.fullDateFormatStr; 
+                    dataFields[data].editor = "date";
+                } else {
+                    dataFields[data].editor = "text";
                 }
                 dataFields[data].id = data;
                 dataFields[data].fillspace = true;
@@ -122,6 +169,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                 if(dataFields[data].id == "id"){
                     dataFields[data].hidden = true;
                 }
+                
                 columnsData.push(dataFields[data]);
             });
             $$(idCurrTable).refreshColumns(columnsData);
@@ -484,7 +532,7 @@ function getInfoDashboard (idsParam,single=false){
     
                     $$("dashboardBody").addView({
                         view:"scrollview", 
-                        height:300,  
+                        //height:300,  
                         id:"dashboard-charts",
                         borderless:true,
                         body: {
@@ -502,7 +550,7 @@ function getInfoDashboard (idsParam,single=false){
                         titleTemplate = el.title;
                         delete el.title;
                         el.borderless = true;
-                        el.width = 520;
+                        el.minWidth = 500;
                         dashLayout.push({rows:[ {template:titleTemplate,borderless:true,css:{"padding-left":"25px!important","margin-top":"20px!important", "font-weight":"400!important", "font-size":"17px!important"}, height:30},el]});
                     });
 
@@ -517,7 +565,7 @@ function getInfoDashboard (idsParam,single=false){
                             rows:inputsArray
                         }
                     },0);
-
+              
                     let dashTitle;
                     itemTreeId = itemTreeId.slice(0,itemTreeId.search("-single")); 
                     tableNames.forEach(function(el,i){
@@ -538,18 +586,18 @@ function getInfoDashboard (idsParam,single=false){
 
                     $$("dashboardBody").addView({
                         view:"scrollview", 
-                        height:300,  
                         id:"dashboard-charts",
                         borderless:true,
                         body: {
                             view:"flexlayout",
+                            
+                            css:"webix_dash-charts-flex",
                             type: "space", 
                             cols:dashLayout
                         }
-                    },2);
-                    
+                    },1);
+
                     $$("dashboardBody").removeView($$("dashEmpty"));
-                
                 }
             },
             error:function(text, data, XmlHttpRequest){
@@ -815,25 +863,12 @@ function treeSidebar () {
         editValue:"value",
         activeTitle:true,
         clipboard: true,
-       // onContext:{},
         data:[],
-        // onContext:{
-        //     "webix_tree_item":function(event, id, target){
-        //         console.log(id)
-
-        //         webix.message("Active area was right-clicked");
-        //     }
-        // },
         on:{
-            // onAfterSelect:function(id){
-            //     routes.navigate("tree/"+id, { trigger:true }); 
-            // },
             onSelectChange:function (ids) {
-
                 if($$("inputsTable")){
                     $$(editFormId).removeView($$("inputsTable"));
                 }
-                
                 itemTreeId = ids[0];
                 let treeItemId = $$("tree").getSelectedItem().id;
                 let getItemParent = $$("tree").getParentId(treeItemId);
@@ -866,6 +901,12 @@ function treeSidebar () {
                     if($$("user_auth")){
                         if ($$("user_auth").isVisible()){
                             $$("user_auth").hide();
+                        }
+                    }
+
+                    if($$("userprefs")){
+                        if ($$("userprefs").isVisible()){
+                            $$("userprefs").hide();
                         }
                     }
                     
@@ -991,11 +1032,11 @@ function treeSidebar () {
                
             },
 
-            onBeforeDrop:function(context){
-                console.log("Drop context:", context);
-                context.parent = context.target; //drop as child
-                context.index = -1;              //as last child
-              }
+            // onBeforeDrop:function(context){
+            //     console.log("Drop context:", context);
+            //     context.parent = context.target; //drop as child
+            //     context.index = -1;              //as last child
+            //   }
 
         },
         
@@ -1010,6 +1051,7 @@ function treeSidebar () {
 export{
     headerSidebar,
     treeSidebar,
+    getComboOptions,
     itemTreeId,
     inpObj,
     customInputs,

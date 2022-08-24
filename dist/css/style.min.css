@@ -251,6 +251,11 @@
   width: 20px !important;
 }
 
+.webix_dash-charts-flex .webix_view.webix_layout_line div:nth-child(1) {
+  margin: 0 !important;
+  text-align: center;
+}
+
 .webix_icon, .webix_icon_btn {
   line-height: 0.8 !important;
 }

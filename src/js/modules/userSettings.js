@@ -1,6 +1,10 @@
+import {popupExec} from "./editTableForm.js";
+
 function getStorageData () {
     let logBtnVal = webix.storage.local.get("LogVisible");
-      
+    let userLocation = webix.storage.local.get("userLocation");
+
+    console.log(userLocation)
     if (logBtnVal){
 
         if(logBtnVal=="hide"){
@@ -15,7 +19,24 @@ function getStorageData () {
             $$("webix_log-btn").config.icon ="wxi-eye-slash";
             $$("webix_log-btn").refresh();
         }
-    } 
+    }
+    
+    if (userLocation){
+
+        console.log("pap")
+            popupExec("Gg").then(
+            function(){
+                if (userLocation.includes("tree")){
+                    let p =userLocation.lastIndexOf("#tree/")
+                    console.log(p)
+                }
+                window.location.replace(userLocation);
+            });
+    
+     
+        //console.log(userLocation)
+       // if (userLocation !=="")
+    }
 
 }
 

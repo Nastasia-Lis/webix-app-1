@@ -1,8 +1,8 @@
 import {tableId, editFormId, saveBtnId,searchId, addBtnId, delBtnId, cleanBtnId, saveNewBtnId,newAddBtnId} from './setId.js';
-import {itemTreeId} from './sidebar.js';
+import {itemTreeId,getComboOptions} from './sidebar.js';
 import {setLogValue} from './logBlock.js';
 import {headerContextId} from './header.js';
-
+import {tableNames} from "./login.js";
 let currId;
 
 function getCurrId (){
@@ -15,7 +15,7 @@ function getCurrId (){
 
 
 //--- bns
-function saveItem(){        
+function saveItem(tableEditorVal){        
     getCurrId ();
     let itemData = $$(editFormId).getValues();   
     if($$(editFormId).validate() ){
@@ -39,6 +39,8 @@ function saveItem(){
     } else {
         notify ("error","Заполните пустые поля",true);
     }
+
+    
 }
 
 
@@ -145,6 +147,7 @@ function createEditFields () {
                 inputsArray.push({   
                     view: "datepicker",
                     format:"%d.%m.%Y %H:%i:%s",
+                    id:el.id,
                     name:el.id, 
                     label:el.label, 
                     placeholder:"дд.мм.гг", 
@@ -161,68 +164,61 @@ function createEditFields () {
 
            else if (el.type.includes("reference")) {
             let findTableId = el.type.slice(10);
-            let optionData = new webix.DataCollection({url:{
-                $proxy:true,
-                load: function(){
-                    return ( webix.ajax().get("/init/default/api/"+findTableId).then(function (data) {
-                                data = data.json().content;
-                                let dataArray=[];
-                                let keyArray;
-                                data.forEach((el,i) =>{
-                                    
-                                    let l = 0;
-                                    while (l <= Object.values(el).length) {
-                                        
-                                        if (typeof Object.values(el)[l] == "string"){
-                                            keyArray = Object.keys(el)[l];
-                                            break;
-                                        } 
-                                        l++;
-                                    }
+            let refTableName;
 
-                                    if (el[keyArray] == undefined){
-
-                                        while (l <= Object.values(el).length) {
-                                            if (typeof Object.values(el)[1] == "number"){
-                                                keyArray = Object.keys(el)[1];
-                                                break;
-                                            }
-                                            l++;
-                                        }
-                                    }
-                                    dataArray.push({ "id":el.id, "value":el[keyArray]});
-                                });
-                                return dataArray;
-                            })
-                    );
-                    
+            tableNames.forEach(function(el,i){
+                if (el.id == findTableId){
+                    refTableName= el.name;
                 }
-            }});
-               
-                inputsArray.push(
-                    {   view:"combo",
-                        placeholder:"Введите текст",  
-                        label:el.label, 
-                        name:el.id, 
-                        labelPosition:"top",  
-                        options:{
-                           data:optionData
-                        },
-                        on:{
-                            onItemClick:function(){
-                                $$(editFormId).clearValidation();
-                            }
-                        }
-                    }
+            });
 
-                );
+            inputsArray.push(
+                {cols:[
+                {   view:"combo",
+                    placeholder:"Выберите вариант",  
+                    label:el.label, 
+                    id:el.id,
+                    name:el.id, 
+                    labelPosition:"top",
+                    options:{
+                        data:getComboOptions(findTableId)
+                    },
+                    on:{
+                        onItemClick:function(){
+                            $$(editFormId).clearValidation();
+                        },
+                        // onChange: function(newValue, oldValue, config){
+
+                        // }
+                    }
+                },
+                {
+                    view:"button",
+                    css:{"vertical-align":"bottom!important","height":"38px!important"},
+                    type:"icon",
+                    icon: 'wxi-angle-right',
+                    inputHeight:38,
+                    width: 40,
+                    on: {
+                        onAfterRender: function () {
+                            this.getInputNode().setAttribute("title","Перейти в таблицу"+" "+"«"+refTableName+"»");
+                        },
+                    },
+                    click:function(){
+                        $$("tree").select(findTableId);
+                    }
+                }
+                ]}
+
+            );
             
             } 
             else{
                 inputsArray.push(
                     {
                     view:"text", 
-                    name:el.id, 
+                    name:el.id,
+                    id:el.id, 
                     label:el.label, 
                     labelPosition:"top",
                     on:{
@@ -241,8 +237,6 @@ function createEditFields () {
         return ($$(editFormId).addView( inpObj, 1));
         
     } else {
-        console.log($$(editFormId).isDirty());
-
         $$(editFormId).clear();
         $$(editFormId).clearValidation();
 
@@ -420,5 +414,6 @@ export{
     popupExec,
     defaultStateForm,
     checkFormSaved,
-    clearItem
+    clearItem,
+    saveItem
 };
