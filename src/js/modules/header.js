@@ -1,6 +1,7 @@
 import { tableId,tableIdView,newAddBtnId, editFormId,findElementsId} from "./setId.js";
 import {notify} from "./editTableForm.js";
 import {headerSidebar} from "./sidebar.js";
+import {tableNames} from "./login.js";
 import {setStorageData} from "./userSettings.js";
 
 import {editTableBar, clearItem,checkFormSaved} from "./editTableForm.js";
@@ -110,7 +111,6 @@ function header() {
                                         if(result){
                                             window.location.replace("#logout");
                                         }
-                                        
                                     });
                                     return false;
                                 } else {
@@ -118,40 +118,45 @@ function header() {
                                 }
                             }
 
+                            // headerContextId = id;
+                            // webix.ajax().get("/init/default/api/fields.json").then(function (data){
+                            //     data = data.json().content;
+                            //     console.log(id)
 
-                            headerContextId = id;
-                            webix.ajax().get("/init/default/api/fields.json").then(function (data) {
-                                data = data.json().content;
-                                let currentFields;
-                                if(data[id]){
-                                    currentFields=data[id];
-                                }
+                            //     let currentFields;
+                            //     if(data[id]){
+                            //         currentFields=data[id];
+                            //     }
                                 
-                                let dataFields = currentFields.fields;
-                                let obj = Object.keys(dataFields);
-                                let columnsData = [];
+                            //     let dataFields = currentFields.fields;
+                            //     console.log()
+                            //     let obj = Object.keys(dataFields);
+                            //     let columnsData = [];
                                
-                                obj.forEach(function(data) {
-                                    if (dataFields[data].type == "datetime"){
-                                        dataFields[data].format = webix.i18n.fullDateFormatStr;
-                                    }
-                                    dataFields[data].id = data;
-                                    dataFields[data].fillspace = true;
-                                    dataFields[data].header= dataFields[data]["label"];
-                                    if(dataFields[data].id == "id"){
-                                        dataFields[data].hidden = true;
-                                    }
-                                    columnsData.push(dataFields[data]);
-                                });
+                            //     obj.forEach(function(data) {
+                            //         if (dataFields[data].type == "datetime"){
+                            //             dataFields[data].format = webix.i18n.fullDateFormatStr;
+                            //         }
+                            //         dataFields[data].id = data;
+                            //         dataFields[data].fillspace = true;
+                            //         dataFields[data].header= dataFields[data]["label"];
+                            //         if(dataFields[data].id == "id"){
+                            //             dataFields[data].hidden = true;
+                            //         }
+                            //         columnsData.push(dataFields[data]);
+                            //     });
 
-                                if (data[id].type=="dbtable"){
-                                    typeTable (tableId,columnsData, id);
+                            //     if (data[id].type=="dbtable"){
+                            //         typeTable (tableId,columnsData, id);
     
-                                } else if (data[id].type=="tform"){
-                                    typeTable (tableIdView,columnsData, id);
-                                }
+                            //     } else if (data[id].type=="tform"){
+                            //         typeTable (tableIdView,columnsData, id);
+                            //     }
 
-                            });
+                            // }).catch(err => {
+                            //     console.log(err);
+                            //     notify ("error","Не удалось загрузить данные меню",true);
+                            // });
  
                         }
                     }
@@ -161,8 +166,20 @@ function header() {
                         userLocation = window.location.href;
                         let url = userLocation.search("#");
                         userLocation = userLocation.slice(url);
-                        if (userLocation !== "#content"){
-                            setStorageData ("userLocation", JSON.stringify(userLocation));
+                        if (userLocation !== "#content" || userLocation !== "#"){
+                            let tableIdHref = userLocation.slice(userLocation.lastIndexOf('/')+1); 
+                            let nameRecoverEl;
+                            let storageData;
+                            tableNames.forEach(function(el,i){
+                                if (el.id == tableIdHref){
+                                    nameRecoverEl= el.name;
+                                }
+                            });
+                            if (nameRecoverEl !== undefined){
+                                storageData= {tableName:nameRecoverEl,tableId:tableIdHref,href:userLocation};
+                                setStorageData ("userLocation", JSON.stringify(storageData));
+                            }
+                            
                         }
                         
                     }

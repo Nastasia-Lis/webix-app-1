@@ -1,8 +1,8 @@
 import {tableId,editFormId, saveBtnId,saveNewBtnId, addBtnId, delBtnId, findElementsId} from '../modules/setId.js';
 import {defaultStateForm,createEditFields,popupExec,notify,saveItem} from "../modules/editTableForm.js";
-import { itemTreeId,  getPopupInfo, urlFieldAction} from "../modules/sidebar.js";
+import { itemTreeId,urlFieldAction} from "../modules/sidebar.js";
 
-function tableToolbar (idPager, idSearch, idExport, idFindElements, idTable,visible=false) {
+function tableToolbar (idSearch, idExport, idFindElements, idTable,visible=false) {
     function exportToExcel(){
         webix.toExcel(idTable, {
           filename:"Table",
@@ -56,18 +56,19 @@ function tableToolbar (idPager, idSearch, idExport, idFindElements, idTable,visi
                         
                     }
                 },
+                {},
  
-                {
-                    view:"pager",
-                    id:idPager,
-                    size:100,
-                    inputHeight:48,
-                    inputWidth:50,
-                    group:3,
-                    height:50,
-                    template:`{common.prev()} 
-                {common.pages()} {common.next()}`
-                },
+                // {
+                //     view:"pager",
+                //     id:idPager,
+                //     size:100,
+                //     inputHeight:48,
+                //     inputWidth:50,
+                //     group:3,
+                //     height:50,
+                //     template:`{common.prev()} 
+                // {common.pages()} {common.next()}`
+                // },
 
                 {   view:"button",
                     width: 50, 
@@ -109,7 +110,7 @@ function tableToolbar (idPager, idSearch, idExport, idFindElements, idTable,visi
 
 
 
-function table (idTable, idPager, onFunc, editableParam=false) {
+function table (idTable, onFunc, editableParam=false) {
     return {
         view:"datatable",
         id: idTable,
@@ -118,8 +119,14 @@ function table (idTable, idPager, onFunc, editableParam=false) {
         autoConfig: true,
         editable:editableParam,
         editaction:"dblclick",
-        pager:idPager,
+        //pager:idPager,
         minHeight:350,
+        //height:200,
+
+        datafetch:5,
+        datathrottle: 5000,
+        loadahead:100,
+
         footer: true,
         minWidth:500, 
         select:true,
@@ -185,7 +192,7 @@ function table (idTable, idPager, onFunc, editableParam=false) {
 //----- table edit parameters
 let onFuncTable = {
     onBeforeLoad:function(){
-        this.showOverlay("Loading...");
+        this.showOverlay("Загрузка...");
     },
     onAfterEditStop:function(state, editor, ignoreUpdate){
       

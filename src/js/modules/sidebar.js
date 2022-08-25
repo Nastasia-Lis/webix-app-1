@@ -85,6 +85,7 @@ function getComboOptions (refTable){
         $proxy:true,
         load: function(){
             return ( webix.ajax().get("/init/default/api/"+refTable).then(function (data) {
+                
                         data = data.json().content;
                         let dataArray=[];
                         let keyArray;
@@ -111,6 +112,9 @@ function getComboOptions (refTable){
                             dataArray.push({ "id":el.id, "value":el[keyArray]});
                         });
                         return dataArray;
+                    }).catch(err => {
+                        console.log(err);
+                        notify ("error","Не удалось загрузить данные",true);
                     })
             );
             
@@ -125,6 +129,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
     $$(idCurrTable).clearAll();
     $$(idSearch).setValue("");
 
+    
     if (titem == undefined) {
         notify ("error","Данные не найдены");
     } else {
@@ -132,7 +137,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
         if (idCurrTable == tableIdView){
             ($$("filterBar").removeView( "customInputs" ));
         }
-
+        
         webix.ajax().get("/init/default/api/fields.json").then(function (data) {
        
 // ---- Таблица - данные cols      
@@ -257,6 +262,9 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                                             }
                                         
                                             return dataOptions;
+                                        }).catch(err => {
+                                            console.log(err);
+                                            notify ("error","Не удалось загрузить данные",true);
                                         })
                                     );
                                 
@@ -271,8 +279,6 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                             width:250,
                             height:48,
                             id: "customCombo"+i,
-                            //placeholder:"Введите текст",  
-                            //label:dataInputsArray[el].label,
                             placeholder:dataInputsArray[el].label, 
                             labelPosition:"top", 
                             options:{
@@ -445,11 +451,16 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                 itemTreeId = idsParam;
             }
 
-            function getItemData (){
+            function getItemData (table){
 
-                webix.ajax().get("/init/default/api/"+itemTreeId,{
+          
+
+                $$(table).load({
+                    $proxy:true,
+                    load:function(view, params){
+                        return   webix.ajax().get("/init/default/api/"+itemTreeId,{
                     success:function(text, data, XmlHttpRequest){
-                        
+                        $$(idCurrTable).clearAll();
                         if(!($$(newAddBtnId).isEnabled())){
                             $$(newAddBtnId).enable();
                         }
@@ -461,16 +472,17 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
         
                         data = data.json().content;
                         
-                    
+                  
                         if (data.length !== 0){
                             
                             $$(idCurrTable).hideOverlay("Ничего не найдено");
-                        
+                          
                             $$(idCurrTable).parse(data);
                     
                         
                         } else {
                             $$(idCurrTable).showOverlay("Ничего не найдено");
+                            $$(idCurrTable).clearAll();
                         }
                     
                         prevCountRows = $$(idCurrTable).count();
@@ -479,19 +491,31 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                     },
                     error:function(text, data, XmlHttpRequest){
                         notify ("error","Ошибка при загрузке данных",true);
+                        prevCountRows = $$(idCurrTable).count();
+                        $$(idFindElem).setValues(prevCountRows.toString());
                         if($$(newAddBtnId).isEnabled()){
                             $$(newAddBtnId).disable();
                         }
                     }, 
-                });
+                });     }
+            });
+            }
+
+            if($$(tableId)){
+                getItemData (tableId);
+            } else if ($$(tableIdView)){
+                getItemData (tableIdView);
             }
             
-            getItemData ();
             if (data.autorefresh){
                 setInterval(function(){
                     getItemData ();
                  }, 50000);
             }
+        }).catch(err => {
+            console.log(err);
+            notify ("error","Не удалось загрузить данные",true);
+           
         });
     } 
 }
@@ -551,7 +575,7 @@ function getInfoDashboard (idsParam,single=false){
                         delete el.title;
                         el.borderless = true;
                         el.minWidth = 500;
-                        dashLayout.push({rows:[ {template:titleTemplate,borderless:true,css:{"padding-left":"25px!important","margin-top":"20px!important", "font-weight":"400!important", "font-size":"17px!important"}, height:30},el]});
+                        dashLayout.push({rows:[ {template:titleTemplate,borderless:true,css:{"padding-left":"25px!important","margin-top":"20px!important", "font-weight":"400!important", "font-size":"17px!important"}, height:35},el]});
                     });
 
                     
@@ -567,7 +591,11 @@ function getInfoDashboard (idsParam,single=false){
                     },0);
               
                     let dashTitle;
-                    itemTreeId = itemTreeId.slice(0,itemTreeId.search("-single")); 
+
+                    if (itemTreeId.includes("single")){
+                        itemTreeId = itemTreeId.slice(0,itemTreeId.search("-single"));  
+                        
+                    }
                     tableNames.forEach(function(el,i){
                         if (el.id == itemTreeId){
                             dashTitle= el.name;

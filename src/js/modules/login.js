@@ -1,6 +1,5 @@
 import {notify} from "./editTableForm.js";
-import {typeTable} from "./header.js";
-import { tableId, tableIdView,editFormId,findElementsId, pagerIdView, searchIdView, exportBtnView, 
+import { tableId, tableIdView,findElementsId, pagerIdView, searchIdView, exportBtnView, 
     findElementsIdView, pagerId, searchId, exportBtn} from "./setId.js";
 
 import {lib} from "./expalib.js";
@@ -8,14 +7,13 @@ lib ();
 
 // tree elements
 import  {dashboardLayout} from "../treeItems/dashboardView.js";
-import  {tableToolbar,table, onFuncTable, onFuncTableView} from "../treeItems/tableTemplate.js";
+import  {tableToolbar,table, onFuncTable} from "../treeItems/tableTemplate.js";
 import {authCpLayout} from "../treeItems/authItems.js";
 import {userprefsLayout} from "../treeItems/userprefsItems.js";
 
 // other blocks
 import {editTableBar} from "./editTableForm.js";
 import {propertyTemplate} from "./viewPropertyTable.js";
-
 
 
 
@@ -29,9 +27,9 @@ function createElements(specificElement){
                                         
             {   id:"tableContainer",
                     rows:[
-                        tableToolbar(pagerId, searchId, exportBtn, findElementsId, tableId ),
+                        tableToolbar( searchId, exportBtn, findElementsId, tableId ),
                         { view:"resizer",class:"webix_resizers",},
-                        table (tableId, pagerId, onFuncTable,true)
+                        table (tableId, onFuncTable,true)
                     ]
                 },
             
@@ -55,13 +53,13 @@ function createElements(specificElement){
         {view:"layout",id:"forms", css:"webix_tableView",hidden:true, 
                                     
             rows:[
-                tableToolbar(pagerIdView, searchIdView, exportBtnView, findElementsIdView, tableIdView, true ),
+                tableToolbar(searchIdView, exportBtnView, findElementsIdView, tableIdView, true ),
                 { view:"resizer",class:"webix_resizers",},
                 
                 {view:"scrollview", body:  
                 
                 {view:"flexlayout",cols:[
-                    table (tableIdView, pagerIdView),
+                    table (tableIdView),
                     { view:"resizer",class:"webix_resizers", id:"propResize", hidden:true},
                     propertyTemplate("propTableView")
                 ]}}, 
@@ -169,8 +167,8 @@ function getDataFields (routes, menuItem){
                
                     menu.push({
                         "id": 7,
-                        "name": "sales11",
-                        "title": "sales11",
+                        "name": "sales",
+                        "title": "sales",
                         "mtype": 1,
                         "ltype": 1,
                         "typeof":"dashboard",
@@ -247,45 +245,23 @@ function getDataFields (routes, menuItem){
                     $$("tree").parse(menuTree);
                     $$("button-context-menu").config.popup.data = dataAuth;
                     $$("button-context-menu").enable();
-                });
+                }).catch(err => {
+                    console.log(err);
+                    notify ("error","Не удалось загрузить данные меню",true);
+                 });
 
                 
                 $$("tree").attachEvent("onAfterSelect", function (id) {
                     routes.navigate("tree/"+id, { trigger:true }); 
                 });
 
-
+                
                 if (menuItem == "userprefs"){
-                    //console.log(userInfo)
-   
-                //    $$("userprefsInfo").setValues(userInfo.toString())
-                //     console.log( $$("userprefsInfo").getValues())
-                    // let prefsFields = data.json().content.userprefs.fields;
-                    // let columnsData=[];
-                   
-                    // Object.keys(prefsFields).forEach(function(data) {
-                   
-                    //     if (prefsFields[data].type == "datetime"){
-                    //         prefsFields[data].format = webix.i18n.fullDateFormatStr;
-                    //     }
-                    //     prefsFields[data].id = data;
-                     
-                    //     prefsFields[data].fillspace = true;
-                    //     prefsFields[data].header= prefsFields[data]["label"];
-                    //     if(prefsFields[data].id == "id"){
-                    //         prefsFields[data].hidden = true;
-                    //     }
-                    //     columnsData.push(prefsFields[data]);
-                    // });  
-
-                    // $$("tables").show();
-                    // $$("webix__none-content").hide();
-                   
-
-                    // $$(tableId).refreshColumns(columnsData);
-                    // typeTable(tableId,columnsData,"userprefs");
                 }
  
+            }).catch(err => {
+               console.log(err);
+               notify ("error","Не удалось загрузить данные меню",true);
             });
         },
         error:function(text, data, XmlHttpRequest){
@@ -310,7 +286,7 @@ function hideAllElements (){
 
 
 function login () {
-
+   
     let routes = new (Backbone.Router.extend({
     routes:{
         "": "index" ,
@@ -322,8 +298,78 @@ function login () {
     },
   
     content:function(){
+
         getDataFields (routes);
+        
+        let userLocation = webix.storage.local.get("userLocation");
+
+        if (userLocation){
+
+            if (userLocation.tableName !== undefined){
+
+                 setTimeout(function(){
+                    webix.ui({
+                        view:"popup",
+                        id:"popupPrevHref",
+                        css:"webix_popup-prev-href",
+                        width:340,
+                        height:150,
+                        position:"center",
+                        body:{
+                            rows: [ 
+                                { cols:[
+                                {template:"Прошлая сессия", css:"webix_template-recover", borderless:true, height:40 },
+                                {},
+                                {
+                                    view:"button",
+                                    id:"buttonClosePopup",
+                                    css:"webix_close-btn",
+                                    type:"icon",
+                                    width:25,
+                                    icon: 'wxi-close',
+                                    click:function(){
+                                        $$("popupPrevHref").hide();
+                                    }
+                                },
+                                ]},
+                                {   template:"В прошлый раз Вы остановились во вкладке"+" «"+userLocation.tableName+"»",
+                                    css:"webix_template-recover-descr", 
+                                    borderless:true, 
+                                    height:50 },
+                                {
+                                    view:"button",
+                                    id:"btnRecover",
+                                    css:"webix_btn-recover",
+                                    height:38,
+                                    value:"Перейти ко вкладке",
+                                    click:function(){
+                                        window.location.replace(userLocation.href)
+                                        
+                                        if(userLocation.href.includes("tree")){
+                                            let treeItemParent = $$("tree").getItem(userLocation.tableId).$parent;
+                                            if (treeItemParent !==0){
+                                                $$("tree").open(treeItemParent);
+                                            }
+                                            $$("tree").select(userLocation.tableId);
+                                        }
+                                        
+                                    $$("popupPrevHref").hide();
+                                    }
+                                },
+                                {height:20}
+                            ]
+                            
+                        },
+
+                    }).show();
+                }, 1500);
+                
+            }
+       
+    }
+
     },
+
     index:function(){
         webix.ajax("/init/default/api/whoami",{
             success:function(text, data, XmlHttpRequest){
@@ -386,21 +432,6 @@ function login () {
        
         hideAllElements ();
 
-        // if ($$("tree").data.order.length == 0){
-        //     getDataFields (routes,"userprefs");
-        // } else {
-        //     if ($$(tableId)){
-        //         $$(tableId).clearAll();
-        //     }else if ( $$(tableIdView)){
-        //         $$(tableIdView).clearAll();
-        //     }
-        //     $$("tables").show();
-        //     $$("webix__none-content").hide();
-        // }
-        
-        // $$("tree").closeAll();
-
-        
         $$("webix__none-content").hide();
         if ($$("tree").data.order.length == 0){
             getDataFields (routes,"userprefs");

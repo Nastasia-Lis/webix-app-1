@@ -5,6 +5,8 @@ import {headerContextId} from './header.js';
 import {tableNames} from "./login.js";
 let currId;
 
+let editTableBar;
+
 function getCurrId (){
     if ( itemTreeId.length == 0){
         currId=headerContextId;
@@ -307,10 +309,10 @@ function checkFormSaved() {
 //--- components
 
 
+try{
 
 
-
-let editTableBar = {
+ editTableBar = {
     view:"form", 
     id:editFormId,
     css:"webix_form-edit",
@@ -405,6 +407,10 @@ let editTableBar = {
     },
 
 };
+} catch (e){
+    console.log(e);
+    alert("Ошибка при выполнении");
+}
 
     
 export{

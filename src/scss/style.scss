@@ -5,20 +5,11 @@
 @import "src/scss/btns";
 
 
-// {$template:"Separator"}
-
-// баг комбо в editTable
-// progress bar
-
-//dashboards bg
-
-//*
-// настройки сохранять для юзера
-
 .webix_view,
 .webix_confirm  {
     font-weight: 400!important;
     font-size: 14px!important;
+    line-height: 150%!important;
 }
 
 .webix_inp_top_label{
@@ -65,11 +56,14 @@
 .webix_auth{
     margin: 1px 0px 0px 1px!important;
 }
-.webix_cp-form{
+.webix_cp-form,
+.webix_headline-userprefs{
     font-weight: 600!important;
     font-size: 18px!important;
 }
-.webix_cp-form >  .webix_template{
+.webix_cp-form >  .webix_template,
+.webix_headline-userprefs > .webix_template,
+.webix_userprefs-info > .webix_template{
     padding-left: 0px!important;
 }
 
@@ -101,6 +95,27 @@
 }
 
 
+
+
+
+.webix_template-recover .webix_template{
+    font-weight: 600;
+    font-size: 15px;
+    
+}
+.webix_btn-recover{
+    margin: 5px 0px!important;
+}
+.webix_btn-recover > .webix_el_box{
+    padding:  0px 10px!important;
+}
+
+.webix_template-recover-descr > .webix_template{
+    padding: 2px  12px 0px!important;
+}
+
+
+
 .webix_icon, .webix_icon_btn {
     line-height: 0.8!important;
 }
@@ -111,7 +126,7 @@
 }
 
 .webix_template{
-    padding: 10px 12px!important;
+    padding: 5px 12px!important;
 }
 
 .webix_layout_space{

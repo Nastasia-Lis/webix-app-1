@@ -1,11 +1,16 @@
 .webix{
 
+    &_close-btn {
+        margin-left: -8px!important;
+    }
+    &_close-btn .webix_button.webix_img_btn,
+    &_close-btn .webix_button.webix_img_btn:hover,
+    &_close-btn .webix_button.webix_img_btn:active{
+        background-color: transparent!important;
+    }
     
-
-
-    &_button, .webix_button{
+    &_button .webix_button{
         font-weight: 400!important;
-        //max-height: 45px!important;
     }
 
     &_tree_item{
@@ -172,4 +177,14 @@
  
 .webix_collapse .webix_button:hover .webix_icon_btn{
     color: var(--dark)!important;
+}
+
+
+
+.webix_close-btn .webix_button:hover .webix_icon_btn{
+    color: var(--primary-light)!important;
+}
+
+.webix_close-btn .webix_button:active .webix_icon_btn{
+    color: var(--primary-dark)!important;
 }

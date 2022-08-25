@@ -1,4 +1,4 @@
-console.log("expa 1.0.6");
+console.log("expa 1.0.7");
 
 import {lib} from "./modules/expalib.js";
 lib ();
@@ -8,19 +8,16 @@ import {login} from "./modules/login.js";
 import {getStorageData} from "./modules/userSettings.js";
 
 import {header} from "./modules/header.js";
-import {treeSidebar} from "./modules/sidebar.js";
+import {customInputs, treeSidebar} from "./modules/sidebar.js";
 
 import {logLayout} from "./modules/logBlock.js";
 
 import * as resetTimer from  "./modules/resetTimer.js";
 import { contextMenu } from "./modules/contextMenuTree.js";
 
-
+try{
 
 webix.ready(function(){
-
- 
-
     webix.protoUI({
         name:"edittree"
     }, webix.EditAbility, webix.ui.tree);
@@ -114,3 +111,7 @@ webix.ready(function(){
 
 
 
+} catch(e){
+    console.log(e);
+    alert("Ошибка при выполнении");
+}

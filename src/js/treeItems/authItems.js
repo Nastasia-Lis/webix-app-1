@@ -23,7 +23,7 @@ const authCp = {
     borderless:true,
     margin:5,
     elements:[
-        {template:"<div>Изменение пароля</div>",css:'webix_cp-form',height:30, borderless:true},
+        {template:"<div>Изменение пароля</div>",css:'webix_cp-form',height:35, borderless:true},
         { view:"text",width:300,labelPosition:"top", type:"password",label:"Старый пароль", name:"oldPass"},
         { view:"text",width:300,labelPosition:"top", type:"password", label:"Новый пароль", name:"newPass"},
         { view:"text",width:300,labelPosition:"top", type:"password", label:"Повтор нового пароля", name:"repeatPass"},

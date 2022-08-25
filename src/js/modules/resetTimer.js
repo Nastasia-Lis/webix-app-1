@@ -13,7 +13,6 @@ export function resetTimer (){
     window.addEventListener('scroll', resetTimer, true); 
 
     function logout() {
-        console.log("long");
         webix.ajax().post("/init/default/logout/",{
             success:function(text, data, XmlHttpRequest){
                 history.back();
@@ -31,7 +30,7 @@ export function resetTimer (){
 
     function resetTimer() {
         clearTimeout(t);
-        t = setTimeout(logout, 600000);  // 5 минут простоя
+        t = setTimeout(logout, 600000); 
     };
     
 }
