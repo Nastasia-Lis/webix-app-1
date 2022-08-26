@@ -1,10 +1,13 @@
-import {tableId,editFormId,addBtnId,findElementsId, searchId,
+import {tableId,editFormId,addBtnId,findElementsId,filterElementsId, searchId,
         tableIdView,findElementsIdView,searchIdView,newAddBtnId
 } from './setId.js';
 // import {lib} from "./expalib.js";
 // lib ();
 import {notify, checkFormSaved,clearItem,defaultStateForm} from "./editTableForm.js";
 import {tableNames} from "./login.js";
+import {searchColumnTemplate} from "../treeItems/tableTemplate.js";
+
+
 
 let itemTreeId = "";
 let prevCountRows ;
@@ -153,7 +156,9 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
             let columnsData = [];
 
             obj.forEach(function(data) {
- 
+                //searchColumnTemplate
+
+              
                 if (dataFields[data].type.includes("reference")){
                     let findTableId = dataFields[data].type.slice(10);
                     dataFields[data].editor = "combo";
@@ -173,8 +178,13 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                 dataFields[data].header= dataFields[data]["label"];
                 if(dataFields[data].id == "id"){
                     dataFields[data].hidden = true;
-                }
-                
+                } 
+                if(dataFields[data].id == "role"){
+    
+                    console.log( dataFields[data])
+                    //dataFields[data].template = searchColumnTemplate(); 
+                } 
+
                 columnsData.push(dataFields[data]);
             });
             $$(idCurrTable).refreshColumns(columnsData);
@@ -487,12 +497,16 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                     
                         prevCountRows = $$(idCurrTable).count();
                         $$(idFindElem).setValues(prevCountRows.toString());
+                        if(idCurrTable == tableId){
+                            $$(filterElementsId).setValues(prevCountRows.toString());
+                        }
                     
                     },
                     error:function(text, data, XmlHttpRequest){
                         notify ("error","Ошибка при загрузке данных",true);
-                        prevCountRows = $$(idCurrTable).count();
+                        prevCountRows = "-";
                         $$(idFindElem).setValues(prevCountRows.toString());
+                        $$(filterElementsId).setValues(prevCountRows.toString());
                         if($$(newAddBtnId).isEnabled()){
                             $$(newAddBtnId).disable();
                         }

@@ -54,7 +54,7 @@ function addItem () {
             $$(tableId).filter(false);
             $$(tableId).hideOverlay("Ничего не найдено");
             $$(searchId).setValue("");
-            createEditFields();
+            createEditFields(editFormId);
             $$(delBtnId).disable();
             $$(saveBtnId).hide();
             $$(saveNewBtnId).show();
@@ -64,7 +64,7 @@ function addItem () {
         $$(tableId).filter(false);
         $$(tableId).hideOverlay("Ничего не найдено");
         $$(searchId).setValue("");
-        createEditFields();
+        createEditFields(editFormId);
         $$(delBtnId).disable();
         $$(saveBtnId).hide();
         $$(saveNewBtnId).show();
@@ -138,11 +138,11 @@ function removeItem() {
 
 //--- components
 
-function createEditFields () {
+function createEditFields (parentElement, viewPosition=1) {
 
     let columnsData = $$(tableId).getColumns();
 
-    if(Object.keys($$(editFormId).elements).length==0  ){
+    if(Object.keys($$(parentElement).elements).length==0  ){
         let inputsArray = [];
         columnsData.forEach((el,i) => {
             if (el.type == "datetime"){
@@ -157,7 +157,7 @@ function createEditFields () {
                     labelPosition:"top",
                     on:{
                         onItemClick:function(){
-                            $$(editFormId).clearValidation();
+                            $$(parentElement).clearValidation();
                         }
                     }
                 });
@@ -187,11 +187,8 @@ function createEditFields () {
                     },
                     on:{
                         onItemClick:function(){
-                            $$(editFormId).clearValidation();
+                            $$(parentElement).clearValidation();
                         },
-                        // onChange: function(newValue, oldValue, config){
-
-                        // }
                     }
                 },
                 {
@@ -225,7 +222,7 @@ function createEditFields () {
                     labelPosition:"top",
                     on:{
                         onKeyPress:function(){
-                            $$(editFormId).clearValidation();
+                            $$(parentElement).clearValidation();
                         }
                     }
                     }
@@ -235,14 +232,19 @@ function createEditFields () {
 
         let inpObj = {margin:8,id:"inputsTable", rows:inputsArray};
 
-        $$(delBtnId).enable();
-        return ($$(editFormId).addView( inpObj, 1));
+        if(parentElement==editFormId){
+            $$(delBtnId).enable();
+        }
+        
+        return ($$(parentElement).addView( inpObj, viewPosition));
         
     } else {
-        $$(editFormId).clear();
-        $$(editFormId).clearValidation();
+        $$(parentElement).clear();
+        $$(parentElement).clearValidation();
 
-        $$(delBtnId).enable();
+        if(parentElement==editFormId){
+            $$(delBtnId).enable();
+        }
         $$("inputsTable").show();
     }
 }
@@ -368,16 +370,6 @@ try{
             click:saveItem,
             hotkey: "enter" 
         },
-        // { 
-        //     view:"button", 
-        //     id:addBtnId,
-        //     value:"Добавить новую запись", 
-        //     height:48,
-        //     disabled:true,
-        //     hotkey: "shift",
-        //     css:"webix_primary", 
-        //     click:addItem
-        // },
         { 
             view:"button", 
             id:saveNewBtnId,

@@ -23,12 +23,52 @@ const authCp = {
     borderless:true,
     margin:5,
     elements:[
-        {template:"<div>Изменение пароля</div>",css:'webix_cp-form',height:35, borderless:true},
-        { view:"text",width:300,labelPosition:"top", type:"password",label:"Старый пароль", name:"oldPass"},
-        { view:"text",width:300,labelPosition:"top", type:"password", label:"Новый пароль", name:"newPass"},
-        { view:"text",width:300,labelPosition:"top", type:"password", label:"Повтор нового пароля", name:"repeatPass"},
-        { margin:5, cols:[
-            { view:"button",height:48,width:300, value:"Сменить пароль" , css:"webix_primary", click:doAuthCp},
+        {   template:"<div>Изменение пароля</div>",
+            css:'webix_cp-form',
+            height:35, 
+            borderless:true
+        },
+        {   view:"template",
+            id:"userprefsName",
+            css:"webix_userprefs-info",
+            template:function(){
+                if (Object.keys($$("userprefsName").getValues()).length !==0){
+                    return "<div style='display:inline-block;color:var(--primary);font-size:13px!important;font-weight:600'>Имя пользователя:</div>"+"⠀"+"<div style='display:inline-block;font-size:13px!important;font-weight:600' >"+$$("userprefsName").getValues()+"<div>";
+                } else {
+                    return "<div style='display:inline-block;color:var(--primary);font-size:13px!important;font-weight:600'>Имя пользователя:</div>"+"⠀"+ " <div style='display:inline-block;font-size:13px!important;font-weight:600'>не указано</div>";
+                }
+            },
+            height:50, 
+            borderless:true,
+        },
+       
+        {   view:"text",
+            width:300,
+            labelPosition:"top", 
+            type:"password",
+            label:"Старый пароль", 
+            name:"oldPass"},
+        {   view:"text",
+            width:300,
+            labelPosition:"top", 
+            type:"password", 
+            label:"Новый пароль", 
+            name:"newPass"},
+        {   view:"text",
+            width:300,
+            labelPosition:"top", 
+            type:"password", 
+            label:"Повтор нового пароля", 
+            name:"repeatPass"},
+        {   margin:5, cols:[
+            
+            {   view:"button",
+                height:48,
+                width:300, 
+                value:"Сменить пароль" , 
+                css:"webix_primary", 
+                click:doAuthCp
+            },
         ]}
     ],
 

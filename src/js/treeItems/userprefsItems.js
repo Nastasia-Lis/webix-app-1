@@ -12,12 +12,21 @@ const userprefsLayout = {
             css:"webix_headline-userprefs",
             height:35, 
             borderless:true,
+            
         },
+
         {   view:"template",
-            id:"userprefsInfo",
+            id:"userprefsName",
             css:"webix_userprefs-info",
-            template:"11",
-            height:50, borderless:true,
+            template:function(){
+                if (Object.keys($$("userprefsName").getValues()).length !==0){
+                    return "<div style='display:inline-block;color:var(--primary);font-size:13px!important;font-weight:600'>Имя пользователя:</div>"+"⠀"+"<div style='display:inline-block;font-size:13px!important;font-weight:600' >"+$$("userprefsName").getValues()+"<div>";
+                } else {
+                    return "<div style='display:inline-block;color:var(--primary);font-size:13px!important;font-weight:600'>Имя пользователя:</div><div style='display:inline-block;font-size:13px!important;font-weight:600'>не указано</div>";
+                }
+            },
+            height:50, 
+            borderless:true,
         },
        
         {   view:"select", 

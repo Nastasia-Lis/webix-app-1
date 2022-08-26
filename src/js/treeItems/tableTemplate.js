@@ -1,8 +1,47 @@
-import {tableId,editFormId, saveBtnId,saveNewBtnId, addBtnId, delBtnId, findElementsId} from '../modules/setId.js';
+import {tableId,editFormId, saveBtnId,saveNewBtnId, delBtnId, findElementsId,filterElementsId} from '../modules/setId.js';
 import {defaultStateForm,createEditFields,popupExec,notify,saveItem} from "../modules/editTableForm.js";
 import { itemTreeId,urlFieldAction} from "../modules/sidebar.js";
 
-function tableToolbar (idSearch, idExport, idFindElements, idTable,visible=false) {
+
+// let escapedSearchText = "";
+
+//     function findText(text, table) {
+
+//         text = text || "";
+//         escapedSearchText = text.replace(/[[\]{}()*+?.\\^$|]/g, "\\$&");
+        
+//         if (text) {
+//           text = text.toLowerCase();
+//           table.filter(data => {
+//             return data[Object.keys(data)[1]].toLowerCase().indexOf(text) > -1;
+//           });
+//         } else {
+//           table.filter();
+//         }
+//       };
+
+//       function addTextMark(value, text) {
+
+//         const checkOccurence = new RegExp("(" + text + ")", "ig");
+ 
+//         return value.replace(
+//           checkOccurence,
+//           "<span class='search_mark'>$1</span>"
+//         );
+//       }
+
+//       function searchColumnTemplate(value) {
+//         let search = escapedSearchText;
+//         webix.message(value);
+//         if (search) {
+//           value = addTextMark(value, search);
+//         }
+//         return value;
+//       }  
+
+function tableToolbar (idSearch, idExport, idFindElements, idFilterElements, idTable,idFilter,visible=false) {
+   console.log(idSearch, idExport, idFindElements, idFilterElements, idTable,idFilter)
+   
     function exportToExcel(){
         webix.toExcel(idTable, {
           filename:"Table",
@@ -11,6 +50,10 @@ function tableToolbar (idSearch, idExport, idFindElements, idTable,visible=false
         });
         notify ("success","Таблица сохранена",true);
     }
+
+      
+       
+
     return { 
 
        
@@ -21,34 +64,40 @@ function tableToolbar (idSearch, idExport, idFindElements, idTable,visible=false
              {id:"filterBar",responsive:"adaptive-toolbar", css:"webix_filterBar",padding:17, height: 80,margin:5, 
                 
                 cols: [
-                {   view:"search", 
-                    placeholder:"Поиск", 
+                
+                {   view:"search",
+                    placeholder:"Поиск",
                     id:idSearch,
                     hidden:visible,
-                    css:"searchTable", 
-                    maxWidth:250, 
-                    minWidth:40, 
+                    css:"searchTable",
+                    maxWidth:250,
+                    minWidth:40,
                     on: {
                         onTimedKeyPress() {
+                            // const value = this.getValue();
+                            // findText(value, $$(idTable));
+   
                             let text = this.getValue().toLowerCase();
+                            //console.log(text)
                             let table = $$(idTable);
                             let columns = table.config.columns;
                             let findElements = 0;
                             table.filter(function(obj){
-                                for (let i=0; i<columns.length; i++)
+                                for (let i=0; i<columns.length; i++){
                                     if (obj[columns[i].id].toString().toLowerCase().indexOf(text) !== -1){
-                                        findElements++; 
+                                        findElements++;
                                         return true;
                                     }
                                 return false;
-                            });
+                            }});
                             if (!findElements){
                                 $$(idTable).showOverlay("Ничего не найдено");
                             } else if(findElements){
                                 $$(idTable).hideOverlay("Ничего не найдено");
                             }
-                            $$(idFindElements).setValues(findElements.toString());
+                            $$(idFilterElements).setValues(findElements.toString());
                             
+
                         },
                         onAfterRender: function () {
                            this.getInputNode().setAttribute("title","Поиск по таблице");
@@ -57,18 +106,48 @@ function tableToolbar (idSearch, idExport, idFindElements, idTable,visible=false
                     }
                 },
                 {},
- 
-                // {
-                //     view:"pager",
-                //     id:idPager,
-                //     size:100,
-                //     inputHeight:48,
-                //     inputWidth:50,
-                //     group:3,
-                //     height:50,
-                //     template:`{common.prev()} 
-                // {common.pages()} {common.next()}`
-                // },
+
+                {   view:"button",
+                    width: 50, 
+                    type:"icon",
+                    id:idFilter,
+                    hidden:visible,
+                    icon:"wxi-filter",
+                    css:"webix_btn-filter",
+                    title:"текст",
+                    height:50,
+                    click:function(){
+                        console.log(idTable)
+                        $$(idTable).clearSelection();
+                        console.log($$(idTable).getSelectedId(true, true))
+                        let btnClass = document.querySelector(".webix_btn-filter");
+
+                        if(!(btnClass.classList.contains("webix_primary"))){
+                            $$("filterTableForm").show();
+                            $$(editFormId).hide();
+
+                            if($$("filterTableForm").getChildViews() !== 0){
+                                createEditFields("filterTableForm",3);
+                            }
+                            btnClass.classList.add("webix_primary");
+                            btnClass.classList.remove("webix_secondary");
+                            
+                           
+                        } else {
+                            $$("filterTableForm").hide();
+                            $$(editFormId).show();
+                            btnClass.classList.add("webix_secondary");
+                            btnClass.classList.remove("webix_primary");
+                        }
+                      
+                    },
+                    on: {
+                        onAfterRender: function () {
+                            console.log( this.getInputNode())
+                            this.getInputNode().setAttribute("title","Показать/скрыть фильтры");
+                        }
+                    } 
+                },
 
                 {   view:"button",
                     width: 50, 
@@ -90,18 +169,36 @@ function tableToolbar (idSearch, idExport, idFindElements, idTable,visible=false
 
                 ],
             },
-            {   view:"template",
-                id:idFindElements,
-                css:"webix_style-template-count",
-                height:30,
-                template:function () {
-                    if (Object.keys($$(idFindElements).getValues()).length !==0){
-                        return "<div style='color:#999898;'> Количество записей:"+" "+$$(idFindElements).getValues()+" </div>";
-                    } else {
-                        return "";
+            {cols:[
+                {   view:"template",
+                    id:idFindElements,
+                    css:"webix_style-template-count",
+                    height:30,
+                    template:function () {
+                        if (Object.keys($$(idFindElements).getValues()).length !==0){
+                            return "<div style='color:#999898;'> Общее количество записей:"+" "+$$(idFindElements).getValues()+" </div>";
+                        } else {
+                            return "";
+                        }
+                    }
+                 
+                },
+
+                {   view:"template",
+                    id:idFilterElements,
+                    css:"webix_style-template-count",
+                    height:30,
+                    template:function () {
+                        if (Object.keys($$(idFilterElements).getValues()).length !==0){
+                            
+                            return "<div style='color:#999898;'>Видимое количество записей:"+" "+$$(idFilterElements).getValues()+" </div>";
+                        } else {
+                            return "";
+                        }
                     }
                 },
-            },
+
+            ]},
         ]
 
         
@@ -203,7 +300,15 @@ let onFuncTable = {
     },
 
     onAfterSelect(id){
-      
+        if(!($$(editFormId).isVisible())){
+            $$(editFormId).show();
+            $$("filterTableForm").hide();
+            let btnClass = document.querySelector(".webix_btn-filter");
+            btnClass.classList.add("webix_secondary");
+            btnClass.classList.remove("webix_primary");
+        }
+        
+       
         let values = $$(tableId).getItem(id); 
         function toEditForm () {
             $$(editFormId).setValues(values);
@@ -219,7 +324,7 @@ let onFuncTable = {
                     toEditForm();
             }); 
         } else {
-            createEditFields();
+            createEditFields(editFormId);
             toEditForm();
         }   
     },

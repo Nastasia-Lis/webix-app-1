@@ -7,11 +7,15 @@ let pagerId = tableId+"-pager";
 let searchId = tableId+"-search";
 let findElementsId = tableId+"-findElemets";
 let exportBtn = tableId+"exportBtn";
+let filterElementsId=  tableId+"idFilterElements";
+let filterId=  tableId+"filterId";
 
 let pagerIdView = tableIdView+"-pager";
 let searchIdView = tableIdView+"-search";
 let findElementsIdView = tableIdView+"-findElemets";
 let exportBtnView = tableIdView+"exportBtn";
+let filterElementsIdView =  tableIdView+"idFilterElements";
+let filterIdView=  tableId+"filterIdView";
 
 //editTable elements
 let editFormId = tableId+"-editForm";
@@ -31,12 +35,16 @@ export{
     pagerId,
     searchId,
     findElementsId,
+    filterElementsId,
     exportBtn,
+    filterId,
     tableIdView,
     pagerIdView,
     searchIdView,
     findElementsIdView,
+    filterElementsIdView,
     exportBtnView,
+    filterIdView,
 
     editFormId,
     saveBtnId,

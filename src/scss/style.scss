@@ -5,6 +5,11 @@
 @import "src/scss/btns";
 
 
+// spa: dash-title css
+// filters css
+// прошлая сессия => убрать при логауте
+// ф-ции
+
 .webix_view,
 .webix_confirm  {
     font-weight: 400!important;
@@ -17,7 +22,10 @@
  
 }
 
-
+.search_mark {
+    background: #d1ceff!important;
+    color:#000000!important;
+}
 
 // //*** expa
 .webix_tree_item{
@@ -67,9 +75,6 @@
     padding-left: 0px!important;
 }
 
-.webix_cp-form{
-    margin-bottom: 10px!important;
-}
 
 
 .webix_progress_top .webix_progress_state, .webix_progress_bottom .webix_progress_state{
@@ -95,6 +100,10 @@
 }
 
 
+
+.webix_userprefs-info {
+    height: 45px!important;
+}
 
 
 

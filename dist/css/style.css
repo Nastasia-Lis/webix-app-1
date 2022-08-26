@@ -198,6 +198,11 @@
   font-size: 12px !important;
 }
 
+.search_mark {
+  background: #d1ceff !important;
+  color: #000000 !important;
+}
+
 .webix_tree_item {
   height: 31px !important;
   line-height: 20px !important;
@@ -248,10 +253,6 @@
   padding-left: 0px !important;
 }
 
-.webix_cp-form {
-  margin-bottom: 10px !important;
-}
-
 .webix_progress_top .webix_progress_state, .webix_progress_bottom .webix_progress_state {
   background: var(--primary-light) !important;
   background-image: none !important;
@@ -272,6 +273,10 @@
 .webix_dash-charts-flex .webix_view.webix_layout_line div:nth-child(1) {
   margin: 0 !important;
   text-align: center;
+}
+
+.webix_userprefs-info {
+  height: 45px !important;
 }
 
 .webix_template-recover .webix_template {
