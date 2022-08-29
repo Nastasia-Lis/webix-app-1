@@ -1,4 +1,4 @@
-console.log("expa 1.0.9");
+console.log("expa 1.0.10");
 
 import {lib} from "./modules/expalib.js";
 lib ();

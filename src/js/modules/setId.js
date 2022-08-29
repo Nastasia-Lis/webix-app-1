@@ -9,6 +9,7 @@ let findElementsId = tableId+"-findElemets";
 let exportBtn = tableId+"exportBtn";
 let filterElementsId=  tableId+"idFilterElements";
 let filterId=  tableId+"filterId";
+let editTableBtnId = tableId + "editTableBtnId";
 
 let pagerIdView = tableIdView+"-pager";
 let searchIdView = tableIdView+"-search";
@@ -16,6 +17,7 @@ let findElementsIdView = tableIdView+"-findElemets";
 let exportBtnView = tableIdView+"exportBtn";
 let filterElementsIdView =  tableIdView+"idFilterElements";
 let filterIdView=  tableId+"filterIdView";
+let editTableBtnIdView = tableIdView + "editTableBtnId";
 
 //editTable elements
 let editFormId = tableId+"-editForm";
@@ -38,6 +40,7 @@ export{
     filterElementsId,
     exportBtn,
     filterId,
+    editTableBtnId,
     tableIdView,
     pagerIdView,
     searchIdView,
@@ -45,6 +48,7 @@ export{
     filterElementsIdView,
     exportBtnView,
     filterIdView,
+    editTableBtnIdView,
 
     editFormId,
     saveBtnId,

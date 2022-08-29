@@ -1,5 +1,5 @@
 import {notify} from "./editTableForm.js";
-import { tableId, tableIdView,findElementsId,filterElementsId,filterId, searchIdView, exportBtnView, 
+import { tableId, tableIdView,findElementsId,filterElementsId,filterId,editTableBtnId,editTableBtnIdView, searchIdView, exportBtnView, 
     findElementsIdView,filterElementsIdView,filterIdView,searchId, exportBtn} from "./setId.js";
 
 import {lib} from "./expalib.js";
@@ -30,12 +30,30 @@ function createElements(specificElement){
         },
     4);
 
+    $$("container").addView(
+        {id:"tables", hidden:true, view:"scrollview", body: { view:"flexlayout", cols:[
+                                        
+            {   id:"tableContainer",
+                    rows:[
+                        tableToolbar( searchId, exportBtn,editTableBtnId, findElementsId,filterElementsId, tableId,filterId),
+                        { view:"resizer",class:"webix_resizers",},
+                        table (tableId, onFuncTable,true)
+                    ]
+                },
+            
+                {  view:"resizer",class:"webix_resizers",},
+                
+                editTableBar,filterForm]
+            }
+        
+        },
+    3);
 
     $$("container").addView(
         {view:"layout",id:"forms", css:"webix_tableView",hidden:true, 
                                     
             rows:[
-                tableToolbar(searchIdView, exportBtnView, findElementsIdView,filterElementsIdView, tableIdView,filterId, true ),
+                tableToolbar(searchIdView, exportBtnView,editTableBtnIdView, findElementsIdView,filterElementsIdView, tableIdView,filterIdView, true ),
                 { view:"resizer",class:"webix_resizers",},
                 
                 {view:"scrollview", body:  
@@ -51,24 +69,7 @@ function createElements(specificElement){
         },
     5);
 
-    $$("container").addView(
-        {id:"tables", hidden:true, view:"scrollview", body: { view:"flexlayout", cols:[
-                                        
-            {   id:"tableContainer",
-                    rows:[
-                        tableToolbar( searchId, exportBtn, findElementsId,filterElementsId, tableId,filterId),
-                        { view:"resizer",class:"webix_resizers",},
-                        table (tableId, onFuncTable,true)
-                    ]
-                },
-            
-                {  view:"resizer",class:"webix_resizers",},
-                
-                editTableBar,filterForm]
-            }
-        
-        },
-    3);
+   
    
     if (specificElement == "cp"){
         $$("container").addView(
@@ -385,19 +386,30 @@ function login () {
         });      
     }, 
     tree: function(id){
-
+       // if $$("forms")
+   
         if ($$("tree").data.order.length == 0){
             getDataFields (routes);
             let idTree = id;
-            
+
             $$("tree").attachEvent("onAfterLoad", function (id) {
                 id = idTree;
                 let parentId = $$("tree").getParentId(id);
+                //console.log($$("tree").getParentId(id))
+
+                // if ($$("tree").getParentId(id) == "tables"){
+                //     tableToolbar( searchId, exportBtn, findElementsId,filterElementsId, tableId,filterId);
+                //     table (tableId, onFuncTable,true);
+                // }
+
+                // if ($$("tree").getParentId(id) == "forms"){
+                //     tableToolbar(searchIdView, exportBtnView, findElementsIdView,filterElementsIdView, tableIdView,filterId, true );
+                //     table (tableIdView);
+                // }
 
                 $$("tree").open(parentId);
                 $$("tree").select(id);
             });
-
         }
       
 

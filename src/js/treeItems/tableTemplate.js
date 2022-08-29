@@ -1,6 +1,7 @@
-import {tableId,editFormId, saveBtnId,saveNewBtnId, delBtnId, findElementsId,filterElementsId} from '../modules/setId.js';
+import {tableId,editFormId, saveBtnId,saveNewBtnId, delBtnId, findElementsId,editTableBtnId} from '../modules/setId.js';
 import {defaultStateForm,createEditFields,popupExec,notify,saveItem} from "../modules/editTableForm.js";
-import { itemTreeId,urlFieldAction} from "../modules/sidebar.js";
+import {itemTreeId, getComboOptions, urlFieldAction} from "../modules/sidebar.js";
+import {tableNames} from "../modules/login.js";
 
 
 // let escapedSearchText = "";
@@ -39,8 +40,7 @@ import { itemTreeId,urlFieldAction} from "../modules/sidebar.js";
 //         return value;
 //       }  
 
-function tableToolbar (idSearch, idExport, idFindElements, idFilterElements, idTable,idFilter,visible=false) {
-   console.log(idSearch, idExport, idFindElements, idFilterElements, idTable,idFilter)
+function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterElements, idTable,idFilter,visible=false) {
    
     function exportToExcel(){
         webix.toExcel(idTable, {
@@ -49,6 +49,183 @@ function tableToolbar (idSearch, idExport, idFindElements, idFilterElements, idT
           styles:true
         });
         notify ("success","Таблица сохранена",true);
+    }
+
+
+
+
+    function createFilterElements (parentElement, viewPosition=1) {
+
+        let columnsData = $$(tableId).getColumns();
+    
+        if(Object.keys($$(parentElement).elements).length==0  ){
+            let inputsArray = [];
+            columnsData.forEach((el,i) => {
+                if (el.type == "datetime"){
+                    inputsArray.push({   
+                        view: "datepicker",
+                        format:"%d.%m.%Y %H:%i:%s",
+                        id:el.id,
+                        name:el.id, 
+                        hidden:true,
+                        label:el.label, 
+                        placeholder:"дд.мм.гг", 
+                        timepicker: true,
+                        labelPosition:"top",
+                        on:{
+                            onItemClick:function(){
+                                $$(parentElement).clearValidation();
+                            }
+                        }
+                    });
+                    inputsArray.push(
+                        {
+                            view:"radio",
+                            id:el.id+"_condition",
+                            name:el.id+"_condition",
+                            hidden:true,
+                            options:[
+                              { id:"1", value:"или" }, 
+                              { id:"2", value:"и" }, 
+                            ],
+                            value:"1"
+                        }
+                    );
+                } 
+                
+    
+               else if (el.type.includes("reference")) {
+                let findTableId = el.type.slice(10);
+                let refTableName;
+    
+                tableNames.forEach(function(el,i){
+                    if (el.id == findTableId){
+                        refTableName= el.name;
+                    }
+                });
+    
+                inputsArray.push(
+                    {cols:[
+                    {   view:"combo",
+                        placeholder:"Выберите вариант",  
+                        label:el.label, 
+                        id:el.id,
+                        hidden:true,
+                        name:el.id, 
+                        labelPosition:"top",
+                        options:{
+                            data:getComboOptions(findTableId)
+                        },
+                        on:{
+                            onItemClick:function(){
+                                $$(parentElement).clearValidation();
+                            },
+                        }
+                    },
+                    {
+                        view:"button",
+                        css:{"vertical-align":"bottom!important","height":"38px!important"},
+                        type:"icon",
+                        icon: 'wxi-angle-right',
+                        inputHeight:38,
+                        width: 40,
+                        on: {
+                            onAfterRender: function () {
+                                this.getInputNode().setAttribute("title","Перейти в таблицу"+" "+"«"+refTableName+"»");
+                            },
+                        },
+                        click:function(){
+                            $$("tree").select(findTableId);
+                        }
+                    }
+                    ]}
+    
+                );
+                inputsArray.push(
+                    {
+                        view:"radio",
+                        id:el.id+"_condition",
+                        hidden:true,
+                        name:el.id+"_condition",
+                        options:[
+                            { id:"1", value:"или" }, 
+                            { id:"2", value:"и" }, 
+                        ],
+                        value:"1"
+                    }
+                );
+                
+                } 
+                else{
+                    inputsArray.push(
+                        {
+                        view:"text", 
+                        name:el.id,
+                        id:el.id, 
+                        hidden:true,
+                        label:el.label, 
+                        labelPosition:"top",
+                        on:{
+                            onKeyPress:function(){
+                                $$(parentElement).clearValidation();
+                            },
+                            // onTimedKeypress:function(){
+                                
+                            //     let text = this.getValue().toString().toLowerCase();
+
+                            //     $$(idTable).filter(function(obj){
+                            //       let filter = obj.first_name;
+                            //      // let filter = [obj.first_name].join("|");
+                            //       filter = filter.toString().toLowerCase();
+                            //       return (filter.indexOf(text) != -1);
+                            //     });
+
+                            // }
+                        }
+                        }
+                    );
+                    inputsArray.push(
+                        {
+                            view:"radio",
+                            id:el.id+"_condition",
+                            hidden:true,
+                            name:el.id+"_condition",
+                            options:[
+                                { id:"1", value:"или" }, 
+                                { id:"2", value:"и" }, 
+                            ],
+                            value:"1"
+                        }
+                    );
+                }
+            });
+           
+
+            inputsArray.forEach(function(el,i){
+                if(el.view == "radio"){
+                    inputsArray.pop();
+                }
+            });
+
+            console.log(inputsArray);
+    
+            let inpObj = {margin:8,id:"inputsTable", rows:inputsArray};
+    
+            if(parentElement==editFormId){
+                $$(delBtnId).enable();
+            }
+
+            return ($$(parentElement).addView( inpObj, viewPosition));
+            
+        } else {
+            $$(parentElement).clear();
+            $$(parentElement).clearValidation();
+    
+            if(parentElement==editFormId){
+                $$(delBtnId).enable();
+            }
+            $$("inputsTable").show();
+        }
     }
 
       
@@ -76,9 +253,8 @@ function tableToolbar (idSearch, idExport, idFindElements, idFilterElements, idT
                         onTimedKeyPress() {
                             // const value = this.getValue();
                             // findText(value, $$(idTable));
-   
+                      
                             let text = this.getValue().toLowerCase();
-                            //console.log(text)
                             let table = $$(idTable);
                             let columns = table.config.columns;
                             let findElements = 0;
@@ -106,6 +282,34 @@ function tableToolbar (idSearch, idExport, idFindElements, idFilterElements, idT
                     }
                 },
                 {},
+                {   view:"button",
+                    width: 50, 
+                    type:"icon",
+                    id:idBtnEdit,
+                    hidden:true,
+                    icon:"wxi-pencil",
+                    css:"webix_btn-edit",
+                    title:"текст",
+                    height:50,
+                    click:function(){
+                        let btnClass = document.querySelector(".webix_btn-filter");
+                        $$("filterTableForm").hide();
+                        $$(editFormId).show();
+                        btnClass.classList.add("webix_secondary");
+                        btnClass.classList.remove("webix_primary");
+                        $$(idBtnEdit).hide();
+                        this.hide();
+                    },
+                    on: {
+                        onAfterRender: function () {
+                            if(idTable !== "table" && this.isVisible()){
+                                this.hide();
+                            }
+                            this.getInputNode().setAttribute("title","Редактировать таблицу");
+                        }
+                    } 
+                },
+
 
                 {   view:"button",
                     width: 50, 
@@ -117,9 +321,7 @@ function tableToolbar (idSearch, idExport, idFindElements, idFilterElements, idT
                     title:"текст",
                     height:50,
                     click:function(){
-                        console.log(idTable)
                         $$(idTable).clearSelection();
-                        console.log($$(idTable).getSelectedId(true, true))
                         let btnClass = document.querySelector(".webix_btn-filter");
 
                         if(!(btnClass.classList.contains("webix_primary"))){
@@ -127,23 +329,23 @@ function tableToolbar (idSearch, idExport, idFindElements, idFilterElements, idT
                             $$(editFormId).hide();
 
                             if($$("filterTableForm").getChildViews() !== 0){
-                                createEditFields("filterTableForm",3);
+                                createFilterElements("filterTableForm",3);
                             }
                             btnClass.classList.add("webix_primary");
                             btnClass.classList.remove("webix_secondary");
-                            
+                            $$(idBtnEdit).show();
                            
                         } else {
                             $$("filterTableForm").hide();
                             $$(editFormId).show();
                             btnClass.classList.add("webix_secondary");
                             btnClass.classList.remove("webix_primary");
+                            $$(idBtnEdit).hide();
                         }
                       
                     },
                     on: {
                         onAfterRender: function () {
-                            console.log( this.getInputNode())
                             this.getInputNode().setAttribute("title","Показать/скрыть фильтры");
                         }
                     } 
@@ -300,12 +502,18 @@ let onFuncTable = {
     },
 
     onAfterSelect(id){
+        
+        if ($$(editTableBtnId).isVisible()){
+            $$(editTableBtnId).hide();
+        }
+
         if(!($$(editFormId).isVisible())){
             $$(editFormId).show();
             $$("filterTableForm").hide();
             let btnClass = document.querySelector(".webix_btn-filter");
             btnClass.classList.add("webix_secondary");
             btnClass.classList.remove("webix_primary");
+            
         }
         
        

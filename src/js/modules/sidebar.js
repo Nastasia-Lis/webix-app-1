@@ -1,12 +1,8 @@
-import {tableId,editFormId,addBtnId,findElementsId,filterElementsId, searchId,
-        tableIdView,findElementsIdView,searchIdView,newAddBtnId
+import { tableId, tableIdView,findElementsId,exportBtn, filterId,filterElementsId,editFormId,searchId,editTableBtnId,newAddBtnId,
+     searchIdView,findElementsIdView,
 } from './setId.js';
-// import {lib} from "./expalib.js";
-// lib ();
 import {notify, checkFormSaved,clearItem,defaultStateForm} from "./editTableForm.js";
 import {tableNames} from "./login.js";
-import {searchColumnTemplate} from "../treeItems/tableTemplate.js";
-
 
 
 let itemTreeId = "";
@@ -474,7 +470,15 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                         if(!($$(newAddBtnId).isEnabled())){
                             $$(newAddBtnId).enable();
                         }
-                       
+                        if(!($$(filterId).isEnabled())){
+                            $$(filterId).enable();
+                        }
+                        if(!($$(exportBtn).isEnabled())){
+                            $$(exportBtn).enable();
+                        }
+
+                        
+         
                         // $$(idCurrTable).showProgress({
                         //     type:"bottom",
                         //     hide:true
@@ -510,6 +514,15 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                         if($$(newAddBtnId).isEnabled()){
                             $$(newAddBtnId).disable();
                         }
+                        if($$(filterId)){
+                            $$(filterId).disable();
+                        }
+
+                        if($$(exportBtn)){
+                            $$(exportBtn).disable();
+                        }
+
+                        
                     }, 
                 });     }
             });
@@ -864,13 +877,12 @@ function headerSidebar () {
                 $$("collapseBtn").config.icon ="wxi-angle-double-right";
                 $$("collapseBtn").refresh();
                 $$("tree").hide();
-                //$$("logBlock").hide();
                 if($$("sideMenuResizer")){
                     $$("sideMenuResizer").hide();
                 } 
+
             } else {
                 $$("tree").show();
-                //$$("logBlock").show();
                 $$("collapseBtn").config.icon ="wxi-angle-double-left";
                 $$("collapseBtn").refresh();
                 if(window.innerWidth >= 800){
@@ -908,6 +920,7 @@ function treeSidebar () {
         data:[],
         on:{
             onSelectChange:function (ids) {
+
                 if($$("inputsTable")){
                     $$(editFormId).removeView($$("inputsTable"));
                 }
@@ -952,7 +965,6 @@ function treeSidebar () {
                         }
                     }
                     
-
                     if(idsUndefined !== undefined){
                         return parentsArray.forEach(function(el,i){
                             if (el.includes("single")){
@@ -1050,6 +1062,7 @@ function treeSidebar () {
             },
 
             onBeforeSelect: function(data) {
+               
                 
                 let getItemParent = $$("tree").getParentId(data);
                 if(getItemParent=="tables"){
@@ -1061,6 +1074,20 @@ function treeSidebar () {
                             } 
                         });
                         return false;
+                    }
+
+                    if ($$("filterTableForm")&&$$("filterTableForm").isVisible){
+                        $$("filterTableForm").hide();
+                        if($$("inputsTable")){
+                            $$("filterTableForm").removeView( $$("inputsTable"));
+                        }
+                        let btnClass = document.querySelector(".webix_btn-filter");
+                        if (btnClass&&!(btnClass.classList.contains("webix_secondary"))){
+                            btnClass.classList.add("webix_secondary");
+                            btnClass.classList.remove("webix_primary");
+                        }
+                        $$(editTableBtnId).hide();
+                        $$(editFormId).show();
                     }
                 }
             },
