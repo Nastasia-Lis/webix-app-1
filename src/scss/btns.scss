@@ -8,6 +8,14 @@
     &_close-btn .webix_button.webix_img_btn:active{
         background-color: transparent!important;
     }
+
+
+    &_filterBtns{
+        vertical-align:bottom!important;
+        height:38px!important;
+    }
+
+
     
     &_button .webix_button{
         font-weight: 400!important;
@@ -112,7 +120,9 @@
 
     &_danger .webix_icon_btn,
     &_btn-download .webix_icon_btn,
-    &_log-btn .webix_icon_btn{
+    &_log-btn .webix_icon_btn,
+    &_btn-filter .webix_icon_btn,
+    &_btn-edit .webix_icon_btn{
         margin: 0px !important;
     }
 
@@ -187,4 +197,8 @@
 
 .webix_close-btn .webix_button:active .webix_icon_btn{
     color: var(--primary-dark)!important;
+}
+
+.webix_close-btn .webix_icon_btn{
+    font-size: 23px!important;
 }

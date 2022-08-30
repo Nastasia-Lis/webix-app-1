@@ -1,7 +1,6 @@
 import {tableId,editFormId, saveBtnId,saveNewBtnId, delBtnId, findElementsId,editTableBtnId} from '../modules/setId.js';
 import {defaultStateForm,createEditFields,popupExec,notify,saveItem} from "../modules/editTableForm.js";
 import {itemTreeId, getComboOptions, urlFieldAction} from "../modules/sidebar.js";
-import {tableNames} from "../modules/login.js";
 
 
 // let escapedSearchText = "";
@@ -62,10 +61,12 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
             let inputsArray = [];
             columnsData.forEach((el,i) => {
                 if (el.type == "datetime"){
-                    inputsArray.push({   
+                    inputsArray.push( 
+                    {cols:[
+                        { 
                         view: "datepicker",
                         format:"%d.%m.%Y %H:%i:%s",
-                        id:el.id,
+                        id:el.id+"_filter",
                         name:el.id, 
                         hidden:true,
                         label:el.label, 
@@ -75,41 +76,64 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
                         on:{
                             onItemClick:function(){
                                 $$(parentElement).clearValidation();
+                                $$("btnFilterSubmit").enable();
                             }
                         }
-                    });
-                    inputsArray.push(
+                        },
                         {
-                            view:"radio",
-                            id:el.id+"_condition",
-                            name:el.id+"_condition",
-                            hidden:true,
-                            options:[
-                              { id:"1", value:"или" }, 
-                              { id:"2", value:"и" }, 
-                            ],
-                            value:"1"
+
+                            
+                              
+          
+
+
+
+                            // view:"button",
+                            // id:el.id+"_filter"+"_condition", 
+                            // hidden:true,
+                            // css:{"vertical-align":"bottom!important","height":"38px!important"},
+                            // type:"icon",
+                            // icon: 'wxi-dots',
+                            // inputHeight:38,
+                            // width: 40,
+                            // popup: {
+                            //     view: 'contextmenu',
+                            //     //id:"contextmenu",
+                            //     css:"webix_contextmenu",
+                            //     data: [
+                            //         { value: 'Profile', href: '#profile' },
+                            //     ],
+                            //     on:{
+                            //         onItemClick:function(id, e, node){
+            
+             
+                            //         }
+                            //     }
+                            // },
+                            // on: {
+                            //     onAfterRender: function () {
+                            //         this.getInputNode().setAttribute("title","Выбрать условие");
+                            //     },
+                            // },
+                            // click:function(){
+                              
+                          // }
                         }
+                    ]} 
                     );
+        
                 } 
                 
     
                else if (el.type.includes("reference")) {
                 let findTableId = el.type.slice(10);
-                let refTableName;
-    
-                tableNames.forEach(function(el,i){
-                    if (el.id == findTableId){
-                        refTableName= el.name;
-                    }
-                });
     
                 inputsArray.push(
                     {cols:[
                     {   view:"combo",
                         placeholder:"Выберите вариант",  
                         label:el.label, 
-                        id:el.id,
+                        id:el.id+"_filter",
                         hidden:true,
                         name:el.id, 
                         labelPosition:"top",
@@ -119,83 +143,178 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
                         on:{
                             onItemClick:function(){
                                 $$(parentElement).clearValidation();
+                                $$("btnFilterSubmit").enable();
                             },
                         }
                     },
+
                     {
                         view:"button",
+                        id:el.id+"_filter"+"_condition", 
+                        hidden:true,
                         css:{"vertical-align":"bottom!important","height":"38px!important"},
                         type:"icon",
-                        icon: 'wxi-angle-right',
+                        icon: 'wxi-dots',
                         inputHeight:38,
                         width: 40,
                         on: {
                             onAfterRender: function () {
-                                this.getInputNode().setAttribute("title","Перейти в таблицу"+" "+"«"+refTableName+"»");
+                                this.getInputNode().setAttribute("title","Выбрать условие");
                             },
                         },
                         click:function(){
-                            $$("tree").select(findTableId);
+                          
                         }
                     }
+
                     ]}
     
-                );
-                inputsArray.push(
-                    {
-                        view:"radio",
-                        id:el.id+"_condition",
-                        hidden:true,
-                        name:el.id+"_condition",
-                        options:[
-                            { id:"1", value:"или" }, 
-                            { id:"2", value:"и" }, 
-                        ],
-                        value:"1"
-                    }
                 );
                 
                 } 
                 else{
                     inputsArray.push(
-                        {
-                        view:"text", 
-                        name:el.id,
-                        id:el.id, 
-                        hidden:true,
-                        label:el.label, 
-                        labelPosition:"top",
-                        on:{
-                            onKeyPress:function(){
-                                $$(parentElement).clearValidation();
-                            },
-                            // onTimedKeypress:function(){
+                        {id:el.id+"_rows",rows:[
+
+                            {id:el.id+"_container",cols:[
+                                {
+                                view:"text", 
+                                name:el.id+"_filter",
+                                id:el.id+"_filter", 
+                                hidden:true,
+                                label:el.label, 
+                                labelPosition:"top",
+                                on:{
+                                    onKeyPress:function(){
+                                        $$(parentElement).clearValidation();
+                                        $$("btnFilterSubmit").enable();
+                                    },
+                                }
+                                },
+
+                                {
+                                    view:"button",
+                                    id:el.id+"btnFilterOperations",
+                                    css:"webix_primary webix_filterBtns",
+                                    value:"=",
+                                    inputHeight:38,
+                                    width: 40,
+                                    popup: {
+                                        view: 'contextmenu',
+                                        width: 200,
+                                        data: [
+                                            { value: '=', id:"operations_eql" },
+                                            { value: '!=', id:"operations_notEqual" },
+                                            { value: '>', id:"operations_less" },
+                                            { value: '<', id:"operations_more" },
+                                            { value: '>=', id:"operations_mrEqual" },
+                                            { value: '<=', id:"operations_lsEqual" },
+                                            { value: 'содержит', id:"operations_contains" },
+                                        ],
+                                        on: {
+                                        onMenuItemClick(id) {
+                                            if (id.includes("eql")){
+                                                $$(el.id+"btnFilterOperations").setValue("=");
+                                                
+                                            } else if (id.includes("notEqual")){
+                                                $$(el.id+"btnFilterOperations").setValue("!=");
+                                            } else if (id.includes("less")){
+                                                $$(el.id+"btnFilterOperations").setValue("<");
+                                            } else if (id.includes("more")){
+                                                $$(el.id+"btnFilterOperations").setValue(">");
+                                            } else if (id.includes("mrEqual")){
+                                                $$(el.id+"btnFilterOperations").setValue(">=");
+                                            } else if (id.includes("lsEqual")){
+                                                $$(el.id+"btnFilterOperations").setValue("<=");
+                                            } else if (id.includes("contains")){
+                                                $$(el.id+"btnFilterOperations").setValue("⊆");
+                                            }
+        
+                                        },
+                                        
+                                        }
+                                    },
+                                    on:{
+                                        onAfterRender: function () {
+                                            this.getInputNode().setAttribute("title","Выбрать условие поиска по полю");
+                                        },
+                                    }
                                 
-                            //     let text = this.getValue().toString().toLowerCase();
+                                },
 
-                            //     $$(idTable).filter(function(obj){
-                            //       let filter = obj.first_name;
-                            //      // let filter = [obj.first_name].join("|");
-                            //       filter = filter.toString().toLowerCase();
-                            //       return (filter.indexOf(text) != -1);
-                            //     });
+                            
+                                {
+                                    
+                                    view:"button", 
+                                    css: "webix_filterBtns",
+                                    value:"+",
+                                    hidden:true,
+                                    id:el.id+"_filter"+"_condition",
+                                    inputHeight:38,
+                                    width: 40,
+                                    popup: {
+                                    view: 'contextmenu',
+                                    width: 200,
+                                    data: [
+                                        { value: 'и', id:"add_and" },
+                                        { value: 'или', id:"add_or" },
+                                    ],
+                                    on: {
+                                        onMenuItemClick(id) {
+                                        
+                                            if(id.includes("and")){
+                                                console.log("eee");
+                                                $$(el.id+"_rows").addView(
+                                                    {rows:[
+                                                        {template:"+ и", height:30, borderless:true},
+                                                        {cols:[
+                                                    
+                                                        {
+                                                            view:"text", 
+                                                            //name:el.id+"_filter",
+                                                            //id:el.id+"_filter", 
+                                                            //hidden:true,
+                                                            on:{
+                                                                onKeyPress:function(){
+                                                                    $$(parentElement).clearValidation();
+                                                                    $$("btnFilterSubmit").enable();
+                                                                },
+                                                            }
+                                                        },
+                                                        {
+                                                            view:"button",
+                                                            //css:{"vertical-align":"bottom!important","height":"38px!important"},
+                                                            css:"webix_filterBtns webix_danger",
+                                                            type:"icon",
+                                                            icon: 'wxi-trash',
+                                                            inputHeight:38,
+                                                            width: 40,
+                                                            on: {
+                                                                onAfterRender: function () {
+                                                                    this.getInputNode().setAttribute("title","");
+                                                                },
+                                                            },
+                                                        
+                                                        }
+                                                        ]}
+                                                    ]},2
+                                                );
 
-                            // }
-                        }
-                        }
-                    );
-                    inputsArray.push(
-                        {
-                            view:"radio",
-                            id:el.id+"_condition",
-                            hidden:true,
-                            name:el.id+"_condition",
-                            options:[
-                                { id:"1", value:"или" }, 
-                                { id:"2", value:"и" }, 
-                            ],
-                            value:"1"
-                        }
+                                            } else if(id.includes("or")){
+
+                                            }
+                                        },
+                                        
+                                    }
+                                    },
+                                    on:{
+                                        onAfterRender: function () {
+                                            this.getInputNode().setAttribute("title","Добавить ещё вариант поля");
+                                        },
+                                    }
+                                }
+                            ]}
+                        ]},
                     );
                 }
             });
@@ -206,8 +325,6 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
                     inputsArray.pop();
                 }
             });
-
-            console.log(inputsArray);
     
             let inpObj = {margin:8,id:"inputsTable", rows:inputsArray};
     
@@ -327,15 +444,17 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
                         if(!(btnClass.classList.contains("webix_primary"))){
                             $$("filterTableForm").show();
                             $$(editFormId).hide();
-
+                          
                             if($$("filterTableForm").getChildViews() !== 0){
                                 createFilterElements("filterTableForm",3);
+
                             }
                             btnClass.classList.add("webix_primary");
                             btnClass.classList.remove("webix_secondary");
                             $$(idBtnEdit).show();
                            
                         } else {
+                        
                             $$("filterTableForm").hide();
                             $$(editFormId).show();
                             btnClass.classList.add("webix_secondary");

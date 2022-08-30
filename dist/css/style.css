@@ -27,6 +27,10 @@
 .webix_close-btn .webix_button.webix_img_btn, .webix_close-btn .webix_button.webix_img_btn:hover, .webix_close-btn .webix_button.webix_img_btn:active {
   background-color: transparent !important;
 }
+.webix_filterBtns {
+  vertical-align: bottom !important;
+  height: 38px !important;
+}
 .webix_button .webix_button {
   font-weight: 400 !important;
 }
@@ -112,7 +116,7 @@
 .webix_danger:active .webix_button {
   background: var(--danger-dark) !important;
 }
-.webix_danger .webix_icon_btn, .webix_btn-download .webix_icon_btn, .webix_log-btn .webix_icon_btn {
+.webix_danger .webix_icon_btn, .webix_btn-download .webix_icon_btn, .webix_log-btn .webix_icon_btn, .webix_btn-filter .webix_icon_btn, .webix_btn-edit .webix_icon_btn {
   margin: 0px !important;
 }
 .webix_add-btn > .webix_el_box > .webix_button {
@@ -187,6 +191,10 @@
   color: var(--primary-dark) !important;
 }
 
+.webix_close-btn .webix_icon_btn {
+  font-size: 23px !important;
+}
+
 .webix_view,
 .webix_confirm {
   font-weight: 400 !important;
@@ -253,6 +261,10 @@
   padding-left: 0px !important;
 }
 
+.webix_popup-filter-container {
+  padding: 20px 20px !important;
+}
+
 .webix_progress_top .webix_progress_state, .webix_progress_bottom .webix_progress_state {
   background: var(--primary-light) !important;
   background-image: none !important;
@@ -281,7 +293,8 @@
 
 .webix_template-recover .webix_template {
   font-weight: 600;
-  font-size: 15px;
+  font-size: 17px;
+  padding-top: 8px !important;
 }
 
 .webix_btn-recover {

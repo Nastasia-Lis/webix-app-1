@@ -166,17 +166,6 @@ function getDataFields (routes, menuItem){
 
                     let menu = data.json().mmenu;
                     let menuTree = [];
-               
-                    menu.push({
-                        "id": 7,
-                        "name": "sales",
-                        "title": "sales",
-                        "mtype": 1,
-                        "ltype": 1,
-                        "typeof":"dashboard",
-                        "action": "all_aa",
-                        "childs": []
-                    });
 
                     let dataAuth=[];
                     let dataNotAuth=[];
@@ -322,7 +311,7 @@ function login () {
                         body:{
                             rows: [ 
                                 { cols:[
-                                {template:"Прошлая сессия", css:"webix_template-recover", borderless:true, height:40 },
+                                {template:"Прошлая сессия", width:200,css:"webix_template-recover", borderless:true, height:40 },
                                 {},
                                 {
                                     view:"button",
@@ -467,6 +456,12 @@ function login () {
 
         webix.ajax().post("/init/default/logout/",{
             success:function(text, data, XmlHttpRequest){
+                if($$("popupFilterEdit").isVisible()){
+                    $$("popupFilterEdit").hide();
+                }
+                if($$("popupPrevHref").isVisible()){
+                    $$("popupPrevHref").hide();
+                }
                 history.back();
                 removeElements();
                 $$("webix__none-content").show();

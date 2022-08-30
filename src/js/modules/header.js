@@ -117,46 +117,6 @@ function header() {
                                     window.location.replace("#logout");
                                 }
                             }
-
-                            // headerContextId = id;
-                            // webix.ajax().get("/init/default/api/fields.json").then(function (data){
-                            //     data = data.json().content;
-                            //     console.log(id)
-
-                            //     let currentFields;
-                            //     if(data[id]){
-                            //         currentFields=data[id];
-                            //     }
-                                
-                            //     let dataFields = currentFields.fields;
-                            //     console.log()
-                            //     let obj = Object.keys(dataFields);
-                            //     let columnsData = [];
-                               
-                            //     obj.forEach(function(data) {
-                            //         if (dataFields[data].type == "datetime"){
-                            //             dataFields[data].format = webix.i18n.fullDateFormatStr;
-                            //         }
-                            //         dataFields[data].id = data;
-                            //         dataFields[data].fillspace = true;
-                            //         dataFields[data].header= dataFields[data]["label"];
-                            //         if(dataFields[data].id == "id"){
-                            //             dataFields[data].hidden = true;
-                            //         }
-                            //         columnsData.push(dataFields[data]);
-                            //     });
-
-                            //     if (data[id].type=="dbtable"){
-                            //         typeTable (tableId,columnsData, id);
-    
-                            //     } else if (data[id].type=="tform"){
-                            //         typeTable (tableIdView,columnsData, id);
-                            //     }
-
-                            // }).catch(err => {
-                            //     console.log(err);
-                            //     notify ("error","Не удалось загрузить данные меню",true);
-                            // });
  
                         }
                     }

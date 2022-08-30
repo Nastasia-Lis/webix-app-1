@@ -1,40 +1,31 @@
 import {notify,createEditFields} from "./editTableForm.js";
-import {tableId,editFormId, saveBtnId,saveNewBtnId, delBtnId, findElementsId,editTableBtnId} from './setId.js';
-import { urlFieldAction } from "./sidebar.js";
+import {tableId,filterElementsId,editFormId, saveBtnId,saveNewBtnId, delBtnId, findElementsId,editTableBtnId} from './setId.js';
+import { itemTreeId } from "./sidebar.js";
 
 
-
-function editFilterPopup (){
-
-    console.log(Object.keys($$("filterTableForm").elements));
-}
 
 const filterForm =  {   
     view:"form", 
     hidden:true,
     id:"filterTableForm",
-    //container:"webix__form-container", 
     minHeight:350,
     minWidth:210,
     width: 320,
     scroll:true,
     elements:[
-        { 
-            css:"webix_filter-headlne",
-            template:"<div style ='font-size:16px!important; font-weight:600!important'>Фильтры</div>",
-            height: 40,
-            labelPosition:"top",
-            borderless:true
-        },
+
         {cols:[
             {   view:"button",
                 value:"Редактор фильтров",
                 height:48,
                 minWidth:140, 
                 click:function(){
+                    
                     webix.ui({
                         view:"popup",
                         id:"popupFilterEdit",
+                        css:"webix_popup-filter-container",
+                        //css:"webix_popup-filter-container",
                         modal:true,
                         escHide:true,
                         position:"center",
@@ -61,12 +52,14 @@ const filterForm =  {
                                 {
                                     view:"form", 
                                     id:"editFormPopup",
+                                    css:{"margin-top": "-15px!important"},
                                     borderless:true,
                                     elements:[
                                         {rows:[ 
-                                            {view:"scrollview",  scroll:"y", height:250,body:{ id:"editFormPopupScroll",rows:[
+                                            {view:"scrollview",borderless:true, id:"editFormScroll", scroll:"y", height:250,body:{ id:"editFormPopupScroll",rows:[
 
                                             ]},},
+                                            {height:20},
                                             
                                             {   view:"button",
                                                 id:"popupFilterSubmitBtn",
@@ -83,6 +76,7 @@ const filterForm =  {
                                                 },
                                                 click:function(){
                                                     try{
+                                                        
                                                         let values = $$("editFormPopup").getValues();
 
                                                         Object.keys(values).forEach(function(el,i){
@@ -93,10 +87,13 @@ const filterForm =  {
 
                                                                 $$("resetFilterBtn").enable();
 
+                                                               
                                                                 if ($$("filterEmptyTempalte").isVisible()){
                                                                     $$("filterEmptyTempalte").hide();
+                                                                    $$("filterEmptyTempalte").refresh();
                                                                 }
-
+                                                               
+                                                              
                                                                 if($$(el+"_condition") && !($$(el+"_condition").isVisible())){
                                                                     $$(el+"_condition").show();
                                                                 }
@@ -106,10 +103,6 @@ const filterForm =  {
                                                                     $$(el).hide();
                                                                 }
 
-                                                                if (!($$("filterEmptyTempalte").isVisible())){
-                                                                    $$("filterEmptyTempalte").show();
-                                                                }
-
                                                                 if($$(el+"_condition") && $$(el+"_condition").isVisible()){
                                                                     $$(el+"_condition").hide();
                                                                 }
@@ -117,6 +110,26 @@ const filterForm =  {
                                                             $$(el).refresh();
                                                         });
 
+                                                        let visibleElements=0;
+                                                  
+                                                       Object.values($$("filterTableForm").elements).forEach(function(el,i){
+                                                            if (!(el.config.hidden)){
+                                                                visibleElements++;
+                                                            }
+                                                        
+                                                       });
+                                                       if (!(visibleElements)){
+                                                         if (!($$("filterEmptyTempalte").isVisible())){
+                                                            $$("filterEmptyTempalte").show();
+                                                            if($$("btnFilterSubmit").isEnabled()){
+                                                                $$("btnFilterSubmit").disable();
+                                                            }
+                                                            
+                                                        }
+                                                    
+                                                            
+                                                       }
+                                
                                                         $$("popupFilterEdit").hide();
                                                         notify ("success","Рабочая область фильтра обновлена",true);
 
@@ -143,10 +156,46 @@ const filterForm =  {
                         formData.push({id:el.config.id, label:el.config.label})
                     });
                     
-                    let nameList = [{cols:[{rows:[]}]}];
+                    let nameList = [
+                        {cols:[
+                            {id:"editFormPopupScrollContent",rows:[
+                                {
+                                    view:"checkbox", 
+                                    id:"selectAll", 
+                                    labelRight:"<div style='font-weight:600'>Выбрать всё</div>", 
+                                    labelWidth:0,
+                                    name:"selectAll",
+                                    on:{
+                                        onChange:function(){
+                                            if(!($$("popupFilterSubmitBtn").isEnabled())){
+                                                $$("popupFilterSubmitBtn").enable();
+                                            }
+                                             
+                                            let checkboxes = $$("editFormPopupScrollContent").getChildViews();
+                                           
+                                            checkboxes.forEach(function(el,i){
+                                                if (el.config.id.includes("checkbox")){
+
+                                                    if($$("selectAll").getValue()){
+                                                        el.config.value = 1;
+                                                    } else {
+                                                        el.config.value = 0;
+                                                    }
+                                                    $$(el).refresh();
+                                                }
+
+                                            });
+
+                                        },
+                                
+                                    } 
+                                }
+                            ]}
+                        ]}
+                    ];
+                    
                     formData.forEach(function(el,i){
                         if(!(el.id.includes("condition"))){
-                            console.log(el)
                             if ($$(el.id)&&$$(el.id).isVisible()){
                                 
                                 nameList[0].cols[0].rows.push(
@@ -159,8 +208,7 @@ const filterForm =  {
                                         value:1,
                                         on:{
                                             onChange:function(){
-                                                console.log($$("popupFilterSubmitBtn").isEnabled())
-                                                if($$("popupFilterSubmitBtn").disable()){
+                                                if(!($$("popupFilterSubmitBtn").isEnabled())){
                                                     $$("popupFilterSubmitBtn").enable();
                                                 }
                                             }
@@ -178,9 +226,7 @@ const filterForm =  {
                                         name:el.id,
                                         on:{
                                             onChange:function(){
-                                                console.log($$("popupFilterSubmitBtn").isEnabled())
- 
-                                                if($$("popupFilterSubmitBtn").disable()){
+                                                if(!($$("popupFilterSubmitBtn").isEnabled())){
                                                     $$("popupFilterSubmitBtn").enable();
                                                 }
                                             }
@@ -189,12 +235,27 @@ const filterForm =  {
                                 );
                             }
                             
-
+                            
                             
                         }
                     });
-                    console.log("1111")
                     $$("editFormPopupScroll").addView({rows:nameList},1);
+
+                    let counter = 0;
+                    let checkboxes = $$("editFormPopupScrollContent").getChildViews();
+                    checkboxes.forEach(function(el,i){
+                        if (el.config.id.includes("checkbox")){
+                            if (!(el.config.value)||el.config.value==""){
+                                counter++;
+                            }
+                        }
+                    });
+
+                    if (counter == 0){
+                        $$("selectAll").config.value = 1;
+                        $$("selectAll").refresh();
+                    }
+                                          
                 },
                 on: {
                     onAfterRender: function () {
@@ -215,8 +276,30 @@ const filterForm =  {
                 icon:"wxi-trash", 
                 click:function(){
                     try {
-                        $$(tableId).filter("");
-                        notify ("success", "Фильтры очищены", true);
+
+                        webix.ajax("/init/default/api/smarts?query="+itemTreeId+".id >= 0"+"&sorts="+itemTreeId+".id&offset=0",{
+                            success:function(text, data, XmlHttpRequest){
+                                data = data.json().content;
+                                
+                                if (data.length !== 0){
+                                    $$(tableId).hideOverlay("Ничего не найдено");
+                                    $$(tableId).clearAll()
+                                    $$(tableId).parse(data);
+                                } else {
+                                    $$(tableId).clearAll()
+                                    $$(tableId).showOverlay("Ничего не найдено");
+                                }
+
+                                let filterCountRows = $$(tableId).count();
+                                $$(filterElementsId).setValues(filterCountRows.toString());
+                                notify ("success", "Фильтры очищены", true);
+                            },
+                            error:function(text, data, XmlHttpRequest){
+                                notify ("error","Ошибка очистки фильтров",true);
+                            }
+                        });
+
+                        
                     } catch(e) {
                         notify ("error", "Ошибка при очищении фильтров", true); 
                     }
@@ -235,72 +318,62 @@ const filterForm =  {
                     minWidth:140, 
                     css:"webix_primary",
                     hotkey: "shift",
+                    disabled:true,
                     value:"Применить фильтры", 
                     click:function(){
+                
                         let values = $$("filterTableForm").getValues();
-                        
-                        let condition;
-
                     
-
-
-
-                        // ИЛИ
+                        let queryConstructor=[];
+                        let filterEl;
                         Object.keys(values).forEach(function(el,i){
+                            //console.log(el)
                             
-                            // if (el.includes("condition")){
-                            //     console.log(values[el])
-                            //     if (values[el] == 2){
-                            //         condition = 
+                            filterEl = el;
+
+                            if (el.includes("filter")&&!(el.includes("condition"))){
+                                filterEl = el.lastIndexOf("_");
+                                filterEl = el.slice(0,filterEl)
+                            }
+                         
+                            if(!(el.includes("condition"))&&values[el]!==""&&el!=="selectAll"){
+              
+                                queryConstructor.push(itemTreeId+"."+filterEl+"="+values[el]);
+                            }
+                        
+                        });
+                        
+                        let queryFull = queryConstructor.join("+and+")+"&sorts="+itemTreeId+".id&offset=0";
+
+
+                        webix.ajax("/init/default/api/smarts?query="+queryFull,{
+                            success:function(text, data, XmlHttpRequest){
+                                data = data.json().content;
                                 
-                            //     } else if (values[el] == 1){
+                                if (data.length !== 0){
+                                    $$(tableId).hideOverlay("Ничего не найдено");
+                                    $$(tableId).clearAll()
+                                    $$(tableId).parse(data);
+                                } else {
+                                    $$(tableId).clearAll()
+                                    $$(tableId).showOverlay("Ничего не найдено");
+                                }
 
-                            //     }
-                            // }
-
-                            // if (!(el.includes("condition"))){
-                            //     $$(tableId).filter(function(obj){
-                            //         //console.log(obj[el], el, "obj.el")
-                            //     //let filter = obj.first_name;
-                            //     //let filter = [obj.role, obj.description].join("|");
-
-                            //      //  filter - пропускает через себя каждое значение колонки
-                            //     let filter = obj[el].toString().toLowerCase();
-                            //         console.log(filter.indexOf(values[el]) )
-                                    
-                                    
-                            //         return (filter.indexOf(values[el]) != -1);
-                            //     });
-                            // }
-                        
+                                let filterCountRows = $$(tableId).count();
+                                $$(filterElementsId).setValues(filterCountRows.toString());
+                                notify ("success","Фильтры успшено применены",true);
+                            },
+                            error:function(text, data, XmlHttpRequest){
+                                notify ("error","Ошибка фильтрации данных",true);
+                            }
                         });
 
-                        //let values = $$("filterTableForm").toString().toLowerCase();
-                        console.log(values, "vvv");
-                    
 
 
-                        // filter : return currentElement > 3 && currentElement < 17;
-                        
-                        // obj.role == "оп" && obj.descr == "2"
 
-                        $$(tableId).filter(function(obj){
-                            console.log(obj.role)
-                        //let filter = obj.first_name;
-                        //let filter = [obj.role, obj.description].join("|");
-                        let filter = obj.role.toString().toLowerCase();
-                            return (filter.indexOf("оп"||"2") != -1);
-                        });
 
-                        
-                        // $$(tableId).filter(function(obj){
-                        //     console.log(obj.role)
-                        // //let filter = obj.first_name;
-                        // //let filter = [obj.role, obj.description].join("|");
-                        // let filter = obj.description.toString().toLowerCase();
-                        //     return (filter.indexOf("2") != -1);
-                        // });
-                    }
+                    },
+                   
             },
             {height:10},
 

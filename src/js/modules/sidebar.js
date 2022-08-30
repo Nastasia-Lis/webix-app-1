@@ -175,11 +175,6 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                 if(dataFields[data].id == "id"){
                     dataFields[data].hidden = true;
                 } 
-                if(dataFields[data].id == "role"){
-    
-                    console.log( dataFields[data])
-                    //dataFields[data].template = searchColumnTemplate(); 
-                } 
 
                 columnsData.push(dataFields[data]);
             });

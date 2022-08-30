@@ -74,6 +74,12 @@
 
 
 
+.webix_popup-filter-container{
+    padding:20px 20px!important;
+}
+
+
+
 .webix_progress_top .webix_progress_state, .webix_progress_bottom .webix_progress_state{
     background: var(--primary-light)!important;
  
@@ -106,8 +112,8 @@
 
 .webix_template-recover .webix_template{
     font-weight: 600;
-    font-size: 15px;
-    
+    font-size: 17px;
+    padding-top: 8px!important;
 }
 .webix_btn-recover{
     margin: 5px 0px!important;
