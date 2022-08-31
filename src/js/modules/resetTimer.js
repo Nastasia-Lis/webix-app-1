@@ -15,6 +15,15 @@ export function resetTimer (){
     function logout() {
         webix.ajax().post("/init/default/logout/",{
             success:function(text, data, XmlHttpRequest){
+                
+
+                if($$("popupFilterEdit")&&$$("popupFilterEdit").isVisible()){
+                    $$("popupFilterEdit").hide();
+                }
+                if($$("popupPrevHref")&&$$("popupPrevHref").isVisible()){
+                    $$("popupPrevHref").hide();
+                }
+
                 history.back();
                 removeElements();
                 $$("webix__none-content").show();
@@ -30,7 +39,7 @@ export function resetTimer (){
 
     function resetTimer() {
         clearTimeout(t);
-        t = setTimeout(logout, 600000); 
+        t = setTimeout(logout, 600000);  
     };
     
 }

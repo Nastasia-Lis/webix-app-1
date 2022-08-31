@@ -287,6 +287,10 @@
   text-align: center;
 }
 
+.webix_filter-inputs {
+  margin-top: 0px !important;
+}
+
 .webix_userprefs-info {
   height: 45px !important;
 }
@@ -397,6 +401,9 @@ label, button {
 }
 .webix_popup {
   border-radius: 6px !important;
+}
+.webix_popup-prev-href {
+  padding: 10px !important;
 }
 .webix_win_body > .webix_view {
   border-radius: 6px !important;
@@ -623,8 +630,4 @@ label, button {
 
 .webix_property_line {
   word-wrap: break-word !important;
-}
-
-.webix_pager {
-  min-width: 150px !important;
 }

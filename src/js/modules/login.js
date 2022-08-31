@@ -309,7 +309,8 @@ function login () {
                         height:150,
                         position:"center",
                         body:{
-                            rows: [ 
+                            rows:[
+                            {rows: [ 
                                 { cols:[
                                 {template:"Прошлая сессия", width:200,css:"webix_template-recover", borderless:true, height:40 },
                                 {},
@@ -350,7 +351,7 @@ function login () {
                                     }
                                 },
                                 {height:20}
-                            ]
+                            ]}]
                             
                         },
 
@@ -375,7 +376,6 @@ function login () {
         });      
     }, 
     tree: function(id){
-       // if $$("forms")
    
         if ($$("tree").data.order.length == 0){
             getDataFields (routes);
@@ -384,18 +384,6 @@ function login () {
             $$("tree").attachEvent("onAfterLoad", function (id) {
                 id = idTree;
                 let parentId = $$("tree").getParentId(id);
-                //console.log($$("tree").getParentId(id))
-
-                // if ($$("tree").getParentId(id) == "tables"){
-                //     tableToolbar( searchId, exportBtn, findElementsId,filterElementsId, tableId,filterId);
-                //     table (tableId, onFuncTable,true);
-                // }
-
-                // if ($$("tree").getParentId(id) == "forms"){
-                //     tableToolbar(searchIdView, exportBtnView, findElementsIdView,filterElementsIdView, tableIdView,filterId, true );
-                //     table (tableIdView);
-                // }
-
                 $$("tree").open(parentId);
                 $$("tree").select(id);
             });
@@ -456,12 +444,6 @@ function login () {
 
         webix.ajax().post("/init/default/logout/",{
             success:function(text, data, XmlHttpRequest){
-                if($$("popupFilterEdit").isVisible()){
-                    $$("popupFilterEdit").hide();
-                }
-                if($$("popupPrevHref").isVisible()){
-                    $$("popupPrevHref").hide();
-                }
                 history.back();
                 removeElements();
                 $$("webix__none-content").show();

@@ -536,7 +536,13 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
             }
         }).catch(err => {
             console.log(err);
+
             notify ("error","Не удалось загрузить данные",true);
+
+            if($$("btnFilterSubmit")&&$$("btnFilterSubmit").isEnabled()){
+                $$("btnFilterSubmit").disable();
+            }
+            
            
         });
     } 
@@ -727,7 +733,6 @@ function getInfoDashboard (idsParam,single=false){
                                                 let getUrl;
                                                 inputsArray.forEach(function(el,i){
                                                     
-                                                    //14.01.2025 11:07:00
                                                     if (el.id.includes("sdt")){
                                                         
                                                         dateArray.push("sdt"+"="+postFormatData($$(el.id).getValue()));

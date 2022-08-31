@@ -102,6 +102,9 @@
     text-align: center;
 }
 
+.webix_filter-inputs{
+    margin-top: 0px!important; 
+}
 
 
 .webix_userprefs-info {
@@ -219,6 +222,12 @@ label, button{
         border-radius: 6px!important;
        // padding: 10px 20px!important;
     }
+
+    &_popup-prev-href{
+        padding: 10px!important;
+    }
+
+
     &_win_body > .webix_view{
         border-radius: 6px!important;
     }
@@ -497,25 +506,7 @@ label, button{
 }
 
 
-
-
-
-
-
-//--------------adaptive
-// @media (max-width: 1320px){
-//     .webix_filterBar{
-//         height: 170px!important;
-//     }
-//     .webix_custom-inp{
-//         display: flex!important;
-//         height: 150px!important;
-//     }
-//     .webix_tableView > .webix_layout_line{
-//         height: 150px!important;
-//     }
+// .webix_pager{
+//     min-width: 150px!important;
 // }
-.webix_pager{
-    min-width: 150px!important;
-}
 

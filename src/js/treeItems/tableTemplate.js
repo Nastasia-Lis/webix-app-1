@@ -1,46 +1,10 @@
 import {tableId,editFormId, saveBtnId,saveNewBtnId, delBtnId, findElementsId,editTableBtnId} from '../modules/setId.js';
 import {defaultStateForm,createEditFields,popupExec,notify,saveItem} from "../modules/editTableForm.js";
-import {itemTreeId, getComboOptions, urlFieldAction} from "../modules/sidebar.js";
-
-
-// let escapedSearchText = "";
-
-//     function findText(text, table) {
-
-//         text = text || "";
-//         escapedSearchText = text.replace(/[[\]{}()*+?.\\^$|]/g, "\\$&");
-        
-//         if (text) {
-//           text = text.toLowerCase();
-//           table.filter(data => {
-//             return data[Object.keys(data)[1]].toLowerCase().indexOf(text) > -1;
-//           });
-//         } else {
-//           table.filter();
-//         }
-//       };
-
-//       function addTextMark(value, text) {
-
-//         const checkOccurence = new RegExp("(" + text + ")", "ig");
- 
-//         return value.replace(
-//           checkOccurence,
-//           "<span class='search_mark'>$1</span>"
-//         );
-//       }
-
-//       function searchColumnTemplate(value) {
-//         let search = escapedSearchText;
-//         webix.message(value);
-//         if (search) {
-//           value = addTextMark(value, search);
-//         }
-//         return value;
-//       }  
+import {itemTreeId, getComboOptions, urlFieldAction} from "../modules/sidebar.js";  
 
 function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterElements, idTable,idFilter,visible=false) {
-   
+    
+
     function exportToExcel(){
         webix.toExcel(idTable, {
           filename:"Table",
@@ -52,6 +16,327 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
 
 
 
+    function filterFieldsFunctions (el,parentElement, typeField){
+        let findTableId = el.type.slice(10);
+        let countChild;
+        if ($$(el.id+"_filter"+"_rows")){
+            countChild = $$(el.id+"_filter"+"_rows").getChildViews().length;
+        }
+        
+        
+        function field (operation){
+
+            if (typeField=="text"){
+                return  {
+                    view:"text", 
+                    placeholder:"Введите текст",  
+                    name:el.id+"_filter-child-"+operation+"-"+countChild,
+                    id:el.id+"_filter-child-"+operation+"-"+countChild, 
+                    on:{
+                        onKeyPress:function(){
+                            $$(parentElement).clearValidation();
+                            $$("btnFilterSubmit").enable();
+                        },
+                    }
+                };
+
+            } else if (typeField=="combo"){
+                return {   
+                    view:"combo",
+                    name:el.id+"_filter-child-"+operation+"-"+countChild,
+                    id:el.id+"_filter-child-"+operation+"-"+countChild, 
+                    placeholder:"Выберите вариант",  
+                    options:{
+                        data:getComboOptions(findTableId)
+                    },
+                    on:{
+                        onItemClick:function(){
+                            $$(parentElement).clearValidation();
+                            $$("btnFilterSubmit").enable();
+                        },
+                    }
+                };
+
+            } else if (typeField=="datepicker"){
+                return { 
+                    view: "datepicker",
+                    name:el.id+"_filter-child-"+operation+"-"+countChild,
+                    id:el.id+"_filter-child-"+operation+"-"+countChild, 
+                    format:"%d.%m.%Y %H:%i:%s",
+                    placeholder:"дд.мм.гг", 
+                    timepicker: true,
+                    on:{
+                        onItemClick:function(){
+                            $$(parentElement).clearValidation();
+                            $$("btnFilterSubmit").enable();
+                        }
+                    }
+                };
+            }
+       
+        }
+        return {id:el.id+"_filter_container-btns",css:{"margin-top":"27px!important"},hidden:true, cols:[
+
+            {
+                view:"button",
+                id:el.id+"_filter-btnFilterOperations",
+                css:"webix_primary webix_filterBtns",
+                value:"=",
+                inputHeight:38,
+                width: 40,
+                popup: {
+                    view: 'contextmenu',
+                    width: 200,
+                    data: [
+                        { value: '=', id:"operations_eql" },
+                        { value: '!=', id:"operations_notEqual" },
+                        { value: '<', id:"operations_less" },
+                        { value: '>', id:"operations_more" },
+                        { value: '>=', id:"operations_mrEqual" },
+                        { value: '<=', id:"operations_lsEqual" },
+                        { value: 'содержит', id:"operations_contains" },
+                    ],
+                    on: {
+                    onMenuItemClick(id) {
+                        let btnFilterOperations = $$(el.id+"_filter-btnFilterOperations");
+                        if (id.includes("eql")){
+                            btnFilterOperations.setValue("=");
+                        } else if (id.includes("notEqual")){
+                            btnFilterOperations.setValue("!=");
+                        } else if (id.includes("less")){
+                            btnFilterOperations.setValue("<");
+                        } else if (id.includes("more")){
+                            btnFilterOperations.setValue(">");
+                        } else if (id.includes("mrEqual")){
+                            btnFilterOperations.setValue(">=");
+                        } else if (id.includes("lsEqual")){
+                            btnFilterOperations.setValue("<=");
+                        } else if (id.includes("contains")){
+                            btnFilterOperations.setValue("⊆");
+                        }
+
+                    },
+                    
+                    }
+                },
+                on:{
+                    onAfterRender: function () {
+                        this.getInputNode().setAttribute("title","Выбрать условие поиска по полю");
+                    },
+                }
+            
+            },
+            {
+                view:"button", 
+                css: "webix_filterBtns",
+                value:"+",
+                id:el.id+"_filter"+"_condition",
+                inputHeight:38,
+                width: 40,
+                popup: {
+                view: 'contextmenu',
+                width: 200,
+                data: [
+                    { value: 'и', id:"add_and" },
+                    { value: 'или', id:"add_or" },
+                ],
+                on: {
+                    onMenuItemClick(id) {
+
+                        if(id.includes("and")){
+
+                            $$(el.id+"_filter"+"_rows").addView(
+                                {id:el.id+"_filter-container"+"-child-"+countChild,rows:[
+                                    {template:"+ и", height:30, borderless:true},
+                                    {cols:[
+                                
+                                        field ("operAnd"),
+                                        {
+                                            view:"button",
+                                            id:el.id+"_filter-child-operAnd-"+countChild+"-btnFilterOperations",
+                                            css:"webix_primary webix_filterBtns",
+                                            value:"=",
+                                            inputHeight:38,
+                                            width: 40,
+                                            popup: {
+                                                view: 'contextmenu',
+                                                width: 200,
+                                                data: [
+                                                    { value: '=', id:"operations_eql"+"-"+countChild },
+                                                    { value: '!=', id:"operations_notEqual"+"-"+countChild },
+                                                    { value: '<', id:"operations_less"+"-"+countChild },
+                                                    { value: '>', id:"operations_more"+"-"+countChild },
+                                                    { value: '>=', id:"operations_mrEqual"+"-"+countChild },
+                                                    { value: '<=', id:"operations_lsEqual"+"-"+countChild },
+                                                    { value: 'содержит', id:"operations_contains"+"-"+countChild },
+                                                ],
+                                                on: {
+                                                onMenuItemClick(id) {
+                                                    let idBtnOperations =  $$(el.id+"_filter-child-operAnd-"+countChild+"-btnFilterOperations");
+                                                    if (id.includes("eql")){
+                                                        idBtnOperations.setValue("=");
+                                                    } else if (id.includes("notEqual")){
+                                                        idBtnOperations.setValue("!=");
+                                                    } else if (id.includes("less")){
+                                                        idBtnOperations.setValue("<");
+                                                    } else if (id.includes("more")){
+                                                        idBtnOperations.setValue(">");
+                                                    } else if (id.includes("mrEqual")){
+                                                        idBtnOperations.setValue(">=");
+                                                    } else if (id.includes("lsEqual")){
+                                                        idBtnOperations.setValue("<=");
+                                                    } else if (id.includes("contains")){
+                                                        idBtnOperations.setValue("⊆");
+                                                    }
+                
+                                                },
+                                                
+                                                }
+                                            },
+                                            on:{
+                                                onAfterRender: function () {
+                                                    this.getInputNode().setAttribute("title","Выбрать условие поиска по полю");
+                                                },
+                                            }
+                                        
+                                        },
+                                        {
+                                            view:"button",
+                                            css:"webix_filterBtns webix_danger",
+                                            id:el.id+"_filter"+"-"+countChild+"_remove",
+                                            type:"icon",
+                                            icon: 'wxi-trash',
+                                            inputHeight:38,
+                                            width: 40,
+                                            click:function(){
+                                                try{ 
+
+                                                    popupExec("Поле фильтра будет удалено").then(
+                                                        function(){
+                                                            $$(el.id+"_filter"+"_rows").removeView($$(el.id+"_filter-container-child-"+countChild));
+                                                            notify ("success","Поле удалено");
+                                                    });
+                                                    
+                                              
+                                                }catch(e){
+                                                    notify ("error","Ошибка удаления поля",true);
+                                                }
+
+                                            },
+                                            on: {
+                                                onAfterRender: function () {
+                                                    this.getInputNode().setAttribute("title","Удалить поле фильтра");
+                                                },
+                                            },
+                                        
+                                        }
+                                    ]}
+                                ]},countChild
+                            );
+
+                        } else if(id.includes("or")){
+
+                            $$(el.id+"_filter"+"_rows").addView(
+                                {id:el.id+"_filter-container-child-operOr-"+countChild,rows:[
+                                    {template:"+ или", height:30, borderless:true},
+                                    {cols:[
+                                        field ("operOr"),
+                                        {
+                                            view:"button",
+                                            id:el.id+"_filter-child-operOr-"+countChild+"-btnFilterOperations",
+                                            css:"webix_primary webix_filterBtns",
+                                            value:"=",
+                                            inputHeight:38,
+                                            width: 40,
+                                            popup: {
+                                                view: 'contextmenu',
+                                                width: 200,
+                                                data: [
+                                                    { value: '=', id:"operations_eql"+"-operOr-"+countChild },
+                                                    { value: '!=', id:"operations_notEqual"+"-operOr-"+countChild },
+                                                    { value: '<', id:"operations_less"+"-operOr-"+countChild },
+                                                    { value: '>', id:"operations_more"+"-operOr-"+countChild },
+                                                    { value: '>=', id:"operations_mrEqual"+"-operOr-"+countChild },
+                                                    { value: '<=', id:"operations_lsEqual"+"-operOr-"+countChild },
+                                                    { value: 'содержит', id:"operations_contains"+"-operOr-"+countChild },
+                                                ],
+                                                on: {
+                                                onMenuItemClick(id) {
+                                                    let btnFilterOperations = $$(el.id+"_filter-child-operOr-"+countChild+"-btnFilterOperations" );
+                                                    if (id.includes("eql")){
+                                                        btnFilterOperations.setValue("=");
+                                                    } else if (id.includes("notEqual")){
+                                                        btnFilterOperations.setValue("!=");
+                                                    } else if (id.includes("less")){
+                                                        btnFilterOperations.setValue("<");
+                                                    } else if (id.includes("more")){
+                                                        btnFilterOperations.setValue(">");
+                                                    } else if (id.includes("mrEqual")){
+                                                        btnFilterOperations.setValue(">=");
+                                                    } else if (id.includes("lsEqual")){
+                                                        btnFilterOperations.setValue("<=");
+                                                    } else if (id.includes("contains")){
+                                                        btnFilterOperations.setValue("⊆");
+                                                    }
+                
+                                                },
+                                                
+                                                }
+                                            },
+                                            on:{
+                                                onAfterRender: function () {
+                                                    this.getInputNode().setAttribute("title","Выбрать условие поиска по полю");
+                                                },
+                                            }
+                                        
+                                        },
+                                        {
+                                            view:"button",
+                                            css:"webix_filterBtns webix_danger",
+                                            id:el.id+"_filter"+"-operOr-"+countChild+"_remove",
+                                            type:"icon",
+                                            icon: 'wxi-trash',
+                                            inputHeight:38,
+                                            width: 40,
+                                            click:function(){
+                                                try{
+                                                    popupExec("Поле фильтра будет удалено").then(
+                                                        function(){
+                                                            $$(el.id+"_filter"+"_rows").removeView($$(el.id+"_filter-container-child-operOr-"+countChild));
+                                                            notify ("success","Поле удалено"); 
+                                                    });
+                                                    
+                                                }catch(e){
+                                                    notify ("error","Ошибка удаления поля",true);
+                                                }
+
+                                            },
+                                            on: {
+                                                onAfterRender: function () {
+                                                    this.getInputNode().setAttribute("title","Удалить поле фильтра");
+                                                },
+                                            },
+                                        
+                                        }
+                                    ]}
+                                ]},countChild
+                            );
+                        }
+                    },
+                    
+                }
+                },
+                on:{
+                    onAfterRender: function () {
+                        this.getInputNode().setAttribute("title","Добавить ещё вариант поля");
+                    },
+                }
+            },
+
+        ]};       
+    }
+
+
 
     function createFilterElements (parentElement, viewPosition=1) {
 
@@ -61,65 +346,30 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
             let inputsArray = [];
             columnsData.forEach((el,i) => {
                 if (el.type == "datetime"){
-                    inputsArray.push( 
-                    {cols:[
-                        { 
-                        view: "datepicker",
-                        format:"%d.%m.%Y %H:%i:%s",
-                        id:el.id+"_filter",
-                        name:el.id, 
-                        hidden:true,
-                        label:el.label, 
-                        placeholder:"дд.мм.гг", 
-                        timepicker: true,
-                        labelPosition:"top",
-                        on:{
-                            onItemClick:function(){
-                                $$(parentElement).clearValidation();
-                                $$("btnFilterSubmit").enable();
-                            }
-                        }
-                        },
-                        {
+                    inputsArray.push(
+                        {id:el.id+"_filter"+"_rows",css:"webix_filter-inputs webix_input-hide", rows:[
 
-                            
-                              
-          
-
-
-
-                            // view:"button",
-                            // id:el.id+"_filter"+"_condition", 
-                            // hidden:true,
-                            // css:{"vertical-align":"bottom!important","height":"38px!important"},
-                            // type:"icon",
-                            // icon: 'wxi-dots',
-                            // inputHeight:38,
-                            // width: 40,
-                            // popup: {
-                            //     view: 'contextmenu',
-                            //     //id:"contextmenu",
-                            //     css:"webix_contextmenu",
-                            //     data: [
-                            //         { value: 'Profile', href: '#profile' },
-                            //     ],
-                            //     on:{
-                            //         onItemClick:function(id, e, node){
-            
-             
-                            //         }
-                            //     }
-                            // },
-                            // on: {
-                            //     onAfterRender: function () {
-                            //         this.getInputNode().setAttribute("title","Выбрать условие");
-                            //     },
-                            // },
-                            // click:function(){
-                              
-                          // }
-                        }
-                    ]} 
+                            {id:el.id+"_container",cols:[
+                                { 
+                                    view: "datepicker",
+                                    format:"%d.%m.%Y %H:%i:%s",
+                                    id:el.id+"_filter",
+                                    name:el.id+"_filter", 
+                                    hidden:true,
+                                    label:el.label, 
+                                    placeholder:"дд.мм.гг", 
+                                    timepicker: true,
+                                    labelPosition:"top",
+                                    on:{
+                                        onItemClick:function(){
+                                            $$(parentElement).clearValidation();
+                                            $$("btnFilterSubmit").enable();
+                                        }
+                                    }
+                                },
+                                filterFieldsFunctions (el,parentElement,"datepicker")
+                            ]}
+                        ]},
                     );
         
                 } 
@@ -128,59 +378,45 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
                else if (el.type.includes("reference")) {
                 let findTableId = el.type.slice(10);
     
-                inputsArray.push(
-                    {cols:[
-                    {   view:"combo",
-                        placeholder:"Выберите вариант",  
-                        label:el.label, 
-                        id:el.id+"_filter",
-                        hidden:true,
-                        name:el.id, 
-                        labelPosition:"top",
-                        options:{
-                            data:getComboOptions(findTableId)
-                        },
-                        on:{
-                            onItemClick:function(){
-                                $$(parentElement).clearValidation();
-                                $$("btnFilterSubmit").enable();
-                            },
-                        }
-                    },
+                    inputsArray.push(
+                        {id:el.id+"_filter"+"_rows",css:"webix_filter-inputs webix_input-hide",  rows:[
 
-                    {
-                        view:"button",
-                        id:el.id+"_filter"+"_condition", 
-                        hidden:true,
-                        css:{"vertical-align":"bottom!important","height":"38px!important"},
-                        type:"icon",
-                        icon: 'wxi-dots',
-                        inputHeight:38,
-                        width: 40,
-                        on: {
-                            onAfterRender: function () {
-                                this.getInputNode().setAttribute("title","Выбрать условие");
-                            },
-                        },
-                        click:function(){
-                          
-                        }
-                    }
-
-                    ]}
-    
-                );
+                            {id:el.id+"_container",cols:[
+                                {   view:"combo",
+                                    placeholder:"Выберите вариант",  
+                                    label:el.label, 
+                                    id:el.id+"_filter",
+                                    hidden:true,
+                                    name:el.id+"_filter",
+                                    labelPosition:"top",
+                                    options:{
+                                        data:getComboOptions(findTableId)
+                                    },
+                                    on:{
+                                        onItemClick:function(){
+                                            $$(parentElement).clearValidation();
+                                            $$("btnFilterSubmit").enable();
+                                        },
+                                    }
+                                },
+                                filterFieldsFunctions (el,parentElement,"combo")
+                            ]}
+                        ]},
+                    );
                 
                 } 
                 else{
+                    
                     inputsArray.push(
-                        {id:el.id+"_rows",rows:[
+                        {id:el.id+"_filter"+"_rows",css:"webix_filter-inputs",rows:[
 
-                            {id:el.id+"_container",cols:[
+                            {id:el.id+"_container",  padding:5,css:"webix_inputs-show",cols:[
                                 {
                                 view:"text", 
                                 name:el.id+"_filter",
-                                id:el.id+"_filter", 
+                                id:el.id+"_filter",
+                                css:{"passing-bottom":"5px!important"},
+                                placeholder:"Введите текст", 
                                 hidden:true,
                                 label:el.label, 
                                 labelPosition:"top",
@@ -189,144 +425,39 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
                                         $$(parentElement).clearValidation();
                                         $$("btnFilterSubmit").enable();
                                     },
-                                }
-                                },
-
-                                {
-                                    view:"button",
-                                    id:el.id+"btnFilterOperations",
-                                    css:"webix_primary webix_filterBtns",
-                                    value:"=",
-                                    inputHeight:38,
-                                    width: 40,
-                                    popup: {
-                                        view: 'contextmenu',
-                                        width: 200,
-                                        data: [
-                                            { value: '=', id:"operations_eql" },
-                                            { value: '!=', id:"operations_notEqual" },
-                                            { value: '>', id:"operations_less" },
-                                            { value: '<', id:"operations_more" },
-                                            { value: '>=', id:"operations_mrEqual" },
-                                            { value: '<=', id:"operations_lsEqual" },
-                                            { value: 'содержит', id:"operations_contains" },
-                                        ],
-                                        on: {
-                                        onMenuItemClick(id) {
-                                            if (id.includes("eql")){
-                                                $$(el.id+"btnFilterOperations").setValue("=");
-                                                
-                                            } else if (id.includes("notEqual")){
-                                                $$(el.id+"btnFilterOperations").setValue("!=");
-                                            } else if (id.includes("less")){
-                                                $$(el.id+"btnFilterOperations").setValue("<");
-                                            } else if (id.includes("more")){
-                                                $$(el.id+"btnFilterOperations").setValue(">");
-                                            } else if (id.includes("mrEqual")){
-                                                $$(el.id+"btnFilterOperations").setValue(">=");
-                                            } else if (id.includes("lsEqual")){
-                                                $$(el.id+"btnFilterOperations").setValue("<=");
-                                            } else if (id.includes("contains")){
-                                                $$(el.id+"btnFilterOperations").setValue("⊆");
-                                            }
-        
-                                        },
+                                    onViewShow:function(){
+                                        //console.log(this.getParentView().getParentView())
+                                        //this.getParentView().getParentView().config.css = "webix_filter-inputs webix_input-show"
+                                        //this.getParentView().getParentView().refresh();
+                                        // let input = document.querySelectorAll(".webix_filter-inputs");
+                                        // input.forEach(function(el,i){
+                                        //     if (input.classList.contains("webix_input-hide")){
+                                        //         console.log("h")
+                                        //         input.classList.remove("webix_input-hide");
+                                        //     }
+    
+                                        //     if (!(input.classList.contains("webix_input-show"))){
+                                        //         console.log("s")
+                                        //         input.classList.add("webix_input-show");
+                                        //     }
+                                        // });
+                                      
                                         
-                                        }
-                                    },
-                                    on:{
-                                        onAfterRender: function () {
-                                            this.getInputNode().setAttribute("title","Выбрать условие поиска по полю");
-                                        },
-                                    }
-                                
-                                },
-
-                            
-                                {
+                                       
+                                        
                                     
-                                    view:"button", 
-                                    css: "webix_filterBtns",
-                                    value:"+",
-                                    hidden:true,
-                                    id:el.id+"_filter"+"_condition",
-                                    inputHeight:38,
-                                    width: 40,
-                                    popup: {
-                                    view: 'contextmenu',
-                                    width: 200,
-                                    data: [
-                                        { value: 'и', id:"add_and" },
-                                        { value: 'или', id:"add_or" },
-                                    ],
-                                    on: {
-                                        onMenuItemClick(id) {
-                                        
-                                            if(id.includes("and")){
-                                                console.log("eee");
-                                                $$(el.id+"_rows").addView(
-                                                    {rows:[
-                                                        {template:"+ и", height:30, borderless:true},
-                                                        {cols:[
-                                                    
-                                                        {
-                                                            view:"text", 
-                                                            //name:el.id+"_filter",
-                                                            //id:el.id+"_filter", 
-                                                            //hidden:true,
-                                                            on:{
-                                                                onKeyPress:function(){
-                                                                    $$(parentElement).clearValidation();
-                                                                    $$("btnFilterSubmit").enable();
-                                                                },
-                                                            }
-                                                        },
-                                                        {
-                                                            view:"button",
-                                                            //css:{"vertical-align":"bottom!important","height":"38px!important"},
-                                                            css:"webix_filterBtns webix_danger",
-                                                            type:"icon",
-                                                            icon: 'wxi-trash',
-                                                            inputHeight:38,
-                                                            width: 40,
-                                                            on: {
-                                                                onAfterRender: function () {
-                                                                    this.getInputNode().setAttribute("title","");
-                                                                },
-                                                            },
-                                                        
-                                                        }
-                                                        ]}
-                                                    ]},2
-                                                );
-
-                                            } else if(id.includes("or")){
-
-                                            }
-                                        },
-                                        
-                                    }
-                                    },
-                                    on:{
-                                        onAfterRender: function () {
-                                            this.getInputNode().setAttribute("title","Добавить ещё вариант поля");
-                                        },
                                     }
                                 }
+                                },
+                                filterFieldsFunctions (el,parentElement,"text")
                             ]}
                         ]},
                     );
                 }
             });
-           
 
-            inputsArray.forEach(function(el,i){
-                if(el.view == "radio"){
-                    inputsArray.pop();
-                }
-            });
     
-            let inpObj = {margin:8,id:"inputsTable", rows:inputsArray};
+            let inpObj = {margin:8,id:"inputsTable",css:"webix_inputs-table-filter", rows:inputsArray};
     
             if(parentElement==editFormId){
                 $$(delBtnId).enable();

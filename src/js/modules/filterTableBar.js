@@ -1,5 +1,5 @@
-import {notify,createEditFields} from "./editTableForm.js";
-import {tableId,filterElementsId,editFormId, saveBtnId,saveNewBtnId, delBtnId, findElementsId,editTableBtnId} from './setId.js';
+import { notify } from "./editTableForm.js";
+import { tableId,filterElementsId } from './setId.js';
 import { itemTreeId } from "./sidebar.js";
 
 
@@ -25,7 +25,6 @@ const filterForm =  {
                         view:"popup",
                         id:"popupFilterEdit",
                         css:"webix_popup-filter-container",
-                        //css:"webix_popup-filter-container",
                         modal:true,
                         escHide:true,
                         position:"center",
@@ -80,9 +79,16 @@ const filterForm =  {
                                                         let values = $$("editFormPopup").getValues();
 
                                                         Object.keys(values).forEach(function(el,i){
+
                                                             if (values[el]){
                                                                 if (!($$(el).isVisible())){
+                                                                   
                                                                     $$(el).show();
+                                                                   // $$(el).getParentView().config.padding=5;
+                                                                    console.log( $$(el).getParentView().config.padding)
+                                                                    if($$(el+"_container-btns")&&!($$(el+"_container-btns").isVisible())){
+                                                                        $$(el+"_container-btns").show();
+                                                                    }
                                                                 }
 
                                                                 $$("resetFilterBtn").enable();
@@ -92,19 +98,31 @@ const filterForm =  {
                                                                     $$("filterEmptyTempalte").hide();
                                                                     $$("filterEmptyTempalte").refresh();
                                                                 }
-                                                               
-                                                              
-                                                                if($$(el+"_condition") && !($$(el+"_condition").isVisible())){
-                                                                    $$(el+"_condition").show();
-                                                                }
 
                                                             } else{
                                                                 if ($$(el).isVisible()){
+                                                                    $$(el).getParentView().config.padding=0;
+                                                                    console.log( $$(el).getParentView().config.padding)
+                                                                    $$(el).getParentView().refresh()
                                                                     $$(el).hide();
+                                                                  
                                                                 }
+                                                                
+                                                                if($$(el+"_container-btns")&&$$(el+"_container-btns").isVisible()){
+                                                                    $$(el+"_container-btns").hide();
+                                                                }
+                                                         
+                                                                if($$(el+"_rows")){
 
-                                                                if($$(el+"_condition") && $$(el+"_condition").isVisible()){
-                                                                    $$(el+"_condition").hide();
+                                                                let countChild = $$(el+"_rows").getChildViews();
+                                                                
+
+                                                                Object.values(countChild).forEach(function(elem,i){
+                                                                    if (elem.config.id.includes("child")){
+                                                                        $$(el+"_rows").removeView($$(elem.config.id));
+                                                                    }
+                             
+                                                                });
                                                                 }
                                                             }
                                                             $$(el).refresh();
@@ -119,15 +137,12 @@ const filterForm =  {
                                                         
                                                        });
                                                        if (!(visibleElements)){
-                                                         if (!($$("filterEmptyTempalte").isVisible())){
-                                                            $$("filterEmptyTempalte").show();
-                                                            if($$("btnFilterSubmit").isEnabled()){
-                                                                $$("btnFilterSubmit").disable();
-                                                            }
-                                                            
-                                                        }
-                                                    
-                                                            
+                                                            if (!($$("filterEmptyTempalte").isVisible())){
+                                                                $$("filterEmptyTempalte").show();
+                                                                if($$("btnFilterSubmit").isEnabled()){
+                                                                    $$("btnFilterSubmit").disable();
+                                                                }
+                                                            } 
                                                        }
                                 
                                                         $$("popupFilterEdit").hide();
@@ -149,13 +164,8 @@ const filterForm =  {
                         }
                     }).show();
 
-                    let formData = [];
-                    let filterTableElements  = $$("filterTableForm").elements;
 
-                    Object.values(filterTableElements).forEach(function(el,i){
-                        formData.push({id:el.config.id, label:el.config.label})
-                    });
-                    
+                   // select option
                     let nameList = [
                         {cols:[
                             {id:"editFormPopupScrollContent",rows:[
@@ -194,8 +204,18 @@ const filterForm =  {
                         ]}
                     ];
                     
+
+                    // all checkboxes template
+                    let formData = [];
+                    let filterTableElements  = $$("filterTableForm").elements;
+
+                    Object.values(filterTableElements).forEach(function(el,i){
+                        formData.push({id:el.config.id, label:el.config.label})
+                    });
+
                     formData.forEach(function(el,i){
-                        if(!(el.id.includes("condition"))){
+                    
+                        if(!(el.id.includes("child"))){
                             if ($$(el.id)&&$$(el.id).isVisible()){
                                 
                                 nameList[0].cols[0].rows.push(
@@ -208,6 +228,7 @@ const filterForm =  {
                                         value:1,
                                         on:{
                                             onChange:function(){
+                                              
                                                 if(!($$("popupFilterSubmitBtn").isEnabled())){
                                                     $$("popupFilterSubmitBtn").enable();
                                                 }
@@ -226,9 +247,33 @@ const filterForm =  {
                                         name:el.id,
                                         on:{
                                             onChange:function(){
+                                                 
                                                 if(!($$("popupFilterSubmitBtn").isEnabled())){
                                                     $$("popupFilterSubmitBtn").enable();
                                                 }
+                                                let parent = $$(el.id+"_checkbox").getParentView();
+                                                let childs = parent.getChildViews();
+                                               
+                                                let counter=0;
+                                                childs.forEach(function(el,i){
+
+                                                    if (el.config.id.includes("checkbox")){
+                                                        if (!(el.config.value)||el.config.value==""){
+                                                            counter++;
+                                                        }
+                                                    }
+                                                });
+
+                                                if (counter == 0){
+                                                    $$("selectAll").config.value = 1;
+                                                    $$("selectAll").refresh();
+                                                } else {
+                                                    if ($$("selectAll").config.value !== 0){
+                                                        $$("selectAll").config.value = 0;
+                                                        $$("selectAll").refresh();
+                                                    }
+                                                }
+
                                             }
                                         }
                                     }
@@ -254,7 +299,7 @@ const filterForm =  {
                     if (counter == 0){
                         $$("selectAll").config.value = 1;
                         $$("selectAll").refresh();
-                    }
+                    } 
                                           
                 },
                 on: {
@@ -321,56 +366,171 @@ const filterForm =  {
                     disabled:true,
                     value:"Применить фильтры", 
                     click:function(){
-                
+
                         let values = $$("filterTableForm").getValues();
-                    
-                        let queryConstructor=[];
-                        let filterEl;
-                        Object.keys(values).forEach(function(el,i){
-                            //console.log(el)
+                        
+                        let query =[];
+                        
+
+                        function getOperationVal (value, filterEl,el,condition, position, parentIndex=false){
+                            let operationValue = $$(el+"-btnFilterOperations").config.value;
                             
-                            filterEl = el;
 
-                            if (el.includes("filter")&&!(el.includes("condition"))){
-                                filterEl = el.lastIndexOf("_");
-                                filterEl = el.slice(0,filterEl)
-                            }
-                         
-                            if(!(el.includes("condition"))&&values[el]!==""&&el!=="selectAll"){
-              
-                                queryConstructor.push(itemTreeId+"."+filterEl+"="+values[el]);
-                            }
-                        
-                        });
-                        
-                        let queryFull = queryConstructor.join("+and+")+"&sorts="+itemTreeId+".id&offset=0";
+                            if (position == "parent"){
+                                if(parentIndex){
 
+                                    if (operationValue == "="){
+                                        query.push("+and+"+itemTreeId+"."+filterEl+"+=+"+value);
 
-                        webix.ajax("/init/default/api/smarts?query="+queryFull,{
-                            success:function(text, data, XmlHttpRequest){
-                                data = data.json().content;
-                                
-                                if (data.length !== 0){
-                                    $$(tableId).hideOverlay("Ничего не найдено");
-                                    $$(tableId).clearAll()
-                                    $$(tableId).parse(data);
-                                } else {
-                                    $$(tableId).clearAll()
-                                    $$(tableId).showOverlay("Ничего не найдено");
+                                    } else if (operationValue == "!="){
+                                        query.push("+and+"+itemTreeId+"."+filterEl+"+!=+"+value);
+
+                                    } else if (operationValue == "<"){
+                                        query.push("+and+"+itemTreeId+"."+filterEl+"+<+"+value);
+
+                                    } else if (operationValue == ">"){
+                                        query.push("+and+"+itemTreeId+"."+filterEl+"+>+"+value);
+
+                                    } else if (operationValue == "<="){
+                                        query.push("+and+"+itemTreeId+"."+filterEl+"+<=+"+value);
+
+                                    } else if (operationValue == ">="){
+                                        query.push("+and+"+itemTreeId+"."+filterEl+"+>=+"+value);
+
+                                    } else if (operationValue == "⊆"){
+                                        query.push("+and+"+itemTreeId+"."+filterEl+"+contains+"+value);
+
+                                    }
+
+                                }else {
+                                    if (operationValue == "="){
+                                        query.push(itemTreeId+"."+filterEl+"+=+"+value);
+
+                                    } else if (operationValue == "!="){
+                                        query.push(itemTreeId+"."+filterEl+"+!=+"+value);
+
+                                    } else if (operationValue == "<"){
+                                        query.push(itemTreeId+"."+filterEl+"+<+"+value);
+
+                                    } else if (operationValue == ">"){
+                                        query.push(itemTreeId+"."+filterEl+"+>+"+value);
+
+                                    } else if (operationValue == "<="){
+                                        query.push(itemTreeId+"."+filterEl+"+<=+"+value);
+
+                                    } else if (operationValue == ">="){
+                                        query.push(itemTreeId+"."+filterEl+"+>=+"+value);
+
+                                    } else if (operationValue == "⊆"){
+                                        query.push(itemTreeId+"."+filterEl+"+contains+"+value);
+
+                                    }
                                 }
+                                
+                            
+                            } else if (position == "child") {
 
-                                let filterCountRows = $$(tableId).count();
-                                $$(filterElementsId).setValues(filterCountRows.toString());
-                                notify ("success","Фильтры успшено применены",true);
-                            },
-                            error:function(text, data, XmlHttpRequest){
-                                notify ("error","Ошибка фильтрации данных",true);
+                                if (operationValue == "="){
+                                    query.push("+"+condition+"+"+filterEl+"+=+"+value);
+
+                                } else if (operationValue == "!="){
+                                    query.push("+"+condition+"+"+filterEl+"+!=+"+value);
+
+                                }  else if (operationValue == "<"){
+                                    query.push("+"+condition+"+"+filterEl+"+<+"+value);
+
+                                } else if (operationValue == ">"){
+                                    query.push("+"+condition+"+"+filterEl+"+>+"+value);
+
+                                } else if (operationValue == ">="){
+                                    query.push("+"+condition+"+"+filterEl+"+>=+"+value);
+
+                                } else if (operationValue == "<="){
+                                    query.push("+"+condition+"+"+filterEl+"+<=+"+value);
+
+                                } else if (operationValue == "⊆"){
+                                    query.push("+"+condition+"+"+filterEl+"+contains+"+value);
+
+                                }
                             }
-                        });
+                        }
+                 
+                        if($$("filterTableForm").isDirty()){
+                            if ($$("filterTableForm").validate()){
+                                let filterEl;
+                                let postFormatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
+                                let value;
+                                Object.keys(values).sort().forEach(function(el,i){
+                                    filterEl = el;
+                                   
+                                    value = values[el];
+                                    if (el.includes("cdt")|| el.includes("edt")){
+                                        value = postFormatData(values[el]);
+                                    }
 
+                                    if (el.includes("filter")&&!(el.includes("condition"))){
+                                        filterEl = el.lastIndexOf("_");
+                                        filterEl = el.slice(0,filterEl)
+                                    }
 
+                                    if(!(el.includes("condition"))&&values[el]!==""&&el!=="selectAll"&&!(el.includes("child"))){
+        
+                                        if (i > 0){
+                                            getOperationVal (value,filterEl,el,"and","parent",true);
+                                        }else {
+                                            getOperationVal (value,filterEl,el,"and","parent");
+                                        }
+                                        
+                                    } else if (el.includes("child")){
+                                        if (el.includes("operAnd")){
+                                            getOperationVal (value,filterEl,el,"and","child");
+        
+                                        } else if (el.includes("operOr")){
+                                            getOperationVal (value,filterEl,el,"or","child");
+                                        }
+                                    
+                                    }
+                                    
+                                
+                                });
 
+                                webix.ajax("/init/default/api/smarts?query="+query.join(""),{
+                                    success:function(text, data, XmlHttpRequest){
+                                        let notifyType = data.json().err_type;
+                                        let notifyMsg = data.json().err;
+                                        data = data.json().content;
+                                        
+                                        if (data.length !== 0){
+                                            $$(tableId).hideOverlay("Ничего не найдено");
+                                            $$(tableId).clearAll()
+                                            $$(tableId).parse(data);
+                                        } else {
+                                            $$(tableId).clearAll()
+                                            $$(tableId).showOverlay("Ничего не найдено");
+                                        }
 
+                                        let filterCountRows = $$(tableId).count();
+                                        $$(filterElementsId).setValues(filterCountRows.toString());
+                                
+                                        if (notifyType == "i"){
+                                            notify ("success","Фильтры успшено применены",true);
+                                        } else if (notifyType == "e"){
+                                            notify ("error",notifyMsg,true);
+                                        } else if (notifyType == "x"){
+                                            notify ("error","Ошибка фильтрации данных",true);
+                                        }
+                                        
+                                    },
+                                    error:function(text, data, XmlHttpRequest){
+                                        notify ("error","Ошибка фильтрации данных",true);
+                                    }
+                                });
+                            } else {
+                                notify ("error","Не все поля формы заполнены", true);
+                            }
+                        } else {
+                            notify ("debug","Форма пуста");
+                        }
 
                     },
                    
@@ -381,6 +541,14 @@ const filterForm =  {
         ]}
        
     ],
+    rules:{
+        $all:webix.rules.isNotEmpty
+    },
+
+
+    ready:function(){
+        this.validate();
+    },
 
    
 
