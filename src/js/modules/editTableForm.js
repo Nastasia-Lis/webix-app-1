@@ -31,6 +31,9 @@ function saveItem(tableEditorVal){
                     $$("inputsTable").hide();
                     $$(tableId).clearSelection();
                     $$(newAddBtnId).enable();
+                    if ($$("EditEmptyTempalte")&&!($$("EditEmptyTempalte").isVisible())){
+                        $$("EditEmptyTempalte").show();
+                    }
                 },
                 error:function(){
                     notify ("error","Ошибка при сохранении данных",true);
@@ -53,7 +56,7 @@ function addItem () {
         function(){
             $$(tableId).filter(false);
             $$(tableId).hideOverlay("Ничего не найдено");
-            $$(searchId).setValue("");
+           // $$(searchId).setValue("");
             createEditFields(editFormId);
             $$(delBtnId).disable();
             $$(saveBtnId).hide();
@@ -61,9 +64,12 @@ function addItem () {
         });
 
     } else {
+        if ($$("EditEmptyTempalte")&&$$("EditEmptyTempalte").isVisible()){
+            $$("EditEmptyTempalte").hide();
+        }
         $$(tableId).filter(false);
         $$(tableId).hideOverlay("Ничего не найдено");
-        $$(searchId).setValue("");
+       // $$(searchId).setValue("");
         createEditFields(editFormId);
         $$(delBtnId).disable();
         $$(saveBtnId).hide();
@@ -91,6 +97,9 @@ function saveNewItem (){
                     defaultStateForm ();
                     $$("inputsTable").hide();
                     $$(newAddBtnId).enable();
+                    if ($$("EditEmptyTempalte")&&!($$("EditEmptyTempalte").isVisible())){
+                        $$("EditEmptyTempalte").show();
+                    }
                     notify ("success","Данные успешно добавлены", true);
                 },
                 error:function(){
@@ -380,11 +389,15 @@ try{
             css:"webix_primary", 
             click:saveNewItem
         },
+        {id:"EditEmptyTempalte",template:"<div style='color:#858585;font-size:13px!important'>Добавьте новую запись или выберите существующую из таблицы</div>", borderless:true}
+
 
         ]},
+
+
         
     ]},
-    {}
+  //  {}
     
     
     ],

@@ -274,6 +274,14 @@
   height: 8px !important;
 }
 
+.webix_hide-content {
+  display: none !important;
+}
+
+.webix_show-content {
+  display: block !important;
+}
+
 .webix_log-headline {
   font-weight: 600;
 }
@@ -630,4 +638,8 @@ label, button {
 
 .webix_property_line {
   word-wrap: break-word !important;
+}
+
+.webix_multivew-cell {
+  transition: none !important;
 }

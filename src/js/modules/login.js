@@ -264,7 +264,6 @@ function getDataFields (routes, menuItem){
 }
 
 
-
 function hideAllElements (){
     $$("container").getChildViews().forEach(function(el,i){
             if(el.config.view=="scrollview"|| el.config.view=="layout"){
@@ -292,75 +291,77 @@ function login () {
   
     content:function(){
 
-        getDataFields (routes);
-        
-        let userLocation = webix.storage.local.get("userLocation");
+        getDataFields (routes).then(function (response){
 
-        if (userLocation){
+            let userLocation = webix.storage.local.get("userLocation");
 
-            if (userLocation.tableName !== undefined){
+            if (userLocation){
 
-                 setTimeout(function(){
-                    webix.ui({
-                        view:"popup",
-                        id:"popupPrevHref",
-                        css:"webix_popup-prev-href",
-                        width:340,
-                        height:150,
-                        position:"center",
-                        body:{
-                            rows:[
-                            {rows: [ 
-                                { cols:[
-                                {template:"Прошлая сессия", width:200,css:"webix_template-recover", borderless:true, height:40 },
-                                {},
-                                {
-                                    view:"button",
-                                    id:"buttonClosePopup",
-                                    css:"webix_close-btn",
-                                    type:"icon",
-                                    width:25,
-                                    icon: 'wxi-close',
-                                    click:function(){
-                                        $$("popupPrevHref").hide();
-                                    }
-                                },
-                                ]},
-                                {   template:"В прошлый раз Вы остановились во вкладке"+" «"+userLocation.tableName+"»",
-                                    css:"webix_template-recover-descr", 
-                                    borderless:true, 
-                                    height:50 },
-                                {
-                                    view:"button",
-                                    id:"btnRecover",
-                                    css:"webix_btn-recover",
-                                    height:38,
-                                    value:"Перейти ко вкладке",
-                                    click:function(){
-                                        window.location.replace(userLocation.href)
-                                        
-                                        if(userLocation.href.includes("tree")){
-                                            let treeItemParent = $$("tree").getItem(userLocation.tableId).$parent;
-                                            if (treeItemParent !==0){
-                                                $$("tree").open(treeItemParent);
-                                            }
-                                            $$("tree").select(userLocation.tableId);
+                if (userLocation.tableName !== undefined){
+
+                    setTimeout(function(){
+                        webix.ui({
+                            view:"popup",
+                            id:"popupPrevHref",
+                            css:"webix_popup-prev-href",
+                            width:340,
+                            height:150,
+                            position:"center",
+                            body:{
+                                rows:[
+                                {rows: [ 
+                                    { cols:[
+                                    {template:"Прошлая сессия", width:200,css:"webix_template-recover", borderless:true, height:40 },
+                                    {},
+                                    {
+                                        view:"button",
+                                        id:"buttonClosePopup",
+                                        css:"webix_close-btn",
+                                        type:"icon",
+                                        width:25,
+                                        icon: 'wxi-close',
+                                        click:function(){
+                                            $$("popupPrevHref").hide();
                                         }
-                                        
-                                    $$("popupPrevHref").hide();
-                                    }
-                                },
-                                {height:20}
-                            ]}]
-                            
-                        },
+                                    },
+                                    ]},
+                                    {   template:"В прошлый раз Вы остановились во вкладке"+" «"+userLocation.tableName+"»",
+                                        css:"webix_template-recover-descr", 
+                                        borderless:true, 
+                                        height:50 },
+                                    {
+                                        view:"button",
+                                        id:"btnRecover",
+                                        css:"webix_btn-recover",
+                                        height:38,
+                                        value:"Перейти ко вкладке",
+                                        click:function(){
+                                            window.location.replace(userLocation.href)
+                                            
+                                            if(userLocation.href.includes("tree")){
+                                                let treeItemParent = $$("tree").getItem(userLocation.tableId).$parent;
+                                                if (treeItemParent !==0){
+                                                    $$("tree").open(treeItemParent);
+                                                }
+                                                $$("tree").select(userLocation.tableId);
+                                            }
+                                            
+                                        $$("popupPrevHref").hide();
+                                        }
+                                    },
+                                    {height:20}
+                                ]}]
+                                
+                            },
 
-                    }).show();
-                }, 1500);
-                
+                        }).show();
+                    }, 1500);
+                    
+                }
+        
             }
-       
-    }
+
+    });
 
     },
 
@@ -411,6 +412,11 @@ function login () {
         }else {
             createElements("cp");
             $$("user_auth").show();
+
+            if (userInfo.length > 0){
+                $$("userprefsName").setValues(userInfo[0].toString());
+            }
+            
         }
 
         $$("tree").closeAll();

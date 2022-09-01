@@ -126,7 +126,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
     itemTreeId = idsParam;
     let titem = $$("tree").getItem(idsParam);
     $$(idCurrTable).clearAll();
-    $$(idSearch).setValue("");
+    // $$(idSearch).setValue("");
 
     
     if (titem == undefined) {
@@ -597,7 +597,7 @@ function getInfoDashboard (idsParam,single=false){
 
                     notify ("error","Ошибка при загрузке данных", true);
                 } else {
-           
+                  
                     dataCharts.forEach(function(el,i){
                         titleTemplate = el.title;
                         delete el.title;
@@ -655,6 +655,7 @@ function getInfoDashboard (idsParam,single=false){
 
                     $$("dashboardBody").removeView($$("dashEmpty"));
                 }
+                notify ("success", "Данные обновлены", true);
             },
             error:function(text, data, XmlHttpRequest){
                 notify ("error","Ошибка при сохранении данных",true);
@@ -690,7 +691,7 @@ function getInfoDashboard (idsParam,single=false){
 
                 
              if (single){
-                let inputs = singleItemContent.inputs;
+                        let inputs = singleItemContent.inputs;
                         
                         inputsArray.push({width:20});
                         let keys = Object.keys(inputs);
@@ -715,6 +716,7 @@ function getInfoDashboard (idsParam,single=false){
                                 );
                             
                             } else if (input.type == "submit"){
+                                
                                 actionType = input.action;
                                 findAction = singleItemContent.actions[actionType];
                                 inputsArray.push(
@@ -742,6 +744,10 @@ function getInfoDashboard (idsParam,single=false){
                                                     }
                                                 });
                                                 getUrl = findAction.url+"?"+dateArray.join("&");
+                                                if ($$("dashboard-charts")){
+                                                    $$("dashboardBody").removeView( $$("dashboard-charts"));
+                                                }
+                                               
                                                 getAjax(getUrl, inputsArray);
                                             },
                                             on: {
@@ -755,6 +761,7 @@ function getInfoDashboard (idsParam,single=false){
                             }
                             inputsArray.push({width:20});
                         });
+                        
                         getAjax(singleItemContent.actions.submit.url, inputsArray);
                         if (singleItemContent.autorefresh){
                             setInterval(function(){
@@ -763,12 +770,12 @@ function getInfoDashboard (idsParam,single=false){
                         }
 
             } else {
-             
-                let fields = data;
-           
-                Object.values(fields).forEach(function(el,i){
 
-               
+                let fields = data;
+                
+                Object.values(fields).forEach(function(el,i){
+                  
+
                     if (el.type == "dashboard" && el.nameObj == itemTreeId) {
                         let inputs = el.inputs;
     
@@ -778,19 +785,17 @@ function getInfoDashboard (idsParam,single=false){
                            
                             
                             if (input.type == "datetime"){
+       
+                                let key = Object.keys(inputs)[i];
                                 inputsArray.push(
                                         {   view: "datepicker",
                                             format:"%d.%m.%Y %H:%i:%s",
-                                            //placeholder:"дд.мм.гг",
-                                            //placeholder:dataInputsArray[el].label,  
-                                            id:"dashDatepicker"+i, 
+                                            id:"dashDatepicker_"+key,  
                                             timepicker: true,
-                                            //labelPosition:"top",
                                             placeholder:input.label,
                                             width:300,
                                             minWidth:100,
                                             height:48,
-                                            //label:input.label, 
                                             on: {
                                                 onAfterRender: function () {
                                                     this.getInputNode().setAttribute("title",input.comment);
@@ -815,8 +820,31 @@ function getInfoDashboard (idsParam,single=false){
                                             maxWidth:200,
                                             value:input.label,
                                             click:function () {
+                                                let dateArray = [];
+                                                let postFormatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
+                                                let getUrl;
+                                                inputsArray.forEach(function(el,i){
+                                                    
+                                                    if (el.id.includes("sdt")){
+                                                 
+                                                        dateArray.push("sdt"+"="+postFormatData($$(el.id).getValue()));
+                                                        
+                                                    }else if (el.id.includes("edt")) {
+                                                        dateArray.push("edt"+"="+postFormatData($$(el.id).getValue()));
+                                                    }
+                                                });
 
-                                                getAjax(findAction.url, inputsArray,true);
+                                                if (dateArray.length > 0){
+                                                    getUrl = findAction.url+"?"+dateArray.join("&");
+                                                
+                                                    if ($$("dashboard-charts")){
+                                                        $$("dashboardBody").removeView( $$("dashboard-charts"));
+                                                    }
+                                                
+                                                    getAjax(getUrl, inputsArray, true);
+                                                } else {
+                                                    notify ("error", "Не все поля заполнены", true);
+                                                }
                                                 
                                             },
                                             on: {
