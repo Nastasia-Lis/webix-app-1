@@ -138,12 +138,6 @@
     padding: 2px  12px 0px!important;
 }
 
-
-
-.webix_icon, .webix_icon_btn {
-    line-height: 0.8!important;
-}
-
 .webix_form-adaptive{
     min-height: 98px!important;
     max-height: 151px!important;
@@ -501,6 +495,9 @@ label, button{
 .webix_el_radio .webix_radio_1 .webix_custom_radio:hover{
     color: var(--primary-light)!important;
 }
+.webix_el_radio .webix_custom_radio:focus {
+    color: var(--primary)!important;
+  }
 .webix_el_radio .webix_radio_1 .webix_custom_radio:active{
     color: var(--primary-dark)!important;
 }
@@ -515,10 +512,96 @@ label, button{
 }
 
 
-// .webix_pager{
-//     min-width: 150px!important;
-// }
-
 .webix_multivew-cell{
     transition:none!important;
+}
+
+
+
+.webix_btn-edit .webix_icon{
+    color: var(--primary)!important;
+    font-size: 14px!important;
+    margin-left: -8px!important;
+}
+
+.webix_btn-edit:hover  .webix_icon{
+    color: #fff!important;
+}
+
+.webix_icon_btn{
+    font-size: 18px!important; 
+    margin: 0px 0px 0px -1px !important;
+}
+
+
+
+
+
+
+// tabbar
+
+.webix_filter-popup-tabbar  .webix_item_tab.webix_selected{
+    //border-color: 
+    box-shadow: inset 0 -2px var(--primary)!important;
+}
+
+.webix_filter-popup-tabbar  .webix_item_tab{
+    //border-color: 
+    box-shadow: inset 0 -2px var(--gray)!important;
+}
+
+.webix_all_tabs .webix_item_tab{
+    color: var(--primary)!important;
+    font-size: 15px!important;
+}
+
+.webix_edit-form-popup{
+    margin-top:-15px!important;
+}
+
+.webix_edit-form-popup > .webix_scroll_cont > .webix_view.webix_layout_line{
+    margin-top: 0px!important;
+}
+
+
+
+//prompt
+.webix_prompt-filter-lib .webix_popup_title{
+    box-shadow: none!important;
+    font-size: 17px!important;
+    padding-bottom: 10px!important;
+}
+
+
+.webix_popup_input.webix_el_text{
+    padding: 0!important;
+    margin-bottom: 10px!important;
+}
+
+.webix_popup_input.webix_el_text input{
+    height: 32px!important;
+}
+
+
+
+.webix_popup_input.webix_el_text.webix_required::before{
+    display: none;
+}
+
+
+.webix_prompt-filter-lib{
+    border-radius:6px!important;
+}
+
+
+.webix_prompt-filter-lib > .webix_popup_controls div:nth-child(2){
+    @include secondary-btn;
+}
+
+.webix_prompt-filter-lib > .webix_popup_controls div:nth-child(2):hover{
+    @include secondary-btn--hover ;
+}
+
+.webix_prompt-filter-lib > .webix_popup_controls div:nth-child(2):active{
+    @include secondary-btn--active ;
 }

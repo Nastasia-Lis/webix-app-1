@@ -14,16 +14,46 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
         notify ("success","Таблица сохранена",true);
     }
 
+    function filterBtnClick (){
+        $$(idTable).clearSelection();
+        let btnClass = document.querySelector(".webix_btn-filter");
 
+        if(!(btnClass.classList.contains("webix_primary"))){
+            $$("filterTableForm").show();
+            $$(editFormId).hide();
+        
+            if($$("filterTableForm").getChildViews() !== 0){
+                createFilterElements("filterTableForm",3);
+
+            }
+            btnClass.classList.add("webix_primary");
+            btnClass.classList.remove("webix_secondary");
+            $$(idBtnEdit).show();
+        
+        } else {
+        
+            $$("filterTableForm").hide();
+            $$(editFormId).show();
+            btnClass.classList.add("webix_secondary");
+            btnClass.classList.remove("webix_primary");
+            $$(idBtnEdit).hide();
+        }
+    }
+
+    function editBtnClick() {
+        let btnClass = document.querySelector(".webix_btn-filter");
+        $$("filterTableForm").hide();
+        $$(editFormId).show();
+        btnClass.classList.add("webix_secondary");
+        btnClass.classList.remove("webix_primary");
+        $$(idBtnEdit).hide();
+        this.hide();
+    }
 
     function filterFieldsFunctions (el,parentElement, typeField){
         let findTableId = el.type.slice(10);
         let countChild;
-        // if ($$(el.id+"_filter"+"_rows")){
-        //     countChild = $$(el.id+"_filter"+"_rows").getChildViews().length;
-        // }
-        
-       
+
         function field (operation){
             countChild= $$(el.id+"_filter"+"_rows").getChildViews().length;
             if (typeField=="text"){
@@ -144,11 +174,11 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
                 ],
                 on: {
                     onMenuItemClick(id) {
-
+                        let countChild= $$(el.id+"_filter"+"_rows").getChildViews().length;
                         if(id.includes("and")){
 
                             $$(el.id+"_filter"+"_rows").addView(
-                                {id:el.id+"_filter-container"+"-child-"+countChild, padding:5,rows:[
+                                {id:el.id+"_filter-container-child-"+countChild, padding:5,rows:[
                                     {template:"<div style='color:var(--primary)'>+ и</div>", height:30, borderless:true},
                                     {cols:[
                                 
@@ -338,8 +368,6 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
         ]};       
     }
 
-
-
     function createFilterElements (parentElement, viewPosition=1) {
 
         let columnsData = $$(tableId).getColumns();
@@ -375,8 +403,6 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
                     );
         
                 } 
-                
-    
                else if (el.type.includes("reference")) {
                 let findTableId = el.type.slice(10);
     
@@ -456,89 +482,38 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
         }
     }
 
-      
-       
-
     return { 
 
-       
          id:"adaptive-toolbar",rows:[
-             
-        
-            
+
              {id:"filterBar",responsive:"adaptive-toolbar", css:"webix_filterBar",padding:17, height: 80,margin:5, 
                 
                 cols: [
-                
-                // {   view:"search",
-                //     placeholder:"Поиск",
-                //     id:idSearch,
-                //     hidden:visible,
-                //     css:"searchTable",
-                //     maxWidth:250,
-                //     minWidth:40,
-                //     on: {
-                //         onTimedKeyPress() {
-                //             let text = this.getValue().toLowerCase();
-                //             let table = $$(idTable);
-                //             let columns = table.config.columns;
-              
-                //             let findElements = 0;
-                //             table.filter(function(obj){
-                //                 for (let i=0; i<columns.length; i++){
-                //                     obj[columns[i].id] = obj[columns[i].id].replace("<span class='search_mark'>", "");
-                //                     obj[columns[i].id] = obj[columns[i].id].replace("</span>", "");
-
-                //                     if (obj[columns[i].id].toString().toLowerCase().indexOf(text) !== -1){
-
-                //                         let checkOccurence = new RegExp("(" + text + ")", "ig");
-
-                //                         if (text.length > 0){
-                                         
-                //                             obj[columns[i].id] = obj[columns[i].id].replace(checkOccurence, "<span class='search_mark'>$1</span>")
-                //                         }
-                            
-                //                         findElements++;
-                //                         return "<span class='search_mark'>$1</span>";
-                //                     } 
-                //             }});
-                //             if (!findElements){
-                //                 $$(idTable).showOverlay("Ничего не найдено");
-                //             } else if(findElements){
-                //                 $$(idTable).hideOverlay("Ничего не найдено");
-                //             }
-                //             $$(idFilterElements).setValues(findElements.toString());
-                            
-
-                //         },
-                //         onAfterRender: function () {
-                //            this.getInputNode().setAttribute("title","Поиск по таблице");
-                //         },
-                        
-                //     }
-                // },
-                //{},
                 {   view:"button",
-                    //width: 50,
+                    width: 50, 
+                    type:"icon",
+                    id:idFilter,
+                    hidden:visible,
+                    icon:"wxi-filter",
+                    css:"webix_btn-filter",
+                    title:"текст",
+                    height:50,
+                    click:filterBtnClick,
+                    on: {
+                        onAfterRender: function () {
+                            this.getInputNode().setAttribute("title","Показать/скрыть фильтры");
+                        }
+                    } 
+                },
+                {   view:"button",
                     maxWidth:200, 
-                    //type:"icon",
                     value:"<span class='webix_icon wxi-pencil'></span><span style='padding-left: 4px'>Редактор таблицы</span>",
                     id:idBtnEdit,
                     hidden:true,
-                    //icon:"wxi-pencil",
-                    //value:"Редактор таблицы",
                     css:"webix_btn-edit",
                     title:"текст",
                     height:50,
-                    click:function(){
-                        let btnClass = document.querySelector(".webix_btn-filter");
-                        $$("filterTableForm").hide();
-                        $$(editFormId).show();
-                        btnClass.classList.add("webix_secondary");
-                        btnClass.classList.remove("webix_primary");
-                        $$(idBtnEdit).hide();
-                        this.hide();
-                    },
+                    click:editBtnClick,
                     on: {
                         onAfterRender: function () {
                             if(idTable !== "table" && this.isVisible()){
@@ -549,48 +524,6 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
                     } 
                 },
                 {},
-
-                {   view:"button",
-                    width: 50, 
-                    type:"icon",
-                    id:idFilter,
-                    hidden:visible,
-                    icon:"wxi-filter",
-                    css:"webix_btn-filter",
-                    title:"текст",
-                    height:50,
-                    click:function(){
-                        $$(idTable).clearSelection();
-                        let btnClass = document.querySelector(".webix_btn-filter");
-
-                        if(!(btnClass.classList.contains("webix_primary"))){
-                            $$("filterTableForm").show();
-                            $$(editFormId).hide();
-                          
-                            if($$("filterTableForm").getChildViews() !== 0){
-                                createFilterElements("filterTableForm",3);
-
-                            }
-                            btnClass.classList.add("webix_primary");
-                            btnClass.classList.remove("webix_secondary");
-                            $$(idBtnEdit).show();
-                           
-                        } else {
-                        
-                            $$("filterTableForm").hide();
-                            $$(editFormId).show();
-                            btnClass.classList.add("webix_secondary");
-                            btnClass.classList.remove("webix_primary");
-                            $$(idBtnEdit).hide();
-                        }
-                      
-                    },
-                    on: {
-                        onAfterRender: function () {
-                            this.getInputNode().setAttribute("title","Показать/скрыть фильтры");
-                        }
-                    } 
-                },
 
                 {   view:"button",
                     width: 50, 
@@ -659,14 +592,10 @@ function table (idTable, onFunc, editableParam=false) {
         autoConfig: true,
         editable:editableParam,
         editaction:"dblclick",
-        //pager:idPager,
         minHeight:350,
-        //height:200,
-
         datafetch:5,
         datathrottle: 5000,
         loadahead:100,
-
         footer: true,
         minWidth:500, 
         select:true,
@@ -808,5 +737,4 @@ export {
     tableToolbar,
     table,
     onFuncTable,
-    //onFuncTableView
 };

@@ -2,9 +2,9 @@ import { tableId,tableIdView,newAddBtnId, editFormId,findElementsId} from "./set
 import {notify} from "./editTableForm.js";
 import {headerSidebar} from "./sidebar.js";
 import {tableNames} from "./login.js";
-import {setStorageData} from "./userSettings.js";
+import {setStorageData,setUserLocation} from "./userSettings.js";
 
-import {editTableBar, clearItem,checkFormSaved} from "./editTableForm.js";
+import {checkFormSaved} from "./editTableForm.js";
 
 let userLocation;
 
@@ -123,24 +123,10 @@ function header() {
                 },
                 on:{
                     onItemClick:function(){
-                        userLocation = window.location.href;
-                        let url = userLocation.search("#");
-                        userLocation = userLocation.slice(url);
-                        if (userLocation !== "#content" || userLocation !== "#"){
-                            let tableIdHref = userLocation.slice(userLocation.lastIndexOf('/')+1); 
-                            let nameRecoverEl;
-                            let storageData;
-                            tableNames.forEach(function(el,i){
-                                if (el.id == tableIdHref){
-                                    nameRecoverEl= el.name;
-                                }
-                            });
-                            if (nameRecoverEl !== undefined){
-                                storageData= {tableName:nameRecoverEl,tableId:tableIdHref,href:userLocation};
-                                setStorageData ("userLocation", JSON.stringify(storageData));
-                            }
-                            
-                        }
+                        
+
+                        setUserLocation (tableNames,userLocation);
+                     
                         
                     }
                 }

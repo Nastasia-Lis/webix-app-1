@@ -31,7 +31,7 @@ function setLogValue (typeNotify,notifyText) {
         $$("logBlock-list").add({
             date:currentDate,
             value:notifyText,
-            src:"Expa v1.0.13"
+            src:"Expa v1.0.14"
         });
     }
 

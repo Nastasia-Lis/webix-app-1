@@ -1,9 +1,12 @@
 import {removeElements} from "./login.js";
 import {notify} from "./editTableForm.js";
+import {setUserLocation} from "./userSettings.js";
+import {tableNames} from "./login.js";
+import {userLocation} from "./header.js";
 
 export function resetTimer (){
 
-    var t;
+    let t;
     window.onload = resetTimer;
     window.onmousemove = resetTimer;
     window.onmousedown = resetTimer;      
@@ -13,7 +16,9 @@ export function resetTimer (){
     window.addEventListener('scroll', resetTimer, true); 
 
     function logout() {
+        setUserLocation(tableNames,userLocation);
         webix.ajax().post("/init/default/logout/",{
+            
             success:function(text, data, XmlHttpRequest){
                 
 
@@ -39,7 +44,7 @@ export function resetTimer (){
 
     function resetTimer() {
         clearTimeout(t);
-        t = setTimeout(logout, 600000);  
+        t = setTimeout(logout, 600000); // 600000
     };
     
 }

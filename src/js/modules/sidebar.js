@@ -454,8 +454,6 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
 
             function getItemData (table){
 
-          
-
                 $$(table).load({
                     $proxy:true,
                     load:function(view, params){
@@ -558,7 +556,7 @@ function getInfoDashboard (idsParam,single=false){
                 let dashLayout=[];
                 let dataCharts = data.json().charts;
                 let titleTemplate = {};
-
+               
                 if (dataCharts == undefined){
 
                     $$("dashboardTool").addView({
@@ -655,7 +653,11 @@ function getInfoDashboard (idsParam,single=false){
 
                     $$("dashboardBody").removeView($$("dashEmpty"));
                 }
-                notify ("success", "Данные обновлены", true);
+                
+                if (url.includes("?")||url.includes("sdt")&&url.includes("edt")){
+                    notify ("success", "Данные обновлены", true);
+                }
+                
             },
             error:function(text, data, XmlHttpRequest){
                 notify ("error","Ошибка при сохранении данных",true);
@@ -825,11 +827,10 @@ function getInfoDashboard (idsParam,single=false){
                                                 let getUrl;
                                                 inputsArray.forEach(function(el,i){
                                                     
-                                                    if (el.id.includes("sdt")){
-                                                 
+                                                    if (el.id.includes("sdt")&&$$(el.id).getValue()){
                                                         dateArray.push("sdt"+"="+postFormatData($$(el.id).getValue()));
                                                         
-                                                    }else if (el.id.includes("edt")) {
+                                                    }else if (el.id.includes("edt")&&$$(el.id).getValue()) {
                                                         dateArray.push("edt"+"="+postFormatData($$(el.id).getValue()));
                                                     }
                                                 });
@@ -1129,14 +1130,7 @@ function treeSidebar () {
                
             },
 
-            // onBeforeDrop:function(context){
-            //     console.log("Drop context:", context);
-            //     context.parent = context.target; //drop as child
-            //     context.index = -1;              //as last child
-            //   }
-
         },
-        
 
     };
 

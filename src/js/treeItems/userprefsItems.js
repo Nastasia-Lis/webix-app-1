@@ -1,7 +1,4 @@
-
-
 const userprefsLayout = {
-
     view:"form", 
     id:"userprefsForm",
     borderless:true,
@@ -38,17 +35,13 @@ const userprefsLayout = {
             { "id":2, "value":"Скрыть" },
             ],
             on:{
-            
                 onAfterRender: function () {
                     this.getInputNode().setAttribute("title","Показать/скрыть по умолчанию блок системных сообщений");
                 },
            
                 onChange:function(newValue, oldValue, config){
-                    console.log(newValue, oldValue, config);
+                    
                     let prefs = {logState:newValue};
-                    console.log(prefs.logState.toString());
-                 
-
                     const date = new Date();
 
                     let day = date.getDate();
@@ -58,14 +51,11 @@ const userprefsLayout = {
                     let minutes =String( date.getMinutes()).padStart(2, '0');
                     let seconds =date.getSeconds();
                     let currentDate = `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
-
-
                     let putObj = {
                         cdt:currentDate,
                         id: 4,
                         name: "default",
                         owner: 1,
-                       // prefs: "{\"pageLimit\":8,\"countMsgFlashAlert\":30}",
                         prefs:{logState:prefs.logState.toString()},
                         ptype: 0
                     };
