@@ -388,6 +388,10 @@ label, button {
   font-size: 13px !important;
 }
 
+.webix_list_item {
+  height: auto !important;
+}
+
 .webix_template-user {
   width: auto !important;
 }

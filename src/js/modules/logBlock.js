@@ -1,5 +1,8 @@
+
 import {itemTreeId} from "./sidebar.js";
+import {notify} from "./editTableForm.js";
 import {tableNames} from "./login.js";
+import {setStorageData,setUserLocation} from "./userSettings.js";
 
 function setLogValue (typeNotify,notifyText) {
     const date = new Date();
@@ -7,8 +10,9 @@ function setLogValue (typeNotify,notifyText) {
     let month = String(date.getMonth() + 1).padStart(2, '0');
     let year = date.getFullYear();
     let hours = date.getHours();
-    let minutes =String( date.getMinutes()).padStart(2, '0');;
-    let currentDate = `${day}.${month}.${year} ${hours}:${minutes}`;
+    let minutes =String( date.getMinutes()).padStart(2, '0');
+    let seconds =String( date.getSeconds()).padStart(2, '0');
+    let currentDate = `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
 
  
     if (itemTreeId){
@@ -31,15 +35,11 @@ function setLogValue (typeNotify,notifyText) {
         $$("logBlock-list").add({
             date:currentDate,
             value:notifyText,
-            src:"Expa v1.0.14"
+            src:"Expa v1.0.15"
         });
     }
 
     let itemListIndex;
-    
-    // document.querySelectorAll(".webix_list_item").forEach(function(el,i){
-    //     itemListIndex = i;
-    // });
     
     let blockContainer = document.querySelector(".webix_log-block");
     if (blockContainer){
@@ -51,6 +51,14 @@ function setLogValue (typeNotify,notifyText) {
     let item = document.querySelectorAll(".webix_list_item")[itemListIndex];
     if (typeNotify == "error"){
         item.style.setProperty('color', 'red', 'important');
+        
+        if ($$("webix_log-btn").config.icon =="wxi-eye"){
+            $$("logLayout").config.height = 90;
+            $$("logLayout").resize();
+            $$("webix_log-btn").config.icon ="wxi-eye-slash";
+            $$("webix_log-btn").refresh();
+            setStorageData("LogVisible", JSON.stringify("show"));
+        }
     }
     
 }
@@ -75,8 +83,21 @@ const logLayout = {
     ]
 };
 
+
+function catchErrorTemplate (code,error) {
+    return notify ("error","ОШИБКА "+code+": "+error.stack,true);
+}
+
+function ajaxErrorTemplate (code, status,statusText,responseURL){
+  let errorMsg = "СТАТУС: "+status+" "+statusText+"."+" ПОДРОБНОСТИ: "+responseURL;
+  return notify ("error","ОШИБКА "+code+": "+errorMsg,true);
+}
+
 export {
     logBlock,
     logLayout,
-    setLogValue
+    setLogValue,
+    catchErrorTemplate,
+    ajaxErrorTemplate
+
 };

@@ -17,11 +17,6 @@ function typeTable (type,columnsData, id){
                 $$(newAddBtnId).enable();
             }
 
-            // $$(type).showProgress({
-            //     type:"bottom",
-            //     hide:true
-            // });
-
             data = data.json().content;
             
             if (data.length !== 0){

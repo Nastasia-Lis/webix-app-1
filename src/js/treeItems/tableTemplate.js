@@ -107,6 +107,48 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
             }
        
         }
+
+        function filterOperationsBtnLogic (idBtn, id){
+            let btnFilterOperations = $$(idBtn);
+            if (id.includes("eql")){
+                return btnFilterOperations.setValue("=");
+            } else if (id.includes("notEqual")){
+                return btnFilterOperations.setValue("!=");
+            } else if (id.includes("less")){
+                return btnFilterOperations.setValue("<");
+            } else if (id.includes("more")){
+                return btnFilterOperations.setValue(">");
+            } else if (id.includes("mrEqual")){
+                return btnFilterOperations.setValue(">=");
+            } else if (id.includes("lsEqual")){
+                btnFilterOperations.setValue("<=");
+            } else if (id.includes("contains")){
+                return btnFilterOperations.setValue("⊆");
+            }
+        
+        }
+
+        function filterOperationsBtnData (){
+            return webix.once(function(){
+                if (typeField == "combo"){
+                    this.add( { value: '=', id:"operations_eql" });
+                    this.add(  { value: '!=', id:"operations_notEqual" });
+                } else if (typeField == "text"){
+                    this.add( { value: '=', id:"operations_eql" });
+                    this.add(  { value: '!=', id:"operations_notEqual" });
+                    this.add( {value: 'содержит', id:"operations_contains"  });
+                } else if (typeField == "datepicker"){
+                    this.add( { value: '=', id:"operations_eql" });
+                    this.add(  { value: '!=', id:"operations_notEqual" });
+                    this.add( { value: '<', id:"operations_less"  });
+                    this.add(  { value: '>', id:"operations_more"  });
+                    this.add( { value: '>=', id:"operations_mrEqual" });
+                    this.add(  { value: '<=', id:"operations_lsEqual" });
+                }
+               
+            });
+        }
+
         return {id:el.id+"_filter_container-btns",css:{"margin-top":"27px!important"},hidden:true, cols:[
 
             {
@@ -120,35 +162,12 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
                     view: 'contextmenu',
                     width: 200,
                     data: [
-                        { value: '=', id:"operations_eql" },
-                        { value: '!=', id:"operations_notEqual" },
-                        { value: '<', id:"operations_less" },
-                        { value: '>', id:"operations_more" },
-                        { value: '>=', id:"operations_mrEqual" },
-                        { value: '<=', id:"operations_lsEqual" },
-                        { value: 'содержит', id:"operations_contains" },
                     ],
                     on: {
-                    onMenuItemClick(id) {
-                        let btnFilterOperations = $$(el.id+"_filter-btnFilterOperations");
-                        if (id.includes("eql")){
-                            btnFilterOperations.setValue("=");
-                        } else if (id.includes("notEqual")){
-                            btnFilterOperations.setValue("!=");
-                        } else if (id.includes("less")){
-                            btnFilterOperations.setValue("<");
-                        } else if (id.includes("more")){
-                            btnFilterOperations.setValue(">");
-                        } else if (id.includes("mrEqual")){
-                            btnFilterOperations.setValue(">=");
-                        } else if (id.includes("lsEqual")){
-                            btnFilterOperations.setValue("<=");
-                        } else if (id.includes("contains")){
-                            btnFilterOperations.setValue("⊆");
-                        }
-
-                    },
-                    
+                        onMenuItemClick(id) {
+                            filterOperationsBtnLogic (el.id+"_filter-btnFilterOperations", id);
+                        },
+                        onAfterLoad: filterOperationsBtnData()
                     }
                 },
                 on:{
@@ -193,37 +212,14 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
                                             popup: {
                                                 view: 'contextmenu',
                                                 width: 200,
-                                                data: [
-                                                    { value: '=', id:"operations_eql"+"-"+countChild },
-                                                    { value: '!=', id:"operations_notEqual"+"-"+countChild },
-                                                    { value: '<', id:"operations_less"+"-"+countChild },
-                                                    { value: '>', id:"operations_more"+"-"+countChild },
-                                                    { value: '>=', id:"operations_mrEqual"+"-"+countChild },
-                                                    { value: '<=', id:"operations_lsEqual"+"-"+countChild },
-                                                    { value: 'содержит', id:"operations_contains"+"-"+countChild },
-                                                ],
+                                                data: [],
                                                 on: {
-                                                onMenuItemClick(id) {
-                                                    let idBtnOperations =  $$(el.id+"_filter-child-operAnd-"+countChild+"-btnFilterOperations");
-                                                    if (id.includes("eql")){
-                                                        idBtnOperations.setValue("=");
-                                                    } else if (id.includes("notEqual")){
-                                                        idBtnOperations.setValue("!=");
-                                                    } else if (id.includes("less")){
-                                                        idBtnOperations.setValue("<");
-                                                    } else if (id.includes("more")){
-                                                        idBtnOperations.setValue(">");
-                                                    } else if (id.includes("mrEqual")){
-                                                        idBtnOperations.setValue(">=");
-                                                    } else if (id.includes("lsEqual")){
-                                                        idBtnOperations.setValue("<=");
-                                                    } else if (id.includes("contains")){
-                                                        idBtnOperations.setValue("⊆");
-                                                    }
-                
-                                                },
-                                                
+                                                    onMenuItemClick(id) {
+                                                        filterOperationsBtnLogic (el.id+"_filter-child-operAnd-"+countChild+"-btnFilterOperations", id);
+                                                    },
+                                                    onAfterLoad: filterOperationsBtnData()
                                                 }
+                                                
                                             },
                                             on:{
                                                 onAfterRender: function () {
@@ -246,6 +242,7 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
                                                     popupExec("Поле фильтра будет удалено").then(
                                                         function(){
                                                             $$(el.id+"_filter"+"_rows").removeView($$(el.id+"_filter-container-child-"+countChild));
+                                                            $$(el.id+"_filter"+"_rows").refresh();
                                                             notify ("success","Поле удалено");
                                                     });
                                                     
@@ -283,36 +280,12 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
                                             popup: {
                                                 view: 'contextmenu',
                                                 width: 200,
-                                                data: [
-                                                    { value: '=', id:"operations_eql"+"-operOr-"+countChild },
-                                                    { value: '!=', id:"operations_notEqual"+"-operOr-"+countChild },
-                                                    { value: '<', id:"operations_less"+"-operOr-"+countChild },
-                                                    { value: '>', id:"operations_more"+"-operOr-"+countChild },
-                                                    { value: '>=', id:"operations_mrEqual"+"-operOr-"+countChild },
-                                                    { value: '<=', id:"operations_lsEqual"+"-operOr-"+countChild },
-                                                    { value: 'содержит', id:"operations_contains"+"-operOr-"+countChild },
-                                                ],
+                                                data: [],
                                                 on: {
-                                                onMenuItemClick(id) {
-                                                    let btnFilterOperations = $$(el.id+"_filter-child-operOr-"+countChild+"-btnFilterOperations" );
-                                                    if (id.includes("eql")){
-                                                        btnFilterOperations.setValue("=");
-                                                    } else if (id.includes("notEqual")){
-                                                        btnFilterOperations.setValue("!=");
-                                                    } else if (id.includes("less")){
-                                                        btnFilterOperations.setValue("<");
-                                                    } else if (id.includes("more")){
-                                                        btnFilterOperations.setValue(">");
-                                                    } else if (id.includes("mrEqual")){
-                                                        btnFilterOperations.setValue(">=");
-                                                    } else if (id.includes("lsEqual")){
-                                                        btnFilterOperations.setValue("<=");
-                                                    } else if (id.includes("contains")){
-                                                        btnFilterOperations.setValue("⊆");
-                                                    }
-                
-                                                },
-                                                
+                                                    onMenuItemClick(id) {
+                                                        filterOperationsBtnLogic (el.id+"_filter-child-operOr-"+countChild+"-btnFilterOperations", id);
+                                                    },
+                                                    onAfterLoad: filterOperationsBtnData()
                                                 }
                                             },
                                             on:{

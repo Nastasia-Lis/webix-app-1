@@ -1,6 +1,7 @@
 import { notify } from "./editTableForm.js";
 import { tableId,filterElementsId } from './setId.js';
 import { itemTreeId } from "./sidebar.js";
+import { catchErrorTemplate,ajaxErrorTemplate} from "./logBlock.js";
 
 let popupLibData = {};
 
@@ -499,98 +500,103 @@ function resetFilterBtn (){
 }
 
 function filterSubmitBtn (){
+    
     let values = $$("filterTableForm").getValues();
-                                        
+                             
     let query =[];
 
     function getOperationVal (value, filterEl,el,condition, position, parentIndex=false){
         let operationValue = $$(el+"-btnFilterOperations").config.value;
-        
+        try {
+            if (position == "parent"){
+                if(parentIndex){
 
-        if (position == "parent"){
-            if(parentIndex){
+                    if (operationValue == "="){
+                        query.push("+and+"+itemTreeId+"."+filterEl+"+=+"+value);
 
-                if (operationValue == "="){
-                    query.push("+and+"+itemTreeId+"."+filterEl+"+=+"+value);
+                    } else if (operationValue == "!="){
+                        query.push("+and+"+itemTreeId+"."+filterEl+"+!=+"+value);
 
-                } else if (operationValue == "!="){
-                    query.push("+and+"+itemTreeId+"."+filterEl+"+!=+"+value);
+                    } else if (operationValue == "<"){
+                        query.push("+and+"+itemTreeId+"."+filterEl+"+<+"+value);
 
-                } else if (operationValue == "<"){
-                    query.push("+and+"+itemTreeId+"."+filterEl+"+<+"+value);
+                    } else if (operationValue == ">"){
+                        query.push("+and+"+itemTreeId+"."+filterEl+"+>+"+value);
 
-                } else if (operationValue == ">"){
-                    query.push("+and+"+itemTreeId+"."+filterEl+"+>+"+value);
+                    } else if (operationValue == "<="){
+                        query.push("+and+"+itemTreeId+"."+filterEl+"+<=+"+value);
 
-                } else if (operationValue == "<="){
-                    query.push("+and+"+itemTreeId+"."+filterEl+"+<=+"+value);
+                    } else if (operationValue == ">="){
+                        query.push("+and+"+itemTreeId+"."+filterEl+"+>=+"+value);
 
-                } else if (operationValue == ">="){
-                    query.push("+and+"+itemTreeId+"."+filterEl+"+>=+"+value);
+                    } else if (operationValue == "⊆"){
+                        query.push("+and+"+itemTreeId+"."+filterEl+"+contains+"+value);
 
-                } else if (operationValue == "⊆"){
-                    query.push("+and+"+itemTreeId+"."+filterEl+"+contains+"+value);
+                    }
 
+                }else {
+                    if (operationValue == "="){
+                        query.push(itemTreeId+"."+filterEl+"+=+"+value);
+
+                    } else if (operationValue == "!="){
+                        query.push(itemTreeId+"."+filterEl+"+!=+"+value);
+
+                    } else if (operationValue == "<"){
+                        query.push(itemTreeId+"."+filterEl+"+<+"+value);
+
+                    } else if (operationValue == ">"){
+                        query.push(itemTreeId+"."+filterEl+"+>+"+value);
+
+                    } else if (operationValue == "<="){
+                        query.push(itemTreeId+"."+filterEl+"+<=+"+value);
+
+                    } else if (operationValue == ">="){
+                        query.push(itemTreeId+"."+filterEl+"+>=+"+value);
+
+                    } else if (operationValue == "⊆"){
+                        query.push(itemTreeId+"."+filterEl+"+contains+"+value);
+
+                    }
                 }
-
-            }else {
-                if (operationValue == "="){
-                    query.push(itemTreeId+"."+filterEl+"+=+"+value);
-
-                } else if (operationValue == "!="){
-                    query.push(itemTreeId+"."+filterEl+"+!=+"+value);
-
-                } else if (operationValue == "<"){
-                    query.push(itemTreeId+"."+filterEl+"+<+"+value);
-
-                } else if (operationValue == ">"){
-                    query.push(itemTreeId+"."+filterEl+"+>+"+value);
-
-                } else if (operationValue == "<="){
-                    query.push(itemTreeId+"."+filterEl+"+<=+"+value);
-
-                } else if (operationValue == ">="){
-                    query.push(itemTreeId+"."+filterEl+"+>=+"+value);
-
-                } else if (operationValue == "⊆"){
-                    query.push(itemTreeId+"."+filterEl+"+contains+"+value);
-
-                }
-            }
+                
             
-        
-        } else if (position == "child") {
+            } else if (position == "child") {
 
-            if (operationValue == "="){
-                query.push("+"+condition+"+"+filterEl+"+=+"+value);
+                if (operationValue == "="){
+                    query.push("+"+condition+"+"+filterEl+"+=+"+value);
 
-            } else if (operationValue == "!="){
-                query.push("+"+condition+"+"+filterEl+"+!=+"+value);
+                } else if (operationValue == "!="){
+                    query.push("+"+condition+"+"+filterEl+"+!=+"+value);
 
-            }  else if (operationValue == "<"){
-                query.push("+"+condition+"+"+filterEl+"+<+"+value);
+                }  else if (operationValue == "<"){
+                    query.push("+"+condition+"+"+filterEl+"+<+"+value);
 
-            } else if (operationValue == ">"){
-                query.push("+"+condition+"+"+filterEl+"+>+"+value);
+                } else if (operationValue == ">"){
+                    query.push("+"+condition+"+"+filterEl+"+>+"+value);
 
-            } else if (operationValue == ">="){
-                query.push("+"+condition+"+"+filterEl+"+>=+"+value);
+                } else if (operationValue == ">="){
+                    query.push("+"+condition+"+"+filterEl+"+>=+"+value);
 
-            } else if (operationValue == "<="){
-                query.push("+"+condition+"+"+filterEl+"+<=+"+value);
+                } else if (operationValue == "<="){
+                    query.push("+"+condition+"+"+filterEl+"+<=+"+value);
 
-            } else if (operationValue == "⊆"){
-                query.push("+"+condition+"+"+filterEl+"+contains+"+value);
+                } else if (operationValue == "⊆"){
+                    query.push("+"+condition+"+"+filterEl+"+contains+"+value);
 
+                }
             }
+        } catch (error){
+            console.log(error);
+            catchErrorTemplate("004-000", error);
         }
     }
 
-    if($$("filterTableForm").isDirty()){
-        if ($$("filterTableForm").validate()){
-            let filterEl;
-            let postFormatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
-            let value;
+
+    if ($$("filterTableForm").validate()){
+        let filterEl;
+        let postFormatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
+        let value;
+        try{
             Object.keys(values).sort().forEach(function(el,i){
                 filterEl = el;
             
@@ -624,44 +630,47 @@ function filterSubmitBtn (){
                 
             
             });
+        } catch (error){
+            console.log(error);
+            catchErrorTemplate("004-000", error);
+        }
 
-            webix.ajax("/init/default/api/smarts?query="+query.join(""),{
-                success:function(text, data, XmlHttpRequest){
-                    let notifyType = data.json().err_type;
-                    let notifyMsg = data.json().err;
-                    data = data.json().content;
-                    
-                    if (data.length !== 0){
-                        $$(tableId).hideOverlay("Ничего не найдено");
-                        $$(tableId).clearAll()
-                        $$(tableId).parse(data);
-                    } else {
-                        $$(tableId).clearAll()
-                        $$(tableId).showOverlay("Ничего не найдено");
-                    }
+        webix.ajax("/init/default/api/smarts?query="+query.join(""),{
+            success:function(text, data, XmlHttpRequest){
+                let notifyType = data.json().err_type;
+                let notifyMsg = data.json().err;
+                data = data.json().content;
+                
+                if (data.length !== 0){
+                    $$(tableId).hideOverlay("Ничего не найдено");
+                    $$(tableId).clearAll()
+                    $$(tableId).parse(data);
+                } else {
+                    $$(tableId).clearAll()
+                    $$(tableId).showOverlay("Ничего не найдено");
+                }
 
-                    let filterCountRows = $$(tableId).count();
-                    $$(filterElementsId).setValues(filterCountRows.toString());
-            
-                    if (notifyType == "i"){
-                        notify ("success","Фильтры успшено применены",true);
-                    } else if (notifyType == "e"){
-                        notify ("error",notifyMsg,true);
-                    } else if (notifyType == "x"){
-                        notify ("error","Ошибка фильтрации данных",true);
-                    }
-                    
-                },
-                error:function(text, data, XmlHttpRequest){
+                let filterCountRows = $$(tableId).count();
+                $$(filterElementsId).setValues(filterCountRows.toString());
+        
+                if (notifyType == "i"){
+                    notify ("success","Фильтры успшено применены",true);
+                } else if (notifyType == "e"){
+                    notify ("error",notifyMsg,true);
+                } else if (notifyType == "x"){
                     notify ("error","Ошибка фильтрации данных",true);
                 }
-            });
-        } else {
-            notify ("error","Не все поля формы заполнены", true);
-        }
+                
+            },
+            error:function(text, data, XmlHttpRequest){
+              //  notify ("error","Ошибка фильтрации данных");
+                ajaxErrorTemplate("003-011",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+            }
+        });
     } else {
-        notify ("debug","Форма пуста");
+        notify ("error","Не все поля формы заполнены", true);
     }
+  
 
 }
 
@@ -698,123 +707,131 @@ function filterLibraryBtn (){
 
             
             
-        } catch(e) {
-            console.log(e);
-            notify ("error", "Не удалось сохранить шаблон", true); 
-        }
+    } catch(error) {
+        console.log(error);
+        notify ("error", "Не удалось сохранить шаблон");
+        catchErrorTemplate("004-001", error); 
+    }
 }
 
 
-const filterForm =  {   
-    view:"form", 
-    hidden:true,
-    id:"filterTableForm",
-    minHeight:350,
-    minWidth:210,
-    width: 320,
-    scroll:true,
-    elements:[
-        {   id:"form-adaptive",
-            minHeight:48,
-            css:"webix_form-adaptive",
-            margin:5,
-            rows:[
-                {   margin:5, 
-                    rows:[
-                    {   responsive:"form-adaptive",  
-                        margin:5, 
-                        cols:[
-                            {   view:"button",
-                                value:"Редактор фильтров",
-                                height:48,
-                                minWidth:140, 
-                                click:editFiltersBtn,
-                                on: {
-                                    onAfterRender: function () {
-                                        this.getInputNode().setAttribute("title","Добавить/удалить фильтры");
-                                    },
-                                },
-                            },
-                            {   view:"button",
-                                id:"resetFilterBtn",
-                                disabled:true,
-                                height:48,
-                                minWidth:50,
-                                width:65,
-                                hotkey: "shift+esc",
-                                css:"webix_danger", 
-                                type:"icon", 
-                                icon:"wxi-trash", 
-                                click:resetFilterBtn,
-                                on: {
-                                    onAfterRender: function () {
-                                        this.getInputNode().setAttribute("title", "Сбросить фильтры");
-                                    }
-                                } 
-                            },
-                        ],
-                    },
-                    ]
-                },
+let filterForm;
+try {
 
-                {   id:"btns-adaptive",
-                    css:{"margin-top":"5px!important"},
-                    
-                    rows:[
-                        {   responsive:"btns-adaptive", 
+    filterForm =  {   
+        view:"form", 
+        hidden:true,
+        id:"filterTableForm",
+        minHeight:350,
+        minWidth:210,
+        width: 320,
+        scroll:true,
+        elements:[
+            {   id:"form-adaptive",
+                minHeight:48,
+                css:"webix_form-adaptive",
+                margin:5,
+                rows:[
+                    {   margin:5, 
+                        rows:[
+                        {   responsive:"form-adaptive",  
                             margin:5, 
                             cols:[
                                 {   view:"button",
-                                    id:"btnFilterSubmit",
+                                    value:"Редактор фильтров",
                                     height:48,
-                                    minWidth:70, 
-                                    css:"webix_primary",
-                                    hotkey: "Enter",
-                                    disabled:true,
-                                    value:"Применить фильтры", 
-                                    click:filterSubmitBtn,
-                                
+                                    minWidth:140, 
+                                    click:editFiltersBtn,
+                                    on: {
+                                        onAfterRender: function () {
+                                            this.getInputNode().setAttribute("title","Добавить/удалить фильтры");
+                                        },
+                                    },
                                 },
                                 {   view:"button",
-                                    id:"filterLibrarySaveBtn",
+                                    id:"resetFilterBtn",
                                     disabled:true,
                                     height:48,
                                     minWidth:50,
                                     width:65,
                                     hotkey: "shift+esc",
+                                    css:"webix_danger", 
                                     type:"icon", 
-                                    icon:"wxi-file", 
-                                    click:filterLibraryBtn,
+                                    icon:"wxi-trash", 
+                                    click:resetFilterBtn,
                                     on: {
                                         onAfterRender: function () {
-                                            this.getInputNode().setAttribute("title", "Сохранить шаблон с полями в библиотеку");
+                                            this.getInputNode().setAttribute("title", "Сбросить фильтры");
                                         }
                                     } 
                                 },
-                        
-                            ]
+                            ],
                         },
-                        {height:10},
+                        ]
+                    },
 
-                        {   id:"filterEmptyTempalte",
-                            template:"<div style='color:#858585;font-size:13px!important'>Добавьте фильтры из редактора</div>", 
-                            borderless:true
-                        }
-                    ]
-                }
-            ]
+                    {   id:"btns-adaptive",
+                        css:{"margin-top":"5px!important"},
+                        
+                        rows:[
+                            {   responsive:"btns-adaptive", 
+                                margin:5, 
+                                cols:[
+                                    {   view:"button",
+                                        id:"btnFilterSubmit",
+                                        height:48,
+                                        minWidth:70, 
+                                        css:"webix_primary",
+                                        hotkey: "Enter",
+                                        disabled:true,
+                                        value:"Применить фильтры", 
+                                        click:filterSubmitBtn,
+                                    
+                                    },
+                                    {   view:"button",
+                                        id:"filterLibrarySaveBtn",
+                                        disabled:true,
+                                        height:48,
+                                        minWidth:50,
+                                        width:65,
+                                        hotkey: "shift+esc",
+                                        type:"icon", 
+                                        icon:"wxi-file", 
+                                        click:filterLibraryBtn,
+                                        on: {
+                                            onAfterRender: function () {
+                                                this.getInputNode().setAttribute("title", "Сохранить шаблон с полями в библиотеку");
+                                            }
+                                        } 
+                                    },
+                            
+                                ]
+                            },
+                            {height:10},
+
+                            {   id:"filterEmptyTempalte",
+                                template:"<div style='color:#858585;font-size:13px!important'>Добавьте фильтры из редактора</div>", 
+                                borderless:true
+                            }
+                        ]
+                    }
+                ]
+            },
+        ],
+        rules:{
+            $all:webix.rules.isNotEmpty
         },
-    ],
-    rules:{
-        $all:webix.rules.isNotEmpty
-    },
 
 
-    ready:function(){
-        this.validate();
-    },
+        ready:function(){
+            this.validate();
+        },
 
-};
+    };
+}catch(error){
+    console.log(error);
+    catchErrorTemplate("004-003", error);
+}
 
 export{
     filterForm

@@ -121,14 +121,16 @@ function getDataFields (routes, menuItem){
             createElements();
             webix.ajax().get("/init/default/api/fields.json",false).then(function (data) {
                 $$("tree").unselectAll();
+             
+          
                 let srcTree = data.json().content;
-
+            
                 let obj = Object.keys(srcTree);
 
                 let dataChilds = {tables:[], forms:[], dashboards:[]};
 
                 obj.forEach(function(data) {
-                    
+         
                     if (srcTree[data].type == "dbtable"){
                         if(srcTree[data].plural){
                             dataChilds.tables.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type});
@@ -138,7 +140,10 @@ function getDataFields (routes, menuItem){
                             tableNames.push({name:srcTree[data].singular , id:data});
                         }
     
-                    } else if (srcTree[data].type == "tform"){
+                    } 
+                    
+                    if (srcTree[data].type == "tform" || data == "trees" ){
+
                         if(srcTree[data].plural){
                             dataChilds.forms.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type});
                             tableNames.push({name:srcTree[data].plural , id:data}); 
@@ -147,7 +152,10 @@ function getDataFields (routes, menuItem){
                             tableNames.push({name:srcTree[data].singular , id:data}); 
     
                         }
-                    }  else if (srcTree[data].type == "dashboard" ){
+                        
+                    } 
+                    
+                    if (srcTree[data].type == "dashboard" ){
                    
                         if(srcTree[data].plural){
                             dataChilds.dashboards.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type});
@@ -158,10 +166,12 @@ function getDataFields (routes, menuItem){
     
                         }
                     }   
+
+ 
                     
                 });
     
-    
+
                 webix.ajax().get("/init/default/api/mmenu.json").then(function (data) {
 
                     let menu = data.json().mmenu;

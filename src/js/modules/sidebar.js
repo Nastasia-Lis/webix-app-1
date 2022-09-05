@@ -126,7 +126,6 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
     itemTreeId = idsParam;
     let titem = $$("tree").getItem(idsParam);
     $$(idCurrTable).clearAll();
-    // $$(idSearch).setValue("");
 
     
     if (titem == undefined) {
@@ -138,7 +137,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
         }
         
         webix.ajax().get("/init/default/api/fields.json").then(function (data) {
-       
+
 // ---- Таблица - данные cols      
             if (single){
                 let singleSearch = idsParam.search("-single");
@@ -152,8 +151,6 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
             let columnsData = [];
 
             obj.forEach(function(data) {
-                //searchColumnTemplate
-
               
                 if (dataFields[data].type.includes("reference")){
                     let findTableId = dataFields[data].type.slice(10);
@@ -210,7 +207,23 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
  
 
  // -----  Array с кастомными полями
-            if (data.inputs){
+            if (data.inputs || idsParam == "trees"){  //-----------------------------------------------------------------
+                
+                if (idsParam == "trees"){
+
+                    customInputs.push(
+                    {   view:"text",
+                        id: "12314",
+                        maxWidth:300,
+                        minWidth:150,
+                        height:48,
+                        labelPosition:"top",
+                    });
+                    console.log(idsParam)
+                
+                
+                }else {
+
                 let objInuts = Object.keys(data.inputs);
                 
                 let customInputs = [];
@@ -436,7 +449,11 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                     }
 
                 });
-            
+
+                }
+             
+
+                
             
                 inpObj = {id:"customInputs",css:"webix_custom-inp", cols:customInputs};
                 
@@ -469,13 +486,6 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                         if(!($$(exportBtn).isEnabled())){
                             $$(exportBtn).enable();
                         }
-
-                        
-         
-                        // $$(idCurrTable).showProgress({
-                        //     type:"bottom",
-                        //     hide:true
-                        // });
         
                         data = data.json().content;
                         

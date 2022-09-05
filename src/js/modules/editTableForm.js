@@ -3,6 +3,8 @@ import {itemTreeId,getComboOptions} from './sidebar.js';
 import {setLogValue} from './logBlock.js';
 import {headerContextId} from './header.js';
 import {tableNames} from "./login.js";
+import { catchErrorTemplate,ajaxErrorTemplate} from "./logBlock.js";
+
 let currId;
 
 let editTableBar;
@@ -17,32 +19,39 @@ function getCurrId (){
 
 
 //--- bns
-function saveItem(tableEditorVal){        
-    getCurrId ();
-    let itemData = $$(editFormId).getValues();   
-    if($$(editFormId).validate() ){
-        if( itemData.id ) {
-            webix.ajax().put("/init/default/api/"+currId+"/"+itemData.id, itemData, {
-                success:function(){
-                    $$( tableId ).updateItem(itemData.id, itemData);
-                    clearItem();
-                    notify ("success","Данные сохранены",true);
-                    defaultStateForm ();
-                    $$("inputsTable").hide();
-                    $$(tableId).clearSelection();
-                    $$(newAddBtnId).enable();
-                    if ($$("EditEmptyTempalte")&&!($$("EditEmptyTempalte").isVisible())){
-                        $$("EditEmptyTempalte").show();
+function saveItem(){    
+    try{    
+        getCurrId ();
+        let itemData = $$(editFormId).getValues();   
+        if($$(editFormId).validate() ){
+            if( itemData.id ) {
+
+                webix.ajax().put("/init/default/api/"+currId+"/"+itemData.id, itemData, {
+                    success:function(){
+                        $$( tableId ).updateItem(itemData.id, itemData);
+                        clearItem();
+                        notify ("success","Данные сохранены",true);
+                        defaultStateForm ();
+                        $$("inputsTable").hide();
+                        $$(tableId).clearSelection();
+                        $$(newAddBtnId).enable();
+                        if ($$("EditEmptyTempalte")&&!($$("EditEmptyTempalte").isVisible())){
+                            $$("EditEmptyTempalte").show();
+                        }
+                    },
+                    error:function(text, data, XmlHttpRequest){
+                        ajaxErrorTemplate("003-011",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
                     }
-                },
-                error:function(){
-                    notify ("error","Ошибка при сохранении данных",true);
-                }
-            });
-        }    
-  
-    } else {
-        notify ("error","Заполните пустые поля",true);
+                });
+
+
+            }    
+    
+        } else {
+            notify ("error","Заполните пустые поля",true);
+        }
+    }catch (error){
+        catchErrorTemplate("003-000", error);
     }
 
     
@@ -51,30 +60,32 @@ function saveItem(tableEditorVal){
 
 
 function addItem () {
-    if($$(editFormId).isDirty()){
-        popupExec("Данные не сохранены").then(
-        function(){
+    try {
+        if($$(editFormId).isDirty()){
+            popupExec("Данные не сохранены").then(
+            function(){
+                $$(tableId).filter(false);
+                $$(tableId).hideOverlay("Ничего не найдено");
+                createEditFields(editFormId);
+                $$(delBtnId).disable();
+                $$(saveBtnId).hide();
+                $$(saveNewBtnId).show();
+            });
+
+        } else {
+            if ($$("EditEmptyTempalte")&&$$("EditEmptyTempalte").isVisible()){
+                $$("EditEmptyTempalte").hide();
+            }
             $$(tableId).filter(false);
             $$(tableId).hideOverlay("Ничего не найдено");
-           // $$(searchId).setValue("");
             createEditFields(editFormId);
             $$(delBtnId).disable();
             $$(saveBtnId).hide();
             $$(saveNewBtnId).show();
-        });
-
-    } else {
-        if ($$("EditEmptyTempalte")&&$$("EditEmptyTempalte").isVisible()){
-            $$("EditEmptyTempalte").hide();
+            $$(newAddBtnId).disable();
         }
-        $$(tableId).filter(false);
-        $$(tableId).hideOverlay("Ничего не найдено");
-       // $$(searchId).setValue("");
-        createEditFields(editFormId);
-        $$(delBtnId).disable();
-        $$(saveBtnId).hide();
-        $$(saveNewBtnId).show();
-        $$(newAddBtnId).disable();
+    }catch (error){
+        catchErrorTemplate("003-000", error);
     }
 
 
@@ -83,59 +94,66 @@ function addItem () {
 
 
 function saveNewItem (){
-    getCurrId ();
-    
-    if($$( editFormId ).validate() ) {
-        if($$(editFormId).isDirty()){
-            let newValues = $$(editFormId).getValues();
-            newValues.id= $$(tableId).count()+1;
+    try{
+        getCurrId ();
+        
+        if($$( editFormId ).validate() ) {
+            if($$(editFormId).isDirty()){
+                let newValues = $$(editFormId).getValues();
+                newValues.id= $$(tableId).count()+1;
 
-            webix.ajax().post("/init/default/api/"+currId, newValues,{
-                success:function( ){
-                    $$(tableId).add(newValues);
-                    clearItem();
-                    defaultStateForm ();
-                    $$("inputsTable").hide();
-                    $$(newAddBtnId).enable();
-                    if ($$("EditEmptyTempalte")&&!($$("EditEmptyTempalte").isVisible())){
-                        $$("EditEmptyTempalte").show();
+                webix.ajax().post("/init/default/api/"+currId, newValues,{
+                    success:function( ){
+                        $$(tableId).add(newValues);
+                        clearItem();
+                        defaultStateForm ();
+                        $$("inputsTable").hide();
+                        $$(newAddBtnId).enable();
+                        if ($$("EditEmptyTempalte")&&!($$("EditEmptyTempalte").isVisible())){
+                            $$("EditEmptyTempalte").show();
+                        }
+                        notify ("success","Данные успешно добавлены", true);
+                    },
+                    error:function(text, data, XmlHttpRequest){
+                        ajaxErrorTemplate("003-001",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
                     }
-                    notify ("success","Данные успешно добавлены", true);
-                },
-                error:function(){
-                    notify ("error","Ошибка при добавлении данных", true);
-                }
-            });
-        }else {
-            notify ("debug","Форма пуста");
+                });
+            }else {
+                notify ("debug","Форма пуста");
+            }
+        } else {
+            notify ("error","Заполните пустые поля",true);
         }
-    } else {
-        notify ("error","Заполните пустые поля",true);
+    }catch (error){
+        catchErrorTemplate("003-000", error);
     }
    
 }
 
 
 function removeItem() {
-    getCurrId ();
-    popupExec("Запись будет удалена").then(
-        function(){
-            $$( tableId ).remove($$(editFormId).getValues().id);
-            let formValues = $$(editFormId).getValues();
-            webix.ajax().del("/init/default/api/"+currId+"/"+formValues.id+".json", formValues,{
-                success:function(){
-                    clearItem();
-                    defaultStateForm ();
-                    $$("inputsTable").hide();
-                    notify ("success","Данные успешно удалены",true);
-                },
-                error:function(){
-                    notify ("error","Ошибка при удалении записи",true);
-                }
-            });
-            
-    });
-    
+    try{
+        getCurrId ();
+        popupExec("Запись будет удалена").then(
+            function(){
+                $$( tableId ).remove($$(editFormId).getValues().id);
+                let formValues = $$(editFormId).getValues();
+                webix.ajax().del("/init/default/api/"+currId+"/"+formValues.id+".json", formValues,{
+                    success:function(){
+                        clearItem();
+                        defaultStateForm ();
+                        $$("inputsTable").hide();
+                        notify ("success","Данные успешно удалены",true);
+                    },
+                    error:function(text, data, XmlHttpRequest){
+                        ajaxErrorTemplate("003-002",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                    }
+                });
+                
+        });
+    }catch (error){
+        catchErrorTemplate("003-000", error);
+    }
     
 }
 
@@ -148,113 +166,126 @@ function removeItem() {
 //--- components
 
 function createEditFields (parentElement, viewPosition=1) {
+    try {
+        let columnsData = $$(tableId).getColumns();
 
-    let columnsData = $$(tableId).getColumns();
-
-    if(Object.keys($$(parentElement).elements).length==0  ){
-        let inputsArray = [];
-        columnsData.forEach((el,i) => {
-            if (el.type == "datetime"){
-                inputsArray.push({   
-                    view: "datepicker",
-                    format:"%d.%m.%Y %H:%i:%s",
-                    id:el.id,
-                    name:el.id, 
-                    label:el.label, 
-                    placeholder:"дд.мм.гг", 
-                    timepicker: true,
-                    labelPosition:"top",
-                    on:{
-                        onItemClick:function(){
-                            $$(parentElement).clearValidation();
+        if(Object.keys($$(parentElement).elements).length==0  ){
+            let inputsArray = [];
+            columnsData.forEach((el,i) => {
+                if (el.type == "datetime"){
+                    inputsArray.push({   
+                        view: "datepicker",
+                        format:"%d.%m.%Y %H:%i:%s",
+                        id:el.id,
+                        name:el.id, 
+                        label:el.label, 
+                        placeholder:"дд.мм.гг", 
+                        timepicker: true,
+                        labelPosition:"top",
+                        on:{
+                            onItemClick:function(){
+                                $$(parentElement).clearValidation();
+                            }
                         }
+                    });
+                } 
+                
+
+            else if (el.type.includes("reference")) {
+                let findTableId = el.type.slice(10);
+                let refTableName;
+
+                tableNames.forEach(function(el,i){
+                    if (el.id == findTableId){
+                        refTableName= el.name;
                     }
                 });
-            } 
-            
 
-           else if (el.type.includes("reference")) {
-            let findTableId = el.type.slice(10);
-            let refTableName;
+                inputsArray.push(
+                    {cols:[
+                    {   view:"combo",
+                        placeholder:"Выберите вариант",  
+                        label:el.label, 
+                        id:el.id,
+                        name:el.id, 
+                        labelPosition:"top",
+                        options:{
+                            data:getComboOptions(findTableId)
+                        },
+                        on:{
+                            onItemClick:function(){
+                                $$(parentElement).clearValidation();
+                            },
+                        }
+                    },
+                    {
+                        view:"button",
+                        css:{"vertical-align":"bottom!important","height":"38px!important"},
+                        type:"icon",
+                        icon: 'wxi-angle-right',
+                        inputHeight:38,
+                        width: 40,
+                        on: {
+                            onAfterRender: function () {
+                                this.getInputNode().setAttribute("title","Перейти в таблицу"+" "+"«"+refTableName+"»");
+                            },
+                        },
+                        click:function(){
+                            try {
+                                $$("tree").select(findTableId);
+                            } catch (e){
+                                console.log(e);
+                                notify ("error","Таблица не найдена",true);
 
-            tableNames.forEach(function(el,i){
-                if (el.id == findTableId){
-                    refTableName= el.name;
+                                if ($$("EditEmptyTempalte")&&$$("EditEmptyTempalte").isVisible()){
+                                    $$("EditEmptyTempalte").hide();
+                                }
+                            }
+                            
+                        }
+                    }
+                    ]}
+
+                );
+                
+                } 
+                else{
+                    inputsArray.push(
+                        {
+                        view:"text", 
+                        name:el.id,
+                        id:el.id, 
+                        label:el.label, 
+                        labelPosition:"top",
+                        on:{
+                            onKeyPress:function(){
+                                $$(parentElement).clearValidation();
+                            }
+                        }
+                        }
+                    );
                 }
             });
 
-            inputsArray.push(
-                {cols:[
-                {   view:"combo",
-                    placeholder:"Выберите вариант",  
-                    label:el.label, 
-                    id:el.id,
-                    name:el.id, 
-                    labelPosition:"top",
-                    options:{
-                        data:getComboOptions(findTableId)
-                    },
-                    on:{
-                        onItemClick:function(){
-                            $$(parentElement).clearValidation();
-                        },
-                    }
-                },
-                {
-                    view:"button",
-                    css:{"vertical-align":"bottom!important","height":"38px!important"},
-                    type:"icon",
-                    icon: 'wxi-angle-right',
-                    inputHeight:38,
-                    width: 40,
-                    on: {
-                        onAfterRender: function () {
-                            this.getInputNode().setAttribute("title","Перейти в таблицу"+" "+"«"+refTableName+"»");
-                        },
-                    },
-                    click:function(){
-                        $$("tree").select(findTableId);
-                    }
-                }
-                ]}
+            let inpObj = {margin:8,id:"inputsTable", rows:inputsArray};
 
-            );
-            
-            } 
-            else{
-                inputsArray.push(
-                    {
-                    view:"text", 
-                    name:el.id,
-                    id:el.id, 
-                    label:el.label, 
-                    labelPosition:"top",
-                    on:{
-                        onKeyPress:function(){
-                            $$(parentElement).clearValidation();
-                        }
-                    }
-                    }
-                );
+            if(parentElement==editFormId){
+                $$(delBtnId).enable();
             }
-        });
+            
+            return ($$(parentElement).addView( inpObj, viewPosition));
+            
+        } else {
+            $$(parentElement).clear();
+            $$(parentElement).clearValidation();
 
-        let inpObj = {margin:8,id:"inputsTable", rows:inputsArray};
-
-        if(parentElement==editFormId){
-            $$(delBtnId).enable();
+            if(parentElement==editFormId){
+                $$(delBtnId).enable();
+            }
+            $$("inputsTable").show();
         }
-        
-        return ($$(parentElement).addView( inpObj, viewPosition));
-        
-    } else {
-        $$(parentElement).clear();
-        $$(parentElement).clearValidation();
-
-        if(parentElement==editFormId){
-            $$(delBtnId).enable();
-        }
-        $$("inputsTable").show();
+    } catch (error){
+        catchErrorTemplate("003-000", error);
     }
 }
 
@@ -287,8 +318,8 @@ function popupExec (titleText) {
 }
 
 function notify (typeNotify,textMessage, log = false, expireTime=4000) {
-    webix.message.position = "bottom";
-    webix.message({type:typeNotify,expire: expireTime,  text:textMessage});
+    //webix.message.position = "bottom";
+    //webix.message({type:typeNotify,expire: expireTime,  text:textMessage});
     if(log){
         setLogValue(typeNotify, textMessage);
     }
@@ -397,9 +428,7 @@ try{
 
         
     ]},
-  //  {}
-    
-    
+
     ],
     
     rules:{
@@ -412,8 +441,9 @@ try{
     },
 
 };
-} catch (e){
-    console.log(e);
+} catch (error){
+    console.log(error);
+    catchErrorTemplate("003-003", error);
     alert("Ошибка при выполнении");
 }
 
