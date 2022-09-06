@@ -1,18 +1,26 @@
 import {notify} from "../modules/editTableForm.js";
+import {catchErrorTemplate,ajaxErrorTemplate} from "../modules/logBlock.js";
+
 function doAuthCp (){
-    if ( $$("cp-form").validate()){
-        let objPass = {op:"",np:""};
-        let passData = $$("cp-form").getValues();
-        objPass.np = passData.newPass;
-        objPass.op = passData.oldPass;
-        webix.ajax().post("/init/default/api/cp", objPass, {
-            success:function( ){
-                notify ("success","Пароль обновлён", true);
-            },
-            error:function(){
-                notify ("error","Ошибка при обновлении пароля", true);
-            }
-        });
+    try {
+        if ( $$("cp-form").validate()){
+            let objPass = {op:"",np:""};
+            let passData = $$("cp-form").getValues();
+            objPass.np = passData.newPass;
+            objPass.op = passData.oldPass;
+            webix.ajax().post("/init/default/api/cp", objPass, {
+                success:function( ){
+                    notify ("success","Пароль обновлён", true);
+                },
+                error:function(text, data, XmlHttpRequest){
+                    ajaxErrorTemplate("011-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                   // notify ("error","Ошибка при обновлении пароля", true);
+                }
+            });
+        }
+    } catch (error){
+        console.log(error);
+        catchErrorTemplate("011-000", error);
     } 
   
 }
@@ -75,7 +83,7 @@ const authCp = {
     rules:{
         $all:webix.rules.isNotEmpty,
         $obj:function(data){
-
+            
             if (data.newPass != data.repeatPass){
                 notify ("error","Новый пароль не совпадает с повтором",true);
               return false;

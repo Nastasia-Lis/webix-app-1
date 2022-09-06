@@ -261,6 +261,53 @@
   padding-left: 0px !important;
 }
 
+.webix_alert .webix_popup_title {
+  box-shadow: none !important;
+}
+
+.webix_modal-custom-save.webix_alert .webix_popup_text {
+  margin-bottom: 5px !important;
+}
+
+.webix_modal-custom-save .webix_popup_controls div:nth-child(2) {
+  background: var(--secondary) !important;
+  color: var(--primary) !important;
+  transition: 0.2s;
+  border-radius: 4px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+.webix_modal-custom-save .webix_popup_controls div:nth-child(2):hover {
+  background: var(--primary) !important;
+  color: var(--white) !important;
+}
+
+.webix_modal-custom-save .webix_popup_controls div:nth-child(2):active {
+  background: var(--primary-dark) !important;
+}
+
+.webix_modal-custom-save .webix_popup_controls div:nth-child(3) {
+  background: var(--primary) !important;
+  transition: 0.2s;
+  border-radius: 4px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: #fff !important;
+}
+
+.webix_modal-custom-save .webix_popup_controls div:nth-child(3):hover {
+  background: var(--primary-light) !important;
+}
+
+.webix_modal-custom-save .webix_popup_controls div:nth-child(3):active {
+  background: var(--primary-dark) !important;
+}
+
+.webix_badge {
+  background-color: var(--danger) !important;
+}
+
 .webix_popup-filter-container {
   padding: 20px 20px !important;
 }

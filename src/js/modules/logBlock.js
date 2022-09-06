@@ -14,55 +14,60 @@ function setLogValue (typeNotify,notifyText) {
     let seconds =String( date.getSeconds()).padStart(2, '0');
     let currentDate = `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
 
- 
-    if (itemTreeId){
+    try {
+        if (itemTreeId){
 
-        let srcTable;
-        tableNames.forEach(function(el,i){
-            if (el.id == itemTreeId){
-               
-                srcTable= el.name;
-            }
-        });
+            let srcTable;
+            tableNames.forEach(function(el,i){
+                if (el.id == itemTreeId){
+                
+                    srcTable= el.name;
+                }
+            });
 
-        $$("logBlock-list").add({
-            date:currentDate,
-            value:notifyText,
-            src:srcTable
-        });
+            $$("logBlock-list").add({
+                date:currentDate,
+                value:notifyText,
+                src:srcTable
+            });
 
-    } else {
-        $$("logBlock-list").add({
-            date:currentDate,
-            value:notifyText,
-            src:"Expa v1.0.15"
-        });
-    }
-
-    let itemListIndex;
-    
-    let blockContainer = document.querySelector(".webix_log-block");
-    if (blockContainer){
-        blockContainer.querySelectorAll(".webix_list_item").forEach(function(el,i){
-            itemListIndex = i;
-        });
-    }
-    
-    let item = document.querySelectorAll(".webix_list_item")[itemListIndex];
-    if (typeNotify == "error"){
-        item.style.setProperty('color', 'red', 'important');
-        
-        if ($$("webix_log-btn").config.icon =="wxi-eye"){
-            $$("logLayout").config.height = 90;
-            $$("logLayout").resize();
-            $$("webix_log-btn").config.icon ="wxi-eye-slash";
-            $$("webix_log-btn").refresh();
-            setStorageData("LogVisible", JSON.stringify("show"));
+        } else {
+            $$("logBlock-list").add({
+                date:currentDate,
+                value:notifyText,
+                src:"Expa v1.0.16"
+            });
         }
+
+        let itemListIndex;
+        
+        let blockContainer = document.querySelector(".webix_log-block");
+        if (blockContainer){
+            blockContainer.querySelectorAll(".webix_list_item").forEach(function(el,i){
+                itemListIndex = i;
+            });
+        }
+        
+        let item = document.querySelectorAll(".webix_list_item")[itemListIndex];
+        if (typeNotify == "error"){
+            item.style.setProperty('color', 'red', 'important');
+            
+            if ($$("webix_log-btn").config.icon =="wxi-eye"){
+                $$("logLayout").config.height = 90;
+                $$("logLayout").resize();
+                $$("webix_log-btn").config.icon ="wxi-eye-slash";
+                $$("webix_log-btn").refresh();
+                setStorageData("LogVisible", JSON.stringify("show"));
+            }
+        }
+    } catch (error){
+        console.log(error);
+        catchErrorTemplate("006-000", error);
     }
     
 }
 
+let notifyCounter = 0;
 const logBlock = {
     id:"logBlock-list",
     css:"webix_log-block",
@@ -71,8 +76,34 @@ const logBlock = {
     data:[],
     on: {
         onAfterLoad:function(){
-            setLogValue ("success","Интерфейс загружен")
-        }
+            try {
+                setLogValue ("success","Интерфейс загружен");
+            } catch (error){
+                console.log(error);
+                catchErrorTemplate("006-000", error);
+            }
+            
+        },
+        onAfterAdd:function(id, index){
+            console.log(id, index)
+
+         //   $$("logBlock-list").showItem(id);
+            if ($$("webix_log-btn").config.icon =="wxi-eye"){
+                if ($$("webix_log-btn").config.badge==""){
+                    notifyCounter=0;
+                }
+                notifyCounter++;
+                $$("webix_log-btn").config.badge = notifyCounter;
+                $$("webix_log-btn").setValue(1);
+                $$("webix_log-btn").refresh();
+            } else if ($$("webix_log-btn").config.icon =="wxi-eye-slash"){
+                notifyCounter = 0;
+                $$("webix_log-btn").config.badge = "";
+                $$("webix_log-btn").setValue(2);
+                $$("webix_log-btn").refresh();
+            }
+          
+        },
     }
 };
 
@@ -85,12 +116,17 @@ const logLayout = {
 
 
 function catchErrorTemplate (code,error) {
+    $$("webix_log-btn").setValue(2);
+    notifyCounter = 0;
     return notify ("error","ОШИБКА "+code+": "+error.stack,true);
 }
 
 function ajaxErrorTemplate (code, status,statusText,responseURL){
-  let errorMsg = "СТАТУС: "+status+" "+statusText+"."+" ПОДРОБНОСТИ: "+responseURL;
-  return notify ("error","ОШИБКА "+code+": "+errorMsg,true);
+    $$("webix_log-btn").setValue(2);
+    
+    notifyCounter = 0;
+    let errorMsg = "СТАТУС: "+status+" "+statusText+"."+" ПОДРОБНОСТИ: "+responseURL;
+    return notify ("error","ОШИБКА "+code+": "+errorMsg,true);
 }
 
 export {
@@ -99,5 +135,4 @@ export {
     setLogValue,
     catchErrorTemplate,
     ajaxErrorTemplate
-
 };

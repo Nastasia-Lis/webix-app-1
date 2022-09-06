@@ -19,7 +19,7 @@ function getCurrId (){
 
 
 //--- bns
-function saveItem(){    
+function saveItem(addBtnClick=false){    
     try{    
         getCurrId ();
         let itemData = $$(editFormId).getValues();   
@@ -29,22 +29,31 @@ function saveItem(){
                 webix.ajax().put("/init/default/api/"+currId+"/"+itemData.id, itemData, {
                     success:function(){
                         $$( tableId ).updateItem(itemData.id, itemData);
-                        clearItem();
                         notify ("success","Данные сохранены",true);
+                        clearItem();
                         defaultStateForm ();
-                        $$("inputsTable").hide();
                         $$(tableId).clearSelection();
-                        $$(newAddBtnId).enable();
+                        
+                        if (!(addBtnClick)){
+                            $$("inputsTable").hide();
+                            $$(newAddBtnId).enable();
                         if ($$("EditEmptyTempalte")&&!($$("EditEmptyTempalte").isVisible())){
                             $$("EditEmptyTempalte").show();
                         }
+                            
+                        } else {
+                            $$(tableId).filter(false);
+                            createEditFields(editFormId);
+                            $$(delBtnId).disable(); 
+                            $$(saveBtnId).hide();
+                            $$(saveNewBtnId).show();
+                        }
+                    
                     },
                     error:function(text, data, XmlHttpRequest){
                         ajaxErrorTemplate("003-011",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
                     }
                 });
-
-
             }    
     
         } else {
@@ -54,7 +63,6 @@ function saveItem(){
         catchErrorTemplate("003-000", error);
     }
 
-    
 }
 
 
@@ -62,20 +70,32 @@ function saveItem(){
 function addItem () {
     try {
         if($$(editFormId).isDirty()){
-            popupExec("Данные не сохранены").then(
-            function(){
-                $$(tableId).filter(false);
-                $$(tableId).hideOverlay("Ничего не найдено");
-                createEditFields(editFormId);
-                $$(delBtnId).disable();
-                $$(saveBtnId).hide();
-                $$(saveNewBtnId).show();
+
+            modalBox().then(function(result){
+                if (result == 1){
+                    $$(tableId).filter(false);
+                    createEditFields(editFormId);
+                    $$(delBtnId).disable();
+                    $$(saveBtnId).hide();
+                    $$(saveNewBtnId).show();
+                
+                } else if (result == 2){
+                    if ($$(editFormId).validate()){
+                        saveItem(true);
+                        
+                    } else {
+                        notify ("error","Заполните пустые поля",true);
+                        return false;
+                    }
+                    
+                }
             });
 
         } else {
             if ($$("EditEmptyTempalte")&&$$("EditEmptyTempalte").isVisible()){
                 $$("EditEmptyTempalte").hide();
             }
+            $$(tableId).clearSelection();
             $$(tableId).filter(false);
             $$(tableId).hideOverlay("Ничего не найдено");
             createEditFields(editFormId);
@@ -101,7 +121,6 @@ function saveNewItem (){
             if($$(editFormId).isDirty()){
                 let newValues = $$(editFormId).getValues();
                 newValues.id= $$(tableId).count()+1;
-
                 webix.ajax().post("/init/default/api/"+currId, newValues,{
                     success:function( ){
                         $$(tableId).add(newValues);
@@ -317,6 +336,18 @@ function popupExec (titleText) {
     });
 }
 
+function modalBox (){
+    return webix.modalbox({
+        title:"Данные не сохранены",
+        css:"webix_modal-custom-save",
+        buttons:["Отмена", "Не сохранять", "Сохранить"],
+        width:500,
+        text:"Выберите действие перед тем как продолжить"
+
+    })
+}
+
+
 function notify (typeNotify,textMessage, log = false, expireTime=4000) {
     //webix.message.position = "bottom";
     //webix.message({type:typeNotify,expire: expireTime,  text:textMessage});
@@ -407,7 +438,9 @@ try{
             value:"Сохранить", 
             height:48, 
             css:"webix_primary", 
-            click:saveItem,
+            click:function(){
+                saveItem();
+            },
             hotkey: "enter" 
         },
         { 
@@ -442,9 +475,10 @@ try{
 
 };
 } catch (error){
+    alert("Ошибка при выполнении"+" "+ error);
     console.log(error);
-    catchErrorTemplate("003-003", error);
-    alert("Ошибка при выполнении");
+    window.stop();
+   
 }
 
     

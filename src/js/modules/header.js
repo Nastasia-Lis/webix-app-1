@@ -3,40 +3,47 @@ import {notify} from "./editTableForm.js";
 import {headerSidebar} from "./sidebar.js";
 import {tableNames} from "./login.js";
 import {setStorageData,setUserLocation} from "./userSettings.js";
-
+import { catchErrorTemplate,ajaxErrorTemplate} from "./logBlock.js";
 import {checkFormSaved} from "./editTableForm.js";
 
 let userLocation;
 
 function typeTable (type,columnsData, id){
-    $$(type).refreshColumns(columnsData);
-    webix.ajax().get("/init/default/api/"+id,{
-        success:function(text, data, XmlHttpRequest){
-            
-            if(!($$(newAddBtnId).isEnabled())){
-                $$(newAddBtnId).enable();
-            }
-
-            data = data.json().content;
-            
-            if (data.length !== 0){
+    try{
+        $$(type).refreshColumns(columnsData);
+        webix.ajax().get("/init/default/api/"+id,{
+            success:function(text, data, XmlHttpRequest){
                 
-                $$(type).hideOverlay("Ничего не найдено");
-                $$(type).parse(data);
-        
+                if(!($$(newAddBtnId).isEnabled())){
+                    $$(newAddBtnId).enable();
+                }
+
+                data = data.json().content;
+                
+                if (data.length !== 0){
+                    
+                    $$(type).hideOverlay("Ничего не найдено");
+                    $$(type).parse(data);
             
-            } else {
-                $$(type).showOverlay("Ничего не найдено");
-            }
-        
-            let countRows = $$(type).count();
-            $$(findElementsId).setValues(countRows.toString());
-        
-        },
-        error:function(text, data, XmlHttpRequest){
-            notify ("error","Ошибка при загрузке данных",true);
-        }, 
-    });
+                
+                } else {
+                    $$(type).showOverlay("Ничего не найдено");
+                }
+            
+                let countRows = $$(type).count();
+                $$(findElementsId).setValues(countRows.toString());
+            
+            },
+            error:function(text, data, XmlHttpRequest){
+                //notify ("error","Ошибка при загрузке данных",true);
+                ajaxErrorTemplate("005-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+
+            }, 
+        });
+    } catch (error){
+        console.log(error);
+        catchErrorTemplate("005-000", error);
+    }
 }
 
 
@@ -61,26 +68,43 @@ function header() {
                 type:"icon", 
                 icon:"wxi-eye-slash",
                 height:48,
+                badge:0,
                 width: 60,
                 css:"webix_log-btn",
                 on: {
                     onAfterRender: function () {
                         this.getInputNode().setAttribute("title","Показать/скрыть системные сообщения");
+                    },
+                    onChange:function(){
+                        if (this.getValue() == 2){
+                            this.config.badge = "";
+                        }
                     }
                 },
                 click: function() {
-                    if ( this.config.icon =="wxi-eye-slash"){
-                        $$("logLayout").config.height = 5;
-                        $$("logLayout").resize();
-                        this.config.icon ="wxi-eye";
-                        this.refresh();
-                        setStorageData("LogVisible", JSON.stringify("hide"));
-                    } else if (this.config.icon =="wxi-eye"){
-                        $$("logLayout").config.height = 90;
-                        $$("logLayout").resize();
-                        this.config.icon ="wxi-eye-slash";
-                        this.refresh();
-                        setStorageData("LogVisible", JSON.stringify("show"));
+                    try {
+                        if ( this.config.icon =="wxi-eye-slash"){
+                            $$("logLayout").config.height = 5;
+                            $$("webix_log-btn").setValue(1);
+                            $$("logLayout").resize();
+                            this.config.icon ="wxi-eye";
+                            this.refresh();
+                            setStorageData("LogVisible", JSON.stringify("hide"));
+
+                            $$("webix_log-btn").config.badge = "";
+                            $$("webix_log-btn").refresh();
+
+                        } else if (this.config.icon =="wxi-eye"){
+                            $$("logLayout").config.height = 90;
+                            $$("webix_log-btn").setValue(2);
+                            $$("logLayout").resize();
+                            this.config.icon ="wxi-eye-slash";
+                            this.refresh();
+                            setStorageData("LogVisible", JSON.stringify("show"));
+                        }
+                    } catch (error){
+                        console.log(error);
+                        catchErrorTemplate("005-000", error);
                     }
                 }
             },
@@ -99,18 +123,22 @@ function header() {
                     data: [],
                     on:{
                         onItemClick:function(id, e, node){
-
-                            if (id=="logout"){
-                                if($$(editFormId) && $$(editFormId).isDirty() ||$$("cp-form") && $$("cp-form").isDirty()){
-                                    checkFormSaved().then(function(result){
-                                        if(result){
-                                            window.location.replace("#logout");
-                                        }
-                                    });
-                                    return false;
-                                } else {
-                                    window.location.replace("#logout");
+                            try {
+                                if (id=="logout"){
+                                    if($$(editFormId) && $$(editFormId).isDirty() ||$$("cp-form") && $$("cp-form").isDirty()){
+                                        checkFormSaved().then(function(result){
+                                            if(result){
+                                                window.location.replace("#logout");
+                                            }
+                                        });
+                                        return false;
+                                    } else {
+                                        window.location.replace("#logout");
+                                    }
                                 }
+                            } catch (error){
+                                console.log(error);
+                                catchErrorTemplate("005-000", error);
                             }
  
                         }
@@ -118,11 +146,12 @@ function header() {
                 },
                 on:{
                     onItemClick:function(){
-                        
-
+                        try {
                         setUserLocation (tableNames,userLocation);
-                     
-                        
+                        } catch (error){
+                            console.log(error);
+                            catchErrorTemplate("005-000", error);
+                        }
                     }
                 }
             },

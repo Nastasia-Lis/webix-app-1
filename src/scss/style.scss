@@ -74,6 +74,45 @@
 
 
 
+
+.webix_alert .webix_popup_title{
+    box-shadow:none!important;
+}
+.webix_modal-custom-save.webix_alert .webix_popup_text{
+    margin-bottom: 5px!important;
+}
+
+.webix_modal-custom-save .webix_popup_controls div:nth-child(2){
+    @include secondary-btn;
+}
+
+.webix_modal-custom-save .webix_popup_controls div:nth-child(2):hover{
+    @include secondary-btn--hover;
+}
+
+.webix_modal-custom-save .webix_popup_controls div:nth-child(2):active{
+    @include secondary-btn--active;
+}
+
+.webix_modal-custom-save .webix_popup_controls div:nth-child(3){
+    @include primary-btn;
+    color:#fff!important;
+}
+.webix_modal-custom-save .webix_popup_controls div:nth-child(3):hover{
+    @include primary-btn--hover;
+}
+.webix_modal-custom-save .webix_popup_controls div:nth-child(3):active{
+    @include primary-btn--active;
+}
+
+
+
+.webix_badge{
+    background-color: var(--danger)!important;
+}
+
+
+
 .webix_popup-filter-container{
     padding:20px 20px!important;
 }

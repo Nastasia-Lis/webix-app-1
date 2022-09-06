@@ -3,6 +3,7 @@ import {notify} from "./editTableForm.js";
 import {setUserLocation} from "./userSettings.js";
 import {tableNames} from "./login.js";
 import {userLocation} from "./header.js";
+import {catchErrorTemplate,ajaxErrorTemplate} from "./logBlock.js";
 
 export function resetTimer (){
 
@@ -20,31 +21,43 @@ export function resetTimer (){
         webix.ajax().post("/init/default/logout/",{
             
             success:function(text, data, XmlHttpRequest){
-                
+                try {
+                    if($$("popupFilterEdit")&&$$("popupFilterEdit").isVisible()){
+                        $$("popupFilterEdit").hide();
+                    }
+                    if($$("popupPrevHref")&&$$("popupPrevHref").isVisible()){
+                        $$("popupPrevHref").hide();
+                    }
 
-                if($$("popupFilterEdit")&&$$("popupFilterEdit").isVisible()){
-                    $$("popupFilterEdit").hide();
-                }
-                if($$("popupPrevHref")&&$$("popupPrevHref").isVisible()){
-                    $$("popupPrevHref").hide();
-                }
+                    history.back();
+                    removeElements();
+                    $$("webix__none-content").show();
+                    $$("tree").clearAll();
+                    notify ("debug","Превышено время бездействия", false, -1);
+                } catch (error){
+                    console.log(error);
+                    catchErrorTemplate("008-000", error);
 
-                history.back();
-                removeElements();
-                $$("webix__none-content").show();
-                $$("tree").clearAll();
-                notify ("debug","Превышено время бездействия", false, -1);
+                }
             },
             error:function(text, data, XmlHttpRequest){
                 notify ("error","Не удалось выполнить выход",true);
+                ajaxErrorTemplate("008-006",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+
             }
         });
   
     }
 
     function resetTimer() {
-        clearTimeout(t);
-        t = setTimeout(logout, 600000); // 600000
+        try {
+            clearTimeout(t);
+            t = setTimeout(logout, 600000); // 600000
+        } catch (error){
+            console.log(error);
+            catchErrorTemplate("008-000", error);
+
+        }
     };
     
 }

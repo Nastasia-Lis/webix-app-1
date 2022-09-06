@@ -8,43 +8,53 @@ let popupLibData = {};
 
 function tabbarClick (id){
     function btnSubmitState (state){
-        if (state=="enable"){
-            if(!($$("popupFilterSubmitBtn").isEnabled())){
-                $$("popupFilterSubmitBtn").enable();
+        try {
+            if (state=="enable"){
+                if(!($$("popupFilterSubmitBtn").isEnabled())){
+                    $$("popupFilterSubmitBtn").enable();
+                }
+            } else if (state=="disable"){
+                if($$("popupFilterSubmitBtn").isEnabled()){
+                    $$("popupFilterSubmitBtn").disable();
+                }
             }
-        } else if (state=="disable"){
-            if($$("popupFilterSubmitBtn").isEnabled()){
-                $$("popupFilterSubmitBtn").disable();
-            }
+        } catch (error){
+            console.log(error);
+            catchErrorTemplate("004-000", error);
         }
     }
-    
-    if (id =="editFormPopupLib"){
+    try{
+        if (id =="editFormPopupLib"){
 
-        if ($$("filterEditLib").getValue() !== "" ){
+            if ($$("filterEditLib").getValue() !== "" ){
+                
+                btnSubmitState ("enable");
+            } else {
+                btnSubmitState ("disable");
+            }
+        }
+
+        if (id =="editFormScroll"){
+            let checkboxes = $$("editFormPopup").getValues();
+            let counter = 0;
             
-            btnSubmitState ("enable");
-        } else {
-            btnSubmitState ("disable");
-        }
-    }
+            Object.values(checkboxes).forEach(function(el,i){
+                if (el){
+                    counter++;
+                }
+            });
 
-     if (id =="editFormScroll"){
-        let checkboxes = $$("editFormPopup").getValues();
-        let counter = 0;
-      
-        Object.values(checkboxes).forEach(function(el,i){
-            if (el){
-                counter++;
+            if (counter >0){
+                btnSubmitState ("enable");
+            } else {
+                btnSubmitState ("disable");
             }
-        });
-
-        if (counter >0){
-            btnSubmitState ("enable");
-        } else {
-            btnSubmitState ("disable");
+        
         }
-    
+    } catch (error){
+        console.log(error);
+        catchErrorTemplate("004-000", error);
+
     }
 }
 
@@ -204,7 +214,10 @@ function editFiltersBtn (){
                         width:25,
                         icon: 'wxi-close',
                         click:function(){
-                            $$("popupFilterEdit").hide();
+                            if ($$("popupFilterEdit")){
+                                $$("popupFilterEdit").hide(); 
+                            }
+                           
                         }
                     },
                 ]},
@@ -263,17 +276,29 @@ function editFiltersBtn (){
                                                 ],
                                                 on:{
                                                     onChange:function(){
-                                                        if (this.getValue()){
-                                                            if(!($$("popupFilterSubmitBtn").isEnabled())){
-                                                                $$("popupFilterSubmitBtn").enable();
+                                                        try {
+                                                            if (this.getValue()&&$$("popupFilterSubmitBtn")){
+                                                                if(!($$("popupFilterSubmitBtn").isEnabled())){
+                                                                    $$("popupFilterSubmitBtn").enable();
+                                                                }
                                                             }
+                                                        } catch (error){
+                                                            console.log(error);
+                                                            catchErrorTemplate("004-000", error);
+
                                                         }
                                                     },
                                                 
                                                     onAfterRender:function(){
-                                                        if (Object.keys(popupLibData).length>0){
-                                                            $$("filterEditLib").addOption(popupLibData);
-                                                            $$("filterEditLib").removeOption("radioNoneContent");
+                                                        try {
+                                                            if (Object.keys(popupLibData).length>0){
+                                                                $$("filterEditLib").addOption(popupLibData);
+                                                                $$("filterEditLib").removeOption("radioNoneContent");
+                                                            }
+                                                        } catch (error){
+                                                            console.log(error);
+                                                            catchErrorTemplate("004-000", error);
+
                                                         }
                                                     }
                                                 }
@@ -323,31 +348,36 @@ function editFiltersBtn (){
                         name:"selectAll",
                         on:{
                             onChange:function(){
-                                if (this.getValue()){
-                                    if(!($$("popupFilterSubmitBtn").isEnabled())){
-                                        $$("popupFilterSubmitBtn").enable();
-                                    }
-                                } else {
-                                    if($$("popupFilterSubmitBtn").isEnabled()){
-                                        $$("popupFilterSubmitBtn").disable();
-                                    }
-                                }
-                                
-                                
-                                let checkboxes = $$("editFormPopupScrollContent").getChildViews();
-                            
-                                checkboxes.forEach(function(el,i){
-                                    if (el.config.id.includes("checkbox")){
-
-                                        if($$("selectAll").getValue()){
-                                            el.config.value = 1;
-                                        } else {
-                                            el.config.value = 0;
+                                try {
+                                    if (this.getValue()){
+                                        if(!($$("popupFilterSubmitBtn").isEnabled())){
+                                            $$("popupFilterSubmitBtn").enable();
                                         }
-                                        $$(el).refresh();
+                                    } else {
+                                        if($$("popupFilterSubmitBtn").isEnabled()){
+                                            $$("popupFilterSubmitBtn").disable();
+                                        }
                                     }
+                                    
+                                    
+                                    let checkboxes = $$("editFormPopupScrollContent").getChildViews();
+                                
+                                    checkboxes.forEach(function(el,i){
+                                        if (el.config.id.includes("checkbox")){
 
-                                });
+                                            if($$("selectAll").getValue()){
+                                                el.config.value = 1;
+                                            } else {
+                                                el.config.value = 0;
+                                            }
+                                            $$(el).refresh();
+                                        }
+
+                                    });
+                                } catch (error){
+                                    console.log(error);
+                                    catchErrorTemplate("004-000", error);
+                                }
 
                             },
                     
@@ -359,113 +389,137 @@ function editFiltersBtn (){
     ];
     
     // all checkboxes template
-    let formData = [];
-    let filterTableElements  = $$("filterTableForm").elements;
+  
+        let formData = [];
+        let filterTableElements  = $$("filterTableForm").elements;
+    try {
+        Object.values(filterTableElements).forEach(function(el,i){
+            formData.push({id:el.config.id, label:el.config.label})
+        });
+    } catch (error){
+        console.log(error);
+        catchErrorTemplate("004-000", error);
 
-    Object.values(filterTableElements).forEach(function(el,i){
-        formData.push({id:el.config.id, label:el.config.label})
-    });
+    }
 
     function checkboxOnChange (el){
+        try {
+            let parent = $$(el.id+"_checkbox").getParentView();
+            let childs = parent.getChildViews();
         
-        let parent = $$(el.id+"_checkbox").getParentView();
-        let childs = parent.getChildViews();
-    
-        let counter=0;
-        let btnState = 0;
-        childs.forEach(function(el,i){
+            let counter=0;
+            let btnState = 0;
+            
+            childs.forEach(function(el,i){
 
+                if (el.config.id.includes("checkbox")){
+                    if (!(el.config.value)||el.config.value==""){
+                        counter++;
+                    }
+                }
+
+                if (el.config.value){
+                    btnState++;
+                }
+            });
+
+            if (btnState > 0) {
+                if(!($$("popupFilterSubmitBtn").isEnabled())){
+                    $$("popupFilterSubmitBtn").enable();
+                }
+            } else {
+                if($$("popupFilterSubmitBtn").isEnabled()){
+                    $$("popupFilterSubmitBtn").disable();
+                }
+            }
+
+            if (counter == 0){
+                $$("selectAll").config.value = 1;
+                $$("selectAll").refresh();
+            } else {
+                if ($$("selectAll").config.value !== 0){
+                    $$("selectAll").config.value = 0;
+                    $$("selectAll").refresh();
+                }
+            }
+        } catch (error){
+            console.log(error);
+            catchErrorTemplate("004-000", error);
+
+        }
+    }
+
+    try {
+        formData.forEach(function(el,i){
+            if(!(el.id.includes("child"))){
+                if ($$(el.id)&&$$(el.id).isVisible()){
+                    
+                    nameList[0].cols[0].rows.push(
+                        {
+                            view:"checkbox", 
+                            id:el.id+"_checkbox", 
+                            labelRight:el.label, 
+                            labelWidth:0,
+                            name:el.id,
+                            value:1,
+                            on:{
+                                onChange:function(){
+                                    checkboxOnChange (el); 
+                                }
+                            } 
+                        }
+                    );
+                
+                }else {
+                    nameList[0].cols[0].rows.push(
+                        {
+                            view:"checkbox", 
+                            id:el.id+"_checkbox", 
+                            labelRight:el.label, 
+                            labelWidth:0,
+                            name:el.id,
+                            on:{
+                                onChange:function(){
+                                    checkboxOnChange (el);
+                                },
+                            
+                            }
+                        }
+                    );
+                }
+                
+                
+                
+            }
+        });
+
+        $$("editFormPopupScroll").addView({rows:nameList},1);
+    } catch (error){
+        console.log(error);
+        catchErrorTemplate("004-000", error);
+
+    }
+
+    let counter = 0;
+    let checkboxes = $$("editFormPopupScrollContent").getChildViews();
+    try{
+        checkboxes.forEach(function(el,i){
             if (el.config.id.includes("checkbox")){
                 if (!(el.config.value)||el.config.value==""){
                     counter++;
                 }
             }
-
-            if (el.config.value){
-                btnState++;
-            }
         });
-
-        if (btnState > 0) {
-            if(!($$("popupFilterSubmitBtn").isEnabled())){
-                $$("popupFilterSubmitBtn").enable();
-            }
-        } else {
-            if($$("popupFilterSubmitBtn").isEnabled()){
-                $$("popupFilterSubmitBtn").disable();
-            }
-        }
 
         if (counter == 0){
             $$("selectAll").config.value = 1;
             $$("selectAll").refresh();
-        } else {
-            if ($$("selectAll").config.value !== 0){
-                $$("selectAll").config.value = 0;
-                $$("selectAll").refresh();
-            }
-        }
+        } 
+    } catch (error){
+        console.log(error);
+        catchErrorTemplate("004-000", error);
+
     }
-
-    formData.forEach(function(el,i){
-        if(!(el.id.includes("child"))){
-            if ($$(el.id)&&$$(el.id).isVisible()){
-                
-                nameList[0].cols[0].rows.push(
-                    {
-                        view:"checkbox", 
-                        id:el.id+"_checkbox", 
-                        labelRight:el.label, 
-                        labelWidth:0,
-                        name:el.id,
-                        value:1,
-                        on:{
-                            onChange:function(){
-                                checkboxOnChange (el); 
-                            }
-                        } 
-                    }
-                );
-            
-            }else {
-                nameList[0].cols[0].rows.push(
-                    {
-                        view:"checkbox", 
-                        id:el.id+"_checkbox", 
-                        labelRight:el.label, 
-                        labelWidth:0,
-                        name:el.id,
-                        on:{
-                            onChange:function(){
-                                checkboxOnChange (el);
-                            },
-                           
-                        }
-                    }
-                );
-            }
-            
-            
-            
-        }
-    });
-
-    $$("editFormPopupScroll").addView({rows:nameList},1);
-
-    let counter = 0;
-    let checkboxes = $$("editFormPopupScrollContent").getChildViews();
-    checkboxes.forEach(function(el,i){
-        if (el.config.id.includes("checkbox")){
-            if (!(el.config.value)||el.config.value==""){
-                counter++;
-            }
-        }
-    });
-
-    if (counter == 0){
-        $$("selectAll").config.value = 1;
-        $$("selectAll").refresh();
-    } 
 }
 
 function resetFilterBtn (){
@@ -601,7 +655,7 @@ function filterSubmitBtn (){
                 filterEl = el;
             
                 value = values[el];
-                if (el.includes("cdt")|| el.includes("edt")){
+                if (el.includes("cdt")|| el.includes("edt")|| el.includes("sdt")){
                     value = postFormatData(values[el]);
                 }
 
