@@ -167,8 +167,93 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
             
             webix.ajax().get("/init/default/api/fields.json").then(function (data) {
                 
-                data = data.json().content[idsParam];
-
+             
+                let data1 = data.json().content;
+                data1.treeTemplate={
+                    
+                    "fields": {
+                        "id": {
+                            "type": "id",
+                            "unique": false,
+                            "notnull": false,
+                            "length": 512,
+                            "label": "Id",
+                            "comment": null,
+                            "default": "None"
+                        },
+                        "pid": {
+                            "type": "reference trees",
+                            "unique": false,
+                            "notnull": false,
+                            "length": 512,
+                            "label": "Родитель",
+                            "comment": null,
+                            "default": "None"
+                        },
+                        "owner": {
+                            "type": "reference auth_user",
+                            "unique": false,
+                            "notnull": false,
+                            "length": 512,
+                            "label": "Владелец",
+                            "comment": null,
+                            "default": "None"
+                        },
+                        "ttype": {
+                            "type": "integer",
+                            "unique": false,
+                            "notnull": false,
+                            "length": 512,
+                            "label": "Тип",
+                            "comment": "Тип записи|1=системная;2=пользовательская|Перечисление",
+                            "default": "1"
+                        },
+                        "name": {
+                            "type": "string",
+                            "unique": false,
+                            "notnull": false,
+                            "length": 100,
+                            "label": "Наименование",
+                            "comment": null,
+                            "default": ""
+                        },
+                        "descr": {
+                            "type": "string",
+                            "unique": false,
+                            "notnull": false,
+                            "length": 1000,
+                            "label": "Описание",
+                            "comment": null,
+                            "default": ""
+                        },
+                        "value": {
+                            "type": "string",
+                            "unique": false,
+                            "notnull": false,
+                            "length": 1000,
+                            "label": "Значение",
+                            "comment": null,
+                            "default": ""
+                        },
+                        "cdt": {
+                            "type": "datetime",
+                            "unique": false,
+                            "notnull": false,
+                            "length": 512,
+                            "label": "Создано",
+                            "comment": null,
+                            "default": "now"
+                        }
+                    },
+                    "singular": "Классификатор-пример",
+                    "ref_name": "name",
+                    "plural": "Классификаторы-пример",
+                    "type": "treeConf"
+                    
+                };
+                data = data1[idsParam];
+                //data = data.json().content[idsParam];
+                console.log(data)
                 let dataFields = data.fields;
                 let obj = Object.keys(data.fields);
                 let columnsData = [];
@@ -243,23 +328,8 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
 
     // -----  Array с кастомными полями
                 try{
-                    if (data.inputs || idsParam == "trees"){  //-----------------------------------------------------------------
+                    if (data.inputs ){  //-----------------------------------------------------------------
                         
-                        if (idsParam == "trees"){
-
-                            customInputs.push(
-                            {   view:"text",
-                                id: "12314",
-                                maxWidth:300,
-                                minWidth:150,
-                                height:48,
-                                labelPosition:"top",
-                            });
-                            console.log(idsParam)
-                        
-                        
-                        }else {
-
                         let objInuts = Object.keys(data.inputs);
                         
                         let customInputs = [];
@@ -494,7 +564,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
 
                         });
 
-                        }
+                    
                     
 
                         
@@ -998,6 +1068,55 @@ function getInfoDashboard (idsParam,single=false){
     }
 }
 
+function getInfoEditTree() {
+    console.log(itemTreeId);
+    $$("treeEdit").clearAll();
+    //function getData (url){
+    let url = "/init/default/api/"+"trees";
+    webix.ajax().get(url, {
+        success:function(text, data, XmlHttpRequest){
+            try {
+
+                data = data.json().content;
+                data[0].pid = 0;
+
+                let map = {}, 
+                    treeStruct = [],
+                    treeData = []
+                ;
+                
+                data.forEach(function(el,i){
+                    treeData.push({id:el.id, value:el.name, pid:el.pid, data:[]});
+                });
+               
+                treeData.forEach(function(el,i){
+
+                    map[el.id] = i; 
+                 
+                    if (el.pid !== 0) {
+                        treeData[map[el.pid]].data.push(el);
+                    } else {
+                        treeStruct.push(el);
+                    }
+                });
+
+                $$("treeEdit").parse(treeStruct);
+
+            } catch (error){
+                console.log(error);
+                catchErrorTemplate("009-004", error);
+            } 
+            
+        },
+        error:function(text, data, XmlHttpRequest){
+            //notify ("error","Ошибка при сохранении данных",true);
+            ajaxErrorTemplate("009-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+
+        }
+    }); 
+  
+}
+
 
 function headerSidebar () {
     const headerLogo = {
@@ -1057,6 +1176,7 @@ function treeSidebar () {
     let tree = {
         view:"edittree",
         id:"tree",
+        css:"webix_tree-main",
         minWidth:100,
         width: 250,
         editable:false,
@@ -1072,8 +1192,9 @@ function treeSidebar () {
                 
                     itemTreeId = ids[0];
                     let treeItemId = $$("tree").getSelectedItem().id;
+              
                     let getItemParent = $$("tree").getParentId(treeItemId);
-
+        
                     let treeArray = $$("tree").data.order;
                     let parentsArray = [];
 
@@ -1155,7 +1276,7 @@ function treeSidebar () {
                                     } else {
                                         if (el == getItemParent){
                                             $$(el).show();
-                                        } else if (el=="tables" || el=="dashboards" || el=="forms" || el=="user_auth"){
+                                        } else if (el=="tables" || el=="dashboards" || el=="forms" || el=="user_auth" || el=="treeTempl"){
                                             $$(el).hide();
                                         }
                                 
@@ -1172,6 +1293,7 @@ function treeSidebar () {
                     
                     }
                 try {
+                  
                     if (getItemParent=="tables" || singleItemContent == "dbtable"){
                         visibleTreeItem("tables"); 
                     }else if(getItemParent=="dashboards" || singleItemContent == "dashboard"){
@@ -1185,6 +1307,9 @@ function treeSidebar () {
                         visibleTreeItem(); 
                     } else if (getItemParent == 0 && treeItemId!=="tables"&& treeItemId!=="user_auth"&& treeItemId!=="dashboards" && treeItemId!=="forms" && !singleItemContent){
                         visibleTreeItem(false, ids[0]); 
+                    } else if (getItemParent=="treeTempl"){
+                        visibleTreeItem(); 
+                 
                     }
 
               
@@ -1215,8 +1340,8 @@ function treeSidebar () {
                         getInfoTable (tableIdView, searchIdView, ids[0], findElementsIdView);
                     }else if(singleItemContent == "tform") {
                         getInfoTable (tableIdView, searchIdView, ids[0], findElementsIdView, true);
-                    } else {
-                
+                    } else if (getItemParent=="treeTempl"){
+                        getInfoEditTree() ;
                     }
                 } catch (error){
                     console.log(error);
@@ -1280,5 +1405,6 @@ export{
     itemTreeId,
     inpObj,
     customInputs,
-    urlFieldAction
+    urlFieldAction,
+    getInfoEditTree
 };

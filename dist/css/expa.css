@@ -466,7 +466,7 @@ label, button {
 .webix_dashboard-h2 .webix_template {
   padding: 0px !important;
 }
-.webix_view .webix_tree {
+.webix_tree.webix_tree-main {
   background-color: var(--bg) !important;
   border-width: 0px !important;
 }
@@ -770,4 +770,8 @@ label, button {
 
 .webix_prompt-filter-lib > .webix_popup_controls div:nth-child(2):active {
   background: var(--primary-dark) !important;
+}
+
+.webix_tree.webix_tree-edit {
+  background-color: none !important;
 }

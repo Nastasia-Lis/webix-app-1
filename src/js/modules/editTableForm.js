@@ -348,9 +348,12 @@ function modalBox (){
 }
 
 
-function notify (typeNotify,textMessage, log = false, expireTime=4000) {
-    //webix.message.position = "bottom";
-    //webix.message({type:typeNotify,expire: expireTime,  text:textMessage});
+function notify (typeNotify,textMessage, log = false, visible=false) {
+    if (visible){
+        webix.message.position = "bottom";
+        webix.message({type:typeNotify, text:textMessage});
+    }
+   
     if(log){
         setLogValue(typeNotify, textMessage);
     }

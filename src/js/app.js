@@ -1,4 +1,4 @@
-console.log("expa 1.0.16");
+console.log("expa 1.0.17");
 
 import {lib} from "./modules/expalib.js";
 lib ();
@@ -10,9 +10,8 @@ import {header} from "./modules/header.js";
 import {treeSidebar} from "./modules/sidebar.js";
 import {logLayout} from "./modules/logBlock.js";
 import * as resetTimer from  "./modules/resetTimer.js";
-import {contextMenu} from "./modules/contextMenuTree.js";
 
-import { catchErrorTemplate,ajaxErrorTemplate} from "./modules/logBlock.js";
+import { catchErrorTemplate} from "./modules/logBlock.js";
 
 try{
 
@@ -90,7 +89,7 @@ try{
         }, true);
 
 
-        webix.ui(contextMenu());
+    
 
         Backbone.history.start();
 

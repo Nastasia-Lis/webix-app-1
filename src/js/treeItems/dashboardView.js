@@ -12,7 +12,7 @@ function dashboardLayout () {
                 dashboardBody],}
             ]}
         ];
-    }
+}
 export {
     dashboardLayout,
 };

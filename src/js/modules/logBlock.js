@@ -35,7 +35,7 @@ function setLogValue (typeNotify,notifyText) {
             $$("logBlock-list").add({
                 date:currentDate,
                 value:notifyText,
-                src:"Expa v1.0.16"
+                src:"Expa v1.0.17"
             });
         }
 
@@ -50,7 +50,10 @@ function setLogValue (typeNotify,notifyText) {
         
         let item = document.querySelectorAll(".webix_list_item")[itemListIndex];
         if (typeNotify == "error"){
-           // item.style.setProperty('color', 'red', 'important');
+
+            if (item!==undefined){
+                item.style.setProperty('color', 'red', 'important');
+            }
             
             if ($$("webix_log-btn").config.icon =="wxi-eye"){
                 $$("logLayout").config.height = 90;
@@ -115,10 +118,14 @@ const logLayout = {
 };
 
 
-function catchErrorTemplate (code,error) {
+function catchErrorTemplate (code,error,otherType=false) {
     $$("webix_log-btn").setValue(2);
     notifyCounter = 0;
-    return notify ("error","ОШИБКА "+code+": "+error.stack,true);
+    if (!otherType){
+        return notify ("error","ОШИБКА "+code+": "+error.stack,true);
+    } else {
+        return notify ("error","ОШИБКА "+code+": "+error,true);
+    }
 }
 
 function ajaxErrorTemplate (code, status,statusText,responseURL){

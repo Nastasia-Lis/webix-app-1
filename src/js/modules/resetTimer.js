@@ -33,7 +33,7 @@ export function resetTimer (){
                     removeElements();
                     $$("webix__none-content").show();
                     $$("tree").clearAll();
-                    notify ("debug","Превышено время бездействия", false, -1);
+                    notify ("debug","Превышено время бездействия", false);
                 } catch (error){
                     console.log(error);
                     catchErrorTemplate("008-000", error);

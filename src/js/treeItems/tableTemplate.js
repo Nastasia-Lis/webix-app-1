@@ -678,6 +678,7 @@ let onFuncTable = {
     onBeforeLoad:function(){
         this.showOverlay("Загрузка...");
     },
+    
     onAfterEditStop:function(state, editor, ignoreUpdate){
         try {
             if(state.value != state.old){
@@ -686,7 +687,7 @@ let onFuncTable = {
             }
         } catch (error){
             console.log(error);
-            catchErrorTemplate("012-000", error);
+            catchErrorTemplate("012-011", error);
         }
     },
 

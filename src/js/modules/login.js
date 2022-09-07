@@ -15,7 +15,10 @@ import {userprefsLayout} from "../treeItems/userprefsItems.js";
 import {editTableBar} from "./editTableForm.js";
 import {propertyTemplate} from "./viewPropertyTable.js";
 import {filterForm} from "./filterTableBar.js";
+import {editTreeLayout,contextMenu} from "../treeItems/editTreeTemplate.js";
 import {catchErrorTemplate,ajaxErrorTemplate} from "./logBlock.js";
+
+
 
 
 let tableNames = [];
@@ -30,6 +33,15 @@ function createElements(specificElement){
                 rows: dashboardLayout()
             },
         4);
+
+        $$("container").addView(
+            {view:"layout",id:"treeTempl", hidden:true, scroll:"auto",
+                rows: editTreeLayout()
+                //rows: dashboardLayout()
+            },
+        4);
+
+        webix.ui(contextMenu());
 
         $$("container").addView(
             {id:"tables", hidden:true, view:"scrollview", body: { view:"flexlayout", cols:[
@@ -130,15 +142,108 @@ function getDataFields (routes, menuItem){
             createElements();
             webix.ajax().get("/init/default/api/fields.json",false).then(function (data) {
                 let srcTree = data.json().content;
-                
+                //console.log(srcTree)
+  
+                srcTree.treeTemplate={
+                    
+                    "fields": {
+                        "id": {
+                            "type": "id",
+                            "unique": false,
+                            "notnull": false,
+                            "length": 512,
+                            "label": "Id",
+                            "comment": null,
+                            "default": "None"
+                        },
+                        "pid": {
+                            "type": "reference trees",
+                            "unique": false,
+                            "notnull": false,
+                            "length": 512,
+                            "label": "Родитель",
+                            "comment": null,
+                            "default": "None"
+                        },
+                        "owner": {
+                            "type": "reference auth_user",
+                            "unique": false,
+                            "notnull": false,
+                            "length": 512,
+                            "label": "Владелец",
+                            "comment": null,
+                            "default": "None"
+                        },
+                        "ttype": {
+                            "type": "integer",
+                            "unique": false,
+                            "notnull": false,
+                            "length": 512,
+                            "label": "Тип",
+                            "comment": "Тип записи|1=системная;2=пользовательская|Перечисление",
+                            "default": "1"
+                        },
+                        "name": {
+                            "type": "string",
+                            "unique": false,
+                            "notnull": false,
+                            "length": 100,
+                            "label": "Наименование",
+                            "comment": null,
+                            "default": ""
+                        },
+                        "descr": {
+                            "type": "string",
+                            "unique": false,
+                            "notnull": false,
+                            "length": 1000,
+                            "label": "Описание",
+                            "comment": null,
+                            "default": ""
+                        },
+                        "value": {
+                            "type": "string",
+                            "unique": false,
+                            "notnull": false,
+                            "length": 1000,
+                            "label": "Значение",
+                            "comment": null,
+                            "default": ""
+                        },
+                        "cdt": {
+                            "type": "datetime",
+                            "unique": false,
+                            "notnull": false,
+                            "length": 512,
+                            "label": "Создано",
+                            "comment": null,
+                            "default": "now"
+                        }
+                    },
+                    "singular": "Классификатор-пример",
+                    "ref_name": "name",
+                    "plural": "Классификаторы-пример",
+                    "type": "treeConf"
+                    
+                };
+
+
+
                 let obj = Object.keys(srcTree);
 
-                let dataChilds = {tables:[], forms:[], dashboards:[]};
+                let dataChilds = {tables:[], forms:[], dashboards:[], treeConf:[]};
                
                 try{
                     $$("tree").unselectAll();
 
                     obj.forEach(function(data) {
+
+                        if (srcTree[data].type == "treeConf" ){
+
+                            dataChilds.treeConf.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type});
+                            tableNames.push({name:srcTree[data].plural , id:data}); 
+                            
+                        } 
             
                         if (srcTree[data].type == "dbtable"){
                             if(srcTree[data].plural){
@@ -151,7 +256,7 @@ function getDataFields (routes, menuItem){
         
                         } 
                         
-                        if (srcTree[data].type == "tform" || data == "trees" ){
+                        if (srcTree[data].type == "tform" ){
 
                             if(srcTree[data].plural){
                                 dataChilds.forms.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type});
@@ -163,7 +268,7 @@ function getDataFields (routes, menuItem){
                             }
                             
                         } 
-                        
+
                         if (srcTree[data].type == "dashboard" ){
                     
                             if(srcTree[data].plural){
@@ -179,6 +284,8 @@ function getDataFields (routes, menuItem){
     
                         
                     });
+                   // console.log(dataChilds)
+                    //dataChilds.forms.push({"id":123, "value":"Дерево-пример", "type":"tform"})
                 } catch (error){
                     console.log(error);
                     catchErrorTemplate("007-000", error);
@@ -189,6 +296,7 @@ function getDataFields (routes, menuItem){
                 webix.ajax().get("/init/default/api/mmenu.json").then(function (data) {
 
                     let menu = data.json().mmenu;
+                   // console.log(menu)
                     let menuTree = [];
 
                     let dataAuth=[];
@@ -257,7 +365,7 @@ function getDataFields (routes, menuItem){
                         });
 
                         $$("tree").clearAll();
-                    
+                        menuTree.push({id:"treeTempl", value:"Классификатор-пример", data:dataChilds.treeConf});
                         $$("tree").parse(menuTree);
                         $$("button-context-menu").config.popup.data = dataAuth;
                         $$("button-context-menu").enable();
@@ -526,12 +634,13 @@ function login () {
                         $$("tree").clearAll();
                     } catch (error){
                         console.log(error);
+                        notify ("error","Не удалось выполнить выход",true,true);
                         catchErrorTemplate("007-000", error);
                     }
                     
                 },
                 error:function(text, data, XmlHttpRequest){
-                    //notify ("error","Не удалось выполнить выход",true);
+                    notify ("error","Не удалось выполнить выход",true,true);
                     ajaxErrorTemplate("007-006",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
 
                 }
@@ -569,7 +678,7 @@ function login () {
                         },
                         error:function(text, data, XmlHttpRequest){
                             if ($$("formAuth")&&$$("formAuth").isDirty()){
-                                notify ("error","Неверный логин или пароль");
+                                notify ("error","Неверный логин или пароль",true,true);
                             }
 
                             ajaxErrorTemplate("007-006",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
@@ -578,6 +687,7 @@ function login () {
                     });
                 },
                 error:function(text, data, XmlHttpRequest){
+                    notify ("error","Не удалось выполнить выход",true,true);
                     ajaxErrorTemplate("007-006",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
                 }
             });

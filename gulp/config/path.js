@@ -9,7 +9,7 @@ export const path = {
         js:`${buildFolder}/js/`,
         css:`${buildFolder}/css/`,
         html:`${buildFolder}/`,
-        images:`${buildFolder}/img/`,
+        images:`${buildFolder}/images/`,
         
         files: `${buildFolder}/files/`,
         codebase: `${buildFolder}/js/codebase/`,
@@ -21,9 +21,9 @@ export const path = {
         codebase: `${srcFolder}/js/codebase/**/*.*`,
         init: `${srcFolder}/init/**/*.*`,
         fonts: `${srcFolder}/fonts/**/*.*`,
-        images: `${srcFolder}/img/**/*.*`,
-        svg: `${srcFolder}/img/**/*.svg `,
-        scss: `${srcFolder}/scss/style.scss`,
+        images: `${srcFolder}/images/**/*.*`,
+        svg: `${srcFolder}/images/**/*.svg `,
+        scss: `${srcFolder}/scss/expa.scss`,
         html:`${srcFolder}/*.html`,
         files: `${srcFolder}/files/**/*.*`,
         
@@ -35,7 +35,7 @@ export const path = {
         fonts: `${srcFolder}/fonts/**/*.*`,
         scss: `${srcFolder}/scss/**/*.scss`,
         html: `${srcFolder}/**/*.html`,
-        images: `${srcFolder}/img/**/*.*`,
+        images: `${srcFolder}/images/**/*.*`,
         files: `${srcFolder}/files/**/*.*`
     }, 
     clean: buildFolder,

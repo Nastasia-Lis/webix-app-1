@@ -16,7 +16,7 @@ export const scss = () => {
                 message: "Error: <%= error.message %>"
             })
         ))
-        .pipe(app.plugins.replace(/@img\//g, '../img/*'))
+        .pipe(app.plugins.replace(/@img\//g, '../images/*'))
         .pipe(sass({
             outputStyle: 'expanded'
         }))
