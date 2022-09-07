@@ -50,7 +50,7 @@ function setLogValue (typeNotify,notifyText) {
         
         let item = document.querySelectorAll(".webix_list_item")[itemListIndex];
         if (typeNotify == "error"){
-            item.style.setProperty('color', 'red', 'important');
+           // item.style.setProperty('color', 'red', 'important');
             
             if ($$("webix_log-btn").config.icon =="wxi-eye"){
                 $$("logLayout").config.height = 90;
@@ -85,7 +85,7 @@ const logBlock = {
             
         },
         onAfterAdd:function(id, index){
-            console.log(id, index)
+        //    console.log(id, index)
 
          //   $$("logBlock-list").showItem(id);
             if ($$("webix_log-btn").config.icon =="wxi-eye"){
