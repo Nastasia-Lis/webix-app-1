@@ -1,7 +1,7 @@
-import { tableId, tableIdView,findElementsId,exportBtn, filterId,filterElementsId,editFormId,searchId,editTableBtnId,newAddBtnId,
+import { tableId, tableIdView,filterIdView,findElementsId,exportBtn, filterId,filterElementsId,editFormId,searchId,editTableBtnId,newAddBtnId,
      searchIdView,findElementsIdView,
 } from './setId.js';
-import {notify, checkFormSaved,clearItem,defaultStateForm} from "./editTableForm.js";
+import {notify, saveItem,saveNewItem,modalBox,clearItem,defaultStateForm} from "./editTableForm.js";
 import {tableNames} from "./login.js";
 import {catchErrorTemplate,ajaxErrorTemplate} from "./logBlock.js";
 
@@ -57,7 +57,13 @@ function submitBtn (idElements, url, verb, rtype){
                             $$(newAddBtnId).enable();
                         }
                     }
+                }).catch(error => {
+                    console.log(error);
+                    ajaxErrorTemplate("009-000",error.status,error.statusText,error.responseURL);
                 });
+                
+                
+                //;
             } catch (error){
                 console.log(error);
                 catchErrorTemplate("009-000", error);
@@ -73,6 +79,9 @@ function submitBtn (idElements, url, verb, rtype){
                     console.log(error);
                     catchErrorTemplate("009-000", error);
                 } 
+            }).catch(error => {
+                console.log(error);
+                ajaxErrorTemplate("009-000",error.status,error.statusText,error.responseURL);
             });
         } 
     } else if (verb=="post"){
@@ -137,12 +146,10 @@ function getComboOptions (refTable){
                             console.log(error);
                             catchErrorTemplate("009-000", error);
                         } 
-                }).catch(error => {
-                    console.log(error);
-                    //notify ("error","Не удалось загрузить данные",true);
-                    catchErrorTemplate("009-000", error);
-
-                })
+                    }).catch(error => {
+                        console.log(error);
+                        ajaxErrorTemplate("009-000",error.status,error.statusText,error.responseURL);
+                    })
             );
             
         }
@@ -162,7 +169,19 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
         } else {
             let inpObj;
             if (idCurrTable == tableIdView){
-                ($$("filterBar").removeView( "customInputs" ));
+
+                let filterBar = $$(filterIdView).getParentView();
+            
+                // filterBar.getChildViews().forEach(function(el,i){
+                //     if (el.config.id == "customInputs"){
+                //         filterBar.removeView($$("customInputs" ));
+
+                //     }
+                // });
+                if ($$( "customInputs" )){
+                    filterBar.removeView($$( "customInputs" ))
+                }
+            
             }
             
             webix.ajax().get("/init/default/api/fields.json").then(function (data) {
@@ -253,7 +272,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                 };
                 data = data1[idsParam];
                 //data = data.json().content[idsParam];
-                console.log(data)
+
                 let dataFields = data.fields;
                 let obj = Object.keys(data.fields);
                 let columnsData = [];
@@ -277,16 +296,26 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                         } else if (dataFields[data].type == "datetime"){
                             dataFields[data].format = webix.i18n.fullDateFormatStr; 
                             dataFields[data].editor = "date";
-                        } else {
+                        } else if (dataFields[data].type == "string" || dataFields[data].type == "text" ){
                             dataFields[data].editor = "text";
+                        } else if (dataFields[data].type == "integer"){
+                            dataFields[data].editor = "text";
+                            dataFields[data].numberFormat="1 111";
+                        } else if (dataFields[data].type == "boolean"){
+                            dataFields[data].editor = "combo";
+                            dataFields[data].collection = [
+                                {id:1, value: "Да"},
+                                {id:2, value: "Нет"}
+                            ];
                         }
+
+
                         dataFields[data].id = data;
                         dataFields[data].fillspace = true;
                         dataFields[data].header= dataFields[data]["label"];
                         if(dataFields[data].id == "id"){
                             dataFields[data].hidden = true;
                         } 
-
                         columnsData.push(dataFields[data]);
                     });
                     $$(idCurrTable).refreshColumns(columnsData);
@@ -329,7 +358,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
     // -----  Array с кастомными полями
                 try{
                     if (data.inputs ){  //-----------------------------------------------------------------
-                        
+                       
                         let objInuts = Object.keys(data.inputs);
                         
                         let customInputs = [];
@@ -390,9 +419,8 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                                                 } 
                                                 }).catch(error => {
                                                     console.log(error);
-                                                    catchErrorTemplate("009-000", error);
+                                                    ajaxErrorTemplate("009-000",error.status,error.statusText,error.responseURL);
 
-                                                    //notify ("error","Не удалось загрузить данные",true);
                                                 })
                                             );
                                         
@@ -545,8 +573,6 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                             } 
                         customInputs.push({width:10});
                         });
-                        
-                    
 
                         customInputs.forEach((el,i) => {
                             if (el.id !== undefined){
@@ -563,15 +589,13 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                             }
 
                         });
-
-                    
-                    
-
-                        
-                    
+                     
+           
                         inpObj = {id:"customInputs",css:"webix_custom-inp", cols:customInputs};
-                        
-                        ($$("filterBar").addView( inpObj,2));
+                        let filterBar = $$(filterIdView).getParentView();
+
+                        $$(filterBar.config.id).addView( inpObj,2);
+
                     }
                 } catch (error){
                     console.log(error);
@@ -593,70 +617,75 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                         $proxy:true,
                         load:function(view, params){
                             return webix.ajax().get("/init/default/api/"+itemTreeId,{
-                            success:function(text, data, XmlHttpRequest){
-                                try {
-                                    $$(idCurrTable).clearAll();
-                                    if(!($$(newAddBtnId).isEnabled())){
-                                        $$(newAddBtnId).enable();
-                                    }
-                                    if(!($$(filterId).isEnabled())){
-                                        $$(filterId).enable();
-                                    }
-                                    if(!($$(exportBtn).isEnabled())){
-                                        $$(exportBtn).enable();
-                                    }
-                    
-                                    data = data.json().content;
-                                
-                        
-                                    if (data.length !== 0){
-                                        
-                                        $$(idCurrTable).hideOverlay("Ничего не найдено");
-                                    
-                                        $$(idCurrTable).parse(data);
-                                
-                                    
-                                    } else {
-                                        $$(idCurrTable).showOverlay("Ничего не найдено");
+                                success:function(text, data, XmlHttpRequest){
+                                    try {
                                         $$(idCurrTable).clearAll();
-                                    }
-                            
-                                    prevCountRows = $$(idCurrTable).count();
-                                    $$(idFindElem).setValues(prevCountRows.toString());
-                                    if(idCurrTable == tableId){
-                                        $$(filterElementsId).setValues(prevCountRows.toString());
-                                    }
-                                } catch (error){
-                                    console.log(error);
-                                    catchErrorTemplate("009-000", error);
-                                } 
+                                        if(!($$(newAddBtnId).isEnabled())){
+                                            $$(newAddBtnId).enable();
+                                        }
+                                        if(!($$(filterId).isEnabled())){
+                                            $$(filterId).enable();
+                                        }
+                                        if(!($$(exportBtn).isEnabled())){
+                                            $$(exportBtn).enable();
+                                        }
                         
-                            },
-                            error:function(text, data, XmlHttpRequest){
-                               // notify ("error","Ошибка при загрузке данных",true);
-                                ajaxErrorTemplate("009-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
-                                prevCountRows = "-";
-                                try {
-                                    $$(idFindElem).setValues(prevCountRows.toString());
-                                    $$(filterElementsId).setValues(prevCountRows.toString());
-                                    if($$(newAddBtnId).isEnabled()){
-                                        $$(newAddBtnId).disable();
-                                    }
-                                    if($$(filterId)){
-                                        $$(filterId).disable();
-                                    }
-
-                                    if($$(exportBtn)){
-                                        $$(exportBtn).disable();
-                                    }
-                                } catch (error){
-                                    console.log(error);
-                                    catchErrorTemplate("009-000", error);
-
-                                }
+                                        data = data.json().content;
+                                    
                             
-                        }, 
-                    });     }
+                                        if (data.length !== 0){
+                                            
+                                            $$(idCurrTable).hideOverlay("Ничего не найдено");
+                                        
+                                            $$(idCurrTable).parse(data);
+                                    
+                                        
+                                        } else {
+                                            $$(idCurrTable).showOverlay("Ничего не найдено");
+                                            $$(idCurrTable).clearAll();
+                                        }
+                                
+                                        prevCountRows = $$(idCurrTable).count();
+                                        $$(idFindElem).setValues(prevCountRows.toString());
+                                        if(idCurrTable == tableId){
+                                            $$(filterElementsId).setValues(prevCountRows.toString());
+                                        }
+                                    } catch (error){
+                                        console.log(error);
+                                        catchErrorTemplate("009-000", error);
+                                    } 
+                            
+                                },
+                                error:function(text, data, XmlHttpRequest){
+                                // notify ("error","Ошибка при загрузке данных",true);
+                                    ajaxErrorTemplate("009-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                                    prevCountRows = "-";
+                                    try {
+                                        $$(idFindElem).setValues(prevCountRows.toString());
+                                        $$(filterElementsId).setValues(prevCountRows.toString());
+                                        if($$(newAddBtnId).isEnabled()){
+                                            $$(newAddBtnId).disable();
+                                        }
+                                        if($$(filterId)){
+                                            $$(filterId).disable();
+                                        }
+
+                                        if($$(exportBtn)){
+                                            $$(exportBtn).disable();
+                                        }
+                                    } catch (error){
+                                        console.log(error);
+                                        catchErrorTemplate("009-000", error);
+
+                                    }
+                                
+                                }, 
+                    
+                        }).catch(error => {
+                            console.log(error);
+                            ajaxErrorTemplate("009-000",error.status,error.statusText,error.responseURL);
+                        });
+                        }
                 });
                 }
 
@@ -671,16 +700,14 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                         getItemData ();
                     }, 50000);
                 }
-            }).catch(err => {
-                console.log(err);
-
-                notify ("error","Не удалось загрузить данные",true);
-
+              
+            
+            }).catch(error => {
+                console.log(error);
+                ajaxErrorTemplate("009-000",error.status,error.statusText,error.responseURL);
                 if($$("btnFilterSubmit")&&$$("btnFilterSubmit").isEnabled()){
                     $$("btnFilterSubmit").disable();
                 }
-                
-            
             });
         } 
     } catch (error){
@@ -690,7 +717,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
 }
 
 function getInfoDashboard (idsParam,single=false){
-    
+
     function getAjax(url,inputsArray, action=false) {
         webix.ajax().get(url, {
             success:function(text, data, XmlHttpRequest){
@@ -699,8 +726,17 @@ function getInfoDashboard (idsParam,single=false){
                 let titleTemplate = {};
 
                 try {
-                    if (dataCharts == undefined){
+                    
+                    if($$("dashboard-tool")){
+                        $$("dashboardTool").removeView($$("dashboard-tool"))
+                    }
+                    if($$("dash-template")){
+                        let parent = $$("dash-template").getParentView()
+                        parent.removeView($$("dash-template"))
+                    }
 
+
+                    if (dataCharts == undefined){
                         $$("dashboardTool").addView({
                             view:"scrollview",
                             id:"dashboard-tool",
@@ -715,7 +751,7 @@ function getInfoDashboard (idsParam,single=false){
                         $$("dashboardTool").addView({
                             rows:[{
                                 template:"",
-                                id:"dash-temlate",
+                                id:"dash-template",
                                 css:"webix_style-template-count webix_dash-title",
                                 borderless:false,
                                 height:40,
@@ -736,27 +772,29 @@ function getInfoDashboard (idsParam,single=false){
 
                         notify ("error","Ошибка при загрузке данных", true);
                     } else {
-                    
+                       
                         dataCharts.forEach(function(el,i){
                             titleTemplate = el.title;
                             delete el.title;
                             el.borderless = true;
-                            el.minWidth = 500;
-                            dashLayout.push({rows:[ {template:titleTemplate,borderless:true,css:{"padding-left":"25px!important","margin-top":"20px!important", "font-weight":"400!important", "font-size":"17px!important"}, height:35},el]});
+                            el.minWidth = 250;
+                            dashLayout.push({
+                                rows:[ 
+                                    {   template:titleTemplate,
+                                        borderless:true,
+                                        css:{   "padding-left":"25px!important",
+                                                "margin-top":"20px!important", 
+                                                "font-weight":"400!important", 
+                                                "font-size":"17px!important"}, 
+                                        height:35
+                                    },
+                                    el
+                                ]
+                            });
+                        
                         });
 
-                        
-                        $$("dashboardTool").addView({
-                            view:"scrollview",
-                            id:"dashboard-tool",
-                            borderless:true,
-                            css:{"margin":"20px!important","height":"50px!important"},
-                            body: {
-                                view:"flexlayout",
-                                rows:inputsArray
-                            }
-                        },0);
-                
+
                         let dashTitle;
 
                         if (itemTreeId.includes("single")){
@@ -770,29 +808,41 @@ function getInfoDashboard (idsParam,single=false){
                         });
 
                         $$("dashboardTool").addView({
-                            rows:[{
-                                template:dashTitle,
-                                id:"dash-temlate",
-                                css:"webix_style-template-count webix_dash-title",
-                                borderless:false,
-                                height:40,
-                            }]
-                        },1);
+                            id:"dashboard-tool",
+                            padding:20,
+                            rows:[
+                                {rows:[
+                                    {  template:"Фильтр",height:30, 
+                                        css:"webix_dash-filter-headline",
+                                        borderless:true
+                                    },
+                                ]},
+                                
+                                { rows:inputsArray}
+                            ], 
+                        });
+
+                        
+                        $$("dashboardInfoContainer").addView({ 
+                            template:dashTitle,
+                            id:"dash-template",
+                            css:"webix_style-template-count webix_dash-title",
+                            borderless:false,
+                            height:75,
+        
+                         },0);
 
                         $$("dashboardBody").addView({
-                            view:"scrollview", 
                             id:"dashboard-charts",
-                            borderless:true,
-                            body: {
-                                view:"flexlayout",
-                                
-                                css:"webix_dash-charts-flex",
-                                type: "space", 
-                                cols:dashLayout
-                            }
-                        },1);
-
-                        $$("dashboardBody").removeView($$("dashEmpty"));
+                            view:"flexlayout",
+                            css:"webix_dash-charts-flex",
+                            type: "space", 
+                            cols:dashLayout,
+                        });
+                        //webix.ui.fullScreen();
+                        if ($$("dashEmpty")){
+                            $$("dashboardBody").removeView($$("dashEmpty"));
+                        }
                     }
                     
                     if (url.includes("?")||url.includes("sdt")&&url.includes("edt")){
@@ -805,10 +855,12 @@ function getInfoDashboard (idsParam,single=false){
                 
             },
             error:function(text, data, XmlHttpRequest){
-                //notify ("error","Ошибка при сохранении данных",true);
                 ajaxErrorTemplate("009-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
 
             }
+        }).catch(error => {
+            console.log(error);
+            ajaxErrorTemplate("009-000",error.status,error.statusText,error.responseURL);
         }); 
     }
 
@@ -820,7 +872,6 @@ function getInfoDashboard (idsParam,single=false){
         if(!($$("dashboard-charts"))){
             webix.ajax().get("/init/default/api/fields",{
                 success:function(text, data, XmlHttpRequest){
-
                     let inputsArray=[];
                     let actionType ;
                     let findAction;
@@ -843,75 +894,207 @@ function getInfoDashboard (idsParam,single=false){
                         if (single){
                             let inputs = singleItemContent.inputs;
                             
-                            inputsArray.push({width:20});
                             let keys = Object.keys(inputs);
                             Object.values(inputs).forEach(function(input,i){
 
-                                if (input.type == "datetime"){
+                                if (input.type == "datetime"&& input.order == 3){ //------------------ order
+                                      
+                                    let key = Object.keys(inputs)[i]; // заменены на sdt и edt
+
+                           
                                     inputsArray.push(
+
+                                        {width:200,id:"datepicker-container"+"sdt",rows:[ 
+                                            {template:"Начиная с:",height:30, borderless:true,css:"webix_template-datepicker"},
                                             {   view: "datepicker",
-                                                format:"%d.%m.%Y %H:%i:%s",  
-                                                id:"dashDatepicker_"+keys[i], 
-                                                timepicker: true,
+                                                format:"%d.%m.%Y",
+                                                value :"01.01.2022",
+                                                id:"dashDatepicker_"+"sdt",  
                                                 placeholder:input.label,
-                                                width:300,
-                                                minWidth:100,
+                                                //width:125,
                                                 height:48,
                                                 on: {
                                                     onAfterRender: function () {
                                                         this.getInputNode().setAttribute("title",input.comment);
                                                     },
+             
                                                 }
-                                            }
-                                    );
-                                
-                                } else if (input.type == "submit"){
-                                    
-                                    actionType = input.action;
-                                    findAction = singleItemContent.actions[actionType];
-                                    inputsArray.push(
-
-                                            {   view:"button", 
-                                                css:"webix_primary", 
-                                                id:"dashBtn"+i,
-                                                inputHeight:48,
-                                                height:48, 
-                                                minWidth:100,
-                                                maxWidth:200,
-                                                value:input.label,
-                                                click:function () {
-                                                    let dateArray = [];
-                                                    let postFormatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
-                                                    let getUrl;
-                                                    
-                                                    inputsArray.forEach(function(el,i){
-                                                        
-                                                        if (el.id.includes("sdt")){
-                                                            
-                                                            dateArray.push("sdt"+"="+postFormatData($$(el.id).getValue()));
-                                                            
-                                                        }else if (el.id.includes("edt")) {
-                                                            dateArray.push("edt"+"="+postFormatData($$(el.id).getValue()));
-                                                        }
-                                                    });
-                                                 
-                                                    getUrl = findAction.url+"?"+dateArray.join("&");
-                                                    if ($$("dashboard-charts")){
-                                                        $$("dashboardBody").removeView( $$("dashboard-charts"));
+                                            },
+                                          {height:10},
+                                            {   view: "datepicker",
+                                                format:"%H:%i:%s",
+                                                id:"dashDatepicker_"+"sdt"+"-time",  
+                                                placeholder:"Время",
+                                               // width:110,
+                                               // minWidth:100,
+                                                height:48,
+                                                value :"00:00:00",
+                                                type:"time",
+                                                seconds: true,
+                                                  suggest:{
+                                                    type:"timeboard",
+                                                    body:{
+                                                        button:true,
+                                                        seconds: true,
+                                                        value :"00:00:00",
+                                                        twelve :false,
+                                                        height :110,
                                                     }
-                                                
-                                                    getAjax(getUrl, inputsArray);
-                                                },
+                                                  },
+                                                on: {
+                                                    onAfterRender: function () {
+                                                        this.getInputNode().setAttribute("title","Часы, минуты, секунды");
+                                                        
+                                                    },
+            
+                                                }
+                                            },
+                                            {height:20},
+
+                                            {template:"Заканчивая:",height:30, borderless:true, css:"webix_template-datepicker"},
+                                            {   view: "datepicker",
+                                                format:"%d.%m.%Y",
+                                                value :"01.01.2022",
+                                                id:"dashDatepicker_"+"edt",  
+                                                placeholder:input.label,
+                                              //  width:125,
+                                                height:48,
                                                 on: {
                                                     onAfterRender: function () {
                                                         this.getInputNode().setAttribute("title",input.comment);
                                                     },
-                                                },
+             
+                                                }
+                                            },
+                                            {height:10},
+                                            {   view: "datepicker",
+                                                format:"%H:%i:%s",
+                                                id:"dashDatepicker_"+"edt"+"-time",  
+                                                placeholder:"Время",
+                                               // width:110,
+                                               ////minWidth:100,
+                                                height:48,
+                                                value :"00:00:00",
+                                                type:"time",
+                                                seconds: true,
+                                                  suggest:{
+                                                    type:"timeboard",
+                                                    body:{
+                                                        button:true,
+                                                        seconds: true,
+                                                        value :"00:00:00",
+                                                        twelve :false,
+                                                        height :110
+                                                    }
+                                                  },
+                                                on: {
+                                                    onAfterRender: function () {
+                                                        this.getInputNode().setAttribute("title","Часы, минуты, секунды");
+                                                        
+                                                    },
+            
+                                                }
+                                            },
 
-                                            }
+                                        ]}
+                                    );
+                                
+                                } else if (input.type == "submit"){
+                                
+                                    actionType = input.action;
+                                    findAction = singleItemContent.actions[actionType];
+                                
+                                    inputsArray.push(
+
+                                        {   rows: [
+                                                {height:10},
+                                                {   view:"button", 
+                                                    css:"webix_primary", 
+                                                    id:"dashBtn"+i,
+                                                    inputHeight:48,
+                                                    height:48, 
+                                                    minWidth:100,
+                                                    maxWidth:200,
+                                                    value:input.label,
+                                                    click:function () {
+                                                        let dateArray = [];
+                                                        let postFormatData = webix.Date.dateToStr("%d.%m.%Y");
+                                                        let getUrl;
+                                                        let compareDates=[];
+                                                        let postformatTime = webix.Date.dateToStr("%H:%i:%s");
+                                                    
+                                                        let sdtDate = "";
+                                                        let edtDate = "";
+
+                                                        inputsArray.forEach(function(el,i){
+                                                            
+                                                            if (el.id.includes("container")){
+                                                                
+                                                                $$(el.id).getChildViews().forEach(function(elem,i){
+                                                                    if (elem.config.id.includes("sdt")){
+
+                                                                        if (elem.config.id.includes("time")){
+                                                                        sdtDate=sdtDate.concat(" "+postformatTime($$(elem.config.id).getValue()))
+                                                                        } else {
+                                                                            sdtDate = postFormatData($$(elem.config.id).getValue()); 
+                                                                        
+                                                                        }
+                                                                    } else if (elem.config.id.includes("edt")){
+                                                                    
+                                                                        if (elem.config.id.includes("time")){
+                                                                        edtDate=edtDate.concat(" "+postformatTime($$(elem.config.id).getValue()))
+                                                                        
+                                                                        } else {
+                                                                            edtDate = postFormatData($$(elem.config.id).getValue());
+                                                                            
+                                                                        }
+                                                                    
+                                                                        
+                                                                    }
+                                                                });
+                                                            }
+
+                                                        });
+
+                                                        dateArray.push("sdt"+"="+sdtDate);
+                                                        dateArray.push("edt"+"="+edtDate);
+
+                                                        compareDates.push(sdtDate); 
+                                                        compareDates.push(edtDate);
+                                                
+                                                        if (dateArray.length > 0 && compareDates[0] && compareDates[1]){
+
+                                                            let compareFormatData = webix.Date.dateToStr("%Y/%m/%d %H:%i:%s");
+
+                                                            if (!(webix.filters.date.greater(compareFormatData(compareDates[0]),compareFormatData(compareDates[1])))||compareDates[0]==compareDates[1]){
+                                                                getUrl = findAction.url+"?"+dateArray.join("&");
+                                                            
+                                                                if ($$("dashboard-charts")){
+                                                                    $$("dashboardBody").removeView( $$("dashboard-charts"));
+                                                                }
+                                                                
+                                                                getAjax(getUrl, inputsArray, true);
+                                                            
+                                                            } else {
+                                                                notify ("error", "Начало периода больше, чем конец", true); 
+                                                            }
+                                                        } else {
+                                                            notify ("error", "Не все поля заполнены", true);
+                                                        }
+                                                    },
+                                                    on: {
+                                                        onAfterRender: function () {
+                                                            this.getInputNode().setAttribute("title",input.comment);
+                                                        },
+                                                    },
+
+                                                },
+                                                {}
+                                            ]
+                                        }
                                     );
                                 }
-                                inputsArray.push({width:20});
+
                             });
                             
                             getAjax(singleItemContent.actions.submit.url, inputsArray);
@@ -930,46 +1113,109 @@ function getInfoDashboard (idsParam,single=false){
 
                                 if (el.type == "dashboard" && el.nameObj == itemTreeId) {
                                     let inputs = el.inputs;
-                
-                                    
-                                    inputsArray.push({width:20});
+
                                     Object.values(inputs).forEach(function(input,i){
                                     
-                                        
-                                        if (input.type == "datetime"){
-                
-                                            let key = Object.keys(inputs)[i];
+                                        if (input.type == "datetime"&& input.order == 3){ //------------------ order
+                                      
+                                            let key = Object.keys(inputs)[i]; // заменены на sdt и edt
+
+                                   
                                             inputsArray.push(
+
+                                                {width:200,id:"datepicker-container"+"sdt",rows:[ 
+                                                    {template:"Начиная с:",height:30, borderless:true,css:"webix_template-datepicker"},
                                                     {   view: "datepicker",
-                                                        format:"%d.%m.%Y %H:%i:%s",
-                                                        id:"dashDatepicker_"+key,  
-                                                       // seconds: true,
-                                                        // suggest:{
-                                                        //     type:"timeboard",
-                                                        //     body:{
-                                                        //         button:true
-                                                        //     }
-                                                        //   },
-                                                        //  suggest:{
-                                                        //     type:"calendar",
-                                                        //   body:{
-                                                        //     minDate:new Date() 
-                                                        //   }
-                                                        // },
-                                                        timepicker: true,
+                                                        format:"%d.%m.%Y",
+                                                        value :"01.01.2022",
+                                                        id:"dashDatepicker_"+"sdt",  
                                                         placeholder:input.label,
-                                                        width:300,
-                                                        minWidth:100,
+                                                        //width:125,
                                                         height:48,
                                                         on: {
                                                             onAfterRender: function () {
                                                                 this.getInputNode().setAttribute("title",input.comment);
                                                             },
-                                                            onItemClick: function(id, e){
-                                                                console.log(id, e)
-                                                            }
+                     
                                                         }
-                                                    }
+                                                    },
+                                                  {height:10},
+                                                    {   view: "datepicker",
+                                                        format:"%H:%i:%s",
+                                                        id:"dashDatepicker_"+"sdt"+"-time",  
+                                                        placeholder:"Время",
+                                                       // width:110,
+                                                       // minWidth:100,
+                                                        height:48,
+                                                        value :"00:00:00",
+                                                        type:"time",
+                                                        seconds: true,
+                                                          suggest:{
+                                                            type:"timeboard",
+                                                            body:{
+                                                                button:true,
+                                                                seconds: true,
+                                                                value :"00:00:00",
+                                                                twelve :false,
+                                                                height :110,
+                                                            }
+                                                          },
+                                                        on: {
+                                                            onAfterRender: function () {
+                                                                this.getInputNode().setAttribute("title","Часы, минуты, секунды");
+                                                                
+                                                            },
+                    
+                                                        }
+                                                    },
+                                                    {height:20},
+
+                                                    {template:"Заканчивая:",height:30, borderless:true, css:"webix_template-datepicker"},
+                                                    {   view: "datepicker",
+                                                        format:"%d.%m.%Y",
+                                                        value :"01.01.2022",
+                                                        id:"dashDatepicker_"+"edt",  
+                                                        placeholder:input.label,
+                                                      //  width:125,
+                                                        height:48,
+                                                        on: {
+                                                            onAfterRender: function () {
+                                                                this.getInputNode().setAttribute("title",input.comment);
+                                                            },
+                     
+                                                        }
+                                                    },
+                                                    {height:10},
+                                                    {   view: "datepicker",
+                                                        format:"%H:%i:%s",
+                                                        id:"dashDatepicker_"+"edt"+"-time",  
+                                                        placeholder:"Время",
+                                                       // width:110,
+                                                       ////minWidth:100,
+                                                        height:48,
+                                                        value :"00:00:00",
+                                                        type:"time",
+                                                        seconds: true,
+                                                          suggest:{
+                                                            type:"timeboard",
+                                                            body:{
+                                                                button:true,
+                                                                seconds: true,
+                                                                value :"00:00:00",
+                                                                twelve :false,
+                                                                height :110
+                                                            }
+                                                          },
+                                                        on: {
+                                                            onAfterRender: function () {
+                                                                this.getInputNode().setAttribute("title","Часы, минуты, секунды");
+                                                                
+                                                            },
+                    
+                                                        }
+                                                    },
+
+                                                ]}
                                             );
                                         
                                         } else if (input.type == "submit"){
@@ -979,62 +1225,99 @@ function getInfoDashboard (idsParam,single=false){
                                         
                                             inputsArray.push(
 
-                                                    {   view:"button", 
-                                                        css:"webix_primary", 
-                                                        id:"dashBtn"+i,
-                                                        inputHeight:48,
-                                                        height:48, 
-                                                        minWidth:100,
-                                                        maxWidth:200,
-                                                        value:input.label,
-                                                        click:function () {
-                                                            let dateArray = [];
-                                                            let postFormatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
-                                                            let getUrl;
-                                                            let compareDates=[];
-                                                            inputsArray.forEach(function(el,i){
-                                                                
-                                                                if (el.id.includes("sdt")&&$$(el.id).getValue()){
-                                                                    dateArray.push("sdt"+"="+postFormatData($$(el.id).getValue()));
-                                                                    compareDates.push(postFormatData($$(el.id).getValue()));
-                                                                }else if (el.id.includes("edt")&&$$(el.id).getValue()) {
-                                                                    dateArray.push("edt"+"="+postFormatData($$(el.id).getValue()));
-                                                                    compareDates.push(postFormatData($$(el.id).getValue()));
-                                                                }
-                                                            });
-                                                      
-                                                            if (dateArray.length > 0 && compareDates[0] && compareDates[1]){
-                                                                if (compareDates[0]<compareDates[1]){
-                                                                    getUrl = findAction.url+"?"+dateArray.join("&");
-                                                                
-                                                                    if ($$("dashboard-charts")){
-                                                                        $$("dashboardBody").removeView( $$("dashboard-charts"));
-                                                                    }
-                                                                
-                                                                    getAjax(getUrl, inputsArray, true);
-                                                                } else {
-                                                                    notify ("error", "Начало периода больше, чем конец", true); 
-                                                                }
-                                                            } else {
-                                                                notify ("error", "Не все поля заполнены", true);
-                                                            }
-                                                          
+                                                {   rows: [
+                                                        {height:10},
+                                                        {   view:"button", 
+                                                            css:"webix_primary", 
+                                                            id:"dashBtn"+i,
+                                                            inputHeight:48,
+                                                            height:48, 
+                                                            minWidth:100,
+                                                            maxWidth:200,
+                                                            value:input.label,
+                                                            click:function () {
+                                                                let dateArray = [];
+                                                                let postFormatData = webix.Date.dateToStr("%d.%m.%Y");
+                                                                let getUrl;
+                                                                let compareDates=[];
+                                                                let postformatTime = webix.Date.dateToStr("%H:%i:%s");
                                                             
-                                                        },
-                                                        on: {
-                                                            onAfterRender: function () {
-                                                                this.getInputNode().setAttribute("title",input.comment);
-                                                            },
-                                                        },
+                                                                let sdtDate = "";
+                                                                let edtDate = "";
 
-                                                    }, 
+                                                                inputsArray.forEach(function(el,i){
+                                                                    
+                                                                    if (el.id.includes("container")){
+                                                                        
+                                                                        $$(el.id).getChildViews().forEach(function(elem,i){
+                                                                            if (elem.config.id.includes("sdt")){
+
+                                                                                if (elem.config.id.includes("time")){
+                                                                                sdtDate=sdtDate.concat(" "+postformatTime($$(elem.config.id).getValue()))
+                                                                                } else {
+                                                                                    sdtDate = postFormatData($$(elem.config.id).getValue()); 
+                                                                                
+                                                                                }
+                                                                            } else if (elem.config.id.includes("edt")){
+                                                                            
+                                                                                if (elem.config.id.includes("time")){
+                                                                                edtDate=edtDate.concat(" "+postformatTime($$(elem.config.id).getValue()))
+                                                                                
+                                                                                } else {
+                                                                                    edtDate = postFormatData($$(elem.config.id).getValue());
+                                                                                    
+                                                                                }
+                                                                            
+                                                                                
+                                                                            }
+                                                                        });
+                                                                    }
+
+                                                                });
+
+                                                                dateArray.push("sdt"+"="+sdtDate);
+                                                                dateArray.push("edt"+"="+edtDate);
+
+                                                                compareDates.push(sdtDate); 
+                                                                compareDates.push(edtDate);
+                                                        
+                                                                if (dateArray.length > 0 && compareDates[0] && compareDates[1]){
+        
+                                                                    let compareFormatData = webix.Date.dateToStr("%Y/%m/%d %H:%i:%s");
+
+                                                                    if (!(webix.filters.date.greater(compareFormatData(compareDates[0]),compareFormatData(compareDates[1])))||compareDates[0]==compareDates[1]){
+                                                                        getUrl = findAction.url+"?"+dateArray.join("&");
+                                                                    
+                                                                        if ($$("dashboard-charts")){
+                                                                            $$("dashboardBody").removeView( $$("dashboard-charts"));
+                                                                        }
+                                                                        
+                                                                        getAjax(getUrl, inputsArray, true);
+                                                                    
+                                                                    } else {
+                                                                        notify ("error", "Начало периода больше, чем конец", true); 
+                                                                    }
+                                                                } else {
+                                                                    notify ("error", "Не все поля заполнены", true);
+                                                                }
+                                                            },
+                                                            on: {
+                                                                onAfterRender: function () {
+                                                                    this.getInputNode().setAttribute("title",input.comment);
+                                                                },
+                                                            },
+
+                                                        },
+                                                        {}
+                                                    ]
+                                                }
                                             );
                                         }
-                                        inputsArray.push({width:20});
-                                    
+
 
                                     });
                                     getAjax(el.actions.submit.url, inputsArray);
+                               
                                     if (el.autorefresh){
                                         setInterval(function(){
                                             getAjax(singleItemContent.actions.submit.url, inputsArray);
@@ -1059,7 +1342,10 @@ function getInfoDashboard (idsParam,single=false){
                     console.log(XmlHttpRequest)
                     ajaxErrorTemplate("009-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
                 }
-            });     
+            }).catch(error => {
+                console.log(error);
+                ajaxErrorTemplate("009-000",error.status,error.statusText,error.responseURL);
+            });    
         }  
     } catch (error){
         console.log(error);
@@ -1069,9 +1355,7 @@ function getInfoDashboard (idsParam,single=false){
 }
 
 function getInfoEditTree() {
-    console.log(itemTreeId);
     $$("treeEdit").clearAll();
-    //function getData (url){
     let url = "/init/default/api/"+"trees";
     webix.ajax().get(url, {
         success:function(text, data, XmlHttpRequest){
@@ -1079,6 +1363,7 @@ function getInfoEditTree() {
 
                 data = data.json().content;
                 data[0].pid = 0;
+                
 
                 let map = {}, 
                     treeStruct = [],
@@ -1086,7 +1371,11 @@ function getInfoEditTree() {
                 ;
                 
                 data.forEach(function(el,i){
-                    treeData.push({id:el.id, value:el.name, pid:el.pid, data:[]});
+                    if (el.pid == 0){
+                        treeData.push({id:el.id, open:true, value:el.name, pid:el.pid, data:[]});
+                    } else {
+                        treeData.push({id:el.id, value:el.name, pid:el.pid, data:[]});
+                    }
                 });
                
                 treeData.forEach(function(el,i){
@@ -1113,65 +1402,13 @@ function getInfoEditTree() {
             ajaxErrorTemplate("009-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
 
         }
+    }).catch(error => {
+        console.log(error);
+        ajaxErrorTemplate("009-000",error.status,error.statusText,error.responseURL);
     }); 
   
 }
-
-
-function headerSidebar () {
-    const headerLogo = {
-         view:"label",
-         label:"<img src='/init/static/images/expalogo.png' style='height:30px; margin: 10px;'>", 
-         height:30
-    };
-    const collapseBtn = {   
-        view:"button",
-        type:"icon",
-        id:"collapseBtn",
-        icon:"wxi-angle-double-left",
-        css:"webix_collapse",
-        title:"текст",
-        height:45,
-        width:40,
-        click:function() {
-            try {
-                if ($$("tree").isVisible()){
-                    $$("collapseBtn").config.icon ="wxi-angle-double-right";
-                    $$("collapseBtn").refresh();
-                    $$("tree").hide();
-                    if($$("sideMenuResizer")){
-                        $$("sideMenuResizer").hide();
-                    } 
-
-                } else {
-                    $$("tree").show();
-                    $$("collapseBtn").config.icon ="wxi-angle-double-left";
-                    $$("collapseBtn").refresh();
-                    if(window.innerWidth >= 800){
-                        if($$("sideMenuResizer")){
-                            $$("sideMenuResizer").show();
-                        }
-                    } 
-                
-                    
-                }
-            } catch (error){
-                console.log(error);
-                catchErrorTemplate("009-000", error);
-        
-            }
-            
-        },
-        on: {
-            onAfterRender: function () {
-                this.getInputNode().setAttribute("title","Видимость бокового меню");
-            }
-    } 
-    };
-
-    return {cols:[collapseBtn,headerLogo]}
-}
-
+ 
 function treeSidebar () {
     let tree = {
         view:"edittree",
@@ -1202,6 +1439,7 @@ function treeSidebar () {
                     try {
                         if($$("inputsTable")){
                             $$(editFormId).removeView($$("inputsTable"));
+                            $$("EditEmptyTempalte").show();
                         }
 
                         treeArray.forEach(function(el,i){
@@ -1242,6 +1480,7 @@ function treeSidebar () {
                             }
                             
                             if(idsUndefined !== undefined){
+                              
                                 return parentsArray.forEach(function(el,i){
                                     if (el.includes("single")){
                                         if(singleType){
@@ -1256,6 +1495,7 @@ function treeSidebar () {
                                         if(!($$("webix__null-content"))){
                                             $$("container").addView(
                                                 {id:"webix__null-content", template:"Блок в процессе разработки",margin:10},
+                                               
                                             2);
                                         } 
                                     
@@ -1263,8 +1503,10 @@ function treeSidebar () {
                                             $$(el).hide();
                                     
                                         }
+                                        
                                     }     
                                 });  
+                             
                                 
                             } else {
                             
@@ -1309,8 +1551,7 @@ function treeSidebar () {
                         visibleTreeItem(false, ids[0]); 
                     } else if (getItemParent=="treeTempl"){
                         visibleTreeItem(); 
-                 
-                    }
+                    } 
 
               
 
@@ -1350,26 +1591,70 @@ function treeSidebar () {
                 }
                 
             },
+            onItemClick:function(id, e, node){
+                if($$(editFormId).isDirty()){
+                       
+                    modalBox().then(function(result){
+                        if (result == 1){
+                            clearItem();
+                            $$("tree").select(id);
+                        
+                        } else if (result == 2){
+                            if ($$(editFormId).validate()){
+                                if ($$(editFormId).getValues().id){
+                                    saveItem();
+                                } else {
+                                    saveNewItem(); 
+                                }
+                                $$("tree").select(id);
+                            
+                            } else {
+                                notify ("error","Заполните пустые поля",true);
+                                return false;
+                            }
+                            
+                        }
+                    });
+                    return false;
+                }
+            },
 
             onBeforeSelect: function(data) {
                
-                
                 let getItemParent = $$("tree").getParentId(data);
                 if(getItemParent=="tables"){
-                    if($$(editFormId).isDirty()){
-                        checkFormSaved().then(function(result){
-                            if(result) {
-                                clearItem();
-                                $$("tree").select(data);
-                            } 
-                        });
-                        return false;
-                    }
+              
+                    // if($$(editFormId).isDirty()){
+                       
+                    //     modalBox().then(function(result){
+                    //         if (result == 1){
+                    //             clearItem();
+                    //             $$("tree").select(data);
+                            
+                    //         } else if (result == 2){
+                    //             if ($$(editFormId).validate()){
+                    //                 if ($$(editFormId).getValues().id){
+                    //                     saveItem();
+                    //                 } else {
+                    //                     saveNewItem(); 
+                    //                 }
+                    //                 $$("tree").select(data);
+                                
+                    //             } else {
+                    //                 notify ("error","Заполните пустые поля",true);
+                    //                 return false;
+                    //             }
+                                
+                    //         }
+                    //     });
+                    //     return false;
+                    // }
 
                     if ($$("filterTableForm")&&$$("filterTableForm").isVisible){
+
                         $$("filterTableForm").hide();
-                        if($$("inputsTable")){
-                            $$("filterTableForm").removeView( $$("inputsTable"));
+                        if($$("inputsFilter")){
+                            $$("filterTableForm").removeView( $$("inputsFilter"));
                         }
                         let btnClass = document.querySelector(".webix_btn-filter");
                         if (btnClass&&!(btnClass.classList.contains("webix_secondary"))){
@@ -1399,7 +1684,6 @@ function treeSidebar () {
 }
 
 export{
-    headerSidebar,
     treeSidebar,
     getComboOptions,
     itemTreeId,

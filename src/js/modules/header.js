@@ -1,10 +1,9 @@
 import { tableId,tableIdView,newAddBtnId, editFormId,findElementsId} from "./setId.js";
 import {notify} from "./editTableForm.js";
-import {headerSidebar} from "./sidebar.js";
 import {tableNames} from "./login.js";
 import {setStorageData,setUserLocation} from "./userSettings.js";
 import { catchErrorTemplate,ajaxErrorTemplate} from "./logBlock.js";
-import {checkFormSaved} from "./editTableForm.js";
+import {modalBox, saveItem, saveNewItem} from "./editTableForm.js";
 
 let userLocation;
 
@@ -39,6 +38,9 @@ function typeTable (type,columnsData, id){
                 ajaxErrorTemplate("005-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
 
             }, 
+        }).catch(error => {
+            console.log(error);
+            ajaxErrorTemplate("005-000",error.status,error.statusText,error.responseURL);
         });
     } catch (error){
         console.log(error);
@@ -55,7 +57,58 @@ function header() {
         padding:10,
         css:"webix_header-style",
         elements: [
-            headerSidebar(),
+            {cols:[
+                {   
+                    view:"button",
+                    type:"icon",
+                    id:"collapseBtn",
+                    icon:"wxi-angle-double-left",
+                    css:"webix_collapse",
+                    title:"текст",
+                    height:45,
+                    width:40,
+                    click:function() {
+                        try {
+                            if ($$("tree").isVisible()){
+                                this.config.icon ="wxi-angle-double-right";
+                                this.refresh();
+                                $$("tree").hide();
+                                if($$("sideMenuResizer")){
+                                    $$("sideMenuResizer").hide();
+                                } 
+            
+                            } else {
+                                $$("tree").show();
+                                this.config.icon ="wxi-angle-double-left";
+                                this.refresh();
+                                if(window.innerWidth >= 800){
+                                    if($$("sideMenuResizer")){
+                                        $$("sideMenuResizer").show();
+                                    }
+                                } 
+                            
+                                
+                            }
+                        } catch (error){
+                            console.log(error);
+                            catchErrorTemplate("009-000", error);
+                    
+                        }
+                        
+                    },
+                    on: {
+                        onAfterRender: function () {
+                            this.getInputNode().setAttribute("title","Видимость бокового меню");
+                        }
+                    }    
+                },
+                {
+                    view:"label",
+                    label:"<img src='/init/static/images/expalogo.png' style='height:30px; margin: 10px;'>", 
+                    height:30
+               }
+            ]},
+            
             {},
             {view:"search", 
                 placeholder:"Поиск", 
@@ -126,9 +179,24 @@ function header() {
                             try {
                                 if (id=="logout"){
                                     if($$(editFormId) && $$(editFormId).isDirty() ||$$("cp-form") && $$("cp-form").isDirty()){
-                                        checkFormSaved().then(function(result){
-                                            if(result){
+
+                                        modalBox().then(function(result){
+                                            if (result == 1){
                                                 window.location.replace("#logout");
+                                            } else if (result == 2){
+                                                if ($$(editFormId).validate()){
+                                                    if ($$(editFormId).getValues().id){
+                                                        saveItem();
+                                                    } else {
+                                                        saveNewItem(); 
+                                                    }
+                                                    window.location.replace("#logout");
+                                                
+                                                } else {
+                                                    notify ("error","Заполните пустые поля",true);
+                                                    return false;
+                                                }
+                                                
                                             }
                                         });
                                         return false;

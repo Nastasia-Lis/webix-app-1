@@ -28,59 +28,68 @@ function createElements(specificElement){
    
     
     try {
-        $$("container").addView(
-            {view:"layout",id:"dashboards", hidden:true, scroll:"auto",
-                rows: dashboardLayout()
-            },
-        4);
-
-        $$("container").addView(
-            {view:"layout",id:"treeTempl", hidden:true, scroll:"auto",
-                rows: editTreeLayout()
-                //rows: dashboardLayout()
-            },
-        4);
-
-        webix.ui(contextMenu());
-
-        $$("container").addView(
-            {id:"tables", hidden:true, view:"scrollview", body: { view:"flexlayout", cols:[
-                                            
-                {   id:"tableContainer",
-                        rows:[
-                            tableToolbar( searchId, exportBtn,editTableBtnId, findElementsId,filterElementsId, tableId,filterId),
-                            { view:"resizer",class:"webix_resizers",},
-                            table (tableId, onFuncTable,true)
-                        ]
+        if(!specificElement){
+            if (!$$("dashboards")){
+                $$("container").addView(
+                    {view:"layout",id:"dashboards", hidden:true, scroll:"auto",
+                        rows: dashboardLayout()
                     },
-                
-                    {  view:"resizer",class:"webix_resizers",},
-                    
-                    editTableBar,filterForm]
-                }
+                3);
+            }
+            if (!$$("treeTempl")){
+                $$("container").addView(
+                    {view:"layout",id:"treeTempl", hidden:true, scroll:"auto",
+                        rows: editTreeLayout()
+                    },
+                4);
+            }
+            webix.ui(contextMenu());
             
-            },
-        3);
-
-        $$("container").addView(
-            {view:"layout",id:"forms", css:"webix_tableView",hidden:true, 
-                                        
-                rows:[
-                    tableToolbar(searchIdView, exportBtnView,editTableBtnIdView, findElementsIdView,filterElementsIdView, tableIdView,filterIdView, true ),
-                    { view:"resizer",class:"webix_resizers",},
+            if (!$$("tables")){
+                $$("container").addView(
+                    {id:"tables", hidden:true, view:"scrollview", body: { view:"flexlayout", cols:[
+                                                    
+                        {   id:"tableContainer",
+                                rows:[
+                                    tableToolbar( searchId, exportBtn,editTableBtnId, findElementsId,filterElementsId, tableId,filterId),
+                                    { view:"resizer",class:"webix_resizers",},
+                                    table (tableId, onFuncTable,true)
+                                ]
+                            },
+                        
+                            {  view:"resizer",class:"webix_resizers",},
+                            
+                            editTableBar,
+                            filterForm
+                        ]
+                        }
                     
-                    {view:"scrollview", body:  
-                    
-                    {view:"flexlayout",cols:[
-                        table (tableIdView),
-                        { view:"resizer",class:"webix_resizers", id:"propResize", hidden:true},
-                        propertyTemplate("propTableView")
-                    ]}}, 
-                ],
+                    },
+                5);
+            }
 
-                
-            },
-        5);
+            if (!$$("forms")){
+                $$("container").addView(
+                    {view:"layout",id:"forms", css:"webix_tableView",hidden:true, 
+                                                
+                        rows:[
+                            tableToolbar(searchIdView, exportBtnView,editTableBtnIdView, findElementsIdView,filterElementsIdView, tableIdView,filterIdView, true ),
+                            { view:"resizer",class:"webix_resizers",},
+                            
+                            {view:"scrollview", body:  
+                            
+                            {view:"flexlayout",cols:[
+                                table (tableIdView),
+                                { view:"resizer",class:"webix_resizers", id:"propResize", hidden:true},
+                                propertyTemplate("propTableView")
+                            ]}}, 
+                        ],
+
+                        
+                    },
+                6);
+            }
+        }
 
 
         if (specificElement == "cp"){
@@ -91,10 +100,11 @@ function createElements(specificElement){
                         {}
                     ],
                 }, 
-            6);
+            7);
         }
 
         if (specificElement == "userprefs"){
+
             $$("container").addView(
                 {view:"layout",id:"userprefs", css:"webix_auth",hidden:true, 
                     rows:[
@@ -102,7 +112,7 @@ function createElements(specificElement){
                         {}
                     ],
                 }, 
-            6);
+            8);
         }
     } catch (error){
         console.log(error);
@@ -142,7 +152,6 @@ function getDataFields (routes, menuItem){
             createElements();
             webix.ajax().get("/init/default/api/fields.json",false).then(function (data) {
                 let srcTree = data.json().content;
-                //console.log(srcTree)
   
                 srcTree.treeTemplate={
                     
@@ -227,8 +236,6 @@ function getDataFields (routes, menuItem){
                     
                 };
 
-
-
                 let obj = Object.keys(srcTree);
 
                 let dataChilds = {tables:[], forms:[], dashboards:[], treeConf:[]};
@@ -280,12 +287,8 @@ function getDataFields (routes, menuItem){
         
                             }
                         }   
-
-    
                         
                     });
-                   // console.log(dataChilds)
-                    //dataChilds.forms.push({"id":123, "value":"Дерево-пример", "type":"tform"})
                 } catch (error){
                     console.log(error);
                     catchErrorTemplate("007-000", error);
@@ -294,9 +297,7 @@ function getDataFields (routes, menuItem){
     
 
                 webix.ajax().get("/init/default/api/mmenu.json").then(function (data) {
-
                     let menu = data.json().mmenu;
-                   // console.log(menu)
                     let menuTree = [];
 
                     let dataAuth=[];
@@ -388,9 +389,12 @@ function getDataFields (routes, menuItem){
                 });
              
                 
-                if (menuItem == "userprefs" || menuItem == "cp"){
+                if (menuItem == "userprefs"){
                     $$("userprefsName").setValues(userInfo[0].toString());
        
+                }
+                if(menuItem == "cp"){
+                    $$("authName").setValues(userInfo[0].toString());
                 }
  
             }).catch(err => {
@@ -522,7 +526,7 @@ function login () {
             webix.ajax("/init/default/api/whoami",{
                 success:function(text, data, XmlHttpRequest){
                     try {
-                    routes.navigate("content", { trigger:true});
+                        Backbone.history.navigate("content", { trigger:true});
                     } catch (error){
                         console.log(error);
                         catchErrorTemplate("007-005", error);
@@ -534,6 +538,9 @@ function login () {
                     $$("userAuth").show();
                     ajaxErrorTemplate("007-007",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
                 }
+            }).catch(error => {
+                //console.log(error);
+                ajaxErrorTemplate("007-007",error.status,error.statusText,error.responseURL);
             });      
         }, 
         tree: function(id){
@@ -579,7 +586,7 @@ function login () {
                     $$("user_auth").show();
 
                     if (userInfo.length > 0){
-                        $$("userprefsName").setValues(userInfo[0].toString());
+                        $$("authName").setValues(userInfo[0].toString());
                     }
                     
                 }
@@ -624,7 +631,6 @@ function login () {
         },
 
         logout: function (){
-
             webix.ajax().post("/init/default/logout/",{
                 success:function(text, data, XmlHttpRequest){
                     try {
@@ -644,6 +650,9 @@ function login () {
                     ajaxErrorTemplate("007-006",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
 
                 }
+            }).catch(error => {
+                console.log(error);
+                ajaxErrorTemplate("007-006",error.status,error.statusText,error.responseURL);
             });
             
         }
@@ -665,8 +674,9 @@ function login () {
                     webix.ajax("/init/default/api/whoami",{
                         success:function(text, data, XmlHttpRequest){
                             try {
-                                routes.navigate("");
-                                routes.navigate("content", { trigger:true});
+                               // routes.navigate("");
+                                //routes.navigate("content");
+                                Backbone.history.navigate("/content", { trigger:true});
                                 if ( $$('formAuth')){
                                     $$('formAuth').clear();
                                 }
@@ -690,6 +700,9 @@ function login () {
                     notify ("error","Не удалось выполнить выход",true,true);
                     ajaxErrorTemplate("007-006",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
                 }
+            }).catch(error => {
+                console.log(error);
+                ajaxErrorTemplate("007-006",error.status,error.statusText,error.responseURL);
             });
         } catch (error){
             console.log(error);

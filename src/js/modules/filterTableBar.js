@@ -181,11 +181,11 @@ function popupSubmitBtn (){
                 } 
         }
 
-            $$("popupFilterEdit").hide();
+            $$("popupFilterEdit").destructor();
             notify ("success","Рабочая область фильтра обновлена",true);
         }
     }catch(e){
-        $$("popupFilterEdit").hide();
+        $$("popupFilterEdit").destructor();
         notify ("error","Ошибка при обновлении фильтров",true);
     }
 }
@@ -215,7 +215,7 @@ function editFiltersBtn (){
                         icon: 'wxi-close',
                         click:function(){
                             if ($$("popupFilterEdit")){
-                                $$("popupFilterEdit").hide(); 
+                                $$("popupFilterEdit").destructor();
                             }
                            
                         }
@@ -543,8 +543,12 @@ function resetFilterBtn (){
                 notify ("success", "Фильтры очищены", true);
             },
             error:function(text, data, XmlHttpRequest){
+                ajaxErrorTemplate("004-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
                 notify ("error","Ошибка очистки фильтров",true);
             }
+        }).catch(error => {
+            console.log(error);
+            ajaxErrorTemplate("004-000",error.status,error.statusText,error.responseURL);
         });
 
         
@@ -655,39 +659,46 @@ function filterSubmitBtn (){
                 filterEl = el;
             
                 value = values[el];
-                if (el.includes("cdt")|| el.includes("edt")|| el.includes("sdt")){
-                    value = postFormatData(values[el]);
-                }
+                if (value){
 
-                if (el.includes("filter")&&!(el.includes("condition"))){
-                    filterEl = el.lastIndexOf("_");
-                    filterEl = el.slice(0,filterEl)
-                }
-
-                if(!(el.includes("condition"))&&values[el]!==""&&el!=="selectAll"&&!(el.includes("child"))){
-
-                    if (i > 0){
-                        getOperationVal (value,filterEl,el,"and","parent",true);
-                    }else {
-                        getOperationVal (value,filterEl,el,"and","parent");
+                    if ($$(el).config.view=="datepicker"){
+                        value = postFormatData(values[el]);
                     }
-                    
-                } else if (el.includes("child")){
-                    if (el.includes("operAnd")){
-                        getOperationVal (value,filterEl,el,"and","child");
-
-                    } else if (el.includes("operOr")){
-                        getOperationVal (value,filterEl,el,"or","child");
-                    }
-                
-                }
-                
             
+                    if ($$(el).config.text && $$(el).config.text == "Нет"){
+                        value = 0;
+                    }
+        
+                    if (el.includes("filter")&&!(el.includes("condition"))){
+                        filterEl = el.lastIndexOf("_");
+                        filterEl = el.slice(0,filterEl)
+                    }
+
+                    if(!(el.includes("condition"))&&values[el]!==""&&el!=="selectAll"&&!(el.includes("child"))){
+
+                        if (i > 0){
+                            getOperationVal (value,filterEl,el,"and","parent",true);
+                        }else {
+                            getOperationVal (value,filterEl,el,"and","parent");
+                        }
+                        
+                    } else if (el.includes("child")){
+                        if (el.includes("operAnd")){
+                            getOperationVal (value,filterEl,el,"and","child");
+
+                        } else if (el.includes("operOr")){
+                            getOperationVal (value,filterEl,el,"or","child");
+                        }
+                    
+                    }
+                }
+
             });
         } catch (error){
             console.log(error);
             catchErrorTemplate("004-000", error);
         }
+ 
 
         webix.ajax("/init/default/api/smarts?query="+query.join(""),{
             success:function(text, data, XmlHttpRequest){
@@ -720,6 +731,9 @@ function filterSubmitBtn (){
               //  notify ("error","Ошибка фильтрации данных");
                 ajaxErrorTemplate("003-011",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
             }
+        }).catch(error => {
+            console.log(error);
+            ajaxErrorTemplate("003-011",error.status,error.statusText,error.responseURL);
         });
     } else {
         notify ("error","Не все поля формы заполнены", true);

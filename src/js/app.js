@@ -1,4 +1,4 @@
-console.log("expa 1.0.17");
+console.log("expa 1.0.18");
 
 import {lib} from "./modules/expalib.js";
 lib ();
@@ -91,7 +91,8 @@ try{
 
     
 
-        Backbone.history.start();
+     //  Backbone.history.start({pushState: true, root: '/'});
+       Backbone.history.start();
 
         textInputClean.textInputClean();
 

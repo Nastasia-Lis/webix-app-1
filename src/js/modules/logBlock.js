@@ -35,7 +35,7 @@ function setLogValue (typeNotify,notifyText) {
             $$("logBlock-list").add({
                 date:currentDate,
                 value:notifyText,
-                src:"Expa v1.0.17"
+                src:"Expa v1.0.18"
             });
         }
 
@@ -88,9 +88,7 @@ const logBlock = {
             
         },
         onAfterAdd:function(id, index){
-        //    console.log(id, index)
 
-         //   $$("logBlock-list").showItem(id);
             if ($$("webix_log-btn").config.icon =="wxi-eye"){
                 if ($$("webix_log-btn").config.badge==""){
                     notifyCounter=0;

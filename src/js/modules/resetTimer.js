@@ -45,6 +45,9 @@ export function resetTimer (){
                 ajaxErrorTemplate("008-006",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
 
             }
+        }).catch(error => {
+            console.log(error);
+            ajaxErrorTemplate("008-006",error.status,error.statusText,error.responseURL);
         });
   
     }

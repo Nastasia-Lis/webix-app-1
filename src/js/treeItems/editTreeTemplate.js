@@ -62,7 +62,8 @@ function contextMenu (){
                                 }
                             }).fail(function(error){
                                 console.log(error)
-                                catchErrorTemplate("013-001", error);
+                                ajaxErrorTemplate("013-001",error.status,error.statusText,error.responseURL);
+
                             });
 
                         }
@@ -87,8 +88,8 @@ function contextMenu (){
                                 }
                                 
                             }).fail(function(error){
-                                console.log(error)
-                                catchErrorTemplate("013-011", error);
+                                console.log(error);
+                                ajaxErrorTemplate("013-011",error.status,error.statusText,error.responseURL);
                             });
                         }
                         break;
@@ -104,7 +105,8 @@ function contextMenu (){
                             }
                         }).fail(function(error){
                             console.log(error)
-                            catchErrorTemplate("013-002", error);
+                            ajaxErrorTemplate("013-002",error.status,error.statusText,error.responseURL);
+
                         });
 
                         break;
@@ -152,7 +154,7 @@ function editTreeLayout () {
    
     return [
 
-        {id:"dashboardContainer", cols:[
+        {id:"treeEditContainer", cols:[
             {rows: [
                 {
                     view:"edittree",
@@ -167,34 +169,35 @@ function editTreeLayout () {
                     on:{
                          onAfterEditStop:function(state, editor, ignoreUpdate){
                         try {
+                            let url = "/init/default/api/trees/";
                             if(state.value != state.old){
-                              
+                                let pid = $$("treeEdit").getParentId(editor.id);
+                                
                                 let postObj = {
-                                    name : "",
-                                    pid : "",
+                                    name : state.value,
+                                    pid : pid,
+                                    id:editor.id,
                                     owner : null,
                                     descr : "",
                                     ttype : 1,
                                     value : "",
                                     cdt : null,
                                 };
-                        //  console.log($$("treeEdit").getSelectedId())
 
-
-
-                        //    webix.ajax().put(url+titem.id, postObj).then(function (data) {
-                        //     if (data.json().err_type !== "e"&&data.json().err_type !== "x"){
-                        //         titem.value = text;
-                        //         tree.updateItem(titem.id, titem);
-                        //         notify ("success","Данные изменены",true);
-                        //     } else {
-                        //         catchErrorTemplate("013-011", data.json().err, true);
-                        //     }
+                            webix.ajax().put(url+editor.id, postObj).then(function (data) {
+                                if (data.json().err_type !== "e"&&data.json().err_type !== "x"){
+                                    //titem.value = text;
+                                //  tree.updateItem(titem.id, titem);
+                                    notify ("success","Данные изменены",true);
+                                } else {
+                                    catchErrorTemplate("013-011", data.json().err, true);
+                                }
                             
-                        //     }).fail(function(error){
-                        //         console.log(error)
-                        //         catchErrorTemplate("013-011", error);
-                        //     });
+                            }).fail(function(error){
+                                console.log(error)
+                                ajaxErrorTemplate("013-011",error.status,error.statusText,error.responseURL);
+
+                            });
 
                         }
                         } catch (error){

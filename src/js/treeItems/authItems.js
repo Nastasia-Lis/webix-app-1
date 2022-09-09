@@ -37,10 +37,10 @@ const authCp = {
             borderless:true
         },
         {   view:"template",
-            id:"userprefsName",
+            id:"authName",
             css:"webix_userprefs-info",
             template:function(){
-                if (Object.keys($$("userprefsName").getValues()).length !==0){
+                if (Object.keys($$("authName").getValues()).length !==0){
                     return "<div style='display:inline-block;color:var(--primary);font-size:13px!important;font-weight:600'>Имя пользователя:</div>"+"⠀"+"<div style='display:inline-block;font-size:13px!important;font-weight:600' >"+$$("userprefsName").getValues()+"<div>";
                 } else {
                     return "<div style='display:inline-block;color:var(--primary);font-size:13px!important;font-weight:600'>Имя пользователя:</div>"+"⠀"+ " <div style='display:inline-block;font-size:13px!important;font-weight:600'>не указано</div>";

@@ -25,7 +25,6 @@ function saveItem(addBtnClick=false){
         let itemData = $$(editFormId).getValues();   
         if($$(editFormId).validate() ){
             if( itemData.id ) {
-
                 webix.ajax().put("/init/default/api/"+currId+"/"+itemData.id, itemData, {
                     success:function(){
                         $$( tableId ).updateItem(itemData.id, itemData);
@@ -35,7 +34,9 @@ function saveItem(addBtnClick=false){
                         $$(tableId).clearSelection();
                         
                         if (!(addBtnClick)){
-                            $$("inputsTable").hide();
+                            if ($$("inputsTable")){
+                                $$("inputsTable").hide();
+                            }
                             $$(newAddBtnId).enable();
                         if ($$("EditEmptyTempalte")&&!($$("EditEmptyTempalte").isVisible())){
                             $$("EditEmptyTempalte").show();
@@ -53,6 +54,9 @@ function saveItem(addBtnClick=false){
                     error:function(text, data, XmlHttpRequest){
                         ajaxErrorTemplate("003-011",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
                     }
+                }).catch(error => {
+                    console.log(error);
+                    ajaxErrorTemplate("003-011",error.status,error.statusText,error.responseURL);
                 });
             }    
     
@@ -120,13 +124,16 @@ function saveNewItem (){
         if($$( editFormId ).validate() ) {
             if($$(editFormId).isDirty()){
                 let newValues = $$(editFormId).getValues();
-                newValues.id= $$(tableId).count()+1;
+
+                newValues.id=webix.uid();
                 webix.ajax().post("/init/default/api/"+currId, newValues,{
                     success:function( ){
                         $$(tableId).add(newValues);
                         clearItem();
                         defaultStateForm ();
-                        $$("inputsTable").hide();
+                        if ($$("inputsTable")){
+                            $$("inputsTable").hide();
+                        }
                         $$(newAddBtnId).enable();
                         if ($$("EditEmptyTempalte")&&!($$("EditEmptyTempalte").isVisible())){
                             $$("EditEmptyTempalte").show();
@@ -136,6 +143,9 @@ function saveNewItem (){
                     error:function(text, data, XmlHttpRequest){
                         ajaxErrorTemplate("003-001",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
                     }
+                }).catch(error => {
+                    console.log(error);
+                    ajaxErrorTemplate("003-001",error.status,error.statusText,error.responseURL);
                 });
             }else {
                 notify ("debug","Форма пуста");
@@ -167,6 +177,9 @@ function removeItem() {
                     error:function(text, data, XmlHttpRequest){
                         ajaxErrorTemplate("003-002",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
                     }
+                }).catch(error => {
+                    console.log(error);
+                    ajaxErrorTemplate("003-002",error.status,error.statusText,error.responseURL);
                 });
                 
         });
@@ -267,8 +280,57 @@ function createEditFields (parentElement, viewPosition=1) {
 
                 );
                 
-                } 
-                else{
+            } else if (el.type.includes("boolean")) {
+
+                inputsArray.push(
+                    {cols:[
+                    {   view:"combo",
+                        placeholder:"Выберите вариант",  
+                        label:el.label, 
+                        id:el.id,
+                        name:el.id, 
+                        labelPosition:"top",
+                        options:[
+                            {id:1, value: "Да"},
+                            {id:2, value: "Нет"}
+                        ],
+                        on:{
+                            onItemClick:function(){
+                                $$(parentElement).clearValidation();
+                            },
+                        }
+                    },
+                    
+                    ]}
+
+                );
+                
+            } else if (el.type.includes("integer")) {
+
+                inputsArray.push(
+                    {cols:[
+                        {
+                            view:"text", 
+                            name:el.id,
+                            id:el.id, 
+                            label:el.label, 
+                            labelPosition:"top",
+                            invalidMessage:"Поле поддерживает только числовой формат",
+                            on:{
+                                onKeyPress:function(){
+                                    $$(parentElement).clearValidation();
+                                }
+                            },
+                            validate:function(val){
+                                return !isNaN(val*1);
+                            }
+                        },
+                    
+                    ]}
+
+                );
+                
+            } else {
                     inputsArray.push(
                         {
                         view:"text", 
@@ -344,7 +406,7 @@ function modalBox (){
         width:500,
         text:"Выберите действие перед тем как продолжить"
 
-    })
+    });
 }
 
 
@@ -360,28 +422,6 @@ function notify (typeNotify,textMessage, log = false, visible=false) {
 
 }
 
-
-function checkFormSaved() {
-    return new webix.promise(function(resolve){
-      webix.confirm(
-        {
-          title: 'Данные не сохранены',
-          ok: 'Да',
-          width:300,
-          cancel: 'Отмена',
-          text: 'Вы уверены, что хотите продолжить?',
-          callback: function (result) {
-            if (result) {
-              resolve(true);
-            } else {
-              resolve(false);
-            }
-          }
-        }
-      );
-    });
-}
-
 //--- components
 
 
@@ -392,17 +432,19 @@ try{
     view:"form", 
     id:editFormId,
     css:"webix_form-edit",
-    container:"webix__form-container", 
+   // container:"webix__form-container", 
     minHeight:350,
     minWidth:210,
     width: 320,
     scroll:true,
     elements:[
 
-        {id:"form-adaptive",minHeight:48,css:"webix_form-adaptive", margin:5, rows:[{margin:5, rows:[
+        {//id:"form-adaptive",
+        minHeight:48,css:"webix_form-adaptive", margin:5, rows:[{margin:5, rows:[
            
             
-            {responsive:"form-adaptive",  margin:5, 
+            {//responsive:"form-adaptive",  
+            margin:5, 
 
                 cols: [
                     {   view:"button",
@@ -491,7 +533,8 @@ export{
     createEditFields,
     popupExec,
     defaultStateForm,
-    checkFormSaved,
+    modalBox,
     clearItem,
-    saveItem
+    saveItem,
+    saveNewItem
 };
