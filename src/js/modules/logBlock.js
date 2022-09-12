@@ -1,8 +1,7 @@
 
-import {itemTreeId} from "./sidebar.js";
 import {notify} from "./editTableForm.js";
 import {tableNames} from "./login.js";
-import {setStorageData,setUserLocation} from "./userSettings.js";
+import {setStorageData} from "./userSettings.js";
 
 function setLogValue (typeNotify,notifyText) {
     const date = new Date();
@@ -15,8 +14,14 @@ function setLogValue (typeNotify,notifyText) {
     let currentDate = `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
 
     try {
-        if (itemTreeId){
+        let itemTreeId=null;
 
+        if ($$("tree").getSelectedItem() !== undefined){
+            itemTreeId = $$("tree").getSelectedItem().id;
+        }
+
+        if (itemTreeId){
+        
             let srcTable;
             tableNames.forEach(function(el,i){
                 if (el.id == itemTreeId){
@@ -35,7 +40,7 @@ function setLogValue (typeNotify,notifyText) {
             $$("logBlock-list").add({
                 date:currentDate,
                 value:notifyText,
-                src:"Expa v1.0.18"
+                src:"Expa v1.0.19"
             });
         }
 
@@ -58,6 +63,7 @@ function setLogValue (typeNotify,notifyText) {
             if ($$("webix_log-btn").config.icon =="wxi-eye"){
                 $$("logLayout").config.height = 90;
                 $$("logLayout").resize();
+                $$("webix_log-btn").setValue(2);
                 $$("webix_log-btn").config.icon ="wxi-eye-slash";
                 $$("webix_log-btn").refresh();
                 setStorageData("LogVisible", JSON.stringify("show"));
@@ -104,7 +110,7 @@ const logBlock = {
                 $$("webix_log-btn").refresh();
             }
           
-        },
+        }
     }
 };
 

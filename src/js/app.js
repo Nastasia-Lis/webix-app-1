@@ -1,5 +1,4 @@
-console.log("expa 1.0.18");
-
+console.log("expa 1.0.19");
 import {lib} from "./modules/expalib.js";
 lib ();
 
@@ -11,10 +10,10 @@ import {treeSidebar} from "./modules/sidebar.js";
 import {logLayout} from "./modules/logBlock.js";
 import * as resetTimer from  "./modules/resetTimer.js";
 
-import { catchErrorTemplate} from "./modules/logBlock.js";
+import {catchErrorTemplate} from "./modules/logBlock.js";
 
 try{
-
+    
     webix.ready(function(){
         webix.protoUI({
             name:"edittree"
@@ -91,8 +90,8 @@ try{
 
     
 
-     //  Backbone.history.start({pushState: true, root: '/'});
-       Backbone.history.start();
+       //Backbone.history.start({pushState: true, root: '/init/default/spaw/'});
+      Backbone.history.start();
 
         textInputClean.textInputClean();
 

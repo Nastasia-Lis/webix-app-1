@@ -1,6 +1,4 @@
 import {notify} from "./editTableForm.js";
-import { tableId, tableIdView,findElementsId,filterElementsId,filterId,editTableBtnId,editTableBtnIdView, searchIdView, exportBtnView, 
-    findElementsIdView,filterElementsIdView,filterIdView,searchId, exportBtn} from "./setId.js";
 
 import {lib} from "./expalib.js";
 lib ();
@@ -19,7 +17,10 @@ import {editTreeLayout,contextMenu} from "../treeItems/editTreeTemplate.js";
 import {catchErrorTemplate,ajaxErrorTemplate} from "./logBlock.js";
 
 
-
+let urlAfterLogin = null;
+if ( window.location.href !== "http://localhost:3000/index.html#"){
+    urlAfterLogin = window.location.href;
+}
 
 let tableNames = [];
 let userInfo=[];
@@ -51,9 +52,9 @@ function createElements(specificElement){
                                                     
                         {   id:"tableContainer",
                                 rows:[
-                                    tableToolbar( searchId, exportBtn,editTableBtnId, findElementsId,filterElementsId, tableId,filterId),
+                                    tableToolbar( "table-search", "table-exportBtn","table-editTableBtnId", "table-findElements","table-idFilterElements", "table","table-filterId"),
                                     { view:"resizer",class:"webix_resizers",},
-                                    table (tableId, onFuncTable,true)
+                                    table ("table", onFuncTable,true)
                                 ]
                             },
                         
@@ -73,13 +74,13 @@ function createElements(specificElement){
                     {view:"layout",id:"forms", css:"webix_tableView",hidden:true, 
                                                 
                         rows:[
-                            tableToolbar(searchIdView, exportBtnView,editTableBtnIdView, findElementsIdView,filterElementsIdView, tableIdView,filterIdView, true ),
+                            tableToolbar("table-view-search", "table-view-exportBtn","table-view-editTableBtnId", "table-view-findElements","table-view-idFilterElements", "table-view","table-view-filterIdView", true ),
                             { view:"resizer",class:"webix_resizers",},
                             
                             {view:"scrollview", body:  
                             
                             {view:"flexlayout",cols:[
-                                table (tableIdView),
+                                table ("table-view"),
                                 { view:"resizer",class:"webix_resizers", id:"propResize", hidden:true},
                                 propertyTemplate("propTableView")
                             ]}}, 
@@ -109,7 +110,7 @@ function createElements(specificElement){
                 {view:"layout",id:"userprefs", css:"webix_auth",hidden:true, 
                     rows:[
                         userprefsLayout,
-                        {}
+                        //{}
                     ],
                 }, 
             8);
@@ -299,6 +300,17 @@ function getDataFields (routes, menuItem){
                 webix.ajax().get("/init/default/api/mmenu.json").then(function (data) {
                     let menu = data.json().mmenu;
                     let menuTree = [];
+                   
+                    // menu.push ({
+                    //     "id": 7,
+                    //     "name": "sales",
+                    //     "title": "Salasll",
+                    //     "mtype": 2,
+                    //     "ltype": 1,
+                    //     "childs": [
+                           
+                    //     ]
+                    // }) ;
 
                     let dataAuth=[];
                     let dataNotAuth=[];
@@ -309,9 +321,11 @@ function getDataFields (routes, menuItem){
                                 if (el.childs.length > 0){
                                     el.childs.forEach(function(child,i){
                                             if(child.name == "login"){
-                                                dataNotAuth.push({id:child.name,value:child.title, href:"#"+child.name });
+                                                 dataNotAuth.push({id:child.name,value:child.title, href:"#"+child.name });
+                                              // dataNotAuth.push({id:child.name,value:child.title, href:"/init/default/spaw/"+child.name });
                                             }else if (child.name !== "logout") {
-                                            dataAuth.push({id:child.name,value:child.title, href:"#"+child.name });
+                                                 dataAuth.push({id:child.name,value:child.title, href:"#"+child.name });
+                                               // dataAuth.push({id:child.name,value:child.title, href:"/init/default/spaw/"+child.name });
                                             }
                                             tableNames.push({name:child.title , id:child.name}); 
                                     });
@@ -325,6 +339,7 @@ function getDataFields (routes, menuItem){
                                 
                                 if (el.childs.length <= 0){
                                     dataAuth.push({id:el.name, value:el.title, href:"#"+el.name });
+                                  //  dataAuth.push({id:el.name, value:el.title, href:"/init/default/spaw/"+el.name });
                                 }
 
 
@@ -490,8 +505,9 @@ function login () {
                                             value:"Перейти ко вкладке",
                                             click:function(){
                                                 window.location.replace(userLocation.href)
-                                                
+                                                console.log(userLocation)
                                                 if(userLocation.href.includes("tree")){
+                                               
                                                     let treeItemParent = $$("tree").getItem(userLocation.tableId).$parent;
                                                     if (treeItemParent !==0){
                                                         $$("tree").open(treeItemParent);
@@ -660,11 +676,12 @@ function login () {
     }));
 
     function getLogin(){
-        
+       
         let userData = $$("formAuth").getValues();
         let loginData = [];
 
         try {
+           
             $$("formAuth").validate();
             loginData.push("un"+"="+userData.username);
             loginData.push("np"+"="+userData.password);
@@ -674,13 +691,27 @@ function login () {
                     webix.ajax("/init/default/api/whoami",{
                         success:function(text, data, XmlHttpRequest){
                             try {
-                               // routes.navigate("");
-                                //routes.navigate("content");
-                                Backbone.history.navigate("/content", { trigger:true});
-                                if ( $$('formAuth')){
-                                    $$('formAuth').clear();
+                                console.log(urlAfterLogin, "url")
+                                if (urlAfterLogin){
+                                    window.location.replace(urlAfterLogin);
+                                    urlAfterLogin=null;
+                                    if ( $$('formAuth')){
+                                        $$('formAuth').clear();
+                                    }
+                                    window.location.reload();
+                                } else {
+                                    Backbone.history.navigate("content", { trigger:true});
+                                    if ( $$('formAuth')){
+                                        $$('formAuth').clear();
+                                    }
+                                    window.location.reload();
                                 }
-                                window.location.reload();
+                             
+                                // Backbone.history.navigate("content", { trigger:true});
+                                // if ( $$('formAuth')){
+                                //     $$('formAuth').clear();
+                                // }
+                                
                             } catch (error){
                                 console.log(error);
                                 catchErrorTemplate("007-005", error);

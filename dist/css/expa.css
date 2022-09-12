@@ -797,3 +797,27 @@ label, button {
 .webix_view.dashboardBody.webix_layout_line {
   overflow: visible !important;
 }
+
+.webix_cal_icon {
+  font-size: 13px !important;
+}
+
+.webix_cal_icon_clear.webix_cal_icon {
+  color: var(--danger);
+}
+
+.webix_cal_icon_clear.webix_cal_icon:hover {
+  color: var(--danger-light) !important;
+}
+
+.webix_cal_icon_clear.webix_cal_icon:active {
+  color: var(--danger-dark) !important;
+}
+
+.webix_cal_icons span:not(:last-child) {
+  margin-right: 5px !important;
+}
+
+.webix_cal_body .webix_cal_block span {
+  border-radius: 8% !important;
+}

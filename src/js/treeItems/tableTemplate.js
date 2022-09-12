@@ -1,7 +1,7 @@
-import {tableId,editFormId,newAddBtnId, saveBtnId,saveNewBtnId, delBtnId, findElementsId,editTableBtnId} from '../modules/setId.js';
 import {defaultStateForm,createEditFields,modalBox,notify,saveItem,saveNewItem} from "../modules/editTableForm.js";
-import {itemTreeId, getComboOptions, urlFieldAction} from "../modules/sidebar.js";  
 import {catchErrorTemplate,ajaxErrorTemplate} from "../modules/logBlock.js";
+
+
 
 function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterElements, idTable,idFilter,visible=false) {
     function exportToExcel(){
@@ -20,7 +20,7 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
 
             if(!(btnClass.classList.contains("webix_primary"))){
                 $$("filterTableForm").show();
-                $$(editFormId).hide();
+                $$("table-editForm").hide();
             
                 if($$("filterTableForm").getChildViews() !== 0){
                     createFilterElements("filterTableForm",3);
@@ -33,7 +33,7 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
             } else {
             
                 $$("filterTableForm").hide();
-                $$(editFormId).show();
+                $$("table-editForm").show();
                 btnClass.classList.add("webix_secondary");
                 btnClass.classList.remove("webix_primary");
                 $$(idBtnEdit).hide();
@@ -49,7 +49,7 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
         try {
             let btnClass = document.querySelector(".webix_btn-filter");
             $$("filterTableForm").hide();
-            $$(editFormId).show();
+            $$("table-editForm").show();
             btnClass.classList.add("webix_secondary");
             btnClass.classList.remove("webix_primary");
             $$(idBtnEdit).hide();
@@ -408,7 +408,7 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
 
     function createFilterElements (parentElement, viewPosition=1) {
         try {
-            let columnsData = $$(tableId).getColumns();
+            let columnsData = $$("table").getColumns();
         
             if(Object.keys($$(parentElement).elements).length==0  ){
                 let inputsArray = [];
@@ -563,8 +563,8 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
         
                 let inpObj = {margin:8,id:"inputsFilter",css:"webix_inputs-table-filter", rows:inputsArray};
         
-                if(parentElement==editFormId){
-                    $$(delBtnId).enable();
+                if(parentElement=="table-editForm"){
+                    $$("table-delBtnId").enable();
                 }
 
                 return ($$(parentElement).addView( inpObj, viewPosition));
@@ -573,8 +573,8 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
                 $$(parentElement).clear();
                 $$(parentElement).clearValidation();
         
-                if(parentElement==editFormId){
-                    $$(delBtnId).enable();
+                if(parentElement=="table-editForm"){
+                    $$("table-delBtnId").enable();
                 }
                 $$("inputsFilter").show();
             }
@@ -711,6 +711,7 @@ function table (idTable, onFunc, editableParam=false) {
                     popupExec("Запись будет удалена").then(
                         function(){
                             let formValues = $$(idTable).getItem(id);
+                            let itemTreeId = $$("tree").getSelectedItem().id;
                             webix.ajax().del("/init/default/api/"+itemTreeId+"/"+formValues.id+".json", formValues,{
                                 success:function(){
                                     $$(idTable).remove($$(idTable).getSelectedId());
@@ -806,20 +807,20 @@ let onFuncTable = {
 
     onAfterSelect(id){
         try {
-            if ($$(editTableBtnId).isVisible()){
-                $$(editTableBtnId).hide();
+            if ($$("table-editTableBtnId").isVisible()){
+                $$("table-editTableBtnId").hide();
             }
 
-            if ($$(newAddBtnId)){
-                $$(newAddBtnId).enable();
+            if ($$("table-newAddBtnId")){
+                $$("table-newAddBtnId").enable();
             }
 
             if ($$("EditEmptyTempalte")&&$$("EditEmptyTempalte").isVisible()){
                 $$("EditEmptyTempalte").hide();
             }
 
-            if(!($$(editFormId).isVisible())){
-                $$(editFormId).show();
+            if(!($$("table-editForm").isVisible())){
+                $$("table-editForm").show();
                 $$("filterTableForm").hide();
                 let btnClass = document.querySelector(".webix_btn-filter");
                 btnClass.classList.add("webix_secondary");
@@ -832,36 +833,36 @@ let onFuncTable = {
             catchErrorTemplate("012-000", error);
         }
 
-        let values = $$(tableId).getItem(id); 
+        let values = $$("table").getItem(id); 
 
         function toEditForm () {
             try {
-                $$(editFormId).setValues(values);
-                $$(saveNewBtnId).hide();
-                $$(saveBtnId).show();
-                $$(editFormId).clearValidation();
+                $$("table-editForm").setValues(values);
+                $$("table-saveNewBtn").hide();
+                $$("table-saveBtn").show();
+                $$("table-editForm").clearValidation();
             } catch (error){
                 console.log(error);
                 catchErrorTemplate("012-000", error);
             }
         }
-        if($$(editFormId).isDirty()){
+        if($$("table-editForm").isDirty()){
             try {
                 modalBox().then(function(result){
                     if (result == 1){
-                        $$(editFormId).clear();
-                        $$(delBtnId).enable();
+                        $$("table-editForm").clear();
+                        $$("table-delBtnId").enable();
                         toEditForm();
                     
                     } else if (result == 2){
-                        if ($$(editFormId).validate()){
-                            if ($$(editFormId).getValues().id){
+                        if ($$("table-editForm").validate()){
+                            if ($$("table-editForm").getValues().id){
                                 saveItem();
                             } else {
                                 saveNewItem(); 
                             }
-                            $$(editFormId).clear();
-                            $$(delBtnId).enable();
+                            $$("table-editForm").clear();
+                            $$("table-delBtnId").enable();
                             toEditForm();
                         
                         } else {
@@ -876,7 +877,7 @@ let onFuncTable = {
                 catchErrorTemplate("012-000", error);
             }
         } else {
-            createEditFields(editFormId);
+            createEditFields("table-editForm");
             toEditForm();
         }   
     },
@@ -891,7 +892,7 @@ let onFuncTable = {
     },  
     onAfterDelete: function() {
         try {
-            $$(findElementsId).setValues($$(tableId).count().toString());
+            $$("table-findElements").setValues($$("table").count().toString());
             if (!this.count())
                 this.showOverlay("Ничего не найдено");
             if (this.count())
@@ -903,7 +904,7 @@ let onFuncTable = {
     },
     onAfterAdd: function() {
         try {
-            $$(findElementsId).setValues($$(tableId).count().toString());
+            $$("table-findElements").setValues($$("table").count().toString());
             this.hideOverlay();
         } catch (error){
             console.log(error);

@@ -1,4 +1,4 @@
-import { tableId,tableIdView,newAddBtnId, editFormId,findElementsId} from "./setId.js";
+
 import {notify} from "./editTableForm.js";
 import {tableNames} from "./login.js";
 import {setStorageData,setUserLocation} from "./userSettings.js";
@@ -13,8 +13,8 @@ function typeTable (type,columnsData, id){
         webix.ajax().get("/init/default/api/"+id,{
             success:function(text, data, XmlHttpRequest){
                 
-                if(!($$(newAddBtnId).isEnabled())){
-                    $$(newAddBtnId).enable();
+                if(!($$("table-newAddBtnId").isEnabled())){
+                    $$("table-newAddBtnId").enable();
                 }
 
                 data = data.json().content;
@@ -30,7 +30,7 @@ function typeTable (type,columnsData, id){
                 }
             
                 let countRows = $$(type).count();
-                $$(findElementsId).setValues(countRows.toString());
+                $$("table-findElements").setValues(countRows.toString());
             
             },
             error:function(text, data, XmlHttpRequest){
@@ -129,9 +129,16 @@ function header() {
                         this.getInputNode().setAttribute("title","Показать/скрыть системные сообщения");
                     },
                     onChange:function(){
+                        let lastItemList = $$("logBlock-list").getLastId();
+                    //   console.log(this.getValue(),'val')
                         if (this.getValue() == 2){
                             this.config.badge = "";
+                           // console.log($$("logBlock-list").getLastId())
+                            $$("logBlock-list").showItem(lastItemList);
                         }
+                       // console.log($$("logBlock-list").getScrollState())
+                        //console.log($$("logBlock-list").getLastId())
+
                     }
                 },
                 click: function() {
@@ -178,14 +185,14 @@ function header() {
                         onItemClick:function(id, e, node){
                             try {
                                 if (id=="logout"){
-                                    if($$(editFormId) && $$(editFormId).isDirty() ||$$("cp-form") && $$("cp-form").isDirty()){
+                                    if($$("table-editForm") && $$("table-editForm").isDirty() ||$$("cp-form") && $$("cp-form").isDirty()){
 
                                         modalBox().then(function(result){
                                             if (result == 1){
                                                 window.location.replace("#logout");
                                             } else if (result == 2){
-                                                if ($$(editFormId).validate()){
-                                                    if ($$(editFormId).getValues().id){
+                                                if ($$("table-editForm").validate()){
+                                                    if ($$("table-editForm").getValues().id){
                                                         saveItem();
                                                     } else {
                                                         saveNewItem(); 

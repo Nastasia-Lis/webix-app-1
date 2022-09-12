@@ -1,6 +1,3 @@
-import { tableId, tableIdView,filterIdView,findElementsId,exportBtn, filterId,filterElementsId,editFormId,searchId,editTableBtnId,newAddBtnId,
-     searchIdView,findElementsIdView,
-} from './setId.js';
 import {notify, saveItem,saveNewItem,modalBox,clearItem,defaultStateForm} from "./editTableForm.js";
 import {tableNames} from "./login.js";
 import {catchErrorTemplate,ajaxErrorTemplate} from "./logBlock.js";
@@ -33,16 +30,16 @@ function submitBtn (idElements, url, verb, rtype){
                 webix.ajax(url+"?"+valuesArray.join("&"),{
                     success:function(text, data, XmlHttpRequest){
                         try {
-                            $$(tableIdView).clearAll();
+                            $$("table-view").clearAll();
                             data = data.json().content;
                             if (data.length !== 0){
-                                $$(tableIdView).hideOverlay("Ничего не найдено");
-                                $$(tableIdView).parse(data);
+                                $$("table-view").hideOverlay("Ничего не найдено");
+                                $$("table-view").parse(data);
                             } else {
-                                $$(tableIdView).showOverlay("Ничего не найдено");
+                                $$("table-view").showOverlay("Ничего не найдено");
                             }
-                            prevCountRows = $$(tableIdView).count();
-                            $$(findElementsIdView).setValues(prevCountRows.toString());
+                            prevCountRows = $$("table-view").count();
+                            $$("table-view-findElements").setValues(prevCountRows.toString());
                         } catch (error){
                             console.log(error);
                             catchErrorTemplate("009-000", error);
@@ -53,8 +50,8 @@ function submitBtn (idElements, url, verb, rtype){
                         //notify ("error","Ошибка при загрузке данных",true);
                         ajaxErrorTemplate("009-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
 
-                        if($$(newAddBtnId)&&!($$(newAddBtnId).isEnabled())){
-                            $$(newAddBtnId).enable();
+                        if($$("table-newAddBtnId")&&!($$("table-newAddBtnId").isEnabled())){
+                            $$("table-newAddBtnId").enable();
                         }
                     }
                 }).catch(error => {
@@ -90,11 +87,11 @@ function submitBtn (idElements, url, verb, rtype){
                 if (el.id.includes("customUploader")){
                     $$(el.id).send(function(data){
                         if (data.err_type == "e"){
-                            $$(tableIdView).parse($$(el.id).getValue())
+                            $$("table-view").parse($$(el.id).getValue())
                             notify ("error",data.err,true);
                         } else if (data.err_type == "i"){
                             notify ("success",data.err,true);
-                            $$(tableIdView).refresh();
+                            $$("table-view").refresh();
                         } else if (data.err_type == "x"){
                             notify ("debug",data.err,true);
                         }
@@ -168,9 +165,9 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
             notify ("error","Данные не найдены");
         } else {
             let inpObj;
-            if (idCurrTable == tableIdView){
+            if (idCurrTable == "table-view"){
 
-                let filterBar = $$(filterIdView).getParentView();
+                let filterBar = $$("table-view-filterIdView").getParentView();
             
                 // filterBar.getChildViews().forEach(function(el,i){
                 //     if (el.config.id == "customInputs"){
@@ -592,7 +589,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                      
            
                         inpObj = {id:"customInputs",css:"webix_custom-inp", cols:customInputs};
-                        let filterBar = $$(filterIdView).getParentView();
+                        let filterBar = $$("table-view-filterIdView").getParentView();
 
                         $$(filterBar.config.id).addView( inpObj,2);
 
@@ -620,14 +617,14 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                                 success:function(text, data, XmlHttpRequest){
                                     try {
                                         $$(idCurrTable).clearAll();
-                                        if(!($$(newAddBtnId).isEnabled())){
-                                            $$(newAddBtnId).enable();
+                                        if(!($$("table-newAddBtnId").isEnabled())){
+                                            $$("table-newAddBtnId").enable();
                                         }
-                                        if(!($$(filterId).isEnabled())){
-                                            $$(filterId).enable();
+                                        if(!($$("table-filterId").isEnabled())){
+                                            $$("table-filterId").enable();
                                         }
-                                        if(!($$(exportBtn).isEnabled())){
-                                            $$(exportBtn).enable();
+                                        if(!($$("table-exportBtn").isEnabled())){
+                                            $$("table-exportBtn").enable();
                                         }
                         
                                         data = data.json().content;
@@ -647,8 +644,8 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                                 
                                         prevCountRows = $$(idCurrTable).count();
                                         $$(idFindElem).setValues(prevCountRows.toString());
-                                        if(idCurrTable == tableId){
-                                            $$(filterElementsId).setValues(prevCountRows.toString());
+                                        if(idCurrTable == "table"){
+                                            $$("table-findElements").setValues(prevCountRows.toString());
                                         }
                                     } catch (error){
                                         console.log(error);
@@ -662,16 +659,16 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                                     prevCountRows = "-";
                                     try {
                                         $$(idFindElem).setValues(prevCountRows.toString());
-                                        $$(filterElementsId).setValues(prevCountRows.toString());
-                                        if($$(newAddBtnId).isEnabled()){
-                                            $$(newAddBtnId).disable();
+                                        $$("table-findElements").setValues(prevCountRows.toString());
+                                        if($$("table-newAddBtnId").isEnabled()){
+                                            $$("table-newAddBtnId").disable();
                                         }
-                                        if($$(filterId)){
-                                            $$(filterId).disable();
+                                        if($$("table-filterId")){
+                                            $$("table-filterId").disable();
                                         }
 
-                                        if($$(exportBtn)){
-                                            $$(exportBtn).disable();
+                                        if($$("table-exportBtn")){
+                                            $$("table-exportBtn").disable();
                                         }
                                     } catch (error){
                                         console.log(error);
@@ -689,10 +686,10 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                 });
                 }
 
-                if($$(tableId)){
-                    getItemData (tableId);
-                } else if ($$(tableIdView)){
-                    getItemData (tableIdView);
+                if($$("table")){
+                    getItemData ("table");
+                } else if ($$("table-view")){
+                    getItemData ("table-view");
                 }
                 
                 if (data.autorefresh){
@@ -721,10 +718,10 @@ function getInfoDashboard (idsParam,single=false){
     function getAjax(url,inputsArray, action=false) {
         webix.ajax().get(url, {
             success:function(text, data, XmlHttpRequest){
-                let dashLayout=[];
+                let dashLayout=[{rows:[]}];
                 let dataCharts = data.json().charts;
                 let titleTemplate = {};
-
+   
                 try {
                     
                     if($$("dashboard-tool")){
@@ -778,7 +775,7 @@ function getInfoDashboard (idsParam,single=false){
                             delete el.title;
                             el.borderless = true;
                             el.minWidth = 250;
-                            dashLayout.push({
+                            dashLayout[0].rows.push({
                                 rows:[ 
                                     {   template:titleTemplate,
                                         borderless:true,
@@ -831,14 +828,18 @@ function getInfoDashboard (idsParam,single=false){
                             height:75,
         
                          },0);
-
+                     
+                         console.log(dashLayout)
                         $$("dashboardBody").addView({
                             id:"dashboard-charts",
                             view:"flexlayout",
                             css:"webix_dash-charts-flex",
                             type: "space", 
-                            cols:dashLayout,
+                          //  cols:[{rows:dashLayout}],
+                            rows:dashLayout,
                         });
+
+                        console.log($$("dashboardBody"))
                         //webix.ui.fullScreen();
                         if ($$("dashEmpty")){
                             $$("dashboardBody").removeView($$("dashEmpty"));
@@ -979,6 +980,7 @@ function getInfoDashboard (idsParam,single=false){
                                                 seconds: true,
                                                   suggest:{
                                                     type:"timeboard",
+                                                    hotkey: "enter",
                                                     body:{
                                                         button:true,
                                                         seconds: true,
@@ -1144,28 +1146,28 @@ function getInfoDashboard (idsParam,single=false){
                                                         format:"%H:%i:%s",
                                                         id:"dashDatepicker_"+"sdt"+"-time",  
                                                         placeholder:"Время",
-                                                       // width:110,
-                                                       // minWidth:100,
                                                         height:48,
                                                         value :"00:00:00",
                                                         type:"time",
+                                                        hotkey: "enter",
                                                         seconds: true,
-                                                          suggest:{
+                                                        suggest:{
                                                             type:"timeboard",
+                                                            hotkey: "enter",
                                                             body:{
                                                                 button:true,
                                                                 seconds: true,
                                                                 value :"00:00:00",
                                                                 twelve :false,
                                                                 height :110,
-                                                            }
+                                                                
+                                                            },
                                                           },
                                                         on: {
                                                             onAfterRender: function () {
                                                                 this.getInputNode().setAttribute("title","Часы, минуты, секунды");
                                                                 
                                                             },
-                    
                                                         }
                                                     },
                                                     {height:20},
@@ -1230,6 +1232,7 @@ function getInfoDashboard (idsParam,single=false){
                                                         {   view:"button", 
                                                             css:"webix_primary", 
                                                             id:"dashBtn"+i,
+                                                            hotkey: "enter",
                                                             inputHeight:48,
                                                             height:48, 
                                                             minWidth:100,
@@ -1438,7 +1441,7 @@ function treeSidebar () {
                     let singleItemContent="";
                     try {
                         if($$("inputsTable")){
-                            $$(editFormId).removeView($$("inputsTable"));
+                            $$("table-editForm").removeView($$("inputsTable"));
                             $$("EditEmptyTempalte").show();
                         }
 
@@ -1562,13 +1565,13 @@ function treeSidebar () {
                     
                         defaultStateForm();
                         
-                        if(Object.keys($$(editFormId).elements).length!==0){
+                        if(Object.keys($$("table-editForm").elements).length!==0){
                             $$("inputsTable").hide();
                         }
                         if (singleItemContent == "dbtable"){
-                            getInfoTable (tableId, searchId, ids[0], findElementsId, true);
+                            getInfoTable ("table", "table-search", ids[0], "table-findElements", true);
                         }else {
-                            getInfoTable (tableId, searchId, ids[0], findElementsId);
+                            getInfoTable ("table", "table-search", ids[0], "table-findElements");
                         }
                         
 
@@ -1578,9 +1581,9 @@ function treeSidebar () {
                     } else if(singleItemContent == "dashboard") {
                         getInfoDashboard (ids[0],true);
                     }else if(getItemParent=="forms") {
-                        getInfoTable (tableIdView, searchIdView, ids[0], findElementsIdView);
+                        getInfoTable ("table-view", "table-view-search", ids[0], "table-view-findElements");
                     }else if(singleItemContent == "tform") {
-                        getInfoTable (tableIdView, searchIdView, ids[0], findElementsIdView, true);
+                        getInfoTable ("table-view", "table-view-search", ids[0], "table-view-findElements", true);
                     } else if (getItemParent=="treeTempl"){
                         getInfoEditTree() ;
                     }
@@ -1592,7 +1595,7 @@ function treeSidebar () {
                 
             },
             onItemClick:function(id, e, node){
-                if($$(editFormId).isDirty()){
+                if($$("table-editForm").isDirty()){
                        
                     modalBox().then(function(result){
                         if (result == 1){
@@ -1600,8 +1603,8 @@ function treeSidebar () {
                             $$("tree").select(id);
                         
                         } else if (result == 2){
-                            if ($$(editFormId).validate()){
-                                if ($$(editFormId).getValues().id){
+                            if ($$("table-editForm").validate()){
+                                if ($$("table-editForm").getValues().id){
                                     saveItem();
                                 } else {
                                     saveNewItem(); 
@@ -1623,32 +1626,6 @@ function treeSidebar () {
                
                 let getItemParent = $$("tree").getParentId(data);
                 if(getItemParent=="tables"){
-              
-                    // if($$(editFormId).isDirty()){
-                       
-                    //     modalBox().then(function(result){
-                    //         if (result == 1){
-                    //             clearItem();
-                    //             $$("tree").select(data);
-                            
-                    //         } else if (result == 2){
-                    //             if ($$(editFormId).validate()){
-                    //                 if ($$(editFormId).getValues().id){
-                    //                     saveItem();
-                    //                 } else {
-                    //                     saveNewItem(); 
-                    //                 }
-                    //                 $$("tree").select(data);
-                                
-                    //             } else {
-                    //                 notify ("error","Заполните пустые поля",true);
-                    //                 return false;
-                    //             }
-                                
-                    //         }
-                    //     });
-                    //     return false;
-                    // }
 
                     if ($$("filterTableForm")&&$$("filterTableForm").isVisible){
 
@@ -1661,8 +1638,8 @@ function treeSidebar () {
                             btnClass.classList.add("webix_secondary");
                             btnClass.classList.remove("webix_primary");
                         }
-                        $$(editTableBtnId).hide();
-                        $$(editFormId).show();
+                        $$("table-editTableBtnId").hide();
+                        $$("table-editForm").show();
                     }
                 }
             },
@@ -1686,7 +1663,6 @@ function treeSidebar () {
 export{
     treeSidebar,
     getComboOptions,
-    itemTreeId,
     inpObj,
     customInputs,
     urlFieldAction,

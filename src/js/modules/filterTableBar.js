@@ -1,6 +1,4 @@
 import { notify } from "./editTableForm.js";
-import { tableId,filterElementsId } from './setId.js';
-import { itemTreeId } from "./sidebar.js";
 import { catchErrorTemplate,ajaxErrorTemplate} from "./logBlock.js";
 
 let popupLibData = {};
@@ -525,21 +523,23 @@ function editFiltersBtn (){
 function resetFilterBtn (){
     try {
 
+        let itemTreeId = $$("tree").getSelectedItem().id;
+
         webix.ajax("/init/default/api/smarts?query="+itemTreeId+".id >= 0"+"&sorts="+itemTreeId+".id&offset=0",{
             success:function(text, data, XmlHttpRequest){
                 data = data.json().content;
                 
                 if (data.length !== 0){
-                    $$(tableId).hideOverlay("Ничего не найдено");
-                    $$(tableId).clearAll()
-                    $$(tableId).parse(data);
+                    $$("table").hideOverlay("Ничего не найдено");
+                    $$("table").clearAll()
+                    $$("table").parse(data);
                 } else {
-                    $$(tableId).clearAll()
-                    $$(tableId).showOverlay("Ничего не найдено");
+                    $$("table").clearAll()
+                    $$("table").showOverlay("Ничего не найдено");
                 }
 
-                let filterCountRows = $$(tableId).count();
-                $$(filterElementsId).setValues(filterCountRows.toString());
+                let filterCountRows = $$("table").count();
+                $$("table-idFilterElements").setValues(filterCountRows.toString());
                 notify ("success", "Фильтры очищены", true);
             },
             error:function(text, data, XmlHttpRequest){
@@ -564,6 +564,7 @@ function filterSubmitBtn (){
     let query =[];
 
     function getOperationVal (value, filterEl,el,condition, position, parentIndex=false){
+        let itemTreeId = $$("tree").getSelectedItem().id;
         let operationValue = $$(el+"-btnFilterOperations").config.value;
         try {
             if (position == "parent"){
@@ -707,16 +708,16 @@ function filterSubmitBtn (){
                 data = data.json().content;
                 
                 if (data.length !== 0){
-                    $$(tableId).hideOverlay("Ничего не найдено");
-                    $$(tableId).clearAll()
-                    $$(tableId).parse(data);
+                    $$("table").hideOverlay("Ничего не найдено");
+                    $$("table").clearAll()
+                    $$("table").parse(data);
                 } else {
-                    $$(tableId).clearAll()
-                    $$(tableId).showOverlay("Ничего не найдено");
+                    $$("table").clearAll()
+                    $$("table").showOverlay("Ничего не найдено");
                 }
 
-                let filterCountRows = $$(tableId).count();
-                $$(filterElementsId).setValues(filterCountRows.toString());
+                let filterCountRows = $$("table").count();
+                $$("table-idFilterElements").setValues(filterCountRows.toString());
         
                 if (notifyType == "i"){
                     notify ("success","Фильтры успшено применены",true);
