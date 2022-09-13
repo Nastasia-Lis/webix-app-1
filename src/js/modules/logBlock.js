@@ -18,6 +18,10 @@ function setLogValue (typeNotify,notifyText) {
 
         if ($$("tree").getSelectedItem() !== undefined){
             itemTreeId = $$("tree").getSelectedItem().id;
+            if (itemTreeId.includes("single")){
+                let singleSearch = itemTreeId.search("-single");
+                itemTreeId = itemTreeId.slice(0,singleSearch); 
+            }
         }
 
         if (itemTreeId){
@@ -25,7 +29,6 @@ function setLogValue (typeNotify,notifyText) {
             let srcTable;
             tableNames.forEach(function(el,i){
                 if (el.id == itemTreeId){
-                
                     srcTable= el.name;
                 }
             });
@@ -40,10 +43,10 @@ function setLogValue (typeNotify,notifyText) {
             $$("logBlock-list").add({
                 date:currentDate,
                 value:notifyText,
-                src:"Expa v1.0.19"
+                src:"Expa v1.0.20"
             });
         }
-
+        
         let itemListIndex;
         
         let blockContainer = document.querySelector(".webix_log-block");

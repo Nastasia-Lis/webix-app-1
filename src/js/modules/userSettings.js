@@ -1,6 +1,6 @@
-import { catchErrorTemplate,ajaxErrorTemplate} from "./logBlock.js";
+import { catchErrorTemplate} from "./logBlock.js";
 
-function getStorageData () {
+function getStorageLogVal () {
     let logBtnVal = webix.storage.local.get("LogVisible");
 
     try {
@@ -37,23 +37,24 @@ function setStorageData (name, value){
 function setUserLocation (tableNames,userLocation){
     try {
         userLocation = window.location.href;
-        let url = userLocation.search("#");
+        let url = userLocation.search("//localhost:3000/index.html");
         userLocation = userLocation.slice(url);
-        if (userLocation !== "#content" || userLocation !== "#"){
-            let tableIdHref = userLocation.slice(userLocation.lastIndexOf('/')+1); 
-            let nameRecoverEl;
-            let storageData;
-            tableNames.forEach(function(el,i){
-                if (el.id == tableIdHref){
-                    nameRecoverEl= el.name;
-                }
-            });
-            if (nameRecoverEl !== undefined){
-                storageData= {tableName:nameRecoverEl,tableId:tableIdHref,href:userLocation};
-                setStorageData ("userLocation", JSON.stringify(storageData));
+        console.log(userLocation)
+        //if (userLocation !== "/content" || userLocation !== "/"){
+        let tableIdHref = userLocation.slice(userLocation.lastIndexOf('/')+1); 
+        let nameRecoverEl;
+        let storageData;
+        tableNames.forEach(function(el,i){
+            if (el.id == tableIdHref){
+                nameRecoverEl= el.name;
             }
-            
+        });
+        if (nameRecoverEl !== undefined){
+            storageData= {tableName:nameRecoverEl,tableId:tableIdHref,href:userLocation};
+            setStorageData ("userLocation", JSON.stringify(storageData));
         }
+            
+       // }
     } catch (error){
         console.log(error);
         catchErrorTemplate("010-000", error);
@@ -61,7 +62,7 @@ function setUserLocation (tableNames,userLocation){
     }
 }
 export{
-    getStorageData,
+    getStorageLogVal,
     setStorageData,
     setUserLocation
 };

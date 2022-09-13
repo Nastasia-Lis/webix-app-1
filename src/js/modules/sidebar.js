@@ -169,12 +169,6 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
 
                 let filterBar = $$("table-view-filterIdView").getParentView();
             
-                // filterBar.getChildViews().forEach(function(el,i){
-                //     if (el.config.id == "customInputs"){
-                //         filterBar.removeView($$("customInputs" ));
-
-                //     }
-                // });
                 if ($$( "customInputs" )){
                     filterBar.removeView($$( "customInputs" ))
                 }
@@ -714,14 +708,15 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
 }
 
 function getInfoDashboard (idsParam,single=false){
-
+    let scrollHeight = null;
     function getAjax(url,inputsArray, action=false) {
+   
         webix.ajax().get(url, {
             success:function(text, data, XmlHttpRequest){
-                let dashLayout=[{rows:[]}];
+                let dashLayout=[{type:"wide",rows:[]}];
                 let dataCharts = data.json().charts;
                 let titleTemplate = {};
-   
+
                 try {
                     
                     if($$("dashboard-tool")){
@@ -730,6 +725,11 @@ function getInfoDashboard (idsParam,single=false){
                     if($$("dash-template")){
                         let parent = $$("dash-template").getParentView()
                         parent.removeView($$("dash-template"))
+                    }
+
+                    if($$("dashBodyScroll")){
+                        let parent = $$("dashBodyScroll").getParentView()
+                        parent.removeView($$("dashBodyScroll"))
                     }
 
 
@@ -755,34 +755,48 @@ function getInfoDashboard (idsParam,single=false){
                             }]
                         },1);
         
-                        $$("dashboardBody").addView({
-                            view:"scrollview", 
-                            id:"dashboard-charts",
-                            borderless:true,
-                            body: {
-                                view:"flexlayout",
-                                cols:[]
+                        $$("dashboardInfoContainer").addView(
+                            {
+                                view:"scrollview", 
+                                scroll:"auto",
+                                id:"dashBodyScroll",
+                                borderless:true, 
+                                body:{
+                                    id:"dashboardBody",
+                                    css:"dashboardBody",
+                                    //view:"flexlayout",
+                                    cols:[
+                                        {
+                                            id:"dashboard-charts",
+                                            borderless:true,
+                                            body: {
+                                                view:"flexlayout",
+                                                rows:[]
+                                            }
+                                        }
+                                    ]
+                                }
                             }
-                        },2);
-                        
-                        $$("dashboardBody").removeView($$("dashEmpty"));
+                        );
 
                         notify ("error","Ошибка при загрузке данных", true);
                     } else {
-                       
+
+                  
                         dataCharts.forEach(function(el,i){
                             titleTemplate = el.title;
                             delete el.title;
                             el.borderless = true;
                             el.minWidth = 250;
+                      
                             dashLayout[0].rows.push({
-                                rows:[ 
+                                css:"webix_dash-chart-headline",rows:[ 
                                     {   template:titleTemplate,
                                         borderless:true,
-                                        css:{   "padding-left":"25px!important",
-                                                "margin-top":"20px!important", 
+                                        css:{  
                                                 "font-weight":"400!important", 
-                                                "font-size":"17px!important"}, 
+                                                "font-size":"17px!important"
+                                            }, 
                                         height:35
                                     },
                                     el
@@ -807,6 +821,7 @@ function getInfoDashboard (idsParam,single=false){
                         $$("dashboardTool").addView({
                             id:"dashboard-tool",
                             padding:20,
+                            minWidth:250,
                             rows:[
                                 {rows:[
                                     {  template:"Фильтр",height:30, 
@@ -819,36 +834,61 @@ function getInfoDashboard (idsParam,single=false){
                             ], 
                         });
 
-                        
-                        $$("dashboardInfoContainer").addView({ 
-                            template:dashTitle,
-                            id:"dash-template",
-                            css:"webix_style-template-count webix_dash-title",
-                            borderless:false,
-                            height:75,
-        
-                         },0);
-                     
-                         console.log(dashLayout)
-                        $$("dashboardBody").addView({
-                            id:"dashboard-charts",
-                            view:"flexlayout",
-                            css:"webix_dash-charts-flex",
-                            type: "space", 
-                          //  cols:[{rows:dashLayout}],
-                            rows:dashLayout,
-                        });
+                 
+                        $$("dashboardInfoContainer").addView(
+                            {rows:[
 
-                        console.log($$("dashboardBody"))
-                        //webix.ui.fullScreen();
-                        if ($$("dashEmpty")){
-                            $$("dashboardBody").removeView($$("dashEmpty"));
-                        }
+                                { 
+                                    template:dashTitle,
+                                    id:"dash-template",
+                                    css:"webix_style-template-count webix_dash-title",
+                                    borderless:false,
+                                    height:75,
+                
+                                },
+                                {
+                                    view:"scrollview", 
+                                    scroll:"auto",
+                                    id:"dashBodyScroll",
+                                    borderless:true, 
+                                    body:{
+                                        id:"dashboardBody",
+                                        css:"dashboardBody",
+                                        //view:"flexlayout",
+                                        cols:[
+                                            {
+                                                id:"dashboard-charts",
+                                                view:"flexlayout",
+                                                css:"webix_dash-charts-flex",
+                                                rows:dashLayout,
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]}
+                        );
+                       
                     }
-                    
+
+                    // sroll height
+                    if ($$("webix_log-btn").config.icon =="wxi-eye"){
+                        $$("logLayout").config.height = 90;
+                        $$("logLayout").resize();
+                        $$("logLayout").config.height = 5;
+                        $$("logLayout").resize();
+                    } else {
+                        $$("logLayout").config.height = 5;
+                        $$("logLayout").resize();
+                        $$("logLayout").config.height = 90;
+                        $$("logLayout").resize();
+                    }
+
                     if (url.includes("?")||url.includes("sdt")&&url.includes("edt")){
                         notify ("success", "Данные обновлены", true);
+                    } else {
+
                     }
+
                 } catch (error){
                     console.log(error);
                     catchErrorTemplate("009-004", error);
@@ -863,14 +903,20 @@ function getInfoDashboard (idsParam,single=false){
             console.log(error);
             ajaxErrorTemplate("009-000",error.status,error.statusText,error.responseURL);
         }); 
+
     }
 
     try {
-        if ($$("dashboard-charts")){
-            $$("dashboardBody").removeView( $$("dashboard-charts"));
+        // if ($$("dashboard-charts")){
+        //     $$("dashboardBody").removeView( $$("dashboard-charts"));
+        // }
+
+        if($$("dashBodyScroll")){
+            let parent = $$("dashBodyScroll").getParentView()
+            parent.removeView($$("dashBodyScroll"))
         }
 
-        if(!($$("dashboard-charts"))){
+        if(!($$("dashBodyScroll"))){
             webix.ajax().get("/init/default/api/fields",{
                 success:function(text, data, XmlHttpRequest){
                     let inputsArray=[];
@@ -909,10 +955,9 @@ function getInfoDashboard (idsParam,single=false){
                                             {template:"Начиная с:",height:30, borderless:true,css:"webix_template-datepicker"},
                                             {   view: "datepicker",
                                                 format:"%d.%m.%Y",
-                                                value :"01.01.2022",
+                                                value :new Date(),
                                                 id:"dashDatepicker_"+"sdt",  
                                                 placeholder:input.label,
-                                                //width:125,
                                                 height:48,
                                                 on: {
                                                     onAfterRender: function () {
@@ -926,8 +971,6 @@ function getInfoDashboard (idsParam,single=false){
                                                 format:"%H:%i:%s",
                                                 id:"dashDatepicker_"+"sdt"+"-time",  
                                                 placeholder:"Время",
-                                               // width:110,
-                                               // minWidth:100,
                                                 height:48,
                                                 value :"00:00:00",
                                                 type:"time",
@@ -955,7 +998,7 @@ function getInfoDashboard (idsParam,single=false){
                                             {template:"Заканчивая:",height:30, borderless:true, css:"webix_template-datepicker"},
                                             {   view: "datepicker",
                                                 format:"%d.%m.%Y",
-                                                value :"01.01.2022",
+                                                value :new Date(),
                                                 id:"dashDatepicker_"+"edt",  
                                                 placeholder:input.label,
                                               //  width:125,
@@ -1075,8 +1118,14 @@ function getInfoDashboard (idsParam,single=false){
                                                                     $$("dashboardBody").removeView( $$("dashboard-charts"));
                                                                 }
                                                                 
-                                                                getAjax(getUrl, inputsArray, true);
-                                                            
+                                                                if (!($$("dashboard-charts"))){
+                                                                    getAjax(getUrl, inputsArray, true);
+                                                                }
+
+                                                                
+                                                                $$("dashBtn"+i).disable();
+                                                                setInterval(function () {$$("dashBtn"+i).enable();}, 10000);
+                                                         
                                                             } else {
                                                                 notify ("error", "Начало периода больше, чем конец", true); 
                                                             }
@@ -1095,6 +1144,7 @@ function getInfoDashboard (idsParam,single=false){
                                             ]
                                         }
                                     );
+                                  
                                 }
 
                             });
@@ -1129,10 +1179,9 @@ function getInfoDashboard (idsParam,single=false){
                                                     {template:"Начиная с:",height:30, borderless:true,css:"webix_template-datepicker"},
                                                     {   view: "datepicker",
                                                         format:"%d.%m.%Y",
-                                                        value :"01.01.2022",
+                                                        value :new Date(),
                                                         id:"dashDatepicker_"+"sdt",  
                                                         placeholder:input.label,
-                                                        //width:125,
                                                         height:48,
                                                         on: {
                                                             onAfterRender: function () {
@@ -1175,10 +1224,9 @@ function getInfoDashboard (idsParam,single=false){
                                                     {template:"Заканчивая:",height:30, borderless:true, css:"webix_template-datepicker"},
                                                     {   view: "datepicker",
                                                         format:"%d.%m.%Y",
-                                                        value :"01.01.2022",
+                                                        value :new Date(),
                                                         id:"dashDatepicker_"+"edt",  
                                                         placeholder:input.label,
-                                                      //  width:125,
                                                         height:48,
                                                         on: {
                                                             onAfterRender: function () {
@@ -1192,8 +1240,6 @@ function getInfoDashboard (idsParam,single=false){
                                                         format:"%H:%i:%s",
                                                         id:"dashDatepicker_"+"edt"+"-time",  
                                                         placeholder:"Время",
-                                                       // width:110,
-                                                       ////minWidth:100,
                                                         height:48,
                                                         value :"00:00:00",
                                                         type:"time",
@@ -1203,7 +1249,6 @@ function getInfoDashboard (idsParam,single=false){
                                                             body:{
                                                                 button:true,
                                                                 seconds: true,
-                                                                value :"00:00:00",
                                                                 twelve :false,
                                                                 height :110
                                                             }
@@ -1296,6 +1341,9 @@ function getInfoDashboard (idsParam,single=false){
                                                                         }
                                                                         
                                                                         getAjax(getUrl, inputsArray, true);
+
+                                                                        $$("dashBtn"+i).disable();
+                                                                        setInterval(function () {$$("dashBtn"+i).enable();}, 10000);
                                                                     
                                                                     } else {
                                                                         notify ("error", "Начало периода больше, чем конец", true); 
@@ -1372,7 +1420,7 @@ function getInfoEditTree() {
                     treeStruct = [],
                     treeData = []
                 ;
-                
+
                 data.forEach(function(el,i){
                     if (el.pid == 0){
                         treeData.push({id:el.id, open:true, value:el.name, pid:el.pid, data:[]});
@@ -1384,8 +1432,8 @@ function getInfoEditTree() {
                 treeData.forEach(function(el,i){
 
                     map[el.id] = i; 
-                 
-                    if (el.pid !== 0) {
+
+                    if (el.pid !== 0 && el.pid !== el.id && el.pid!==null) {
                         treeData[map[el.pid]].data.push(el);
                     } else {
                         treeStruct.push(el);
@@ -1429,7 +1477,7 @@ function treeSidebar () {
         on:{
             onSelectChange:function (ids) {
 
-                
+         
                     itemTreeId = ids[0];
                     let treeItemId = $$("tree").getSelectedItem().id;
               

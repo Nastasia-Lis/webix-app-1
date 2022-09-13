@@ -2,10 +2,14 @@ import {removeElements} from "./login.js";
 import {notify} from "./editTableForm.js";
 import {setUserLocation} from "./userSettings.js";
 import {tableNames} from "./login.js";
-import {userLocation} from "./header.js";
+
 import {catchErrorTemplate,ajaxErrorTemplate} from "./logBlock.js";
 
-export function resetTimer (){
+
+let hrefPrevAutoLogout = window.location.href;
+
+
+function resetTimer (){
 
     let t;
     window.onload = resetTimer;
@@ -17,7 +21,10 @@ export function resetTimer (){
     window.addEventListener('scroll', resetTimer, true); 
 
     function logout() {
-        setUserLocation(tableNames,userLocation);
+       // let userLocation = window.location.href
+   //     setUserLocation(tableNames,userLocation);
+      // console.log(userLocation)
+        
         webix.ajax().post("/init/default/logout/",{
             
             success:function(text, data, XmlHttpRequest){
@@ -28,7 +35,6 @@ export function resetTimer (){
                     if($$("popupPrevHref")&&$$("popupPrevHref").isVisible()){
                         $$("popupPrevHref").hide();
                     }
-
                     history.back();
                     removeElements();
                     $$("webix__none-content").show();
@@ -64,3 +70,8 @@ export function resetTimer (){
     };
     
 }
+
+
+export {
+    resetTimer
+};

@@ -6,7 +6,7 @@ function contextMenu (){
 
     return {
         view:"contextmenu",
-        id:"cm",
+        id:"contextMenuEditTree",
         data:[
                 "Добавить",
                 "Переименовать",
@@ -16,9 +16,9 @@ function contextMenu (){
                 { $template:"Separator" },
                 "Удалить"
             ],
-    master: $$("treeEdit"),
-    on:{
-        onMenuItemClick:function(id){
+        master: $$("treeEdit"),
+        on:{
+            onMenuItemClick:function(id){
             let context = this.getContext();
 
             let tree = $$("treeEdit");
@@ -47,15 +47,17 @@ function contextMenu (){
                         let text = prompt("Имя нового подэлемента '"+titem.value+"'", "");
                     
                         if (text != null) {
-
+                            console.log(titem.id)
                             postObj.name = text;
                             postObj.pid = titem.id
 
                             webix.ajax().post(url, postObj).then(function (data) {
                                 if (data.json().err_type !== "e"&&data.json().err_type !== "x"){
-                                    let idNewItem = data.json().content;
-                                    tree.data.add({id:idNewItem, value:text}, 0, titem.id);
+                                    let idNewItem = data.json().content.id;
+                                  
+                                    tree.data.add({id:idNewItem, value:text, pid:titem.id}, 0, titem.id);
                                     tree.open(titem.id);
+                                    
                                     notify ("success","Данные добавлены",true);
                                 } else {
                                     catchErrorTemplate("013-001", data.json().err, true);
@@ -73,11 +75,11 @@ function contextMenu (){
                     case "Переименовать": {
                         var text = prompt("Новое имя", titem.value);
                         if (text != null) { 
-
+                            
                             postObj.name = text;
                             postObj.id = titem.id;
                             postObj.pid = titem.pid;
-
+              
                             webix.ajax().put(url+titem.id, postObj).then(function (data) {
                                 if (data.json().err_type !== "e"&&data.json().err_type !== "x"){
                                     titem.value = text;
@@ -95,7 +97,6 @@ function contextMenu (){
                         break;
                     }
                     case "Удалить": {
-
                         webix.ajax().del(url+titem.id).then(function (data) {
                             if (data.json().err_type !== "e"&&data.json().err_type !== "x"){
                                 tree.remove(titem.id);
@@ -144,7 +145,7 @@ function contextMenu (){
                 console.log(error);
                 catchErrorTemplate("013-000", error);
             }
-        }
+            }
     }
     };
 }

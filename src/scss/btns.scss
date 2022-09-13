@@ -202,3 +202,13 @@
 .webix_close-btn .webix_icon_btn{
     font-size: 23px!important;
 }
+
+
+
+.webix_inp_counter_prev,
+.webix_inp_counter_next {
+    color: var(--primary)!important;
+    border-radius: 5px!important;
+    border: 1px solid var(--gray)!important;
+}
+

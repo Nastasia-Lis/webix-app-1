@@ -15,6 +15,7 @@ import {propertyTemplate} from "./viewPropertyTable.js";
 import {filterForm} from "./filterTableBar.js";
 import {editTreeLayout,contextMenu} from "../treeItems/editTreeTemplate.js";
 import {catchErrorTemplate,ajaxErrorTemplate} from "./logBlock.js";
+import { getComboOptions } from "./sidebar.js";
 
 
 let urlAfterLogin = null;
@@ -43,8 +44,9 @@ function createElements(specificElement){
                         rows: editTreeLayout()
                     },
                 4);
+                webix.ui(contextMenu());
             }
-            webix.ui(contextMenu());
+          
             
             if (!$$("tables")){
                 $$("container").addView(
@@ -288,7 +290,7 @@ function getDataFields (routes, menuItem){
         
                             }
                         }   
-                        
+
                     });
                 } catch (error){
                     console.log(error);
@@ -311,9 +313,19 @@ function getDataFields (routes, menuItem){
                            
                     //     ]
                     // }) ;
+                    // single dashboard example
 
                     let dataAuth=[];
                     let dataNotAuth=[];
+                    let pathPref;
+
+             
+                    if (window.location.host.includes("localhost:3000")){
+                        pathPref = "/index.html/";
+                    } else {
+                        pathPref = "/init/default/spaw/";
+                    }
+
                     try {
                         menu.forEach(function(el,i){
                         
@@ -321,11 +333,9 @@ function getDataFields (routes, menuItem){
                                 if (el.childs.length > 0){
                                     el.childs.forEach(function(child,i){
                                             if(child.name == "login"){
-                                                 dataNotAuth.push({id:child.name,value:child.title, href:"#"+child.name });
-                                              // dataNotAuth.push({id:child.name,value:child.title, href:"/init/default/spaw/"+child.name });
+                                               dataNotAuth.push({id:child.name,value:child.title, href:pathPref+child.name });
                                             }else if (child.name !== "logout") {
-                                                 dataAuth.push({id:child.name,value:child.title, href:"#"+child.name });
-                                               // dataAuth.push({id:child.name,value:child.title, href:"/init/default/spaw/"+child.name });
+                                                dataAuth.push({id:child.name,value:child.title, href:pathPref+child.name });
                                             }
                                             tableNames.push({name:child.title , id:child.name}); 
                                     });
@@ -338,8 +348,7 @@ function getDataFields (routes, menuItem){
                                 } 
                                 
                                 if (el.childs.length <= 0){
-                                    dataAuth.push({id:el.name, value:el.title, href:"#"+el.name });
-                                  //  dataAuth.push({id:el.name, value:el.title, href:"/init/default/spaw/"+el.name });
+                                    dataAuth.push({id:el.name, value:el.title, href:pathPref+el.name });
                                 }
 
 
@@ -483,13 +492,13 @@ function login () {
                                         {},
                                         {
                                             view:"button",
-                                            id:"buttonClosePopup",
+                                           // id:"buttonClosePopup",
                                             css:"webix_close-btn",
                                             type:"icon",
                                             width:25,
                                             icon: 'wxi-close',
                                             click:function(){
-                                                $$("popupPrevHref").hide();
+                                                $$("popupPrevHref").destructor();
                                             }
                                         },
                                         ]},
@@ -499,13 +508,14 @@ function login () {
                                             height:50 },
                                         {
                                             view:"button",
-                                            id:"btnRecover",
+                                            //id:"btnRecover",
                                             css:"webix_btn-recover",
                                             height:38,
                                             value:"Перейти ко вкладке",
                                             click:function(){
-                                                window.location.replace(userLocation.href)
-                                                console.log(userLocation)
+                                                //window.location.replace(userLocation.href)
+                                                window.location.assign(userLocation.href)
+                                                window.history.pushState({page: 1}, "", "");
                                                 if(userLocation.href.includes("tree")){
                                                
                                                     let treeItemParent = $$("tree").getItem(userLocation.tableId).$parent;
@@ -515,13 +525,18 @@ function login () {
                                                     $$("tree").select(userLocation.tableId);
                                                 }
                                                 
-                                            $$("popupPrevHref").hide();
+                                                $$("popupPrevHref").destructor();
                                             }
                                         },
                                         {height:20}
                                     ]}]
                                     
                                 },
+                                on:{
+                                    onHide:function(){
+                                        this.destructor();
+                                    }
+                                }
 
                             }).show();
                         }, 1500);
@@ -566,10 +581,72 @@ function login () {
                     let idTree = id;
 
                     $$("tree").attachEvent("onAfterLoad", function (id) {
+                 
                         id = idTree;
-                        let parentId = $$("tree").getParentId(id);
-                        $$("tree").open(parentId);
-                        $$("tree").select(id);
+                        let parentId;
+            
+                        if ($$("tree").getItem(id)){
+                            parentId = $$("tree").getParentId(id);
+                            $$("tree").open(parentId);
+                            $$("tree").select(id);
+                        } else {
+                            setTimeout(function(){
+                                webix.ui({
+                                    view:"popup",
+                                    id:"popupPrevHref",
+                                    css:"webix_popup-prev-href",
+                                    width:340,
+                                    height:130,
+                                    position:"center",
+                                    body:{
+                                        rows:[
+                                        {rows: [ 
+                                            { cols:[
+                                            {template:"Что-то пошло не так...", width:250,css:"webix_template-recover", borderless:true, height:20 },
+                                            {},
+                                            {
+                                                view:"button",
+                                                id:"buttonClosePopup",
+                                                css:"webix_close-btn",
+                                                type:"icon",
+                                                width:35,
+                                                icon: 'wxi-close',
+                                                click:function(){
+                                                    $$("popupPrevHref").hide();
+                                                }
+                                            },
+                                            ]},
+                                            {   template:"Страница не найдена",
+                                                css:"webix_template-back-descr", 
+                                                borderless:true, 
+                                                height:45 },
+                                            {
+                                                view:"button",
+                                                id:"btnRecover",
+                                                css:"webix_btn-back",
+                                                height:38,
+                                                value:"Вернуться на главную",
+                                                click:function(){
+
+                                                    if (window.location.host.includes("localhost:3000")){
+                                                        window.location.replace("/index.html/content")
+                                                    } else {
+                                                        window.location.replace("/init/default/spaw/content")
+                                                    }
+                                                    
+                                                $$("popupPrevHref").destructor();
+                                                }
+                                            },
+                                            {height:20}
+                                        ]}]
+                                        
+                                    },
+    
+                                }).show();
+                            }, 1500);
+                        }
+
+                     
                     });
                 }
             } catch (error){
@@ -691,14 +768,12 @@ function login () {
                     webix.ajax("/init/default/api/whoami",{
                         success:function(text, data, XmlHttpRequest){
                             try {
-                                console.log(urlAfterLogin, "url")
                                 if (urlAfterLogin){
                                     window.location.replace(urlAfterLogin);
                                     urlAfterLogin=null;
                                     if ( $$('formAuth')){
                                         $$('formAuth').clear();
                                     }
-                                    window.location.reload();
                                 } else {
                                     Backbone.history.navigate("content", { trigger:true});
                                     if ( $$('formAuth')){
@@ -706,11 +781,7 @@ function login () {
                                     }
                                     window.location.reload();
                                 }
-                             
-                                // Backbone.history.navigate("content", { trigger:true});
-                                // if ( $$('formAuth')){
-                                //     $$('formAuth').clear();
-                                // }
+
                                 
                             } catch (error){
                                 console.log(error);

@@ -1,3 +1,5 @@
+import {notify} from "../modules/editTableForm.js";
+
 let checkDirtyForm = false;
 let defaultValue = {
     userprefsOther:"",
@@ -74,13 +76,23 @@ const userprefsOther = {
                 id:"userprefsAutorefCounter",
                 labelPosition:"top",
                 name:"autorefCounterOpt", 
-                label:"Количество секунд перед автообновлением" ,
+                label:"Интервал автообновления" ,
                 min:30, 
                 max:7200,
                 on:{
                     onChange:function(newValue, oldValue){
                         if (newValue !== oldValue){
                             checkDirtyForm = true;
+                        }
+
+                        const minVal = $$("userprefsAutorefCounter").config.min;
+                        const maxVal = $$("userprefsAutorefCounter").config.max;
+                        
+                        if (newValue == minVal){
+                            console.log("uueuue")
+                            webix.message({type:"debug",expire:1000, text:"Минимальное возможное значение"});
+                        } else if (newValue == maxVal){
+                            webix.message({type:"debug",expire:1000, text:"Максимальное возможное значение"});
                         }
                     }
                 }

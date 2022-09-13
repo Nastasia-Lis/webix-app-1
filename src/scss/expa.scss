@@ -6,7 +6,6 @@
 
 
 
-
 .webix_view,
 .webix_confirm  {
     font-weight: 400!important;
@@ -193,6 +192,11 @@ margin-left: 0px!important;
 h1, h2, h3, h4, h5, h6{
     color:var(--dark)!important;
 }
+
+select {
+    cursor:pointer;
+}
+
 
 a{
     color: var(--dark);
@@ -700,4 +704,24 @@ label, button{
 
 .webix_cal_body .webix_cal_block span {
     border-radius: 8%!important;
+}
+
+
+.webix_chart canvas{
+    right: 0!important;
+}
+
+
+
+.webix_dash-chart-headline .webix_template{
+    padding:12px 0 0 0 !important;
+}
+
+
+
+.webix_inp_counter_value{
+    margin: 0px 5px 0px 5px!important;
+    border: 1px solid var(--gray)!important;
+    padding: 0px!important;
+    cursor:text!important;
 }

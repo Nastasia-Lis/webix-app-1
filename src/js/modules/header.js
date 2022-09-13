@@ -130,15 +130,10 @@ function header() {
                     },
                     onChange:function(){
                         let lastItemList = $$("logBlock-list").getLastId();
-                    //   console.log(this.getValue(),'val')
                         if (this.getValue() == 2){
                             this.config.badge = "";
-                           // console.log($$("logBlock-list").getLastId())
                             $$("logBlock-list").showItem(lastItemList);
                         }
-                       // console.log($$("logBlock-list").getScrollState())
-                        //console.log($$("logBlock-list").getLastId())
-
                     }
                 },
                 click: function() {
@@ -184,12 +179,20 @@ function header() {
                     on:{
                         onItemClick:function(id, e, node){
                             try {
+                                let logoutPath;
+                                if (window.location.host.includes("localhost:3000")){
+                                    logoutPath = "/index.html/logout";
+                                } else {
+                                    logoutPath = "/init/default/spaw/logout";
+                                }
+                            
+                                //const logoutPath = "/init/default/spaw/logout";
                                 if (id=="logout"){
                                     if($$("table-editForm") && $$("table-editForm").isDirty() ||$$("cp-form") && $$("cp-form").isDirty()){
-
+                                       
                                         modalBox().then(function(result){
                                             if (result == 1){
-                                                window.location.replace("#logout");
+                                                window.location.replace(logoutPath);
                                             } else if (result == 2){
                                                 if ($$("table-editForm").validate()){
                                                     if ($$("table-editForm").getValues().id){
@@ -197,7 +200,7 @@ function header() {
                                                     } else {
                                                         saveNewItem(); 
                                                     }
-                                                    window.location.replace("#logout");
+                                                    window.location.replace(logoutPath);
                                                 
                                                 } else {
                                                     notify ("error","Заполните пустые поля",true);
@@ -208,7 +211,7 @@ function header() {
                                         });
                                         return false;
                                     } else {
-                                        window.location.replace("#logout");
+                                        window.location.replace(logoutPath);
                                     }
                                 }
                             } catch (error){
