@@ -1,7 +1,7 @@
 
-import {notify} from "./editTableForm.js";
-import {tableNames} from "./login.js";
-import {setStorageData} from "./userSettings.js";
+
+import {tableNames} from "./router.js";
+import {setStorageData} from "./storageSetting.js";
 
 function setLogValue (typeNotify,notifyText) {
     const date = new Date();
@@ -43,7 +43,7 @@ function setLogValue (typeNotify,notifyText) {
             $$("logBlock-list").add({
                 date:currentDate,
                 value:notifyText,
-                src:"Expa v1.0.20"
+                src:"Expa v1.0.21"
             });
         }
         
@@ -129,9 +129,9 @@ function catchErrorTemplate (code,error,otherType=false) {
     $$("webix_log-btn").setValue(2);
     notifyCounter = 0;
     if (!otherType){
-        return notify ("error","ОШИБКА "+code+": "+error.stack,true);
+        return setLogValue("error","ОШИБКА "+code+": "+error.stack);
     } else {
-        return notify ("error","ОШИБКА "+code+": "+error,true);
+        return setLogValue("error","ОШИБКА "+code+": "+error);
     }
 }
 
@@ -140,7 +140,8 @@ function ajaxErrorTemplate (code, status,statusText,responseURL){
     
     notifyCounter = 0;
     let errorMsg = "СТАТУС: "+status+" "+statusText+"."+" ПОДРОБНОСТИ: "+responseURL;
-    return notify ("error","ОШИБКА "+code+": "+errorMsg,true);
+    return setLogValue("error","ОШИБКА "+code+": "+errorMsg,);
+
 }
 
 export {

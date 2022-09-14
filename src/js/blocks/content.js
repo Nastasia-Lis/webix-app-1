@@ -1,13 +1,10 @@
-import {notify, saveItem,saveNewItem,modalBox,clearItem,defaultStateForm} from "./editTableForm.js";
-import {tableNames} from "./login.js";
+import {setLogValue} from './logBlock.js';
 import {catchErrorTemplate,ajaxErrorTemplate} from "./logBlock.js";
+import {tableNames} from "./router.js";
 
-let itemTreeId = "";
 let prevCountRows ;
-let inpObj={};
-let customInputs = [];
-let urlFieldAction ;
 let checkAction = false;
+//let urlFieldAction;
 
 function submitBtn (idElements, url, verb, rtype){
    
@@ -47,7 +44,6 @@ function submitBtn (idElements, url, verb, rtype){
                         }  
                     },
                     error:function(text, data, XmlHttpRequest){
-                        //notify ("error","Ошибка при загрузке данных",true);
                         ajaxErrorTemplate("009-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
 
                         if($$("table-newAddBtnId")&&!($$("table-newAddBtnId").isEnabled())){
@@ -88,12 +84,12 @@ function submitBtn (idElements, url, verb, rtype){
                     $$(el.id).send(function(data){
                         if (data.err_type == "e"){
                             $$("table-view").parse($$(el.id).getValue())
-                            notify ("error",data.err,true);
+                            setLogValue("error",data.err);
                         } else if (data.err_type == "i"){
-                            notify ("success",data.err,true);
+                            setLogValue("success",data.err);
                             $$("table-view").refresh();
                         } else if (data.err_type == "x"){
-                            notify ("debug",data.err,true);
+                            setLogValue("debug",data.err);
                         }
                     
                     });
@@ -155,20 +151,18 @@ function getComboOptions (refTable){
 
 function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false) {
   
-    itemTreeId = idsParam;
+    let itemTreeId = idsParam;
     let titem = $$("tree").getItem(idsParam);
-
+    let filterBar = $$("table-view-filterIdView").getParentView();
     try {
         $$(idCurrTable).clearAll();
 
         if (titem == undefined) {
-            notify ("error","Данные не найдены");
+            setLogValue("error","Данные не найдены");
         } else {
             let inpObj;
             if (idCurrTable == "table-view"){
 
-                let filterBar = $$("table-view-filterIdView").getParentView();
-            
                 if ($$( "customInputs" )){
                     filterBar.removeView($$( "customInputs" ))
                 }
@@ -331,7 +325,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                     });
                     
                     if (actionKey !== undefined){
-                        urlFieldAction = data.actions[actionKey].url;
+                        //urlFieldAction = data.actions[actionKey].url;
                     
                         if (checkAction){
                             let columns = $$(idCurrTable).config.columns;
@@ -580,12 +574,70 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                             }
 
                         });
-                     
-           
-                        inpObj = {id:"customInputs",css:"webix_custom-inp", cols:customInputs};
-                        let filterBar = $$("table-view-filterIdView").getParentView();
+                        
+                        if (window.innerWidth > 830){
+                            inpObj = {id:"customInputs",css:"webix_custom-inp", cols:customInputs};
+                            let filterBar = $$("table-view-filterIdView").getParentView();
+                            $$(filterBar.config.id).addView( inpObj,2);
 
-                        $$(filterBar.config.id).addView( inpObj,2);
+                        } else {
+                            inpObj = {id:"customInputs",css:"webix_custom-inp", rows:customInputs};
+                            $$(filterBar.config.id).addView( {
+                                view:"button", 
+                                id:"contextActionsBtn",
+                                maxWidth:100, 
+                                value:"Действия", 
+                                css:"webix_primary", 
+                                click:function(){
+                                    webix.ui({
+                                        view:"popup",
+                                        css:"webix_popup-filter-container",
+                                        modal:true,
+                               
+                                        id:"contextActionsPopup",
+                                        escHide:true,
+                                        position:"center",
+                                        height:400,
+                                        width:400,
+                                        body:{
+                                            view:"scrollview",
+                                            borderless:true,
+                                            scroll:"y", 
+                                            body:{ 
+                                                id:"contextActionsPopupContainer",
+                                                rows:[ 
+                                                    {cols:[
+                                                        {template:"Доступные действия", css:"webix_template-recover", borderless:true, height:40 },
+                                                        {width:150},
+                                                        {
+                                                            view:"button",
+                                                            id:"buttonClosePopup",
+                                                            css:"webix_close-btn",
+                                                            type:"icon",
+                                                            hotkey: "esc",
+                                                            width:25,
+                                                            icon: 'wxi-close',
+                                                            click:function(){
+                                                                if ($$("contextActionsPopup")){
+                                                                    $$("contextActionsPopup").destructor();
+                                                                }
+                                                            
+                                                            }
+                                                        },
+                                                    ]}
+                                                ]
+                                            }
+                                  
+                                           
+                                        }
+                                    }).show();
+                                    console.log(inpObj)
+                                    $$("contextActionsPopupContainer").addView(inpObj,2);
+                                }
+                            },2);
+
+
+                        }
 
                     }
                 } catch (error){
@@ -648,7 +700,6 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                             
                                 },
                                 error:function(text, data, XmlHttpRequest){
-                                // notify ("error","Ошибка при загрузке данных",true);
                                     ajaxErrorTemplate("009-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
                                     prevCountRows = "-";
                                     try {
@@ -708,7 +759,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
 }
 
 function getInfoDashboard (idsParam,single=false){
-    let scrollHeight = null;
+    let itemTreeId = $$("tree").getSelectedItem().id;
     function getAjax(url,inputsArray, action=false) {
    
         webix.ajax().get(url, {
@@ -779,7 +830,7 @@ function getInfoDashboard (idsParam,single=false){
                             }
                         );
 
-                        notify ("error","Ошибка при загрузке данных", true);
+                        setLogValue("error","Ошибка при загрузке данных");
                     } else {
 
                   
@@ -884,7 +935,7 @@ function getInfoDashboard (idsParam,single=false){
                     }
 
                     if (url.includes("?")||url.includes("sdt")&&url.includes("edt")){
-                        notify ("success", "Данные обновлены", true);
+                        setLogValue("success", "Данные обновлены");
                     } else {
 
                     }
@@ -1127,10 +1178,10 @@ function getInfoDashboard (idsParam,single=false){
                                                                 setInterval(function () {$$("dashBtn"+i).enable();}, 10000);
                                                          
                                                             } else {
-                                                                notify ("error", "Начало периода больше, чем конец", true); 
+                                                                setLogValue("error", "Начало периода больше, чем конец"); 
                                                             }
                                                         } else {
-                                                            notify ("error", "Не все поля заполнены", true);
+                                                            setLogValue("error", "Не все поля заполнены");
                                                         }
                                                     },
                                                     on: {
@@ -1346,10 +1397,10 @@ function getInfoDashboard (idsParam,single=false){
                                                                         setInterval(function () {$$("dashBtn"+i).enable();}, 10000);
                                                                     
                                                                     } else {
-                                                                        notify ("error", "Начало периода больше, чем конец", true); 
+                                                                        setLogValue("error", "Начало периода больше, чем конец");
                                                                     }
                                                                 } else {
-                                                                    notify ("error", "Не все поля заполнены", true);
+                                                                    setLogValue("error", "Не все поля заполнены");
                                                                 }
                                                             },
                                                             on: {
@@ -1389,7 +1440,6 @@ function getInfoDashboard (idsParam,single=false){
                 },
                 
                 error:function(text, data, XmlHttpRequest){
-                   // notify ("error","Ошибка при загрузке данных", true);
                     console.log(XmlHttpRequest)
                     ajaxErrorTemplate("009-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
                 }
@@ -1449,7 +1499,6 @@ function getInfoEditTree() {
             
         },
         error:function(text, data, XmlHttpRequest){
-            //notify ("error","Ошибка при сохранении данных",true);
             ajaxErrorTemplate("009-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
 
         }
@@ -1459,260 +1508,13 @@ function getInfoEditTree() {
     }); 
   
 }
- 
-function treeSidebar () {
-    let tree = {
-        view:"edittree",
-        id:"tree",
-        css:"webix_tree-main",
-        minWidth:100,
-        width: 250,
-        editable:false,
-        select:true,
-        editor:"text",
-        editValue:"value",
-        activeTitle:true,
-        clipboard: true,
-        data:[],
-        on:{
-            onSelectChange:function (ids) {
 
-         
-                    itemTreeId = ids[0];
-                    let treeItemId = $$("tree").getSelectedItem().id;
-              
-                    let getItemParent = $$("tree").getParentId(treeItemId);
-        
-                    let treeArray = $$("tree").data.order;
-                    let parentsArray = [];
 
-                    let singleItemContent="";
-                    try {
-                        if($$("inputsTable")){
-                            $$("table-editForm").removeView($$("inputsTable"));
-                            $$("EditEmptyTempalte").show();
-                        }
-
-                        treeArray.forEach(function(el,i){
-                            if ($$("tree").getParentId(el) == 0){
-                                parentsArray.push(el);
-                            }
-                        });
-
-                        if (treeItemId.includes("single")){
-                            singleItemContent = $$("tree").getSelectedItem().typeof;
-                        }
-
-                        if (ids[0]&&getItemParent!==0 || singleItemContent ){
-                            $$("webix__none-content").hide();
-                        }
-                    } catch (error){
-                        console.log(error);
-                        catchErrorTemplate("009-000", error);
-
-                    }
-                
-                    function visibleTreeItem(singleType, idsUndefined){
-                        try{
-                            if($$("webix__null-content")){
-                                $$("container").removeView($$("webix__null-content"));
-                            }
-
-                            if($$("user_auth")){
-                                if ($$("user_auth").isVisible()){
-                                    $$("user_auth").hide();
-                                }
-                            }
-
-                            if($$("userprefs")){
-                                if ($$("userprefs").isVisible()){
-                                    $$("userprefs").hide();
-                                }
-                            }
-                            
-                            if(idsUndefined !== undefined){
-                              
-                                return parentsArray.forEach(function(el,i){
-                                    if (el.includes("single")){
-                                        if(singleType){
-                                            $$(singleType).hide();
-                                        }
-                                    } else {
-
-                                        if($$("webix__none-content").isVisible()){
-                                            $$("webix__none-content").hide();
-                                        } 
-                                        
-                                        if(!($$("webix__null-content"))){
-                                            $$("container").addView(
-                                                {id:"webix__null-content", template:"Блок в процессе разработки",margin:10},
-                                               
-                                            2);
-                                        } 
-                                    
-                                        if (el=="tables" || el=="dashboards" || el=="forms" || el=="user_auth"){
-                                            $$(el).hide();
-                                    
-                                        }
-                                        
-                                    }     
-                                });  
-                             
-                                
-                            } else {
-                            
-                                return parentsArray.forEach(function(el,i){
-                                    if (el.includes("single")){
-                                        if (singleType){
-                                            $$(singleType).show();
-                                        } 
-                                    } else {
-                                        if (el == getItemParent){
-                                            $$(el).show();
-                                        } else if (el=="tables" || el=="dashboards" || el=="forms" || el=="user_auth" || el=="treeTempl"){
-                                            $$(el).hide();
-                                        }
-                                
-                                    }
-                                        
-                                    
-                                });  
-                            }
-                        } catch (error){
-                            console.log(error);
-                            catchErrorTemplate("009-000", error);
-    
-                        }
-                    
-                    }
-                try {
-                  
-                    if (getItemParent=="tables" || singleItemContent == "dbtable"){
-                        visibleTreeItem("tables"); 
-                    }else if(getItemParent=="dashboards" || singleItemContent == "dashboard"){
-                        visibleTreeItem("dashboards"); 
-                    } else if(getItemParent=="forms" || singleItemContent == "tform"){
-                        if ($$("propTableView") && $$("propTableView").isVisible()){
-                            $$("propTableView").hide();
-                        }
-                        visibleTreeItem("forms"); 
-                    } else if (getItemParent=="user_auth"){
-                        visibleTreeItem(); 
-                    } else if (getItemParent == 0 && treeItemId!=="tables"&& treeItemId!=="user_auth"&& treeItemId!=="dashboards" && treeItemId!=="forms" && !singleItemContent){
-                        visibleTreeItem(false, ids[0]); 
-                    } else if (getItemParent=="treeTempl"){
-                        visibleTreeItem(); 
-                    } 
-
-              
-
-// --- контент tree items
-             
-
-                    if(getItemParent=="tables" || singleItemContent == "dbtable"){
-                    
-                        defaultStateForm();
-                        
-                        if(Object.keys($$("table-editForm").elements).length!==0){
-                            $$("inputsTable").hide();
-                        }
-                        if (singleItemContent == "dbtable"){
-                            getInfoTable ("table", "table-search", ids[0], "table-findElements", true);
-                        }else {
-                            getInfoTable ("table", "table-search", ids[0], "table-findElements");
-                        }
-                        
-
-                    } else if(getItemParent=="dashboards") {
-                    getInfoDashboard ();
-
-                    } else if(singleItemContent == "dashboard") {
-                        getInfoDashboard (ids[0],true);
-                    }else if(getItemParent=="forms") {
-                        getInfoTable ("table-view", "table-view-search", ids[0], "table-view-findElements");
-                    }else if(singleItemContent == "tform") {
-                        getInfoTable ("table-view", "table-view-search", ids[0], "table-view-findElements", true);
-                    } else if (getItemParent=="treeTempl"){
-                        getInfoEditTree() ;
-                    }
-                } catch (error){
-                    console.log(error);
-                    catchErrorTemplate("009-000", error);
-            
-                }
-                
-            },
-            onItemClick:function(id, e, node){
-                if($$("table-editForm").isDirty()){
-                       
-                    modalBox().then(function(result){
-                        if (result == 1){
-                            clearItem();
-                            $$("tree").select(id);
-                        
-                        } else if (result == 2){
-                            if ($$("table-editForm").validate()){
-                                if ($$("table-editForm").getValues().id){
-                                    saveItem();
-                                } else {
-                                    saveNewItem(); 
-                                }
-                                $$("tree").select(id);
-                            
-                            } else {
-                                notify ("error","Заполните пустые поля",true);
-                                return false;
-                            }
-                            
-                        }
-                    });
-                    return false;
-                }
-            },
-
-            onBeforeSelect: function(data) {
-               
-                let getItemParent = $$("tree").getParentId(data);
-                if(getItemParent=="tables"){
-
-                    if ($$("filterTableForm")&&$$("filterTableForm").isVisible){
-
-                        $$("filterTableForm").hide();
-                        if($$("inputsFilter")){
-                            $$("filterTableForm").removeView( $$("inputsFilter"));
-                        }
-                        let btnClass = document.querySelector(".webix_btn-filter");
-                        if (btnClass&&!(btnClass.classList.contains("webix_secondary"))){
-                            btnClass.classList.add("webix_secondary");
-                            btnClass.classList.remove("webix_primary");
-                        }
-                        $$("table-editTableBtnId").hide();
-                        $$("table-editForm").show();
-                    }
-                }
-            },
-
-            onBeforeRender:function() {
-                if(window.innerWidth <= 550){
-                    $$("sideMenuResizer").hide();
-                } else {
-                    $$("sideMenuResizer").show();
-                }
-               
-            },
-
-        },
-
-    };
-
-    return tree;
-}
-
-export{
-    treeSidebar,
+export {
+    submitBtn,
     getComboOptions,
-    inpObj,
-    customInputs,
-    urlFieldAction,
-    getInfoEditTree
+    getInfoTable,
+    getInfoDashboard,
+    getInfoEditTree,
+   // urlFieldAction
 };

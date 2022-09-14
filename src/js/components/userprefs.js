@@ -1,4 +1,3 @@
-import {notify} from "../modules/editTableForm.js";
 
 let checkDirtyForm = false;
 let defaultValue = {

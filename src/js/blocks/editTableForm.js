@@ -1,9 +1,10 @@
-import {getComboOptions} from './sidebar.js';
-import {setLogValue} from './logBlock.js';
-import {headerContextId} from './header.js';
-import {tableNames} from "./login.js";
-import { catchErrorTemplate,ajaxErrorTemplate} from "./logBlock.js";
+import {getComboOptions} from './content.js';
+import {headerContextId} from '../components/header.js';
+import {tableNames} from "./router.js";
+import {catchErrorTemplate,ajaxErrorTemplate} from "./logBlock.js";
 
+import {modalBox, popupExec} from "./notifications.js";
+import {setLogValue} from './logBlock.js';
 let currId;
 
 let editTableBar;
@@ -28,7 +29,7 @@ function saveItem(addBtnClick=false){
                 webix.ajax().put("/init/default/api/"+currId+"/"+itemData.id, itemData, {
                     success:function(){
                         $$( "table" ).updateItem(itemData.id, itemData);
-                        notify ("success","Данные сохранены",true);
+                        setLogValue("success","Данные сохранены");
                         clearItem();
                         defaultStateForm ();
                         $$("table").clearSelection();
@@ -61,15 +62,13 @@ function saveItem(addBtnClick=false){
             }    
     
         } else {
-            notify ("error","Заполните пустые поля",true);
+            setLogValue("error","Заполните пустые поля");
         }
     }catch (error){
         catchErrorTemplate("003-000", error);
     }
 
 }
-
-
 
 function addItem () {
     try {
@@ -89,7 +88,7 @@ function addItem () {
                         saveItem(true);
                         
                     } else {
-                        notify ("error","Заполните пустые поля",true);
+                        setLogValue("error","Заполните пустые поля");
                         return false;
                     }
                     
@@ -116,8 +115,6 @@ function addItem () {
 
 }
 
-
-
 function saveNewItem (){
     try{
         getCurrId ();
@@ -139,7 +136,7 @@ function saveNewItem (){
                         if ($$("EditEmptyTempalte")&&!($$("EditEmptyTempalte").isVisible())){
                             $$("EditEmptyTempalte").show();
                         }
-                        notify ("success","Данные успешно добавлены", true);
+                        setLogValue("success","Данные успешно добавлены");
                     },
                     error:function(text, data, XmlHttpRequest){
                         ajaxErrorTemplate("003-001",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
@@ -149,17 +146,16 @@ function saveNewItem (){
                     ajaxErrorTemplate("003-001",error.status,error.statusText,error.responseURL);
                 });
             }else {
-                notify ("debug","Форма пуста");
+                webix.message({type:"debug",expire:1000, text:"Форма пуста"});
             }
         } else {
-            notify ("error","Заполните пустые поля",true);
+            setLogValue("error","Заполните пустые поля");
         }
     }catch (error){
         catchErrorTemplate("003-000", error);
     }
    
 }
-
 
 function removeItem() {
     try{
@@ -173,7 +169,7 @@ function removeItem() {
                         clearItem();
                         defaultStateForm ();
                         $$("inputsTable").hide();
-                        notify ("success","Данные успешно удалены",true);
+                        setLogValue("success","Данные успешно удалены");
                     },
                     error:function(text, data, XmlHttpRequest){
                         ajaxErrorTemplate("003-002",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
@@ -268,7 +264,7 @@ function createEditFields (parentElement, viewPosition=1) {
                                 $$("tree").select(findTableId);
                             } catch (e){
                                 console.log(e);
-                                notify ("error","Таблица не найдена",true);
+                                setLogValue("error","Таблица не найдена");
 
                                 if ($$("EditEmptyTempalte")&&$$("EditEmptyTempalte").isVisible()){
                                     $$("EditEmptyTempalte").hide();
@@ -371,8 +367,6 @@ function createEditFields (parentElement, viewPosition=1) {
     }
 }
 
-
-
 function clearItem(){
     $$("table-editForm").clear();
     $$("table-editForm").clearValidation();
@@ -388,41 +382,6 @@ function defaultStateForm () {
     $$("table-delBtnId").disable();
 }
 
-function popupExec (titleText) { 
-
-    return webix.confirm({
-        width:300,
-        ok: 'Да',
-        cancel: 'Отмена',
-        title:titleText,
-        text:"Вы уверены, что хотите продолжить?"
-    });
-}
-
-function modalBox (){
-    return webix.modalbox({
-        title:"Данные не сохранены",
-        css:"webix_modal-custom-save",
-        buttons:["Отмена", "Не сохранять", "Сохранить"],
-        width:500,
-        text:"Выберите действие перед тем как продолжить"
-
-    });
-}
-
-
-function notify (typeNotify,textMessage, log = false, visible=false) {
-    if (visible){
-        webix.message.position = "bottom";
-        webix.message({type:typeNotify, text:textMessage});
-    }
-   
-    if(log){
-        setLogValue(typeNotify, textMessage);
-    }
-
-}
-
 //--- components
 
 
@@ -433,7 +392,6 @@ try{
     view:"form", 
     id:"table-editForm",
     css:"webix_form-edit",
-   // container:"webix__form-container", 
     minHeight:350,
     minWidth:210,
     width: 320,
@@ -530,11 +488,8 @@ try{
     
 export{
     editTableBar,
-    notify,
     createEditFields,
-    popupExec,
     defaultStateForm,
-    modalBox,
     clearItem,
     saveItem,
     saveNewItem

@@ -1,6 +1,7 @@
-import {defaultStateForm,createEditFields,modalBox,notify,saveItem,saveNewItem} from "../modules/editTableForm.js";
-import {catchErrorTemplate,ajaxErrorTemplate} from "../modules/logBlock.js";
-
+import {defaultStateForm,createEditFields,saveItem,saveNewItem} from "../blocks/editTableForm.js";
+import {catchErrorTemplate,ajaxErrorTemplate} from "../blocks/logBlock.js";
+import {modalBox,popupExec} from "../blocks/notifications.js";
+import {setLogValue} from '../blocks/logBlock.js';
 
 
 function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterElements, idTable,idFilter,visible=false) {
@@ -10,7 +11,7 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
           filterHTML:true,
           styles:true
         });
-        notify ("success","Таблица сохранена",true);
+        setLogValue("success","Таблица сохранена");
     }
 
     function filterBtnClick (){
@@ -306,12 +307,12 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
                                                             function(){
                                                                 $$(el.id+"_filter"+"_rows").removeView($$(el.id+"_filter-container-child-"+countChild));
                                                                 $$(el.id+"_filter"+"_rows").refresh();
-                                                                notify ("success","Поле удалено");
+                                                                setLogValue("success","Поле удалено");
                                                         });
                                                         
                                                 
                                                     }catch(e){
-                                                        notify ("error","Ошибка удаления поля",true);
+                                                        setLogValue("error","Ошибка удаления поля");
                                                     }
 
                                                 },
@@ -372,11 +373,11 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
                                                         popupExec("Поле фильтра будет удалено").then(
                                                             function(){
                                                                 $$(el.id+"_filter"+"_rows").removeView($$(el.id+"_filter-container-child-operOr-"+countChild));
-                                                                notify ("success","Поле удалено"); 
+                                                                setLogValue("success","Поле удалено"); 
                                                         });
                                                         
                                                     }catch(e){
-                                                        notify ("error","Ошибка удаления поля",true);
+                                                        setLogValue("error","Ошибка удаления поля");
                                                     }
 
                                                 },
@@ -715,10 +716,9 @@ function table (idTable, onFunc, editableParam=false) {
                             webix.ajax().del("/init/default/api/"+itemTreeId+"/"+formValues.id+".json", formValues,{
                                 success:function(){
                                     $$(idTable).remove($$(idTable).getSelectedId());
-                                    notify ("success","Данные успешно удалены",true);
+                                    setLogValue("success","Данные успешно удалены");
                                 },
                                 error:function(text, data, XmlHttpRequest){
-                                   // notify ("error","Ошибка при удалении записи",true);
                                     ajaxErrorTemplate("012-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
 
                                 }
@@ -759,7 +759,6 @@ function table (idTable, onFunc, editableParam=false) {
                                 }
                             },
                             error:function(text, data, XmlHttpRequest){
-                                //notify ("error","Ошибка при загрузке");
                                 ajaxErrorTemplate("012-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
 
 
@@ -782,8 +781,6 @@ function table (idTable, onFunc, editableParam=false) {
         }
     };
 }
-
-
 
 
 
@@ -866,7 +863,7 @@ let onFuncTable = {
                             toEditForm();
                         
                         } else {
-                            notify ("error","Заполните пустые поля",true);
+                            setLogValue("error","Заполните пустые поля");
                             return false;
                         }
                         
@@ -915,7 +912,6 @@ let onFuncTable = {
     
  
 };
-//----- table edit parameters
 
 
 export {

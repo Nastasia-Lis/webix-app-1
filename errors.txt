@@ -10,6 +10,8 @@
 010 - userSettings
 011 - authItems
 012 - tableTemplate
+013 - contextMenuTree
+014 - editTreeTempalte
 
 2) действие
 001 - сохранение новых данных

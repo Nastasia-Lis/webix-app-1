@@ -1,13 +1,6 @@
-import {removeElements} from "./login.js";
-import {notify} from "./editTableForm.js";
-import {setUserLocation} from "./userSettings.js";
-import {tableNames} from "./login.js";
-
-import {catchErrorTemplate,ajaxErrorTemplate} from "./logBlock.js";
-
-
-let hrefPrevAutoLogout = window.location.href;
-
+import {removeElements} from "../components/login.js";
+import {setLogValue,catchErrorTemplate,ajaxErrorTemplate} from "./logBlock.js";
+import {setUserLocation} from "./storageSetting.js";
 
 function resetTimer (){
 
@@ -21,10 +14,9 @@ function resetTimer (){
     window.addEventListener('scroll', resetTimer, true); 
 
     function logout() {
-       // let userLocation = window.location.href
-   //     setUserLocation(tableNames,userLocation);
-      // console.log(userLocation)
-        
+        console.log(window.location.href,"wr")
+        setUserLocation ("",window.location.href);
+        console.log("logout1")
         webix.ajax().post("/init/default/logout/",{
             
             success:function(text, data, XmlHttpRequest){
@@ -35,11 +27,13 @@ function resetTimer (){
                     if($$("popupPrevHref")&&$$("popupPrevHref").isVisible()){
                         $$("popupPrevHref").hide();
                     }
-                    history.back();
+                  //  history.back();
+                    window.location.reload()
                     removeElements();
                     $$("webix__none-content").show();
                     $$("tree").clearAll();
-                    notify ("debug","Превышено время бездействия", false);
+                    setLogValue("debug","Превышено время бездействия");
+
                 } catch (error){
                     console.log(error);
                     catchErrorTemplate("008-000", error);
@@ -47,7 +41,7 @@ function resetTimer (){
                 }
             },
             error:function(text, data, XmlHttpRequest){
-                notify ("error","Не удалось выполнить выход",true);
+                setLogValue("error","Не удалось выполнить выход");
                 ajaxErrorTemplate("008-006",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
 
             }
@@ -60,8 +54,10 @@ function resetTimer (){
 
     function resetTimer() {
         try {
-            clearTimeout(t);
-            t = setTimeout(logout, 600000); // 600000
+            if (window.location.pathname !== "/index.html" && window.location.pathname !== "/" && window.location.pathname !== "/init/default/spaw" ){
+                clearTimeout(t);
+                t = setTimeout(logout, 600000); // 600000
+            }
         } catch (error){
             console.log(error);
             catchErrorTemplate("008-000", error);

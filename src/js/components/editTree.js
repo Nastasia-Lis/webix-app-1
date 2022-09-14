@@ -1,6 +1,5 @@
-import {catchErrorTemplate,ajaxErrorTemplate} from "../modules/logBlock.js";
-import {notify} from "../modules/editTableForm.js";
-
+import {catchErrorTemplate,ajaxErrorTemplate} from "../blocks/logBlock.js";
+import {setLogValue} from '../blocks/logBlock.js';
 
 function contextMenu (){
 
@@ -57,8 +56,8 @@ function contextMenu (){
                                   
                                     tree.data.add({id:idNewItem, value:text, pid:titem.id}, 0, titem.id);
                                     tree.open(titem.id);
-                                    
-                                    notify ("success","Данные добавлены",true);
+                                
+                                    setLogValue("success","Данные сохранены");
                                 } else {
                                     catchErrorTemplate("013-001", data.json().err, true);
                                 }
@@ -84,7 +83,7 @@ function contextMenu (){
                                 if (data.json().err_type !== "e"&&data.json().err_type !== "x"){
                                     titem.value = text;
                                     tree.updateItem(titem.id, titem);
-                                    notify ("success","Данные изменены",true);
+                                    setLogValue("success","Данные изменены");
                                 } else {
                                     catchErrorTemplate("013-011", data.json().err, true);
                                 }
@@ -100,7 +99,7 @@ function contextMenu (){
                         webix.ajax().del(url+titem.id).then(function (data) {
                             if (data.json().err_type !== "e"&&data.json().err_type !== "x"){
                                 tree.remove(titem.id);
-                                notify ("success","Данные удалены",true);
+                                setLogValue("success","Данные удалены");
                             } else {
                                 catchErrorTemplate("013-002", data.json().err, true);
                             }
@@ -187,9 +186,7 @@ function editTreeLayout () {
 
                             webix.ajax().put(url+editor.id, postObj).then(function (data) {
                                 if (data.json().err_type !== "e"&&data.json().err_type !== "x"){
-                                    //titem.value = text;
-                                //  tree.updateItem(titem.id, titem);
-                                    notify ("success","Данные изменены",true);
+                                    setLogValue("success","Данные изменены");
                                 } else {
                                     catchErrorTemplate("013-011", data.json().err, true);
                                 }

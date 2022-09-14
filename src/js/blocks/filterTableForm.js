@@ -1,4 +1,4 @@
-import { notify } from "./editTableForm.js";
+import {setLogValue} from './logBlock.js';
 import { catchErrorTemplate,ajaxErrorTemplate} from "./logBlock.js";
 
 let popupLibData = {};
@@ -63,7 +63,7 @@ function popupSubmitBtn (){
         
         
         if (tabbarValue =="editFormPopupLib"){
-            notify ("debug","Библиотека в разработке");
+            webix.message({type:"debug",expire:3000, text:"Библиотека в разработке"});
 
         } else if (tabbarValue=="editFormScroll"){
 
@@ -180,11 +180,11 @@ function popupSubmitBtn (){
         }
 
             $$("popupFilterEdit").destructor();
-            notify ("success","Рабочая область фильтра обновлена",true);
+            setLogValue("success","Рабочая область фильтра обновлена");
         }
     }catch(e){
         $$("popupFilterEdit").destructor();
-        notify ("error","Ошибка при обновлении фильтров",true);
+        setLogValue("error","Ошибка при обновлении фильтров");
     }
 }
 
@@ -540,11 +540,11 @@ function resetFilterBtn (){
 
                 let filterCountRows = $$("table").count();
                 $$("table-idFilterElements").setValues(filterCountRows.toString());
-                notify ("success", "Фильтры очищены", true);
+                setLogValue("success", "Фильтры очищены");
             },
             error:function(text, data, XmlHttpRequest){
                 ajaxErrorTemplate("004-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
-                notify ("error","Ошибка очистки фильтров",true);
+                setLogValue("error","Ошибка очистки фильтров");
             }
         }).catch(error => {
             console.log(error);
@@ -553,7 +553,7 @@ function resetFilterBtn (){
 
         
     } catch(e) {
-        notify ("error", "Ошибка при очищении фильтров", true); 
+        setLogValue("error", "Ошибка при очищении фильтров");
     }
 }
 
@@ -720,16 +720,15 @@ function filterSubmitBtn (){
                 $$("table-idFilterElements").setValues(filterCountRows.toString());
         
                 if (notifyType == "i"){
-                    notify ("success","Фильтры успшено применены",true);
+                    setLogValue("success","Фильтры успшено применены");
                 } else if (notifyType == "e"){
-                    notify ("error",notifyMsg,true);
+                    setLogValue("error",notifyMsg);
                 } else if (notifyType == "x"){
-                    notify ("error","Ошибка фильтрации данных",true);
+                    setLogValue("error","Ошибка фильтрации данных");
                 }
                 
             },
             error:function(text, data, XmlHttpRequest){
-              //  notify ("error","Ошибка фильтрации данных");
                 ajaxErrorTemplate("003-011",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
             }
         }).catch(error => {
@@ -737,7 +736,7 @@ function filterSubmitBtn (){
             ajaxErrorTemplate("003-011",error.status,error.statusText,error.responseURL);
         });
     } else {
-        notify ("error","Не все поля формы заполнены", true);
+        setLogValue("error","Не все поля формы заполнены");
     }
   
 
@@ -766,7 +765,7 @@ function filterLibraryBtn (){
             });
 
             popupLibData = {id:webix.uid(), value:nameTemplate}
-            notify ("success", "Шаблон"+" «"+nameTemplate+"» "+" сохранён в библиотеку", true); 
+            webix.message({type:"success",expire:1000, text:"Шаблон"+" «"+nameTemplate+"» "+" сохранён в библиотеку"});
 
 
         }).fail(function(){
@@ -778,7 +777,7 @@ function filterLibraryBtn (){
             
     } catch(error) {
         console.log(error);
-        notify ("error", "Не удалось сохранить шаблон");
+        setLogValue("error", "Не удалось сохранить шаблон");
         catchErrorTemplate("004-001", error); 
     }
 }
