@@ -259,14 +259,17 @@ function treeSidebar () {
                 }
             },
 
-            onBeforeRender:function() {
-                if(window.innerWidth <= 550){
-                    $$("sideMenuResizer").hide();
-                } else {
-                    $$("sideMenuResizer").show();
-                }
+            // onBeforeRender:function() {
+            //     console.log("uur")
+            //     if(window.innerWidth <= 550){
+            //         $$("sideMenuResizer").hide();
+            //     } else {
+            //         $$("sideMenuResizer").show();
+            //     }
+
+            //     console.log("uu213r")
                
-            },
+            // },
 
         },
 

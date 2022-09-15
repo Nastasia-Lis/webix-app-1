@@ -1,4 +1,4 @@
-console.log("expa 1.0.21");
+console.log("expa 1.0.22");
 // import {lib} from "./modules/expalib.js";
 // lib ();
 
@@ -11,7 +11,7 @@ import {logLayout} from "./blocks/logBlock.js";
 import  {resetTimer} from  "./blocks/autoLogout.js";
 
 import {catchErrorTemplate} from "./blocks/logBlock.js";
-import {resizeAdaptive} from "./blocks/adaptive.js";
+import {resizeAdaptive,adaptivePoints} from "./blocks/adaptive.js";
 
 try{
     
@@ -24,6 +24,7 @@ try{
             view:"scrollview",
                     type:"clean",
                     id:"layout", 
+                    css:"layoutContainer",
                     scroll:"y", 
                     body:{
                         cells: [ 
@@ -117,7 +118,7 @@ try{
             });
         }
 
-
+        adaptivePoints();
         textInputClean.textInputClean();
         getStorageLogVal();
         backButtonLogic ();

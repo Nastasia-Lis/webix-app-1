@@ -111,13 +111,6 @@ margin-left: 0px!important;
 }
 
 
-
-.webix_popup-filter-container{
-    padding:20px 20px!important;
-}
-
-
-
 .webix_progress_top .webix_progress_state, .webix_progress_bottom .webix_progress_state{
     background: var(--primary-light)!important;
  
@@ -724,4 +717,23 @@ label, button{
     border: 1px solid var(--gray)!important;
     padding: 0px!important;
     cursor:text!important;
+}
+
+
+
+
+
+.webix_template-actions  .webix_template{
+    font-weight: 600;
+    font-size: 16px;
+    padding:5px 0 0 !important;
+}
+
+
+.webix_popup-config{
+    padding:20px 20px!important;
+    margin-left: auto!important;
+    margin-right: auto!important;
+    left: 0!important;
+    right: 0!important;
 }

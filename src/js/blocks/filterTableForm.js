@@ -192,7 +192,7 @@ function editFiltersBtn (){
     webix.ui({
         view:"popup",
         id:"popupFilterEdit",
-        css:"webix_popup-filter-container",
+        css:"webix_popup-filter-container webix_popup-config",
         modal:true,
         escHide:true,
         position:"center",

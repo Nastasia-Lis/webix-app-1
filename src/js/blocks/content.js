@@ -18,6 +18,7 @@ function submitBtn (idElements, url, verb, rtype){
                     if (el.id.includes("customCombo")){
                         valuesArray.push(el.name+"="+$$(el.id).getText());
                     } else if (el.id.includes("customInputs")) {
+                       
                         valuesArray.push(el.name+"="+$$(el.id).getValue());
                     } else if (el.id.includes("customDatepicker")) {
                         valuesArray.push(el.name+"="+$$(el.id).getValue());
@@ -162,9 +163,19 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
         } else {
             let inpObj;
             if (idCurrTable == "table-view"){
+                if ($$("contextActionsPopup")){
+                    $$("contextActionsPopup").destructor();
+                }
 
+                if ($$("contextActionsBtnAdaptive")){
+                    filterBar.removeView($$("contextActionsBtnAdaptive"))
+                }
                 if ($$( "customInputs" )){
-                    filterBar.removeView($$( "customInputs" ))
+                    $$( "customInputs" ).getParentView().removeView($$( "customInputs" ))
+                }
+
+                if ($$("customInputsMain")){
+                    $$("customInputsMain").getParentView().removeView($$( "customInputsMain" ))
                 }
             
             }
@@ -172,8 +183,8 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
             webix.ajax().get("/init/default/api/fields.json").then(function (data) {
                 
              
-                let data1 = data.json().content;
-                data1.treeTemplate={
+                let dataContent = data.json().content;
+                data.treeTemplate={
                     
                     "fields": {
                         "id": {
@@ -255,7 +266,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                     "type": "treeConf"
                     
                 };
-                data = data1[idsParam];
+                data = dataContent[idsParam];
                 //data = data.json().content[idsParam];
 
                 let dataFields = data.fields;
@@ -342,6 +353,11 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
 
     // -----  Array с кастомными полями
                 try{
+
+                    if ($$("contextActionsBtn")){
+                        $$(filterBar.config.id).removeView($$("contextActionsBtn") );
+                    }
+
                     if (data.inputs ){  //-----------------------------------------------------------------
                        
                         let objInuts = Object.keys(data.inputs);
@@ -494,6 +510,11 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                                                     else if (findAction.verb == "download"){
                                                         submitBtn(idElements,findAction.url, "get", "download",id);
                                                     }
+
+
+                                                    if ($$("contextActionsPopup")){
+                                                        $$("contextActionsPopup").hide();
+                                                    }
                                                 
                                                 },
                                                 on: {
@@ -514,6 +535,11 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                                             upload: data.actions.submit.url,
                                             label:dataInputsArray[el].label, 
                                             labelPosition:"top",
+                                            click:function(){
+                                                if ($$("contextActionsPopup")){
+                                                    $$("contextActionsPopup").destructor();
+                                                }
+                                            },
                                             on: {
                                                 onAfterRender: function () {
                                                     this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
@@ -556,7 +582,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                                 );
 
                             } 
-                        customInputs.push({width:10});
+                       // customInputs.push({width:10});
                         });
 
                         customInputs.forEach((el,i) => {
@@ -578,65 +604,81 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                         if (window.innerWidth > 830){
                             inpObj = {id:"customInputs",css:"webix_custom-inp", cols:customInputs};
                             let filterBar = $$("table-view-filterIdView").getParentView();
-                            $$(filterBar.config.id).addView( inpObj,2);
+                            $$(filterBar.config.id).addView( 
+                                {id:"customInputsMain",cols:[
+                                    inpObj
+                                ]}
+                            ,2);
 
                         } else {
+                            customInputs.push({});
                             inpObj = {id:"customInputs",css:"webix_custom-inp", rows:customInputs};
-                            $$(filterBar.config.id).addView( {
+                            $$(filterBar.config.id).addView({
                                 view:"button", 
                                 id:"contextActionsBtn",
                                 maxWidth:100, 
                                 value:"Действия", 
                                 css:"webix_primary", 
-                                click:function(){
-                                    webix.ui({
+                                popup:webix.ui({
                                         view:"popup",
-                                        css:"webix_popup-filter-container",
+                                        css:"webix_popup-actions-container webix_popup-config",
                                         modal:true,
                                
                                         id:"contextActionsPopup",
                                         escHide:true,
                                         position:"center",
-                                        height:400,
-                                        width:400,
+                                      //height:400,
+                                     //   width:400,
                                         body:{
-                                            view:"scrollview",
-                                            borderless:true,
-                                            scroll:"y", 
-                                            body:{ 
-                                                id:"contextActionsPopupContainer",
-                                                rows:[ 
-                                                    {cols:[
-                                                        {template:"Доступные действия", css:"webix_template-recover", borderless:true, height:40 },
-                                                        {width:150},
-                                                        {
-                                                            view:"button",
-                                                            id:"buttonClosePopup",
-                                                            css:"webix_close-btn",
-                                                            type:"icon",
-                                                            hotkey: "esc",
-                                                            width:25,
-                                                            icon: 'wxi-close',
-                                                            click:function(){
-                                                                if ($$("contextActionsPopup")){
-                                                                    $$("contextActionsPopup").destructor();
-                                                                }
-                                                            
+
+                                            rows:[
+                                                {cols:[
+                                                    {template:"Доступные действия", css:"webix_template-actions", borderless:true, height:40 },
+                                                //   {},
+                                                    {
+                                                        view:"button",
+                                                        id:"buttonClosePopup",
+                                                        css:"webix_close-btn",
+                                                        type:"icon",
+                                                        hotkey: "esc",
+                                                        width:25,
+                                                        icon: 'wxi-close',
+                                                        click:function(){
+                                                            if ($$("contextActionsPopup")){
+                                                                $$("contextActionsPopup").hide();
                                                             }
-                                                        },
-                                                    ]}
-                                                ]
-                                            }
+                                                        
+                                                        }
+                                                    },
+                                                ]},
+                                                {
+                                                    view:"scrollview",
+                                                    borderless:true,
+                                                    scroll:"y", 
+                                                    body:{ 
+                                                    id:"contextActionsPopupContainer",
+                                                    rows:[ 
+                                                        inpObj
+                                                    ]
+                                                    }
+                                                }
+                                        
+                                            ]
                                   
                                            
                                         }
-                                    }).show();
-                                    console.log(inpObj)
-                                    $$("contextActionsPopupContainer").addView(inpObj,2);
+                                    }),
+                                click:function(){
+                                    // if($$("contextActionsPopup").config.height !== $$("customInputs").$height +60){
+                                    //     $$("contextActionsPopup").config.height = $$("customInputs").$height +60;
+                                    //     $$("contextActionsPopup").resize();
+                                    // }
+                                   
                                 }
+                                    
+                             
                             },2);
-
-
+  
                         }
 
                     }
@@ -730,17 +772,20 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                         }
                 });
                 }
-
-                if($$("table")){
+                if(data.type == "dbtable"){
                     getItemData ("table");
-                } else if ($$("table-view")){
+                } else if (data.type == "tform"){
                     getItemData ("table-view");
                 }
                 
                 if (data.autorefresh){
                     setInterval(function(){
-                        getItemData ();
-                    }, 50000);
+                        if(data.type == "dbtable"){
+                            getItemData ("table");
+                        } else if (data.type == "tform"){
+                            getItemData ("table-view");
+                        }
+                    }, 120000);
                 }
               
             
