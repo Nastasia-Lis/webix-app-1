@@ -8,68 +8,57 @@ import {saveItem, saveNewItem} from "../blocks/editTableForm.js";
 
 let userLocation;
 let headerContextId;
-// function typeTable (type,columnsData, id){
-//     try{
-//         $$(type).refreshColumns(columnsData);
-//         webix.ajax().get("/init/default/api/"+id,{
-//             success:function(text, data, XmlHttpRequest){
-                
-//                 if(!($$("table-newAddBtnId").isEnabled())){
-//                     $$("table-newAddBtnId").enable();
-//                 }
-
-//                 data = data.json().content;
-                
-//                 if (data.length !== 0){
-                    
-//                     $$(type).hideOverlay("Ничего не найдено");
-//                     $$(type).parse(data);
-            
-                
-//                 } else {
-//                     $$(type).showOverlay("Ничего не найдено");
-//                 }
-            
-//                 let countRows = $$(type).count();
-//                 $$("table-findElements").setValues(countRows.toString());
-            
-//             },
-//             error:function(text, data, XmlHttpRequest){
-//                 ajaxErrorTemplate("005-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
-
-//             }, 
-//         }).catch(error => {
-//             console.log(error);
-//             ajaxErrorTemplate("005-000",error.status,error.statusText,error.responseURL);
-//         });
-//     } catch (error){
-//         console.log(error);
-//         catchErrorTemplate("005-000", error);
-//     }
-// }
 
 function header() {
     function collapseClick (){
         try {
-            if ($$("tree").isVisible()){
-                this.config.icon ="wxi-angle-double-right";
-                this.refresh();
-                $$("tree").hide();
-                if($$("sideMenuResizer")){
-                    $$("sideMenuResizer").hide();
-                } 
 
-            } else {
-                $$("tree").show();
-                this.config.icon ="wxi-angle-double-left";
-                this.refresh();
-                if(window.innerWidth >= 800){
+            if (window.innerWidth > 850 ){
+                if ($$("tree").isVisible()){
+                    this.config.icon ="wxi-angle-double-right";
+                    this.refresh();
+                    $$("tree").hide();
                     if($$("sideMenuResizer")){
-                        $$("sideMenuResizer").show();
-                    }
-                } 
-            
+                        $$("sideMenuResizer").hide();
+                    } 
+
+                } else {
+                    $$("tree").show();
+                    this.config.icon ="wxi-angle-double-left";
+                    this.refresh();
+                    if(window.innerWidth >= 800){
+                        if($$("sideMenuResizer")){
+                            $$("sideMenuResizer").show();
+                        }
+                    } 
                 
+                    
+                }
+            } else {
+                if ($$("tree").isVisible()){
+                    this.config.icon ="wxi-angle-double-right";
+                    this.refresh();
+                    $$("tree").hide();
+                    if($$("sideMenuResizer")){
+                        $$("sideMenuResizer").hide();
+                    } 
+
+                } else {
+                    $$("tree").show();
+                    console.log(window.innerHeight )
+                   $$("tree").config.width = window.innerWidth;
+                    $$("tree").resize()
+                    
+                    this.config.icon ="wxi-angle-double-left";
+                    this.refresh();
+                    if(window.innerWidth >= 800){
+                        if($$("sideMenuResizer")){
+                            $$("sideMenuResizer").show();
+                        }
+                    } 
+                
+                    
+                }
             }
         } catch (error){
             console.log(error);

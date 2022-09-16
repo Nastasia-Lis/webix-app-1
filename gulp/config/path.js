@@ -10,7 +10,6 @@ export const path = {
         css:`${buildFolder}/css/`,
         html:`${buildFolder}/`,
         images:`${buildFolder}/images/`,
-        
         files: `${buildFolder}/files/`,
         codebase: `${buildFolder}/js/codebase/`,
         init: `${buildFolder}/init/`,
@@ -26,6 +25,8 @@ export const path = {
         scss: `${srcFolder}/scss/expa.scss`,
         html:`${srcFolder}/*.html`,
         files: `${srcFolder}/files/**/*.*`,
+        css:`${srcFolder}/webix_css/*.*`,
+        jsW:`${srcFolder}/webix_js/*.*`,
         
     },
     watch: {

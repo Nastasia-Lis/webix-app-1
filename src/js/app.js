@@ -1,4 +1,4 @@
-console.log("expa 1.0.22");
+console.log("expa 1.0.23");
 // import {lib} from "./modules/expalib.js";
 // lib ();
 
@@ -52,11 +52,11 @@ try{
                                                 rows:[]
                                             },
                                         
-                                        {id:"container",responsive:"adaptive",cols:[
-                                                treeSidebar(), 
+                                        {cols:[
+                                               treeSidebar(), 
+                                               {id:"sideMenuResizer",view:"resizer",css:"webix_resizer-hide",},
+                                            {id:"container",cols:[
 
-                                                {id:"sideMenuResizer",view:"resizer",css:"webix_resizer-hide",},
-                            
                                                 {
                                                     view:"align", 
                                                     align:"middle,center",
@@ -72,6 +72,7 @@ try{
                                                 },
                                     
                                             ]},
+                                            ]}
                                         ]}, 
 
 

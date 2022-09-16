@@ -481,6 +481,55 @@ try{
 } catch (error){
     alert("Ошибка при выполнении"+" "+ error);
     console.log(error);
+
+    // let script = document.createElement("script");
+    // script.setAttribute("src", "/js/codebase/webix.js");
+    // script.setAttribute("type", "text/javascript");
+    // script.setAttribute("async", true);
+    // document.body.appendChild(script);
+
+    // script.addEventListener("load", () => {
+    //     console.log("Файл загружен")
+    // });
+    
+    // script.addEventListener("error", (ev) => {
+    //     console.log("Загрузка не удалась", ev);
+    // });
+
+
+    // const loadScript = (FILE_URL, async = true, type = "text/javascript") => {
+    //     return new Promise((resolve, reject) => {
+    //         try {
+    //             const scriptEle = document.createElement("script");
+    //             scriptEle.type = type;
+    //             scriptEle.async = async;
+    //             scriptEle.src =FILE_URL;
+    
+    //             scriptEle.addEventListener("load", (ev) => {
+    //                 resolve({ status: true });
+    //             });
+    
+    //             scriptEle.addEventListener("error", (ev) => {
+    //                 reject({
+    //                     status: false,
+    //                     message: `Failed to load the script ${FILE_URL}`
+    //                 });
+    //             });
+    
+    //             document.body.appendChild(scriptEle);
+    //         } catch (error) {
+    //             reject(error);
+    //         }
+    //     });
+    // };
+    
+    // loadScript("/js/codebase/webix.js")
+    //     .then( data  => {
+    //         console.log("Script loaded successfully", data);
+    //     })
+    //     .catch( err => {
+    //         console.error(err);
+    //     });
     window.stop();
    
 }

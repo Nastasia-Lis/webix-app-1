@@ -12,8 +12,8 @@ import {editTableBar} from "./editTableForm.js";
 import {propertyTemplate} from "./viewPropertyTable.js";
 import {filterForm} from "./filterTableForm.js";
 import {editTreeLayout,contextMenu} from "../components/editTree.js";
-import {catchErrorTemplate,ajaxErrorTemplate} from "./logBlock.js";
-
+import {catchErrorTemplate,ajaxErrorTemplate,setLogValue} from "./logBlock.js";
+import {getInfoEditTree} from "./content.js";
 let userInfo=[];
 let tableNames = [];
 
@@ -28,16 +28,7 @@ function createElements(specificElement){
                     },
                 3);
             }
-            if (!$$("treeTempl")){
-                $$("container").addView(
-                    {view:"layout",id:"treeTempl", hidden:true, scroll:"auto",
-                        rows: editTreeLayout()
-                    },
-                4);
-                webix.ui(contextMenu());
-            }
-          
-            
+
             if (!$$("tables")){
                 $$("container").addView(
                     {id:"tables", hidden:true, view:"scrollview", body: { view:"flexlayout", cols:[
@@ -84,6 +75,17 @@ function createElements(specificElement){
             }
         }
 
+
+        if (specificElement == "treeTempl"){
+            if (!$$("treeTempl")){
+                $$("container").addView(
+                    {view:"layout",id:"treeTempl", hidden:true, scroll:"auto",
+                        rows: editTreeLayout()
+                    },
+                4);
+                webix.ui(contextMenu());
+            }
+        }
 
         if (specificElement == "cp"){
             $$("container").addView(
@@ -146,88 +148,88 @@ function getDataFields (routes, menuItem){
              webix.ajax().get("/init/default/api/fields.json",false).then(function (data) {
                  let srcTree = data.json().content;
    
-                 srcTree.treeTemplate={
+                //  srcTree.treeTemplate={
                      
-                     "fields": {
-                         "id": {
-                             "type": "id",
-                             "unique": false,
-                             "notnull": false,
-                             "length": 512,
-                             "label": "Id",
-                             "comment": null,
-                             "default": "None"
-                         },
-                         "pid": {
-                             "type": "reference trees",
-                             "unique": false,
-                             "notnull": false,
-                             "length": 512,
-                             "label": "Родитель",
-                             "comment": null,
-                             "default": "None"
-                         },
-                         "owner": {
-                             "type": "reference auth_user",
-                             "unique": false,
-                             "notnull": false,
-                             "length": 512,
-                             "label": "Владелец",
-                             "comment": null,
-                             "default": "None"
-                         },
-                         "ttype": {
-                             "type": "integer",
-                             "unique": false,
-                             "notnull": false,
-                             "length": 512,
-                             "label": "Тип",
-                             "comment": "Тип записи|1=системная;2=пользовательская|Перечисление",
-                             "default": "1"
-                         },
-                         "name": {
-                             "type": "string",
-                             "unique": false,
-                             "notnull": false,
-                             "length": 100,
-                             "label": "Наименование",
-                             "comment": null,
-                             "default": ""
-                         },
-                         "descr": {
-                             "type": "string",
-                             "unique": false,
-                             "notnull": false,
-                             "length": 1000,
-                             "label": "Описание",
-                             "comment": null,
-                             "default": ""
-                         },
-                         "value": {
-                             "type": "string",
-                             "unique": false,
-                             "notnull": false,
-                             "length": 1000,
-                             "label": "Значение",
-                             "comment": null,
-                             "default": ""
-                         },
-                         "cdt": {
-                             "type": "datetime",
-                             "unique": false,
-                             "notnull": false,
-                             "length": 512,
-                             "label": "Создано",
-                             "comment": null,
-                             "default": "now"
-                         }
-                     },
-                     "singular": "Классификатор-пример",
-                     "ref_name": "name",
-                     "plural": "Классификаторы-пример",
-                     "type": "treeConf"
+                //      "fields": {
+                //          "id": {
+                //              "type": "id",
+                //              "unique": false,
+                //              "notnull": false,
+                //              "length": 512,
+                //              "label": "Id",
+                //              "comment": null,
+                //              "default": "None"
+                //          },
+                //          "pid": {
+                //              "type": "reference trees",
+                //              "unique": false,
+                //              "notnull": false,
+                //              "length": 512,
+                //              "label": "Родитель",
+                //              "comment": null,
+                //              "default": "None"
+                //          },
+                //          "owner": {
+                //              "type": "reference auth_user",
+                //              "unique": false,
+                //              "notnull": false,
+                //              "length": 512,
+                //              "label": "Владелец",
+                //              "comment": null,
+                //              "default": "None"
+                //          },
+                //          "ttype": {
+                //              "type": "integer",
+                //              "unique": false,
+                //              "notnull": false,
+                //              "length": 512,
+                //              "label": "Тип",
+                //              "comment": "Тип записи|1=системная;2=пользовательская|Перечисление",
+                //              "default": "1"
+                //          },
+                //          "name": {
+                //              "type": "string",
+                //              "unique": false,
+                //              "notnull": false,
+                //              "length": 100,
+                //              "label": "Наименование",
+                //              "comment": null,
+                //              "default": ""
+                //          },
+                //          "descr": {
+                //              "type": "string",
+                //              "unique": false,
+                //              "notnull": false,
+                //              "length": 1000,
+                //              "label": "Описание",
+                //              "comment": null,
+                //              "default": ""
+                //          },
+                //          "value": {
+                //              "type": "string",
+                //              "unique": false,
+                //              "notnull": false,
+                //              "length": 1000,
+                //              "label": "Значение",
+                //              "comment": null,
+                //              "default": ""
+                //          },
+                //          "cdt": {
+                //              "type": "datetime",
+                //              "unique": false,
+                //              "notnull": false,
+                //              "length": 512,
+                //              "label": "Создано",
+                //              "comment": null,
+                //              "default": "now"
+                //          }
+                //      },
+                //      "singular": "Классификатор-пример",
+                //      "ref_name": "name",
+                //      "plural": "Классификаторы-пример",
+                //      "type": "treeConf"
                      
-                 };
+                //  };
  
                  let obj = Object.keys(srcTree);
  
@@ -318,70 +320,74 @@ function getDataFields (routes, menuItem){
                      }
  
                      try {
-                         menu.forEach(function(el,i){
+                        menu.forEach(function(el,i){
                          
-                             if (el.name == "user_auth" || el.name=="userprefs" ){
-                                 if (el.childs.length > 0){
-                                     el.childs.forEach(function(child,i){
-                                             if(child.name == "login"){
-                                                dataNotAuth.push({id:child.name,value:child.title, href:pathPref+child.name });
-                                             }else if (child.name !== "logout") {
-                                                 dataAuth.push({id:child.name,value:child.title, href:pathPref+child.name });
-                                             }
-                                             tableNames.push({name:child.title , id:child.name}); 
-                                     });
-                                     el.childs.forEach(function(child,i){
-                                         if (child.name == "logout") {
-                                         dataAuth.push({id:child.name,value:child.title, css:"webix_logout" });
-                                         }
-                                         tableNames.push({name:child.title , id:child.name}); 
-                                     });
-                                 } 
-                                 
-                                 if (el.childs.length <= 0){
-                                     dataAuth.push({id:el.name, value:el.title, href:pathPref+el.name });
-                                 }
+                                if (el.name == "user_auth" || el.name=="userprefs" ){
+                                    if (el.childs.length > 0){
+                                        el.childs.forEach(function(child,i){
+                                                if(child.name == "login"){
+                                                    dataNotAuth.push({id:child.name,value:child.title, href:pathPref+child.name });
+                                                }else if (child.name !== "logout") {
+                                                    dataAuth.push({id:child.name,value:child.title, href:pathPref+child.name });
+                                                }
+                                                tableNames.push({name:child.title , id:child.name}); 
+                                        });
+                                        el.childs.forEach(function(child,i){
+                                            if (child.name == "logout") {
+                                            dataAuth.push({id:child.name,value:child.title, css:"webix_logout" });
+                                            }
+                                            tableNames.push({name:child.title , id:child.name}); 
+                                        });
+                                    } 
+                                    
+                                    if (el.childs.length <= 0){
+                                        dataAuth.push({id:el.name, value:el.title, href:pathPref+el.name });
+                                    }
  
  
-                             } else {
+                                } 
+                                
+                                //else {
                          
-                                 if (el.childs.length > 0){
-                                     dataChilds[el.name]=[];
-                                     el.childs.forEach(function(child,i){
-                                         dataChilds[el.name].push({id:child.name, value:child.title });
-                                         tableNames.push({name:child.title , id:child.name}); 
-                                     });
-                                 }
+                                    if (el.childs.length > 0){
+                                        dataChilds[el.name]=[];
+                                        el.childs.forEach(function(child,i){
+                                            dataChilds[el.name].push({id:child.name, value:child.title });
+                                            tableNames.push({name:child.title , id:child.name}); 
+                                        });
+                                    }
              
-                                 if (el.name.includes("delim")){
-                                 } else {
-                                     let singleItem;
-                                     obj.forEach(function(data) {
-                                         if (data==el.name){
-                                             singleItem = el.title;
-                                             menuTree.push({id:el.name+"-single", value:el.title, typeof:srcTree[data].type});
-                                         }
-                                     });
-                                     if (!singleItem){
-                                         if (el.title){
-                                             if (el.typeof){
-                                                 menuTree.push({id:el.name, value:el.title,typeof:el.typeof, data:dataChilds[el.name]});
-                                             }else {
-                                                 menuTree.push({id:el.name, value:el.title, data:dataChilds[el.name]});
-                                             }
-                                             
-                                         
-                                         } else {
-                                             menuTree.push({id:el.name, value:"Без названия", data:dataChilds[el.name]});
-                                         }
-                                     }
-                                 }
-                             }
+                                    if (el.name.includes("delim")){
+
+                                    } else {
+                                        let singleItem;
+                                        obj.forEach(function(data) {
+                                            if (data==el.name){
+                                                singleItem = el.title;
+                                                menuTree.push({id:el.name+"-single", value:el.title, typeof:srcTree[data].type});
+                                            }
+                                        });
+                                        if (!singleItem){
+                                            if (el.title){
+                                                if (el.typeof){
+                                                    menuTree.push({id:el.name, value:el.title,typeof:el.typeof, data:dataChilds[el.name]});
+                                                }else {
+                                                    menuTree.push({id:el.name, value:el.title, data:dataChilds[el.name]});
+                                                }
+                                                
+                                            
+                                            } else {
+                                                menuTree.push({id:el.name, value:"Без названия", data:dataChilds[el.name]});
+                                            }
+                                        }
+                                    }
+                            // }
  
                          });
+                     
  
                          $$("tree").clearAll();
-                         menuTree.push({id:"treeTempl", value:"Классификатор-пример", data:dataChilds.treeConf});
+                        // menuTree.push({id:"treeTempl", value:"Классификатор-пример", data:dataChilds.treeConf});
                          $$("tree").parse(menuTree);
                          $$("button-context-menu").config.popup.data = dataAuth;
                          $$("button-context-menu").enable();
@@ -392,8 +398,8 @@ function getDataFields (routes, menuItem){
                      }
                          
                  }).catch(err => {
-                     console.log(err);
-                     ajaxErrorTemplate("007-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                    console.log(err);
+                    ajaxErrorTemplate("007-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
  
                   });
  
@@ -413,7 +419,7 @@ function getDataFields (routes, menuItem){
   
              }).catch(err => {
                 console.log(err);
-                ajaxErrorTemplate("007-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                ajaxErrorTemplate("007-000",err.status,err.statusText,err.responseURL);
  
              });
          },
@@ -451,6 +457,7 @@ function router (){
             "cp": "cp",
             "logout": "logout",
             "tree/:id": "tree",
+            "experimental/:id":"experimental"
         },
         
         content:function(){
@@ -710,6 +717,41 @@ function router (){
                 catchErrorTemplate("007-005", error);
             }
         
+        },
+
+        experimental: function (){
+            console.log("exp");
+
+            try {
+                if($$("webix__null-content")){
+                    $$("container").removeView($$("webix__null-content"));
+                }
+            
+                hideAllElements ();
+    
+                $$("webix__none-content").hide();
+
+
+                if ($$("tree").data.order.length == 0){
+                    getDataFields (routes);
+                }
+    
+                if($$("treeTempl")){
+                    $$("treeTempl").show();
+                    getInfoEditTree();
+                }else {
+                    createElements("treeTempl");
+                    getInfoEditTree();
+                    $$("treeTempl").show();
+                    console.log($$("treeTempl"))
+                    console.log($$("treeTempl").isVisible())
+                }
+    
+                $$("tree").closeAll();
+            } catch (error){
+                console.log(error);
+                catchErrorTemplate("007-005", error);
+            }
         },
     
         logout: function (){

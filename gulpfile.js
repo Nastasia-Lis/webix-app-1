@@ -24,6 +24,8 @@ import {images} from "./gulp/tasks/images.js";
 import {codebase} from "./gulp/tasks/codebase.js";
 import {init} from "./gulp/tasks/init.js";
 import {fonts} from "./gulp/tasks/fonts.js";
+import {cssWebix} from "./gulp/tasks/webix_css.js";
+import {jsWebix} from "./gulp/tasks/webix_js.js";
 
 // наблюдает за изменениями
 function watcher () {
@@ -37,11 +39,11 @@ function watcher () {
     gulp.watch(path.watch.fonts, fonts);
 }
 
-const mainTasks = gulp.parallel(copy, html, scss, js, images, codebase, init, fonts);
+const mainTasks = gulp.parallel(copy, html, scss, js, images);
 
-const dev = gulp.series(reset, mainTasks, gulp.parallel(watcher, server));
+const dev = gulp.series(reset,codebase, mainTasks, gulp.parallel(watcher, server));
 
-const build = gulp.series(reset, mainTasks);
+const build = gulp.series(reset, fonts, cssWebix, jsWebix, mainTasks);
 
 export {dev};
 export {build};

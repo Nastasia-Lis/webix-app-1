@@ -266,7 +266,14 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                     "type": "treeConf"
                     
                 };
+
+                if (single){
+                    let singleSearch = idsParam.search("-single");
+                    idsParam = idsParam.slice(0,singleSearch); 
+                }
+
                 data = dataContent[idsParam];
+
                 //data = data.json().content[idsParam];
 
                 let dataFields = data.fields;
@@ -275,10 +282,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
 
     // ---- Таблица - данные cols     
                 try {
-                    if (single){
-                        let singleSearch = idsParam.search("-single");
-                        idsParam = idsParam.slice(0,singleSearch); 
-                    }
+                   
                     obj.forEach(function(data) {
                     
                         if (dataFields[data].type.includes("reference")){
@@ -374,8 +378,9 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                                 {   view:"text",
                                     placeholder:dataInputsArray[el].label, 
                                     id: "customInputs"+i,
-                                    maxWidth:300,
-                                    minWidth:150,
+                                    
+                                   // maxWidth:300,
+                                   // minWidth:150,
                                     height:48,
                                     labelPosition:"top",
                                     on: {
@@ -433,11 +438,12 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
 
                                 customInputs.push(
                                     { view:"combo",
-                                    width:250,
+                                   // width:250,
                                     height:48,
                                     id: "customCombo"+i,
                                     placeholder:dataInputsArray[el].label, 
                                     labelPosition:"top", 
+                                    
                                     options:{
                                         data:optionData
                                     },
@@ -465,10 +471,11 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                                                 id:"customBtnDel"+i,
                                                 css:"webix_danger", 
                                                 type:"icon", 
+                                               
                                                 icon:"wxi-trash", 
                                                 inputHeight:48,
                                                 height:48,
-                                                width:100,
+                                               // width:100,
                                                 value:dataInputsArray[el].label,
                                                 click:function (id) {
                                                     submitBtn(idElements,findAction.url,"delete");
@@ -489,10 +496,11 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                                             {   view:"button", 
                                                 css:"webix_primary", 
                                                 id:"customBtn"+i,
-                                                inputHeight:48,
-                                                height:48, 
-                                                minWidth:100,
-                                                maxWidth:550,
+                                                inputHeight:46,
+                                                
+                                                height:46, 
+                                               // minWidth:100,
+                                               // maxWidth:550,
                                                 value:dataInputsArray[el].label,
                                                 click:function (id) {
 
@@ -529,7 +537,8 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                                 customInputs.push(
                                         {   view: "uploader", 
                                             value: "Upload file", 
-                                            id:"customUploader"+i, 
+                                            id:"customUploader"+i,
+                                             
                                             height:48,
                                             autosend:false,
                                             upload: data.actions.submit.url,
@@ -553,10 +562,11 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                                             format: "%d.%m.%Y %H:%i:%s",
                                             placeholder:dataInputsArray[el].label,  
                                             id:"customDatepicker"+i, 
+                                            
                                             timepicker: true,
                                             labelPosition:"top",
-                                            width:300,
-                                            minWidth:100,
+                                            //width:300,
+                                           // minWidth:100,
                                             height:48,
                                             on: {
                                                 onAfterRender: function () {
@@ -570,7 +580,8 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                                 customInputs.push(
                                         {   view:"checkbox", 
                                             id:"customСheckbox"+i, 
-                                            minWidth:220,
+                                            
+                                           // minWidth:220,
                                             css:"webix_checkbox-style",
                                             labelRight:dataInputsArray[el].label, 
                                             on: {
@@ -602,6 +613,36 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                         });
                         
                         if (window.innerWidth > 830){
+                            customInputs.forEach(function(el,i){
+                                if (el.view == "text"){
+                                    el.maxWidth = 300;
+                                    el.minWidth = 150;
+                                }
+
+                                if (el.view == "combo"){
+                                    el.width = 250;
+                                }
+
+                                if (el.view == "button" && el.icon == "wxi-trash"){
+                                    el.width = 100;
+                                }
+
+                                
+                                if (el.view == "button" && el.css == "webix_primary"){
+                                    el.maxWidth = 550;
+                                    el.minWidth = 100;
+                                }
+
+                                if (el.view == "datepicker"){
+                                    el.width = 300;
+                                    el.minWidth = 100;
+                                }
+
+                                if (el.view == "checkbox"){
+                                    el.minWidth = 220;
+                                }
+
+                            });
                             inpObj = {id:"customInputs",css:"webix_custom-inp", cols:customInputs};
                             let filterBar = $$("table-view-filterIdView").getParentView();
                             $$(filterBar.config.id).addView( 
@@ -611,24 +652,28 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                             ,2);
 
                         } else {
+                            //bottomPadding:10,
+                            customInputs.forEach(function(el,i){
+                                el.bottomPadding = 10;
+                            });
+
                             customInputs.push({});
+                     
                             inpObj = {id:"customInputs",css:"webix_custom-inp", rows:customInputs};
                             $$(filterBar.config.id).addView({
                                 view:"button", 
                                 id:"contextActionsBtn",
                                 maxWidth:100, 
+                                
                                 value:"Действия", 
                                 css:"webix_primary", 
                                 popup:webix.ui({
                                         view:"popup",
                                         css:"webix_popup-actions-container webix_popup-config",
                                         modal:true,
-                               
                                         id:"contextActionsPopup",
                                         escHide:true,
                                         position:"center",
-                                      //height:400,
-                                     //   width:400,
                                         body:{
 
                                             rows:[
@@ -637,7 +682,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                                                 //   {},
                                                     {
                                                         view:"button",
-                                                        id:"buttonClosePopup",
+                                                        id:"buttonClosePopupActions",
                                                         css:"webix_close-btn",
                                                         type:"icon",
                                                         hotkey: "esc",
@@ -657,6 +702,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                                                     scroll:"y", 
                                                     body:{ 
                                                     id:"contextActionsPopupContainer",
+                                                    css:"webix_context-actions-popup",
                                                     rows:[ 
                                                         inpObj
                                                     ]
@@ -667,13 +713,19 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                                   
                                            
                                         }
-                                    }),
+                                }),
                                 click:function(){
-                                    // if($$("contextActionsPopup").config.height !== $$("customInputs").$height +60){
-                                    //     $$("contextActionsPopup").config.height = $$("customInputs").$height +60;
-                                    //     $$("contextActionsPopup").resize();
-                                    // }
-                                   
+                                    if($$("contextActionsPopup").config.height !== $$("customInputs").$height +50){
+                                        $$("contextActionsPopup").config.height = $$("customInputs").$height +50;
+                                        $$("contextActionsPopup").resize();
+                                    }
+                                    let size = window.innerWidth - 100;
+
+                                    if( $$("contextActionsPopup").$width > 200){
+                                        $$("contextActionsPopup").config.width = size;
+                                        $$("contextActionsPopup").resize();
+                                    }
+
                                 }
                                     
                              
@@ -791,13 +843,19 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
             
             }).catch(error => {
                 console.log(error);
-                ajaxErrorTemplate("009-000",error.status,error.statusText,error.responseURL);
+               // console.log(error.status)
+                if (error.status){
+                    ajaxErrorTemplate("009-000",error.status,error.statusText,error.responseURL);
+                } else {
+                    catchErrorTemplate("009-000", error);
+                }
                 if($$("btnFilterSubmit")&&$$("btnFilterSubmit").isEnabled()){
                     $$("btnFilterSubmit").disable();
                 }
             });
         } 
     } catch (error){
+
         console.log(error);
         catchErrorTemplate("009-000", error);
     } 
@@ -814,20 +872,26 @@ function getInfoDashboard (idsParam,single=false){
                 let titleTemplate = {};
 
                 try {
-                    
-                    if($$("dashboard-tool")){
-                        $$("dashboardTool").removeView($$("dashboard-tool"))
-                    }
-                    if($$("dash-template")){
-                        let parent = $$("dash-template").getParentView()
-                        parent.removeView($$("dash-template"))
-                    }
-
                     if($$("dashBodyScroll")){
                         let parent = $$("dashBodyScroll").getParentView()
                         parent.removeView($$("dashBodyScroll"))
                     }
 
+                    if (!action){ //не с помощью кнопки фильтра
+ 
+                        if($$("dashboardInfoContainerInner")){
+                            $$("dashboardInfoContainerInner").getParentView().removeView($$("dashboardInfoContainerInner"))
+                        }
+                        //$$("dashboardInfoContainer").getParentView().removeView($$("dashboardInfoContainer"))
+                        if($$("dash-template")){
+                            $$("dash-template").getParentView().removeView($$("dash-template"))
+                        }
+                        if($$("dashboard-tool")){
+                            $$("dashboard-tool").getParentView().removeView($$("dashboard-tool"))
+                        }
+                    }
+
+             
 
                     if (dataCharts == undefined){
                         $$("dashboardTool").addView({
@@ -914,55 +978,82 @@ function getInfoDashboard (idsParam,single=false){
                             }
                         });
 
-                        $$("dashboardTool").addView({
-                            id:"dashboard-tool",
-                            padding:20,
-                            minWidth:250,
-                            rows:[
-                                {rows:[
-                                    {  template:"Фильтр",height:30, 
-                                        css:"webix_dash-filter-headline",
-                                        borderless:true
+                        
+                        if (!action){
+                            $$("dashboardTool").addView({
+                                id:"dashboard-tool",
+                                padding:20,
+                                minWidth:250,
+                                rows:[
+                                    {rows:[
+                                        {  template:"Фильтр",height:30, 
+                                            css:"webix_dash-filter-headline",
+                                            borderless:true
+                                        },
+                                    ]},
+                                    
+                                    { rows:inputsArray}
+                                ], 
+                            });
+
+                        
+                            $$("dashboardInfoContainer").addView(
+                                {id:"dashboardInfoContainerInner",rows:[
+
+                                    { 
+                                        template:dashTitle,
+                                        id:"dash-template",
+                                        css:"webix_style-template-count webix_dash-title",
+                                        borderless:false,
+                                        height:75,
+                    
                                     },
-                                ]},
-                                
-                                { rows:inputsArray}
-                            ], 
-                        });
-
-                 
-                        $$("dashboardInfoContainer").addView(
-                            {rows:[
-
-                                { 
-                                    template:dashTitle,
-                                    id:"dash-template",
-                                    css:"webix_style-template-count webix_dash-title",
-                                    borderless:false,
-                                    height:75,
-                
-                                },
-                                {
-                                    view:"scrollview", 
-                                    scroll:"auto",
-                                    id:"dashBodyScroll",
-                                    borderless:true, 
-                                    body:{
-                                        id:"dashboardBody",
-                                        css:"dashboardBody",
-                                        //view:"flexlayout",
-                                        cols:[
-                                            {
-                                                id:"dashboard-charts",
-                                                view:"flexlayout",
-                                                css:"webix_dash-charts-flex",
-                                                rows:dashLayout,
-                                            }
-                                        ]
+                                    {
+                                        view:"scrollview", 
+                                        scroll:"auto",
+                                        id:"dashBodyScroll",
+                                        borderless:true, 
+                                        body:{
+                                            id:"dashboardBody",
+                                            css:"dashboardBody",
+                                            //view:"flexlayout",
+                                            cols:[
+                                                {
+                                                    id:"dashboard-charts",
+                                                    view:"flexlayout",
+                                                    css:"webix_dash-charts-flex",
+                                                    rows:dashLayout,
+                                                }
+                                            ]
+                                        }
                                     }
-                                }
-                            ]}
-                        );
+                                ]}
+                            );
+                        } else {
+                            $$("dashboardInfoContainerInner").addView(
+
+                                    {
+                                        view:"scrollview", 
+                                        scroll:"auto",
+                                        id:"dashBodyScroll",
+                                        borderless:true, 
+                                        body:{
+                                            id:"dashboardBody",
+                                            css:"dashboardBody",
+                                            //view:"flexlayout",
+                                            cols:[
+                                                {
+                                                    id:"dashboard-charts",
+                                                    view:"flexlayout",
+                                                    css:"webix_dash-charts-flex",
+                                                    rows:dashLayout,
+                                                }
+                                            ]
+                                        }
+                                    }
+                       
+                            );
+                        }
                        
                     }
 
@@ -1050,7 +1141,8 @@ function getInfoDashboard (idsParam,single=false){
                                         {width:200,id:"datepicker-container"+"sdt",rows:[ 
                                             {template:"Начиная с:",height:30, borderless:true,css:"webix_template-datepicker"},
                                             {   view: "datepicker",
-                                                format:"%d.%m.%Y",
+                                                format:"%d.%m.%y",
+                                                editable:true,
                                                 value :new Date(),
                                                 id:"dashDatepicker_"+"sdt",  
                                                 placeholder:input.label,
@@ -1068,6 +1160,7 @@ function getInfoDashboard (idsParam,single=false){
                                                 id:"dashDatepicker_"+"sdt"+"-time",  
                                                 placeholder:"Время",
                                                 height:48,
+                                                editable:true,
                                                 value :"00:00:00",
                                                 type:"time",
                                                 seconds: true,
@@ -1093,8 +1186,9 @@ function getInfoDashboard (idsParam,single=false){
 
                                             {template:"Заканчивая:",height:30, borderless:true, css:"webix_template-datepicker"},
                                             {   view: "datepicker",
-                                                format:"%d.%m.%Y",
+                                                format:"%d.%m.%y",
                                                 value :new Date(),
+                                                editable:true,
                                                 id:"dashDatepicker_"+"edt",  
                                                 placeholder:input.label,
                                               //  width:125,
@@ -1111,8 +1205,7 @@ function getInfoDashboard (idsParam,single=false){
                                                 format:"%H:%i:%s",
                                                 id:"dashDatepicker_"+"edt"+"-time",  
                                                 placeholder:"Время",
-                                               // width:110,
-                                               ////minWidth:100,
+                                                editable:true,
                                                 height:48,
                                                 value :"00:00:00",
                                                 type:"time",
@@ -1159,13 +1252,15 @@ function getInfoDashboard (idsParam,single=false){
                                                     value:input.label,
                                                     click:function () {
                                                         let dateArray = [];
-                                                        let postFormatData = webix.Date.dateToStr("%d.%m.%Y");
+                                                        let postFormatData = webix.Date.dateToStr("%d.%m.%y");
                                                         let getUrl;
                                                         let compareDates=[];
                                                         let postformatTime = webix.Date.dateToStr("%H:%i:%s");
                                                     
                                                         let sdtDate = "";
                                                         let edtDate = "";
+
+                                                        let validateEmpty = true;
 
                                                         inputsArray.forEach(function(el,i){
                                                             
@@ -1175,19 +1270,32 @@ function getInfoDashboard (idsParam,single=false){
                                                                     if (elem.config.id.includes("sdt")){
 
                                                                         if (elem.config.id.includes("time")){
-                                                                        sdtDate=sdtDate.concat(" "+postformatTime($$(elem.config.id).getValue()))
+                                                                            if ($$(elem.config.id).getValue()!==null){
+                                                                                sdtDate=sdtDate.concat(" "+postformatTime($$(elem.config.id).getValue()))
+                                                                            } else {
+                                                                                validateEmpty=false;
+                                                                            }
                                                                         } else {
-                                                                            sdtDate = postFormatData($$(elem.config.id).getValue()); 
-                                                                        
+                                                                            if ($$(elem.config.id).getValue()!==null){
+                                                                                sdtDate = postFormatData($$(elem.config.id).getValue()); 
+                                                                            } else {
+                                                                                validateEmpty=false;
+                                                                            }
                                                                         }
                                                                     } else if (elem.config.id.includes("edt")){
                                                                     
                                                                         if (elem.config.id.includes("time")){
-                                                                        edtDate=edtDate.concat(" "+postformatTime($$(elem.config.id).getValue()))
-                                                                        
+                                                                            if ($$(elem.config.id).getValue()!==null){
+                                                                                edtDate=edtDate.concat(" "+postformatTime($$(elem.config.id).getValue()))
+                                                                            } else {
+                                                                                validateEmpty=false;
+                                                                            } 
                                                                         } else {
-                                                                            edtDate = postFormatData($$(elem.config.id).getValue());
-                                                                            
+                                                                            if ($$(elem.config.id).getValue()!==null){
+                                                                                edtDate = postFormatData($$(elem.config.id).getValue());
+                                                                            } else {
+                                                                                validateEmpty=false;
+                                                                            } 
                                                                         }
                                                                     
                                                                         
@@ -1203,7 +1311,7 @@ function getInfoDashboard (idsParam,single=false){
                                                         compareDates.push(sdtDate); 
                                                         compareDates.push(edtDate);
                                                 
-                                                        if (dateArray.length > 0 && compareDates[0] && compareDates[1]){
+                                                        if (validateEmpty){
 
                                                             let compareFormatData = webix.Date.dateToStr("%Y/%m/%d %H:%i:%s");
 
@@ -1220,7 +1328,7 @@ function getInfoDashboard (idsParam,single=false){
 
                                                                 
                                                                 $$("dashBtn"+i).disable();
-                                                                setInterval(function () {$$("dashBtn"+i).enable();}, 10000);
+                                                                setInterval(function () {$$("dashBtn"+i).enable();}, 1000);
                                                          
                                                             } else {
                                                                 setLogValue("error", "Начало периода больше, чем конец"); 
@@ -1274,15 +1382,21 @@ function getInfoDashboard (idsParam,single=false){
                                                 {width:200,id:"datepicker-container"+"sdt",rows:[ 
                                                     {template:"Начиная с:",height:30, borderless:true,css:"webix_template-datepicker"},
                                                     {   view: "datepicker",
-                                                        format:"%d.%m.%Y",
+                                                        format:"%d.%m.%y",
+                                                        editable:true,
                                                         value :new Date(),
-                                                        id:"dashDatepicker_"+"sdt",  
+                                                        id:"dashDatepicker_"+"sdt",
                                                         placeholder:input.label,
                                                         height:48,
                                                         on: {
                                                             onAfterRender: function () {
                                                                 this.getInputNode().setAttribute("title",input.comment);
                                                             },
+                                                          
+                                                            'onKeyPress':function(code, e){
+                                                                console.log(code, e)
+                                                            }
+                                                        
                      
                                                         }
                                                     },
@@ -1292,9 +1406,9 @@ function getInfoDashboard (idsParam,single=false){
                                                         id:"dashDatepicker_"+"sdt"+"-time",  
                                                         placeholder:"Время",
                                                         height:48,
+                                                        editable:true,
                                                         value :"00:00:00",
                                                         type:"time",
-                                                        hotkey: "enter",
                                                         seconds: true,
                                                         suggest:{
                                                             type:"timeboard",
@@ -1319,7 +1433,8 @@ function getInfoDashboard (idsParam,single=false){
 
                                                     {template:"Заканчивая:",height:30, borderless:true, css:"webix_template-datepicker"},
                                                     {   view: "datepicker",
-                                                        format:"%d.%m.%Y",
+                                                        format:"%d.%m.%y",
+                                                        editable:true,
                                                         value :new Date(),
                                                         id:"dashDatepicker_"+"edt",  
                                                         placeholder:input.label,
@@ -1337,6 +1452,7 @@ function getInfoDashboard (idsParam,single=false){
                                                         id:"dashDatepicker_"+"edt"+"-time",  
                                                         placeholder:"Время",
                                                         height:48,
+                                                        editable:true,
                                                         value :"00:00:00",
                                                         type:"time",
                                                         seconds: true,
@@ -1373,7 +1489,6 @@ function getInfoDashboard (idsParam,single=false){
                                                         {   view:"button", 
                                                             css:"webix_primary", 
                                                             id:"dashBtn"+i,
-                                                            hotkey: "enter",
                                                             inputHeight:48,
                                                             height:48, 
                                                             minWidth:100,
@@ -1381,7 +1496,7 @@ function getInfoDashboard (idsParam,single=false){
                                                             value:input.label,
                                                             click:function () {
                                                                 let dateArray = [];
-                                                                let postFormatData = webix.Date.dateToStr("%d.%m.%Y");
+                                                                let postFormatData = webix.Date.dateToStr("%d.%m.%y");
                                                                 let getUrl;
                                                                 let compareDates=[];
                                                                 let postformatTime = webix.Date.dateToStr("%H:%i:%s");
@@ -1389,27 +1504,43 @@ function getInfoDashboard (idsParam,single=false){
                                                                 let sdtDate = "";
                                                                 let edtDate = "";
 
+                                                                let validateEmpty = true;
+
                                                                 inputsArray.forEach(function(el,i){
-                                                                    
+                                                                
                                                                     if (el.id.includes("container")){
                                                                         
                                                                         $$(el.id).getChildViews().forEach(function(elem,i){
+                                                                           
                                                                             if (elem.config.id.includes("sdt")){
 
                                                                                 if (elem.config.id.includes("time")){
-                                                                                sdtDate=sdtDate.concat(" "+postformatTime($$(elem.config.id).getValue()))
+                                                                                    if ($$(elem.config.id).getValue()!==null){
+                                                                                        sdtDate=sdtDate.concat(" "+postformatTime($$(elem.config.id).getValue()))
+                                                                                    } else {
+                                                                                        validateEmpty=false;
+                                                                                    }
                                                                                 } else {
-                                                                                    sdtDate = postFormatData($$(elem.config.id).getValue()); 
-                                                                                
+                                                                                    if ($$(elem.config.id).getValue()!==null){
+                                                                                        sdtDate = postFormatData($$(elem.config.id).getValue()); 
+                                                                                    } else {
+                                                                                        validateEmpty=false;
+                                                                                    }
                                                                                 }
                                                                             } else if (elem.config.id.includes("edt")){
                                                                             
                                                                                 if (elem.config.id.includes("time")){
-                                                                                edtDate=edtDate.concat(" "+postformatTime($$(elem.config.id).getValue()))
-                                                                                
+                                                                                    if ($$(elem.config.id).getValue()!==null){
+                                                                                        edtDate=edtDate.concat(" "+postformatTime($$(elem.config.id).getValue()))
+                                                                                    } else {
+                                                                                        validateEmpty=false;
+                                                                                    }
                                                                                 } else {
-                                                                                    edtDate = postFormatData($$(elem.config.id).getValue());
-                                                                                    
+                                                                                    if ($$(elem.config.id).getValue()!==null){
+                                                                                        edtDate = postFormatData($$(elem.config.id).getValue());
+                                                                                    }else {
+                                                                                        validateEmpty=false;
+                                                                                    }
                                                                                 }
                                                                             
                                                                                 
@@ -1421,11 +1552,10 @@ function getInfoDashboard (idsParam,single=false){
 
                                                                 dateArray.push("sdt"+"="+sdtDate);
                                                                 dateArray.push("edt"+"="+edtDate);
-
+                                                             
                                                                 compareDates.push(sdtDate); 
                                                                 compareDates.push(edtDate);
-                                                        
-                                                                if (dateArray.length > 0 && compareDates[0] && compareDates[1]){
+                                                                if (validateEmpty){
         
                                                                     let compareFormatData = webix.Date.dateToStr("%Y/%m/%d %H:%i:%s");
 
@@ -1439,7 +1569,7 @@ function getInfoDashboard (idsParam,single=false){
                                                                         getAjax(getUrl, inputsArray, true);
 
                                                                         $$("dashBtn"+i).disable();
-                                                                        setInterval(function () {$$("dashBtn"+i).enable();}, 10000);
+                                                                        setInterval(function () {$$("dashBtn"+i).enable();}, 1000);
                                                                     
                                                                     } else {
                                                                         setLogValue("error", "Начало периода больше, чем конец");

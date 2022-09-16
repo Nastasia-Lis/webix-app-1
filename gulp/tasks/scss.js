@@ -39,9 +39,9 @@ export const scss = () => {
             
         )
         .pipe(app.gulp.dest(app.path.build.css))
-        .pipe(rename({
-            extname: ".min.css"
-        }))
+        // .pipe(rename({
+        //     extname: ".min.css"
+        // }))
         .pipe(app.gulp.dest(app.path.build.css))
         .pipe(app.plugins.browsersync.stream());
 };

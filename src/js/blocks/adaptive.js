@@ -2,7 +2,13 @@
 function resizeAdaptive (){
 
     window.addEventListener('resize', function(event) {
+   
         
+      // sidebar
+        if (window.innerWidth< 850 && $$("tree") && $$("tree").isVisible()){
+            $$("tree").hide();
+        }
+    
         if ($$("tree").isVisible()){
         } else {
             if(window.innerWidth <= 800){
@@ -12,15 +18,37 @@ function resizeAdaptive (){
             } 
         }
 
+        if (window.innerWidth > 850 && $$("tree")){
+            $$("tree").config.width = 250;
+            $$("tree").resize();
+        }
+
+
+
+
+
+        // form actions popup
         if (window.innerWidth < 830 && !($$("contextActionsBtn"))){
-            console.log("min")
+
             if ($$("customInputsMain")){
-                const  filterBar = $$("table-view-filterIdView").getParentView();
+                const filterBar = $$("table-view-filterIdView").getParentView();
                 let customInputsCollection;
-
-
                 customInputsCollection = Object.values($$("customInputs")._collection); 
 
+                customInputsCollection.forEach(function(el,i){
+                    el.bottomPadding = 10;
+                    if (el.width){
+                        delete el.width;
+                    }
+
+                    if (el.minWidth){
+                        delete el.minWidth;
+                    }
+
+                    if (el.maxWidth){
+                        delete el.maxWidth;
+                    }
+                });
                 $$("customInputsMain").getParentView().removeView($$("customInputsMain"));
 
                 customInputsCollection = {id:"customInputsAdaptive",rows:[{id:"customInputs",rows:customInputsCollection}]} 
@@ -49,7 +77,7 @@ function resizeAdaptive (){
                                     //   {},
                                         {
                                             view:"button",
-                                            id:"buttonClosePopup",
+                                            id:"buttonClosePopupActions",
                                             css:"webix_close-btn",
                                             type:"icon",
                                             hotkey: "esc",
@@ -69,6 +97,7 @@ function resizeAdaptive (){
                                         scroll:"y", 
                                         body:{ 
                                         id:"contextActionsPopupContainer",
+                                        css:"webix_context-actions-popup",
                                         rows:[ 
                                             customInputsCollection
                                         ]
@@ -83,7 +112,6 @@ function resizeAdaptive (){
                          
                         }),
                         click:function(){
-                            //$$("contextActionsPopupContainer").addView(customInputsCollection,2);
                             if ( $$("contextActionsPopup").config.height !== $$("customInputsAdaptive").$height +60){
                                 $$("contextActionsPopup").config.height = $$("customInputsAdaptive").$height +60
                                 $$("contextActionsPopup").resize();
@@ -95,8 +123,8 @@ function resizeAdaptive (){
             }
 
         } else if (window.innerWidth > 830 && $$("contextActionsBtnAdaptive")||window.innerWidth > 830 && $$("contextActionsBtn")){
+ 
             if ($$("customInputsAdaptive")){
-                console.log("miax")
                 const  filterBar = $$("table-view-filterIdView").getParentView();
                 const collection = {id:"customInputs",cols:$$("customInputsAdaptive")._collection[0].rows}
              
@@ -116,27 +144,107 @@ function resizeAdaptive (){
             } 
 
         }
-        // if (window.innerWidth < 550){
-        //           $$("contextActionsPopup").config.width = 300;
-      
-        //          $$("contextActionsPopup").resize();
-        // }
-       // console.log(window.innerWidth ,  $$("contextActionsPopup").$width, window.innerWidth/$$("contextActionsPopup").$width)
+ 
         if($$("contextActionsPopup") && window.innerWidth/$$("contextActionsPopup").$width < 1.3){
-            console.log($$("contextActionsPopup").$width)
+
             if( $$("contextActionsPopup").$width > 100){
                 let size = $$("contextActionsPopup").$width - 20;
-                console.log(size)
+
              $$("contextActionsPopup").config.width = size;
       
             $$("contextActionsPopup").resize();
-                console.log("mmdmmfmf")
+
             }
             //$$("sideMenuResizer").hide();
-        } else {
-           // $$("sideMenuResizer").show();
+        } 
+        
+        if($$("contextActionsPopup") && window.innerWidth/$$("contextActionsPopup").$width > 1.3){
+
+            let size = $$("contextActionsPopup").$width + 20;
+
+            $$("contextActionsPopup").config.width = size;
+      
+            $$("contextActionsPopup").resize();
+
+           
         }
 
+
+
+         // dashboards
+
+        if (window.innerWidth < 850){
+          
+                if ($$("dashboard-tool") && $$("dashboard-tool").isVisible()){
+                    $$("dashboard-tool").hide();
+                    console.log($$("dashboard-tool")._collection)
+                    
+                    if (!$$("my_button")){
+                        $$("dashboardInfoContainer").addView({
+                            view:"button", 
+                            id:"dashFilterBtn", 
+                            value:"Фильтры", 
+                            css:{"margin":"10px 0px!important"}, 
+                            height:46,
+                            margin:10,
+                            popup:webix.ui({
+                                view:"popup",
+                                css:"webix_popup-dash-container webix_popup-config",
+                                modal:true,
+                                id:"contextDashFilterPopup",
+                                escHide:true,
+                                position:"center",
+                                body:{
+
+                                    rows:[
+                                        {cols:[
+                                            {template:"Фильтр", css:"webix_template-filter", borderless:true, height:40 },
+                                        //   {},
+                                            {
+                                                view:"button",
+                                                id:"buttonClosePopupDashFilter",
+                                                css:"webix_close-btn",
+                                                type:"icon",
+                                                hotkey: "esc",
+                                                width:25,
+                                                icon: 'wxi-close',
+                                                click:function(){
+                                                    if ($$("contextDashFilterPopup")){
+                                                        $$("contextDashFilterPopup").hide();
+                                                    }
+                                                
+                                                }
+                                            },
+                                        ]},
+                                        {
+                                            view:"scrollview",
+                                            borderless:true,
+                                            scroll:"y", 
+                                            body:{ 
+                                          //  id:"contextActionsPopupContainer",
+                                            css:"webix_context-actions-popup",
+                                            rows:[ 
+                                              ///////
+                                            ]
+                                            }
+                                        }
+                                
+                                    ]
+                          
+                                   
+                                }
+                            }),
+                            click:function(){
+                                if ( !($$("dashboard-tool").isVisible())){
+                                    $$("dashboard-tool").show();
+                                } else {
+                                    $$("dashboard-tool").hide();
+                                }
+                            }
+                        },0);
+                    }
+             }
+        }
 
 
     }, true);
@@ -146,6 +254,12 @@ function resizeAdaptive (){
 
 
 function adaptivePoints (){
+
+    if (window.innerWidth < 850 && $$("tree") && $$("tree").isVisible()){
+        $$("tree").hide();
+    }
+
+
     // if(window.innerWidth < 550 && $$("sideMenuResizer")){
     //     $$("sideMenuResizer").hide();
     // } else {

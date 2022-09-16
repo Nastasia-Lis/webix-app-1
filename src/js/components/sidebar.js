@@ -26,74 +26,126 @@ function treeSidebar () {
         data:[],
         on:{
             onSelectChange:function (ids) {
-                    itemTreeId = ids[0];
-                    let treeItemId = $$("tree").getSelectedItem().id;
-              
-                    let getItemParent = $$("tree").getParentId(treeItemId);
+                itemTreeId = ids[0];
+                let treeItemId = $$("tree").getSelectedItem().id;
         
-                    let treeArray = $$("tree").data.order;
-                    let parentsArray = [];
+                let getItemParent = $$("tree").getParentId(treeItemId);
+    
+                let treeArray = $$("tree").data.order;
+                let parentsArray = [];
 
-                    let singleItemContent="";
-                    try {
-                        if($$("inputsTable")){
-                            $$("table-editForm").removeView($$("inputsTable"));
-                            $$("EditEmptyTempalte").show();
-                        }
-
-                        treeArray.forEach(function(el,i){
-                            if ($$("tree").getParentId(el) == 0){
-                                parentsArray.push(el);
-                            }
-                        });
-
-                        if (treeItemId.includes("single")){
-                            singleItemContent = $$("tree").getSelectedItem().typeof;
-                        }
-
-                        if (ids[0]&&getItemParent!==0 || singleItemContent ){
-                            $$("webix__none-content").hide();
-                        }
-                    } catch (error){
-                        console.log(error);
-                        catchErrorTemplate("009-000", error);
-
+                let singleItemContent="";
+                try {
+                    if($$("inputsTable")){
+                        $$("table-editForm").removeView($$("inputsTable"));
+                        $$("EditEmptyTempalte").show();
                     }
+
+                    if($$("treeTempl") && !($$(ids)) ){
+                        $$("treeTempl").hide();
+                    }
+
+                    treeArray.forEach(function(el,i){
+                        if ($$("tree").getParentId(el) == 0){
+                            parentsArray.push(el);
+                        }
+                    });
+
+                    if (treeItemId.includes("single")){
+                        singleItemContent = $$("tree").getSelectedItem().typeof;
+                    }
+
+                    if (ids[0]&&getItemParent!==0 || singleItemContent ){
+                        $$("webix__none-content").hide();
+                    }
+                } catch (error){
+                    console.log(error);
+                    catchErrorTemplate("009-000", error);
+                }
                 
-                    function visibleTreeItem(singleType, idsUndefined){
-                        try{
-                            if($$("webix__null-content")){
-                                $$("container").removeView($$("webix__null-content"));
-                            }
+                function visibleTreeItem(singleType, idsUndefined){
+                    try{
+                        if($$("webix__null-content")){
+                            $$("container").removeView($$("webix__null-content"));
+                        }
 
-                            if($$("user_auth")){
-                                if ($$("user_auth").isVisible()){
-                                    $$("user_auth").hide();
-                                }
+                        if($$("user_auth")){
+                            if ($$("user_auth").isVisible()){
+                                $$("user_auth").hide();
                             }
+                        }
 
-                            if($$("userprefs")){
-                                if ($$("userprefs").isVisible()){
-                                    $$("userprefs").hide();
-                                }
+                        if($$("userprefs")){
+                            if ($$("userprefs").isVisible()){
+                                $$("userprefs").hide();
                             }
+                        }
+                        
+                        if(idsUndefined !== undefined){
                             
-                            if(idsUndefined !== undefined){
-                              
-                                return parentsArray.forEach(function(el,i){
-                                    if (el.includes("single")){
-                                        if(singleType){
-                                            $$(singleType).hide();
+                            return parentsArray.forEach(function(el,i){
+                                if (el.includes("single")){
+                                    if(singleType){
+                                        $$(singleType).hide();
+                                    }
+                                } else {
+
+                                    
+
+                                    if (idsUndefined!=="treeTempl"){
+                                        if($$("webix__none-content").isVisible()){
+                                            $$("webix__none-content").hide();
                                         }
+
+                                        if(!($$("webix__null-content"))){
+                                            $$("container").addView(
+                                            {
+                                                view:"align", 
+                                                align:"middle,center",
+                                                id:"webix__null-content",
+                                                body:{  
+                                                    borderless:true, 
+                                                    template:"Блок в процессе разработки", 
+                                                    height:50, 
+                                                    width:220,
+                                                    css:{"color":"#858585","font-size":"14px!important"}
+                                                }
+                                                
+                                            },
+                                            
+                                            2);
+                                        } 
                                     } else {
+                                        if(!($$("webix__none-content").isVisible())){
+                                            $$("webix__none-content").show();
+                                            $$("container").getChildViews().forEach(function(el,i){
+                                                if (el.config.id!=="webix__none-content" &&  el.config.hidden == false ){
+                                                    $$(el.config.id).hide();
+                                                }
+                                            });
+                                        }
+                                    }
 
-                                        
-
-                                        if (idsUndefined!=="treeTempl"){
-                                            if($$("webix__none-content").isVisible()){
-                                                $$("webix__none-content").hide();
-                                            }
-
+                                    if (el!==idsUndefined && $$(el)){
+                                        $$(el).hide();
+                                    } 
+                                    
+                                }     
+                            });  
+                            
+                            
+                        } else {
+                        
+                            return parentsArray.forEach(function(el,i){
+                                if (el.includes("single")){
+                                    if (singleType){
+                                        $$(singleType).show();
+                                    } 
+                                } else {
+                                    if (el == getItemParent){
+                                        if ($$(el)){
+                                            $$(el).show();
+                                        } else {
                                             if(!($$("webix__null-content"))){
                                                 $$("container").addView(
                                                 {
@@ -112,46 +164,26 @@ function treeSidebar () {
                                                 
                                                 2);
                                             } 
-                                        } else {
-                                            if(!($$("webix__none-content").isVisible())){
-                                                $$("webix__none-content").show();
-                                            }
                                         }
-
-                                        if (el!==idsUndefined && $$(el)){
+                                    } else if ($$(el) || el=="treeTempl"){
+                                       if ($$(el)){
                                             $$(el).hide();
-                                        } 
-                                        
-                                    }     
-                                });  
-                             
-                                
-                            } else {
-                            
-                                return parentsArray.forEach(function(el,i){
-                                    if (el.includes("single")){
-                                        if (singleType){
-                                            $$(singleType).show();
-                                        } 
-                                    } else {
-                                        if (el == getItemParent){
-                                            $$(el).show();
-                                        } else if (el=="tables" || el=="dashboards" || el=="forms" || el=="user_auth" || el=="treeTempl"){
-                                            $$(el).hide();
-                                        }
-                                
+                                       }
+                                       
                                     }
-                                        
+                            
+                                }
                                     
-                                });  
-                            }
-                        } catch (error){
-                            console.log(error);
-                            catchErrorTemplate("009-000", error);
-    
+                                
+                            });  
                         }
-                    
+                    } catch (error){
+                        console.log(error);
+                        catchErrorTemplate("009-000", error);
+
                     }
+                
+                }
                 try {
 
                     if (getItemParent=="tables" || singleItemContent == "dbtable"){
@@ -259,18 +291,11 @@ function treeSidebar () {
                 }
             },
 
-            // onBeforeRender:function() {
-            //     console.log("uur")
-            //     if(window.innerWidth <= 550){
-            //         $$("sideMenuResizer").hide();
-            //     } else {
-            //         $$("sideMenuResizer").show();
-            //     }
-
-            //     console.log("uu213r")
-               
-            // },
-
+            onAfterSelect:function(){
+                if (window.innerWidth < 850 ){
+                    this.hide();
+                }
+            }
         },
 
     };

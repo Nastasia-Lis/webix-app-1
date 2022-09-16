@@ -2,6 +2,7 @@ import {defaultStateForm,createEditFields,saveItem,saveNewItem} from "../blocks/
 import {catchErrorTemplate,ajaxErrorTemplate} from "../blocks/logBlock.js";
 import {modalBox,popupExec} from "../blocks/notifications.js";
 import {setLogValue} from '../blocks/logBlock.js';
+import {getComboOptions} from '../blocks/content.js';
 
 
 function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterElements, idTable,idFilter,visible=false) {
