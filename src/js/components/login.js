@@ -7,6 +7,24 @@ if ( window.location.pathname !== "/index.html" && window.location.pathname !=="
     setUserLocation ("",window.location.href);
 } 
 
+
+// function getUserSettings (){
+
+//     webix.ajax("/init/default/api/userprefs/",{
+//         success:function(text, data, XmlHttpRequest){
+//             console.log("io")
+//         },
+//         error:function(text, data, XmlHttpRequest){
+//             webix.message({type:"error",expire:3000, text:"Не удалось выполнить выход"});
+//             ajaxErrorTemplate("007-006",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+//         }
+//     }).catch(error => {
+//         console.log(error);
+//         ajaxErrorTemplate("007-006",error.status,error.statusText,error.responseURL);
+//     });
+
+// }
+
 function login () {
     router();
     
@@ -23,10 +41,11 @@ function login () {
         
             webix.ajax("/init/default/login"+"?"+loginData.join("&"),{
                 success:function(text, data, XmlHttpRequest){
+                  
                     webix.ajax("/init/default/api/whoami",{
                         success:function(text, data, XmlHttpRequest){
                             try {
-                              
+
                                 let userLocation = webix.storage.local.get("userLocation");
                                 
                                 let http = new XMLHttpRequest();
@@ -34,20 +53,26 @@ function login () {
                                 http.send();
                           
                                 if (userLocation&&userLocation.href&&http.status==200){
+                            
+                        
                                     window.location.replace(userLocation.href);
-                                    console.log(userLocation.href,"oeoeoeo")
                                     localStorage.removeItem("userLocation");
                                     if ( $$('formAuth')){
                                         $$('formAuth').clear();
                                     }
                                 } else {
-                                    Backbone.history.navigate("content", { trigger:true});
+                                    
                                     if ( $$('formAuth')){
                                         $$('formAuth').clear();
                                     }
-                                    console.log("content")
+                        
+                       
+                                    Backbone.history.navigate("content", { trigger:true});
                                     window.location.reload();
                                 }
+
+
+                            
 
                                 
                             } catch (error){

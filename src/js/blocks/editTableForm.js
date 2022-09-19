@@ -1,10 +1,10 @@
 import {getComboOptions} from './content.js';
 import {headerContextId} from '../components/header.js';
 import {tableNames} from "./router.js";
-import {catchErrorTemplate,ajaxErrorTemplate} from "./logBlock.js";
+import {catchErrorTemplate,ajaxErrorTemplate,setLogValue} from "./logBlock.js";
 
 import {modalBox, popupExec} from "./notifications.js";
-import {setLogValue} from './logBlock.js';
+
 let currId;
 
 let editTableBar;
@@ -14,7 +14,13 @@ function getCurrId (){
     if ( itemTreeId.length == 0){
         currId=headerContextId;
     } else {
+        if (itemTreeId.includes("-single")){
+            let singleIndex = itemTreeId.search("-single");
+            itemTreeId = itemTreeId.slice(0,singleIndex)
+        }
+        
         currId=itemTreeId;
+        
     }
 }
 
@@ -27,9 +33,9 @@ function saveItem(addBtnClick=false){
         if($$("table-editForm").validate() ){
             if( itemData.id ) {
                 webix.ajax().put("/init/default/api/"+currId+"/"+itemData.id, itemData, {
-                    success:function(){
+                    success:function(text, data, XmlHttpRequest){
+                        data = data.json();
                         $$( "table" ).updateItem(itemData.id, itemData);
-                        setLogValue("success","Данные сохранены");
                         clearItem();
                         defaultStateForm ();
                         $$("table").clearSelection();
@@ -49,6 +55,12 @@ function saveItem(addBtnClick=false){
                             $$("table-delBtnId").disable(); 
                             $$("table-saveBtn").hide();
                             $$("table-saveNewBtn").show();
+                        }
+
+                        if (data.err_type == "i"){
+                            setLogValue("success","Данные сохранены");
+                        } if (data.err_type == "e"){
+                            setLogValue("error",data.error);
                         }
                     
                     },
@@ -72,7 +84,7 @@ function saveItem(addBtnClick=false){
 
 function addItem () {
     try {
-
+ 
         if($$("table-editForm").isDirty()){
 
             modalBox().then(function(result){
@@ -125,7 +137,8 @@ function saveNewItem (){
 
                 newValues.id=webix.uid();
                 webix.ajax().post("/init/default/api/"+currId, newValues,{
-                    success:function( ){
+                    success:function(text, data, XmlHttpRequest){
+                        data = data.json();
                         $$("table").add(newValues);
                         clearItem();
                         defaultStateForm ();
@@ -136,7 +149,13 @@ function saveNewItem (){
                         if ($$("EditEmptyTempalte")&&!($$("EditEmptyTempalte").isVisible())){
                             $$("EditEmptyTempalte").show();
                         }
-                        setLogValue("success","Данные успешно добавлены");
+
+                        if (data.err_type == "i"){
+                            setLogValue("success","Данные успешно добавлены");
+                        } else if (data.err_type == "e"){
+                            setLogValue("error",data.error);
+                        }
+                        
                     },
                     error:function(text, data, XmlHttpRequest){
                         ajaxErrorTemplate("003-001",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
@@ -162,14 +181,23 @@ function removeItem() {
         getCurrId ();
         popupExec("Запись будет удалена").then(
             function(){
+               
                 $$( "table" ).remove($$("table-editForm").getValues().id);
                 let formValues = $$("table-editForm").getValues();
+        
                 webix.ajax().del("/init/default/api/"+currId+"/"+formValues.id+".json", formValues,{
-                    success:function(){
+                    success:function(text, data, XmlHttpRequest){
+                        data = data.json();
                         clearItem();
                         defaultStateForm ();
                         $$("inputsTable").hide();
-                        setLogValue("success","Данные успешно удалены");
+                        
+                        if (data.err_type == "i"){
+                            setLogValue("success","Данные успешно удалены");
+                        } if (data.err_type == "e"){
+                            setLogValue("error",data.error);
+                        }
+                       
                     },
                     error:function(text, data, XmlHttpRequest){
                         ajaxErrorTemplate("003-002",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);

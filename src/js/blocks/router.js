@@ -14,6 +14,9 @@ import {filterForm} from "./filterTableForm.js";
 import {editTreeLayout,contextMenu} from "../components/editTree.js";
 import {catchErrorTemplate,ajaxErrorTemplate,setLogValue} from "./logBlock.js";
 import {getInfoEditTree} from "./content.js";
+import {setStorageData} from "./storageSetting.js";
+
+
 let userInfo=[];
 let tableNames = [];
 
@@ -35,7 +38,7 @@ function createElements(specificElement){
                                                     
                         {   id:"tableContainer",
                                 rows:[
-                                    tableToolbar( "table-search", "table-exportBtn","table-editTableBtnId", "table-findElements","table-idFilterElements", "table","table-filterId"),
+                                    tableToolbar ( "table-search", "table-exportBtn","table-editTableBtnId", "table-findElements","table-idFilterElements", "table","table-filterId"),
                                     { view:"resizer",class:"webix_resizers",},
                                     table ("table", onFuncTable,true)
                                 ]
@@ -111,7 +114,7 @@ function createElements(specificElement){
         }
     } catch (error){
         console.log(error);
-        catchErrorTemplate("007-004", error);
+        catchErrorTemplate("015-004", error);
     }
     
 
@@ -133,7 +136,7 @@ function removeElements(){
         }
     } catch (error){
         console.log(error);
-        catchErrorTemplate("007-004", error);
+        catchErrorTemplate("015-004", error);
     }
 }
 
@@ -286,7 +289,7 @@ function getDataFields (routes, menuItem){
                      });
                  } catch (error){
                      console.log(error);
-                     catchErrorTemplate("007-000", error);
+                     catchErrorTemplate("015-000", error);
  
                  }
      
@@ -393,13 +396,13 @@ function getDataFields (routes, menuItem){
                          $$("button-context-menu").enable();
                      } catch (error){
                          console.log(error);
-                         catchErrorTemplate("007-000", error);
+                         catchErrorTemplate("015-000", error);
  
                      }
                          
                  }).catch(err => {
                     console.log(err);
-                    ajaxErrorTemplate("007-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                    ajaxErrorTemplate("015-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
  
                   });
  
@@ -419,13 +422,13 @@ function getDataFields (routes, menuItem){
   
              }).catch(err => {
                 console.log(err);
-                ajaxErrorTemplate("007-000",err.status,err.statusText,err.responseURL);
+                ajaxErrorTemplate("015-000",err.status,err.statusText,err.responseURL);
  
              });
          },
          error:function(text, data, XmlHttpRequest){
              routes.navigate("", { trigger:true});
-             ajaxErrorTemplate("007-006",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+             ajaxErrorTemplate("015-006",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
  
          }
      });
@@ -442,7 +445,7 @@ function hideAllElements (){
          });
      } catch (error){
          console.log(error);
-         catchErrorTemplate("007-000", error);
+         catchErrorTemplate("015-000", error);
  
      }
 }
@@ -462,85 +465,114 @@ function router (){
         
         content:function(){
             try {
-                getDataFields (routes).then(function (response){
-                let userLocation = webix.storage.local.get("userLocation");
-                if (userLocation){
-                    if (userLocation.tableName !== undefined && !(userLocation.autoLogout)){
-    
-                        setTimeout(function(){
-                            webix.ui({
-                                view:"popup",
-                                id:"popupPrevHref",
-                                css:"webix_popup-prev-href",
-                                width:340,
-                                height:150,
-                                position:"center",
-                                body:{
-                                    rows:[
-                                    {rows: [ 
-                                        { cols:[
-                                        {template:"Прошлая сессия", width:200,css:"webix_template-recover", borderless:true, height:40 },
-                                        {},
-                                        {
-                                            view:"button",
-                                            // id:"buttonClosePopup",
-                                            css:"webix_close-btn",
-                                            type:"icon",
-                                            width:25,
-                                            icon: 'wxi-close',
-                                            click:function(){
-                                                $$("popupPrevHref").destructor();
-                                            }
-                                        },
-                                        ]},
-                                        {   template:"В прошлый раз Вы остановились во вкладке"+" «"+userLocation.tableName+"»",
-                                            css:"webix_template-recover-descr", 
-                                            borderless:true, 
-                                            height:50 },
-                                        {
-                                            view:"button",
-                                            //id:"btnRecover",
-                                            css:"webix_btn-recover",
-                                            height:38,
-                                            value:"Перейти ко вкладке",
-                                            click:function(){
-                                                window.location.replace(userLocation.href)
+                getDataFields(routes).then(function (response){
 
-                                                if(userLocation.href.includes("tree")){
-                                                
-                                                    let treeItemParent = $$("tree").getItem(userLocation.tableId).$parent;
-                                                    if (treeItemParent !==0){
-                                                        $$("tree").open(treeItemParent);
-                                                    }
-                                                    $$("tree").select(userLocation.tableId);
-                                                }
-                                                
-                                                $$("popupPrevHref").destructor();
-                                            }
-                                        },
-                                        {height:20}
-                                    ]}]
-                                    
-                                },
-                                on:{
-                                    onHide:function(){
-                                        this.destructor();
-                                    }
-                                }
+                // webix.ajax("/init/default/api/userprefs/",{
+                //     success:function(text, data, XmlHttpRequest){
+                //         data = data.json().content;
+                //         data.forEach(function(el,i){
+                //             setStorageData (el.name, el.prefs);
+                //         });
+                //     },
+                //     error:function(text, data, XmlHttpRequest){
+                //         webix.message({type:"error",expire:3000, text:"Не удалось выполнить выход"});
+                //         ajaxErrorTemplate("007-006",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                //     }
+                // }).catch(error => {
+                //     console.log(error);
+                //     ajaxErrorTemplate("007-006",error.status,error.statusText,error.responseURL);
+                // });
+
+
+
+                // let userprefsWorkspace = webix.storage.local.get("userprefsWorkspaceForm");
+                // if (userprefsWorkspace){
+                //     if (userprefsWorkspace.logBlockOpt !== undefined ){
+                //         console.log(userprefsWorkspace)
+                //     }
+
+                // }
+                
+
+
+                // let userLocation = webix.storage.local.get("userLocation");
+                // if (userLocation){
+                //     if (userLocation.tableName !== undefined && !(userLocation.autoLogout)){
     
-                            }).show();
-                        }, 1500);
+                //         setTimeout(function(){
+                //             webix.ui({
+                //                 view:"popup",
+                //                 id:"popupPrevHref",
+                //                 css:"webix_popup-prev-href",
+                //                 width:340,
+                //                 height:150,
+                //                 position:"center",
+                //                 body:{
+                //                     rows:[
+                //                     {rows: [ 
+                //                         { cols:[
+                //                         {template:"Прошлая сессия", width:200,css:"webix_template-recover", borderless:true, height:40 },
+                //                         {},
+                //                         {
+                //                             view:"button",
+                //                             // id:"buttonClosePopup",
+                //                             css:"webix_close-btn",
+                //                             type:"icon",
+                //                             width:25,
+                //                             icon: 'wxi-close',
+                //                             click:function(){
+                //                                 $$("popupPrevHref").destructor();
+                //                             }
+                //                         },
+                //                         ]},
+                //                         {   template:"В прошлый раз Вы остановились во вкладке"+" «"+userLocation.tableName+"»",
+                //                             css:"webix_template-recover-descr", 
+                //                             borderless:true, 
+                //                             height:50 },
+                //                         {
+                //                             view:"button",
+                //                             //id:"btnRecover",
+                //                             css:"webix_btn-recover",
+                //                             height:38,
+                //                             value:"Перейти ко вкладке",
+                //                             click:function(){
+                //                                 window.location.replace(userLocation.href)
+
+                //                                 if(userLocation.href.includes("tree")){
+                                                
+                //                                     let treeItemParent = $$("tree").getItem(userLocation.tableId).$parent;
+                //                                     if (treeItemParent !==0){
+                //                                         $$("tree").open(treeItemParent);
+                //                                     }
+                //                                     $$("tree").select(userLocation.tableId);
+                //                                 }
+                                                
+                //                                 $$("popupPrevHref").destructor();
+                //                             }
+                //                         },
+                //                         {height:20}
+                //                     ]}]
+                                    
+                //                 },
+                //                 on:{
+                //                     onHide:function(){
+                //                         this.destructor();
+                //                     }
+                //                 }
+    
+                //             }).show();
+                //         }, 1500);
                         
-                    } else if (userLocation.autoLogout){
-                        window.location.replace(userLocation.href);
-                    }
+                //     } else if (userLocation.autoLogout){
+                //         window.location.replace(userLocation.href);
+                //     }
             
-                }
+                // }
     
             });
             } catch (error){
                 console.log(error);
-                catchErrorTemplate("007-005", error);
+                catchErrorTemplate("015-005", error);
             }
     
         },
@@ -552,18 +584,18 @@ function router (){
                         Backbone.history.navigate("content", { trigger:true});
                     } catch (error){
                         console.log(error);
-                        catchErrorTemplate("007-005", error);
+                        catchErrorTemplate("015-005", error);
     
                     }
                 },
                 error:function(text, data, XmlHttpRequest){
                     $$("mainLayout").hide();
                     $$("userAuth").show();
-                    ajaxErrorTemplate("007-007",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                    ajaxErrorTemplate("015-015",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
                 }
             }).catch(error => {
                 console.log(error);
-                ajaxErrorTemplate("007-007",error.status,error.statusText,error.responseURL);
+                ajaxErrorTemplate("015-007",error.status,error.statusText,error.responseURL);
             });      
         }, 
         tree: function(id){
@@ -584,19 +616,20 @@ function router (){
                             $$("tree").select(id);
                            
                         } else {
+                         
                             setTimeout(function(){
                                 webix.ui({
                                     view:"popup",
-                                    id:"popupPrevHref",
+                                    id:"popupNotFound",
                                     css:"webix_popup-prev-href",
                                     width:340,
-                                    height:130,
+                                    height:125,
                                     position:"center",
                                     body:{
                                         rows:[
                                         {rows: [ 
                                             { cols:[
-                                            {template:"Что-то пошло не так...", width:250,css:"webix_template-recover", borderless:true, height:20 },
+                                            {template:"Что-то пошло не так...", width:250,css:"webix_template-not-found", borderless:true, height:20 },
                                             {},
                                             {
                                                 view:"button",
@@ -604,30 +637,30 @@ function router (){
                                                 css:"webix_close-btn",
                                                 type:"icon",
                                                 width:35,
+                                               
                                                 icon: 'wxi-close',
                                                 click:function(){
-                                                    $$("popupPrevHref").hide();
+                                                    $$("popupNotFound").hide();
                                                 }
                                             },
                                             ]},
                                             {   template:"Страница не найдена",
-                                                css:"webix_template-back-descr", 
+                                                css:"webix_template-not-found-descr", 
                                                 borderless:true, 
-                                                height:45 },
+                                                height:35 },
                                             {
                                                 view:"button",
-                                                id:"btnRecover",
-                                                css:"webix_btn-back",
-                                                height:38,
+                                                css:"webix_btn-not-found-back",
+                                                height:46,
                                                 value:"Вернуться на главную",
                                                 click:function(){
-                                                    if (window.location.host == "localhost:3000"){
-                                                        window.location.replace("/index.html/content")
-                                                    } else {
-                                                        window.location.replace("/init/default/spaw/content")
+                                                    if ($$("popupNotFound")){
+                                                        $$("popupNotFound").destructor();
                                                     }
                                                     
-                                                $$("popupPrevHref").destructor();
+                                                    Backbone.history.navigate("content", { trigger:true});
+                                                    window.location.reload();
+                                                   
                                                 }
                                             },
                                             {height:20}
@@ -647,7 +680,7 @@ function router (){
                 
             } catch (error){
                 console.log(error);
-                catchErrorTemplate("007-005", error);
+                catchErrorTemplate("015-005", error);
     
             }
         
@@ -683,7 +716,7 @@ function router (){
                 $$("tree").closeAll();
             } catch (error){
                 console.log(error);
-                catchErrorTemplate("007-005", error);
+                catchErrorTemplate("015-005", error);
             }
         
         },
@@ -701,10 +734,33 @@ function router (){
                     getDataFields (routes,"userprefs");
                 }
     
-                if($$("userprefs")){
+                if ($$("userprefs")){
                     $$("userprefs").show();
-                }else {
+                } else {
                     createElements("userprefs");
+
+                    webix.ajax().get("/init/default/api/userprefs/", {
+                        success:function(text, data, XmlHttpRequest){
+                            data = data.json().content;
+                            if (data.err_type == "e"){
+                                setLogValue("error",data.error);
+                            }
+
+                            data.forEach(function(el,i){
+                                if (el.name.includes("userprefs")){
+                                    $$(el.name).setValues(JSON.parse(el.prefs));
+                                }
+                            });
+                        },
+                        error:function(text, data, XmlHttpRequest){
+                            ajaxErrorTemplate("016-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                        }
+                    }).catch(error => {
+                        console.log(error);
+                        ajaxErrorTemplate("016-000",error.status,error.statusText,error.responseURL);
+                    });
+
+
                     $$("userprefs").show();
                     if (userInfo.length > 0){
                         $$("userprefsName").setValues(userInfo[0].toString());
@@ -714,7 +770,7 @@ function router (){
                 $$("tree").closeAll();
             } catch (error){
                 console.log(error);
-                catchErrorTemplate("007-005", error);
+                catchErrorTemplate("016-005", error);
             }
         
         },
@@ -750,7 +806,7 @@ function router (){
                 $$("tree").closeAll();
             } catch (error){
                 console.log(error);
-                catchErrorTemplate("007-005", error);
+                catchErrorTemplate("015-005", error);
             }
         },
     
@@ -762,23 +818,24 @@ function router (){
                         removeElements();
                         $$("webix__none-content").show();
                         $$("tree").clearAll();
+                        webix.storage.local.clear();
                     } catch (error){
                         console.log(error);
                         setLogValue("error","Не удалось выполнить выход");
                         webix.message({type:"error",expire:3000, text:"Не удалось выполнить выход"});
-                        catchErrorTemplate("007-000", error);
+                        catchErrorTemplate("015-000", error);
                     }
                     
                 },
                 error:function(text, data, XmlHttpRequest){
                     setLogValue("error","Не удалось выполнить выход");
                     webix.message({type:"error",expire:3000, text:"Не удалось выполнить выход"});
-                    ajaxErrorTemplate("007-006",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                    ajaxErrorTemplate("015-006",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
     
                 }
             }).catch(error => {
                 console.log(error);
-                ajaxErrorTemplate("007-006",error.status,error.statusText,error.responseURL);
+                ajaxErrorTemplate("015-006",error.status,error.statusText,error.responseURL);
             });
             
         }

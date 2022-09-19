@@ -1,10 +1,10 @@
-console.log("expa 1.0.23");
+console.log("expa 1.0.24");
 // import {lib} from "./modules/expalib.js";
 // lib ();
 
 import * as textInputClean from "./blocks/textInputSettings.js";
 import {login} from "./components/login.js";
-import {getStorageLogVal} from "./blocks/storageSetting.js";
+import {setUserPrefs} from "./blocks/storageSetting.js";
 import {header} from "./components/header.js";
 import {treeSidebar} from "./components/sidebar.js";
 import {logLayout} from "./blocks/logBlock.js";
@@ -121,7 +121,10 @@ try{
 
         adaptivePoints();
         textInputClean.textInputClean();
-        getStorageLogVal();
+
+      //  getStorageLogVal();
+        setUserPrefs();
+
         backButtonLogic ();
         resetTimer();
         webix.message.position = "bottom";

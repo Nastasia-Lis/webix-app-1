@@ -26,6 +26,7 @@ import {init} from "./gulp/tasks/init.js";
 import {fonts} from "./gulp/tasks/fonts.js";
 import {cssWebix} from "./gulp/tasks/webix_css.js";
 import {jsWebix} from "./gulp/tasks/webix_js.js";
+import {libs} from "./gulp/tasks/libs.js";
 
 // наблюдает за изменениями
 function watcher () {
@@ -37,6 +38,7 @@ function watcher () {
     gulp.watch(path.watch.images, images);
     gulp.watch(path.watch.init, init);
     gulp.watch(path.watch.fonts, fonts);
+    gulp.watch(path.watch.libs, libs);
 }
 
 const mainTasks = gulp.parallel(copy, html, scss, js, images);

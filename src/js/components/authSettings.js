@@ -10,8 +10,14 @@ function doAuthCp (){
             objPass.np = passData.newPass;
             objPass.op = passData.oldPass;
             webix.ajax().post("/init/default/api/cp", objPass, {
-                success:function( ){
-                    setLogValue("success","Пароль обновлён");
+                success:function(text, data, XmlHttpRequest){
+                    data = data.json()
+                    if (data.err_type == "i"){
+                        setLogValue("success",data.err);
+                    } else if (data.err_type == "e"){
+                        setLogValue("error",data.err);
+                    }
+                     $$("cp-form").setDirty(false);
                 },
                 error:function(text, data, XmlHttpRequest){
                     ajaxErrorTemplate("011-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);

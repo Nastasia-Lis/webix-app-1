@@ -831,13 +831,28 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                 }
                 
                 if (data.autorefresh){
-                    setInterval(function(){
-                        if(data.type == "dbtable"){
-                            getItemData ("table");
-                        } else if (data.type == "tform"){
-                            getItemData ("table-view");
+              
+                    let userprefsOther = webix.storage.local.get("userprefsOtherForm");
+                    if (userprefsOther.autorefCounterOpt !== undefined){
+                        if (userprefsOther.autorefCounterOpt >= 15000){
+
+                            setInterval(function(){
+                                if(data.type == "dbtable"){
+                                    getItemData ("table");
+                                } else if (data.type == "tform"){
+                                    getItemData ("table-view");
+                                }
+                            }, userprefsOther.autorefCounterOpt );
+                        } else {
+                            setInterval(function(){
+                                if(data.type == "dbtable"){
+                                    getItemData ("table");
+                                } else if (data.type == "tform"){
+                                    getItemData ("table-view");
+                                }
+                            }, 120000);
                         }
-                    }, 120000);
+                    }
                 }
               
             
@@ -1354,10 +1369,24 @@ function getInfoDashboard (idsParam,single=false){
                             });
                             
                             getAjax(singleItemContent.actions.submit.url, inputsArray);
+
                             if (singleItemContent.autorefresh){
-                                setInterval(function(){
-                                    getAjax(singleItemContent.actions.submit.url, inputsArray);
-                                }, 50000);
+
+                                let userprefsOther = webix.storage.local.get("userprefsOtherForm");
+                                if (userprefsOther.autorefCounterOpt !== undefined){
+                                    if (userprefsOther.autorefCounterOpt >= 15000){
+                                        setInterval(function(){
+                                            getAjax(singleItemContent.actions.submit.url, inputsArray);
+                                        }, userprefsOther.autorefCounterOpt );
+                           
+                                    } else {
+                                        setInterval(function(){
+                                            getAjax(singleItemContent.actions.submit.url, inputsArray);
+                                        },  50000 );
+                                    }
+                                }
+
+                             
                             }
 
                         } else {
@@ -1596,9 +1625,23 @@ function getInfoDashboard (idsParam,single=false){
                                     getAjax(el.actions.submit.url, inputsArray);
                                
                                     if (el.autorefresh){
-                                        setInterval(function(){
-                                            getAjax(singleItemContent.actions.submit.url, inputsArray);
-                                        }, 50000);
+
+                                        let userprefsOther = webix.storage.local.get("userprefsOtherForm");
+                                        if (userprefsOther.autorefCounterOpt !== undefined){
+                                            if (userprefsOther.autorefCounterOpt >= 15000){
+                                                setInterval(function(){
+                                                    getAjax(singleItemContent.actions.submit.url, inputsArray);
+                                                },  userprefsOther.autorefCounterOpt );
+                                   
+                                            } else {
+                                                setInterval(function(){
+                                                    getAjax(singleItemContent.actions.submit.url, inputsArray);
+                                                }, 50000);
+                                            }
+                                        }
+
+                                    
+                                    
                                     }
                                 }
                                 

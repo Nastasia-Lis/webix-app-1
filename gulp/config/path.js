@@ -27,6 +27,7 @@ export const path = {
         files: `${srcFolder}/files/**/*.*`,
         css:`${srcFolder}/webix_css/*.*`,
         jsW:`${srcFolder}/webix_js/*.*`,
+        libs:`${srcFolder}/libs/*.*`,
         
     },
     watch: {
@@ -37,7 +38,8 @@ export const path = {
         scss: `${srcFolder}/scss/**/*.scss`,
         html: `${srcFolder}/**/*.html`,
         images: `${srcFolder}/images/**/*.*`,
-        files: `${srcFolder}/files/**/*.*`
+        files: `${srcFolder}/files/**/*.*`,
+        libs:`${srcFolder}/libs/*.*`,
     }, 
     clean: buildFolder,
     buildFolder: buildFolder,

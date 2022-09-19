@@ -200,7 +200,7 @@ function editFiltersBtn (){
         width:400,
         body:{
             scroll:"y", rows:[
-                {cols:[ 
+                {css:"webix_filter-headline-wrapper", cols:[ 
                     {template:"Редактор фильтров", css:"webix_template-recover", borderless:true, height:40 },
                     {width:150},
                     {

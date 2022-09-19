@@ -1,13 +1,103 @@
 
-let checkDirtyForm = false;
+import {ajaxErrorTemplate,setLogValue} from "../blocks/logBlock.js";
+import {setStorageData} from "../blocks/storageSetting.js";
+
 let defaultValue = {
-    userprefsOther:"",
-    userprefsWorkspace:"",
+    userprefsOther:{},
+    userprefsWorkspace:{},
 };
 
-const userprefsHeadline =  [ 
+function saveSettings (){
+   
+    const form = $$("userprefsTabbar").getValue()+"Form";
+    if ($$(form).isDirty()){
     
-   // {height:20},
+        webix.ajax().get("/init/default/api/userprefs/", {
+            success:function(text, data, XmlHttpRequest){
+                data = data.json().content;
+                if (data.err_type == "e"){
+                    setLogValue("error",data.error);
+                }
+
+                let settingExists = false;
+                const values = $$(form).getValues();
+                let sentObj = {
+                    name:form,
+                    prefs:values
+                };
+
+         
+              
+
+                data.forEach(function(el,i){
+                    if (el.name == form){
+                        settingExists = true;
+
+                        webix.ajax().put("/init/default/api/userprefs/"+el.id, sentObj, {
+                            success:function(text, data, XmlHttpRequest){
+                                data = data.json();
+                                if (data.err_type == "i"){
+                                    setStorageData (form, JSON.stringify($$(form).getValues()));
+                                    setLogValue("success","Настройки сохранены");
+                                } if (data.err_type == "e"){
+                                    setLogValue("error",data.error);
+                                }
+                                defaultValue[$$("userprefsTabbar").getValue()] = values;
+                                $$(form).setDirty(false);
+                            },
+                            error:function(text, data, XmlHttpRequest){
+                                ajaxErrorTemplate("015-011",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                            }
+                        }).catch(error => {
+                            console.log(error);
+                            ajaxErrorTemplate("015-011",error.status,error.statusText,error.responseURL);
+                        });
+                      
+                    } 
+                });
+
+      
+                if (!settingExists){
+                    sentObj.owner = 1;
+                    webix.ajax().post("/init/default/api/userprefs/",sentObj, {
+                        success:function(text, data, XmlHttpRequest){
+                            data = data.json();
+    
+                            if (data.err_type == "i"){
+                                setLogValue("success","Настройки сохранены");
+                            } else if (data.err_type == "e"){
+                                setLogValue("error",data.error);
+                            }
+                            defaultValue[$$("userprefsTabbar").getValue()] = values;
+                            $$(form).setDirty(false);
+                            
+                        },
+                        error:function(text, data, XmlHttpRequest){
+                            ajaxErrorTemplate("015-001",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                        }
+                    }).catch(error => {
+                        console.log(error);
+                        ajaxErrorTemplate("015-001",error.status,error.statusText,error.responseURL);
+                    });
+                }
+            
+            },
+            error:function(text, data, XmlHttpRequest){
+                ajaxErrorTemplate("015-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+            }
+        }).catch(error => {
+            console.log(error);
+            ajaxErrorTemplate("015-000",error.status,error.statusText,error.responseURL);
+        });
+
+    } else {
+        setLogValue("debug","Сохранять нечего");
+    }
+}
+
+
+const userprefsHeadline =  [ 
+
     {   
     view:"template",
     template:"<div>Настройки</div>",
@@ -64,7 +154,7 @@ const userprefsOther = {
                         }
                     
                         if (newValue !== oldValue){
-                            checkDirtyForm = true;
+                            defaultValue.userprefsOther.autorefOpt = oldValue;
                         }
                      
                     }
@@ -75,24 +165,25 @@ const userprefsOther = {
                 id:"userprefsAutorefCounter",
                 labelPosition:"top",
                 name:"autorefCounterOpt", 
-                label:"Интервал автообновления" ,
-                min:30, 
-                max:7200,
+                label:"Интервал автообновления (в миллисекундах)" ,
+                min:15000, 
+                max:900000,
                 on:{
                     onChange:function(newValue, oldValue){
                         if (newValue !== oldValue){
-                            checkDirtyForm = true;
+                            defaultValue.userprefsOther.autorefCounterOpt = oldValue;
                         }
-
                         const minVal = $$("userprefsAutorefCounter").config.min;
                         const maxVal = $$("userprefsAutorefCounter").config.max;
                         
                         if (newValue == minVal){
-                            console.log("uueuue")
+             
                             webix.message({type:"debug",expire:1000, text:"Минимальное возможное значение"});
                         } else if (newValue == maxVal){
                             webix.message({type:"debug",expire:1000, text:"Максимальное возможное значение"});
                         }
+
+
                     }
                 }
             },
@@ -136,8 +227,17 @@ const userprefsWorkspace = {
                     
                             onChange:function(newValue, oldValue, config){
                                 if (newValue !== oldValue){
-                                    checkDirtyForm = true;
+                                    defaultValue.userprefsWorkspace.logBlockOpt = oldValue;
+                                
+                                    if (newValue == 1){
+                                        $$("webix_log-btn").setValue(2);
+                                    } else {
+                                        $$("webix_log-btn").setValue(1);
+                                    }
+                                
                                 }
+
+                                
                             }
                         }
                     },
@@ -150,8 +250,8 @@ const userprefsWorkspace = {
                         
                         options:[
                         { "id":1, "value":"Перейти на главную страницу" },
-                        { "id":2, "value":"Предложить вернуться на последнюю открытую страницу" },
-                        { "id":3, "value":"Сразу перейти на последнюю открытую страницу" },
+                       // { "id":3, "value":"Предложить вернуться на последнюю открытую страницу" },
+                        { "id":2, "value":"Перейти на последнюю открытую страницу" },
                         ],
                         on:{
                             onAfterRender: function () {
@@ -159,7 +259,7 @@ const userprefsWorkspace = {
                             },
                             onChange:function(newValue, oldValue, config){
                                 if (newValue !== oldValue){
-                                    checkDirtyForm = true;
+                                    defaultValue.userprefsWorkspace.LoginActionOpt = oldValue;
                                 }
                             }
                         }
@@ -174,18 +274,24 @@ const userprefsWorkspace = {
    
 };
 
+
 const userprefsConfirmBtns =  { 
     cols:[
-        {   view:"button", 
-            value:"Сохранить настройки" ,
-            height:48, 
-            css:"webix_primary"
-        },
-        {width:10},            
+        {width:20},          
         {   view:"button", 
             height:48,
             value:"Сбросить" 
         },
+        {width:10}, 
+        {   view:"button", 
+            value:"Сохранить настройки" ,
+            height:48, 
+            id:"userprefsSaveBtn",
+            css:"webix_primary",
+            click: saveSettings,
+        },
+        {width:20}, 
+     
     ]
 };
 
@@ -203,14 +309,8 @@ const userprefsTabbar =  {
             height:50,
             on:{
                 onBeforeTabClick:function(id){
-                    const tabbarOptions = $$("userprefsTabbar").config.options;
-                    let prevActiveOption;
-                    tabbarOptions.forEach(function(el,i){
-                        if ($$(el.id).isVisible()){
-                            prevActiveOption = el.id ;
-                        }
-                    });
-                    if (checkDirtyForm){
+                    const formId = $$("userprefsTabbar").getValue()+"Form";
+                    if ($$(formId).isDirty()){
                         webix.modalbox({
                             title:"Данные не сохранены",
                             css:"webix_modal-custom-save",
@@ -219,17 +319,11 @@ const userprefsTabbar =  {
                             text:"Выберите действие перед тем как продолжить"
                         }).then(function(result){
                             if ( result == 1){
+                                $$(formId).setValues(defaultValue[$$("userprefsTabbar").getValue()])
                                 $$("userprefsTabbar").setValue(id);
-                                checkDirtyForm = false;
-                                // tabbarOptions.forEach(function(el,i){
-                                //     console.log(el.id, $$(el.id).isVisible())
-                                // });
-                          //     $$(prevActiveOption+"Form").refresh();
-               
-                               $$(prevActiveOption+"Form").setValues(defaultValue);
                             } else if ( result == 2){
+                                saveSettings ();
                                 $$("userprefsTabbar").setValue(id);
-                                checkDirtyForm = false;
                             }
                         });
                         
@@ -262,6 +356,7 @@ const userprefsLayout = {
 
    
 };
+
 
 export {
     userprefsLayout

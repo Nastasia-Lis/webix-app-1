@@ -22,7 +22,8 @@
 }
 
 .webix_close-btn {
-  margin-left: -8px !important;
+  margin-top: 2px !important;
+  margin-left: -5px !important;
 }
 
 .webix_close-btn .webix_button.webix_img_btn,
@@ -993,6 +994,10 @@ button {
   cursor: text !important;
 }
 
+.webix_el_counter .webix_inp_counter_value {
+  width: 75px !important;
+}
+
 .webix_template-actions .webix_template {
   font-weight: 600;
   font-size: 16px;
@@ -1005,4 +1010,35 @@ button {
   margin-right: auto !important;
   left: 0 !important;
   right: 0 !important;
+}
+
+.webix_template-not-found .webix_template {
+  font-weight: 600;
+  font-size: 17px;
+  padding: 8px 0px 0px 8px !important;
+}
+
+.webix_template-not-found-descr > .webix_template {
+  padding: 0px 0px 0px 8px !important;
+}
+
+.webix_btn-not-found-back button {
+  padding: 0px !important;
+}
+
+.webix_btn-not-found-back .webix_el_box {
+  padding: 0px 9px !important;
+}
+
+.webix_close-btn {
+  width: 27px !important;
+}
+
+.webix_filter-headline-wrapper {
+  display: -webkit-box !important;
+  display: -ms-flexbox !important;
+  display: flex !important;
+  -webkit-box-pack: justify !important;
+      -ms-flex-pack: justify !important;
+          justify-content: space-between !important;
 }

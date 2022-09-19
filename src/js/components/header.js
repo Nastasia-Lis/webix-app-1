@@ -3,7 +3,7 @@ import {modalBox} from "../blocks/notifications.js";
 import {setLogValue} from '../blocks/logBlock.js';
 import {tableNames} from "../blocks/router.js";
 import {setStorageData,setUserLocation} from "../blocks/storageSetting.js";
-import {catchErrorTemplate} from "../blocks/logBlock.js";
+import {catchErrorTemplate,ajaxErrorTemplate} from "../blocks/logBlock.js";
 import {saveItem, saveNewItem} from "../blocks/editTableForm.js";
 
 let userLocation;
@@ -67,32 +67,32 @@ function header() {
         }
     }
 
-    function logVisibleClick () {
-        try {
-            if ( this.config.icon =="wxi-eye-slash"){
-                $$("logLayout").config.height = 5;
-                $$("webix_log-btn").setValue(1);
-                $$("logLayout").resize();
-                this.config.icon ="wxi-eye";
-                this.refresh();
-                setStorageData("LogVisible", JSON.stringify("hide"));
+    // function logVisibleClick () {
+    //     try {
+    //         if ( this.config.icon =="wxi-eye-slash"){
+    //             $$("logLayout").config.height = 5;
+    //             $$("webix_log-btn").setValue(1);
+    //             $$("logLayout").resize();
+    //             this.config.icon ="wxi-eye";
+    //             this.refresh();
+    //             setStorageData("LogVisible", JSON.stringify("hide"));
 
-                $$("webix_log-btn").config.badge = "";
-                $$("webix_log-btn").refresh();
+    //             $$("webix_log-btn").config.badge = "";
+    //             $$("webix_log-btn").refresh();
 
-            } else if (this.config.icon =="wxi-eye"){
-                $$("logLayout").config.height = 90;
-                $$("webix_log-btn").setValue(2);
-                $$("logLayout").resize();
-                this.config.icon ="wxi-eye-slash";
-                this.refresh();
-                setStorageData("LogVisible", JSON.stringify("show"));
-            }
-        } catch (error){
-            console.log(error);
-            catchErrorTemplate("005-000", error);
-        }
-    }
+    //         } else if (this.config.icon =="wxi-eye"){
+    //             $$("logLayout").config.height = 90;
+    //             $$("webix_log-btn").setValue(2);
+    //             $$("logLayout").resize();
+    //             this.config.icon ="wxi-eye-slash";
+    //             this.refresh();
+    //             setStorageData("LogVisible", JSON.stringify("show"));
+    //         }
+    //     } catch (error){
+    //         console.log(error);
+    //         catchErrorTemplate("005-000", error);
+    //     }
+    // }
 
 
     const header = {
@@ -140,17 +140,41 @@ function header() {
                 badge:0,
                 width: 60,
                 css:"webix_log-btn",
-                click:logVisibleClick,
+                click:function (){
+                    if (this.getValue() == 1){
+                        this.setValue(2);
+                    } else {
+                        this.setValue(1);
+                    }
+                },
                 on: {
                     onAfterRender: function () {
                         this.getInputNode().setAttribute("title","Показать/скрыть системные сообщения");
                     },
-                    onChange:function(){
+                    onChange:function(newValue, oldValue, config){
+
                         let lastItemList = $$("logBlock-list").getLastId();
-                        if (this.getValue() == 2){
+                        if (newValue == 2){
                             this.config.badge = "";
                             $$("logBlock-list").showItem(lastItemList);
+                        
+                            $$("logLayout").config.height = 90;
+                        
+                            $$("logLayout").resize();
+                            this.config.icon ="wxi-eye-slash";
+                            this.refresh();
+                           // setStorageData("LogVisible", JSON.stringify("show"));
+                        } else {
+                            $$("logLayout").config.height = 5;
+                            $$("logLayout").resize();
+                            this.config.icon ="wxi-eye";
+                            this.refresh();
+                            //setStorageData("LogVisible", JSON.stringify("hide"));
+            
+                            $$("webix_log-btn").config.badge = "";
+                            $$("webix_log-btn").refresh();
                         }
+            
                     }
                 },
                
@@ -171,38 +195,66 @@ function header() {
                     on:{
                         onItemClick:function(id, e, node){
                             try {
-                                let logoutPath;
-                                if (window.location.host.includes("localhost:3000")){
-                                    logoutPath = "/index.html/logout";
-                                } else {
-                                    logoutPath = "/init/default/spaw/logout";
-                                }
+                                // let logoutPath;
+                                // console.log(window.location.pathname)
+                                // if (window.location.host.includes("localhost:3000")){
+                                //     logoutPath = "/index.html/logout";
+                                // } else {
+                                //     logoutPath = "/init/default/spaw/logout";
+                                // }
                             
                                 if (id=="logout"){
-                                    if($$("table-editForm") && $$("table-editForm").isDirty() ||$$("cp-form") && $$("cp-form").isDirty()){
+                                    if($$("table-editForm") && $$("table-editForm").isDirty() || $$("cp-form") && $$("cp-form").isDirty()){
                                        
                                         modalBox().then(function(result){
                                             if (result == 1){
-                                                window.location.replace(logoutPath);
+                                                //window.location.replace(logoutPath);
+                                                Backbone.history.navigate("logout", { trigger:true});
                                             } else if (result == 2){
-                                                if ($$("table-editForm").validate()){
-                                                    if ($$("table-editForm").getValues().id){
-                                                        saveItem();
-                                                    } else {
-                                                        saveNewItem(); 
+
+                                                if ($$("cp-form") || $$("table-editForm")){
+                                                    if ($$("cp-form") && $$("cp-form").isDirty() && $$("cp-form").validate()){
+                                                        let objPass = {op:"",np:""};
+                                                        let passData = $$("cp-form").getValues();
+                                                        objPass.np = passData.newPass;
+                                                        objPass.op = passData.oldPass;
+                                                        webix.ajax().post("/init/default/api/cp", objPass, {
+                                                            success:function(text, data, XmlHttpRequest){
+                                                                data = data.json()
+                                                                if (data.err_type == "i"){
+                                                                    setLogValue("success",data.err);
+                                                                
+                                                                } else if (data.err_type == "e"){
+                                                                    setLogValue("error",data.err);
+                                                                }
+                                                            },
+                                                            error:function(text, data, XmlHttpRequest){
+                                                                ajaxErrorTemplate("011-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                                                            }
+                                                        });
+                                                        //window.location.replace(logoutPath);
+                                                        Backbone.history.navigate("logout", { trigger:true});
+                                                    
+                                                    } else if ($$("table-editForm") && $$("table-editForm").isDirty() && $$("table-editForm").validate()){
+                                                        if ($$("table-editForm").getValues().id){
+                                                            saveItem();
+                                                        } else {
+                                                            saveNewItem(); 
+                                                        }
+                                                     //   window.location.replace(logoutPath);
+                                                        Backbone.history.navigate("logout", { trigger:true});
+                                                    
+                                                    }else {
+                                                        setLogValue("error","Заполните пустые поля");
+                                                        return false;
                                                     }
-                                                    window.location.replace(logoutPath);
-                                                
-                                                } else {
-                                                    setLogValue("error","Заполните пустые поля");
-                                                    return false;
-                                                }
-                                                
+                                                } 
                                             }
                                         });
                                         return false;
                                     } else {
-                                        window.location.replace(logoutPath);
+                                        Backbone.history.navigate("logout", { trigger:true});
+                                       // window.location.replace(logoutPath);
                                     }
                                 }
                             } catch (error){

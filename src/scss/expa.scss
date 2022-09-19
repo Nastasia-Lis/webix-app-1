@@ -720,6 +720,10 @@ label, button{
 }
 
 
+.webix_el_counter .webix_inp_counter_value{
+    width: 75px!important;
+}
+
 
 
 
@@ -738,3 +742,31 @@ label, button{
     right: 0!important;
 }
 
+.webix_template-not-found .webix_template{
+    font-weight: 600;
+    font-size: 17px;
+    padding: 8px 0px 0px 8px!important;
+}
+
+.webix_template-not-found-descr > .webix_template{
+    //padding: 2px  12px 0px!important;
+    padding: 0px 0px 0px 8px!important;
+}
+
+.webix_btn-not-found-back  button {
+    padding: 0px!important;
+}
+
+.webix_btn-not-found-back .webix_el_box{
+    padding: 0px 9px!important;
+}
+
+.webix_close-btn{
+    width: 27px!important;
+}
+
+
+.webix_filter-headline-wrapper{
+    display: flex!important;
+    justify-content: space-between!important;
+}
