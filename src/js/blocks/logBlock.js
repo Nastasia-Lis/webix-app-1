@@ -43,7 +43,7 @@ function setLogValue (typeNotify,notifyText) {
             $$("logBlock-list").add({
                 date:currentDate,
                 value:notifyText,
-                src:"Expa v1.0.24"
+                src:"Expa v1.0.25"
             });
         }
         
@@ -97,20 +97,24 @@ const logBlock = {
             
         },
         onAfterAdd:function(id, index){
-
-            if ($$("webix_log-btn").config.icon =="wxi-eye"){
-                if ($$("webix_log-btn").config.badge==""){
-                    notifyCounter=0;
+            try{
+                if ($$("webix_log-btn").config.icon =="wxi-eye"){
+                    if ($$("webix_log-btn").config.badge==""){
+                        notifyCounter=0;
+                    }
+                    notifyCounter++;
+                    $$("webix_log-btn").config.badge = notifyCounter;
+                    $$("webix_log-btn").setValue(1);
+                    $$("webix_log-btn").refresh();
+                } else if ($$("webix_log-btn").config.icon =="wxi-eye-slash"){
+                    notifyCounter = 0;
+                    $$("webix_log-btn").config.badge = "";
+                    $$("webix_log-btn").setValue(2);
+                    $$("webix_log-btn").refresh();
                 }
-                notifyCounter++;
-                $$("webix_log-btn").config.badge = notifyCounter;
-                $$("webix_log-btn").setValue(1);
-                $$("webix_log-btn").refresh();
-            } else if ($$("webix_log-btn").config.icon =="wxi-eye-slash"){
-                notifyCounter = 0;
-                $$("webix_log-btn").config.badge = "";
-                $$("webix_log-btn").setValue(2);
-                $$("webix_log-btn").refresh();
+            } catch (error){
+                console.log(error);
+                catchErrorTemplate("006-000", error);
             }
           
         }

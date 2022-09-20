@@ -835,6 +835,12 @@ let onFuncTable = {
 
         function toEditForm () {
             try {
+ 
+                // $$("table-editForm").setValues(values);
+                // $$("table-editForm").clear();
+
+                // $$("table").select($$("table").getSelectedId())
+                
                 $$("table-editForm").setValues(values);
                 $$("table-saveNewBtn").hide();
                 $$("table-saveBtn").show();

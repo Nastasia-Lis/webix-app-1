@@ -1,5 +1,5 @@
 
-import {ajaxErrorTemplate,setLogValue} from "../blocks/logBlock.js";
+import {catchErrorTemplate,ajaxErrorTemplate,setLogValue} from "../blocks/logBlock.js";
 import {setStorageData} from "../blocks/storageSetting.js";
 
 let defaultValue = {
@@ -11,7 +11,7 @@ function saveSettings (){
    
     const form = $$("userprefsTabbar").getValue()+"Form";
     if ($$(form).isDirty()){
-    
+    try{
         webix.ajax().get("/init/default/api/userprefs/", {
             success:function(text, data, XmlHttpRequest){
                 data = data.json().content;
@@ -23,63 +23,99 @@ function saveSettings (){
                 const values = $$(form).getValues();
                 let sentObj = {
                     name:form,
-                    prefs:values
+                    prefs:values,
                 };
 
-         
-              
+                
+                try{
+                    data.forEach(function(el,i){
+                        if (el.name == form){
+                            settingExists = true;
 
-                data.forEach(function(el,i){
-                    if (el.name == form){
-                        settingExists = true;
+                            webix.ajax().put("/init/default/api/userprefs/"+el.id, sentObj, {
+                                success:function(text, data, XmlHttpRequest){
+                                    data = data.json();
+                                    if (data.err_type == "i"){
+                                        setStorageData (form, JSON.stringify($$(form).getValues()));
+                                        setLogValue("success","Настройки сохранены");
+                                    } if (data.err_type == "e"){
+                                        setLogValue("error",data.error);
+                                    }
+                                    defaultValue[$$("userprefsTabbar").getValue()] = values;
+                                    $$(form).setDirty(false);
+                                },
+                                error:function(text, data, XmlHttpRequest){
+                                    ajaxErrorTemplate("015-011",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                                }
+                            }).catch(error => {
+                                console.log(error);
+                                ajaxErrorTemplate("015-011",error.status,error.statusText,error.responseURL);
+                            });
+                        
+                        } 
+                    });
+                } catch (error){
+                    console.log(error);
+                    catchErrorTemplate("015-000", error);
+                }
 
-                        webix.ajax().put("/init/default/api/userprefs/"+el.id, sentObj, {
+
+                try{
+                    if (!settingExists){
+                        
+                        let ownerId = webix.storage.local.get("user").id;
+        
+                        if (ownerId){
+                            sentObj.owner = ownerId;
+                        } else {
+                            webix.ajax("/init/default/api/whoami",{
+                                success:function(text, data, XmlHttpRequest){
+                                    
+                                    sentObj.owner = data.json().content.id;
+
+                                    let userData = {};
+                                    userData.id = data.json().content.id;
+                                    userData.name = data.json().content.first_name;
+                                    userData.username = data.json().content.username;
+                                    
+                                    setStorageData("user", JSON.stringify(userData));
+                                },
+                                error:function(text, data, XmlHttpRequest){
+                                    ajaxErrorTemplate("005-011",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                                }
+                            }).catch(error => {
+                                console.log(error);
+                                ajaxErrorTemplate("005-000",error.status,error.statusText,error.responseURL);
+                            });
+                        }
+
+
+                        webix.ajax().post("/init/default/api/userprefs/",sentObj, {
                             success:function(text, data, XmlHttpRequest){
                                 data = data.json();
+        
                                 if (data.err_type == "i"){
-                                    setStorageData (form, JSON.stringify($$(form).getValues()));
                                     setLogValue("success","Настройки сохранены");
-                                } if (data.err_type == "e"){
+                                } else if (data.err_type == "e"){
                                     setLogValue("error",data.error);
                                 }
                                 defaultValue[$$("userprefsTabbar").getValue()] = values;
                                 $$(form).setDirty(false);
+                                
                             },
                             error:function(text, data, XmlHttpRequest){
-                                ajaxErrorTemplate("015-011",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                                ajaxErrorTemplate("015-001",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
                             }
                         }).catch(error => {
                             console.log(error);
-                            ajaxErrorTemplate("015-011",error.status,error.statusText,error.responseURL);
+                            ajaxErrorTemplate("015-001",error.status,error.statusText,error.responseURL);
                         });
-                      
-                    } 
-                });
-
-      
-                if (!settingExists){
-                    sentObj.owner = 1;
-                    webix.ajax().post("/init/default/api/userprefs/",sentObj, {
-                        success:function(text, data, XmlHttpRequest){
-                            data = data.json();
-    
-                            if (data.err_type == "i"){
-                                setLogValue("success","Настройки сохранены");
-                            } else if (data.err_type == "e"){
-                                setLogValue("error",data.error);
-                            }
-                            defaultValue[$$("userprefsTabbar").getValue()] = values;
-                            $$(form).setDirty(false);
-                            
-                        },
-                        error:function(text, data, XmlHttpRequest){
-                            ajaxErrorTemplate("015-001",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
-                        }
-                    }).catch(error => {
-                        console.log(error);
-                        ajaxErrorTemplate("015-001",error.status,error.statusText,error.responseURL);
-                    });
+                    }
+                } catch (error){
+                    console.log(error);
+                    catchErrorTemplate("015-000", error);
                 }
+
             
             },
             error:function(text, data, XmlHttpRequest){
@@ -89,6 +125,11 @@ function saveSettings (){
             console.log(error);
             ajaxErrorTemplate("015-000",error.status,error.statusText,error.responseURL);
         });
+    } catch (error){
+        console.log(error);
+        catchErrorTemplate("015-000", error);
+    }
+
 
     } else {
         setLogValue("debug","Сохранять нечего");
@@ -170,18 +211,24 @@ const userprefsOther = {
                 max:900000,
                 on:{
                     onChange:function(newValue, oldValue){
-                        if (newValue !== oldValue){
-                            defaultValue.userprefsOther.autorefCounterOpt = oldValue;
+                        try{
+                            if (newValue !== oldValue){
+                                defaultValue.userprefsOther.autorefCounterOpt = oldValue;
+                            }
+                            const minVal = $$("userprefsAutorefCounter").config.min;
+                            const maxVal = $$("userprefsAutorefCounter").config.max;
+                            
+                            if (newValue == minVal){
+                
+                                webix.message({type:"debug",expire:1000, text:"Минимальное возможное значение"});
+                            } else if (newValue == maxVal){
+                                webix.message({type:"debug",expire:1000, text:"Максимальное возможное значение"});
+                            }
+                        } catch (error){
+                            console.log(error);
+                            catchErrorTemplate("015-000", error);
                         }
-                        const minVal = $$("userprefsAutorefCounter").config.min;
-                        const maxVal = $$("userprefsAutorefCounter").config.max;
-                        
-                        if (newValue == minVal){
-             
-                            webix.message({type:"debug",expire:1000, text:"Минимальное возможное значение"});
-                        } else if (newValue == maxVal){
-                            webix.message({type:"debug",expire:1000, text:"Максимальное возможное значение"});
-                        }
+
 
 
                     }
@@ -226,16 +273,22 @@ const userprefsWorkspace = {
                             },
                     
                             onChange:function(newValue, oldValue, config){
-                                if (newValue !== oldValue){
-                                    defaultValue.userprefsWorkspace.logBlockOpt = oldValue;
-                                
-                                    if (newValue == 1){
-                                        $$("webix_log-btn").setValue(2);
-                                    } else {
-                                        $$("webix_log-btn").setValue(1);
+                                try{
+                                    if (newValue !== oldValue){
+                                        defaultValue.userprefsWorkspace.logBlockOpt = oldValue;
+                                    
+                                        if (newValue == 1){
+                                            $$("webix_log-btn").setValue(2);
+                                        } else {
+                                            $$("webix_log-btn").setValue(1);
+                                        }
+                                    
                                     }
-                                
+                                } catch (error){
+                                    console.log(error);
+                                    catchErrorTemplate("015-000", error);
                                 }
+     
 
                                 
                             }
@@ -247,7 +300,6 @@ const userprefsWorkspace = {
                         label:"Действие после входа в систему", 
                         labelPosition:"top",
                         value:2, 
-                        
                         options:[
                         { "id":1, "value":"Перейти на главную страницу" },
                        // { "id":3, "value":"Предложить вернуться на последнюю открытую страницу" },
@@ -258,9 +310,15 @@ const userprefsWorkspace = {
                                 this.getInputNode().setAttribute("title","Показывать/не показывать всплывающее окно при загрузке приложения");
                             },
                             onChange:function(newValue, oldValue, config){
-                                if (newValue !== oldValue){
-                                    defaultValue.userprefsWorkspace.LoginActionOpt = oldValue;
+                                try{
+                                    if (newValue !== oldValue){
+                                        defaultValue.userprefsWorkspace.LoginActionOpt = oldValue;
+                                    }
+                                } catch (error){
+                                    console.log(error);
+                                    catchErrorTemplate("015-000", error);
                                 }
+     
                             }
                         }
                     },
@@ -310,25 +368,31 @@ const userprefsTabbar =  {
             on:{
                 onBeforeTabClick:function(id){
                     const formId = $$("userprefsTabbar").getValue()+"Form";
-                    if ($$(formId).isDirty()){
-                        webix.modalbox({
-                            title:"Данные не сохранены",
-                            css:"webix_modal-custom-save",
-                            buttons:["Отмена", "Не сохранять", "Сохранить"],
-                            width:500,
-                            text:"Выберите действие перед тем как продолжить"
-                        }).then(function(result){
-                            if ( result == 1){
-                                $$(formId).setValues(defaultValue[$$("userprefsTabbar").getValue()])
-                                $$("userprefsTabbar").setValue(id);
-                            } else if ( result == 2){
-                                saveSettings ();
-                                $$("userprefsTabbar").setValue(id);
-                            }
-                        });
-                        
-                        return false;
+                    try{
+                        if ($$(formId).isDirty()){
+                            webix.modalbox({
+                                title:"Данные не сохранены",
+                                css:"webix_modal-custom-save",
+                                buttons:["Отмена", "Не сохранять", "Сохранить"],
+                                width:500,
+                                text:"Выберите действие перед тем как продолжить"
+                            }).then(function(result){
+                                if ( result == 1){
+                                    $$(formId).setValues(defaultValue[$$("userprefsTabbar").getValue()])
+                                    $$("userprefsTabbar").setValue(id);
+                                } else if ( result == 2){
+                                    saveSettings ();
+                                    $$("userprefsTabbar").setValue(id);
+                                }
+                            });
+                            
+                            return false;
+                        }
+                    } catch (error){
+                        console.log(error);
+                        catchErrorTemplate("005-000", error);
                     }
+
                    
                 }
             }

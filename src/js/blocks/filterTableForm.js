@@ -1,5 +1,5 @@
 import {setLogValue} from './logBlock.js';
-import { catchErrorTemplate,ajaxErrorTemplate} from "./logBlock.js";
+import {catchErrorTemplate,ajaxErrorTemplate} from "./logBlock.js";
 
 let popupLibData = {};
 

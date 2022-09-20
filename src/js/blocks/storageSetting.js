@@ -1,32 +1,5 @@
 import {ajaxErrorTemplate, catchErrorTemplate} from "./logBlock.js";
 
-// function getStorageLogVal () {
-//     let logBtnVal = webix.storage.local.get("LogVisible");
-
-//     try {
-//         if (logBtnVal){
-
-//             if(logBtnVal=="hide"){
-//                 $$("logLayout").config.height = 5;
-//                 $$("logLayout").resize();
-//                 $$("webix_log-btn").config.icon ="wxi-eye";
-//                 $$("webix_log-btn").refresh();
-
-//             } else if(logBtnVal=="show"){
-//                 $$("logLayout").config.height = 90;
-//                 $$("logLayout").resize();
-//                 $$("webix_log-btn").config.icon ="wxi-eye-slash";
-//                 $$("webix_log-btn").refresh();
-//             }
-//         }
-//     } catch (error){
-//         console.log(error);
-//         catchErrorTemplate("010-000", error);
-
-//     }
-
-// }
-
 function setStorageData (name, value){
     if (typeof(Storage) !== 'undefined') {
         localStorage.setItem(name, value);
@@ -66,10 +39,32 @@ function setUserPrefs (){
     
     webix.ajax("/init/default/api/userprefs/",{
         success:function(text, data, XmlHttpRequest){
-            data = data.json().content;
-            data.forEach(function(el,i){
-                setStorageData (el.name, el.prefs);
-            });
+            try{
+                let user = webix.storage.local.get("user");
+                data = data.json().content;
+                data.forEach(function(el,i){
+                    if (el.owner == user.id){
+                        setStorageData (el.name, el.prefs);
+                    }
+                });
+      
+                if (window.location.pathname=="/index.html/content" || window.location.pathname=="/init/default/spaw/content"){
+                    let userprefsWorkspace = webix.storage.local.get("userprefsWorkspaceForm");
+                    let userLocation = webix.storage.local.get("userLocationHref");
+                        console.log(userLocation,userprefsWorkspace)
+                    if (userprefsWorkspace && userprefsWorkspace.LoginActionOpt){
+                        if (userprefsWorkspace.LoginActionOpt == 2){
+                            if (userLocation && userLocation.href && userLocation.href !== window.location.href ){
+                                window.location.replace(userLocation.href)
+                            }
+                        }
+                    }
+                }
+                
+            } catch(error){
+                console.log(error);
+                catchErrorTemplate("010-000", error);
+            }
         },
         error:function(text, data, XmlHttpRequest){
             ajaxErrorTemplate("010-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
@@ -82,22 +77,24 @@ function setUserPrefs (){
 
     
     let userprefsWorkspace = webix.storage.local.get("userprefsWorkspaceForm");
-    if (userprefsWorkspace){
+    try{
+        if (userprefsWorkspace){
         // Log
-        if (userprefsWorkspace.logBlockOpt !== undefined ){
-            if (userprefsWorkspace.logBlockOpt=="2"){
-                $$("logLayout").config.height = 5;
-                $$("logLayout").resize();
-                $$("webix_log-btn").config.icon ="wxi-eye";
-                $$("webix_log-btn").refresh();
+            if (userprefsWorkspace.logBlockOpt !== undefined ){
+                if (userprefsWorkspace.logBlockOpt=="2"){
+                    $$("logLayout").config.height = 5;
+                    $$("logLayout").resize();
+                    $$("webix_log-btn").config.icon ="wxi-eye";
+                    $$("webix_log-btn").refresh();
 
-            } else if(userprefsWorkspace.logBlockOpt=="1"){
-                $$("logLayout").config.height = 90;
-                $$("logLayout").resize();
-                $$("webix_log-btn").config.icon ="wxi-eye-slash";
-                $$("webix_log-btn").refresh();
+                } else if(userprefsWorkspace.logBlockOpt=="1"){
+                    $$("logLayout").config.height = 90;
+                    $$("logLayout").resize();
+                    $$("webix_log-btn").config.icon ="wxi-eye-slash";
+                    $$("webix_log-btn").refresh();
+                }
             }
-        }
+        
 
         // if (userprefsWorkspace.logBlockOpt !== undefined){
         //     if (userprefsWorkspace.logBlockOpt > 30 && userprefsWorkspace.logBlockOpt < 7200){
@@ -105,6 +102,10 @@ function setUserPrefs (){
         //     }
         // }
 
+        }
+    } catch(error){
+        console.log(error);
+        catchErrorTemplate("010-000", error);
     }
 }
 export{

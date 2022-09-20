@@ -216,18 +216,8 @@ function editTreeLayout () {
 
 
 webix.UIManager.addHotKey("Ctrl+Shift+E", function() { 
-    // console.log(window.location.pathname);
 
-    
-    // if (window.location.host.includes("localhost:3000")){
- 
-    //     window.location.replace('/index.html/experimental')
-    // } else {
-     
-    //     window.location.replace('/init/default/spaw/experimental')
-    // }
     Backbone.history.navigate("experimental/treeEdit", { trigger:true});
-    //window.location.replace()
 
 });
 

@@ -243,28 +243,33 @@ function treeSidebar () {
             },
             onItemClick:function(id, e, node){
                 if($$("table-editForm").isDirty()){
-                       
-                    modalBox().then(function(result){
-                        if (result == 1){
-                            clearItem();
-                            $$("tree").select(id);
-                        
-                        } else if (result == 2){
-                            if ($$("table-editForm").validate()){
-                                if ($$("table-editForm").getValues().id){
-                                    saveItem();
-                                } else {
-                                    saveNewItem(); 
-                                }
+                    try{  
+                        modalBox().then(function(result){
+                            if (result == 1){
+                                clearItem();
                                 $$("tree").select(id);
                             
-                            } else {
-                                setLogValue("error","Заполните пустые поля");
-                                return false;
+                            } else if (result == 2){
+                                if ($$("table-editForm").validate()){
+                                    if ($$("table-editForm").getValues().id){
+                                        saveItem();
+                                    } else {
+                                        saveNewItem(); 
+                                    }
+                                    $$("tree").select(id);
+                                
+                                } else {
+                                    setLogValue("error","Заполните пустые поля");
+                                    return false;
+                                }
+                                
                             }
-                            
-                        }
-                    });
+                        });
+                    } catch (error){
+                        console.log(error);
+                        catchErrorTemplate("009-000", error);
+                
+                    }
                     return false;
                 }
             },
@@ -276,17 +281,23 @@ function treeSidebar () {
 
                     if ($$("filterTableForm")&&$$("filterTableForm").isVisible){
 
-                        $$("filterTableForm").hide();
-                        if($$("inputsFilter")){
-                            $$("filterTableForm").removeView( $$("inputsFilter"));
+                        try{
+                            $$("filterTableForm").hide();
+                            if($$("inputsFilter")){
+                                $$("filterTableForm").removeView( $$("inputsFilter"));
+                            }
+                            let btnClass = document.querySelector(".webix_btn-filter");
+                            if (btnClass&&!(btnClass.classList.contains("webix_secondary"))){
+                                btnClass.classList.add("webix_secondary");
+                                btnClass.classList.remove("webix_primary");
+                            }
+                            $$("table-editTableBtnId").hide();
+                            $$("table-editForm").show();
+                        } catch (error){
+                            console.log(error);
+                            catchErrorTemplate("009-000", error);
+                    
                         }
-                        let btnClass = document.querySelector(".webix_btn-filter");
-                        if (btnClass&&!(btnClass.classList.contains("webix_secondary"))){
-                            btnClass.classList.add("webix_secondary");
-                            btnClass.classList.remove("webix_primary");
-                        }
-                        $$("table-editTableBtnId").hide();
-                        $$("table-editForm").show();
                     }
                 }
             },

@@ -1,6 +1,6 @@
 import {router,createElements,removeElements} from "../blocks/router.js";
 import {catchErrorTemplate,ajaxErrorTemplate} from "../blocks/logBlock.js";
-import {setUserLocation} from "../blocks/storageSetting.js";
+import {setStorageData, setUserLocation} from "../blocks/storageSetting.js";
 
  
 if ( window.location.pathname !== "/index.html" && window.location.pathname !=="/" && window.location.pathname !=="/init/default/spaw/"){
@@ -45,33 +45,48 @@ function login () {
                     webix.ajax("/init/default/api/whoami",{
                         success:function(text, data, XmlHttpRequest){
                             try {
-
-                                let userLocation = webix.storage.local.get("userLocation");
+                   
+                                let userData = {};
+                                userData.id = data.json().content.id;
+                                userData.name = data.json().content.first_name;
+                                userData.username = data.json().content.username;
                                 
-                                let http = new XMLHttpRequest();
-                                http.open('HEAD', userLocation.href, false);
-                                http.send();
+                                setStorageData("user", JSON.stringify(userData));
+                                
+                                
+                                
+                                // let userLocation = webix.storage.local.get("userLocation");
+                                
+                                // let http = new XMLHttpRequest();
+                                // http.open('HEAD', userLocation.href, false);
+                                // http.send();
                           
-                                if (userLocation&&userLocation.href&&http.status==200){
+                                // if (userLocation&&userLocation.href&&http.status==200){
                             
                         
-                                    window.location.replace(userLocation.href);
-                                    localStorage.removeItem("userLocation");
-                                    if ( $$('formAuth')){
-                                        $$('formAuth').clear();
-                                    }
-                                } else {
+                                //     window.location.replace(userLocation.href);
+                                //     localStorage.removeItem("userLocation");
+                                //     if ( $$('formAuth')){
+                                //         $$('formAuth').clear();
+                                //     }
+                                // } else {
                                     
-                                    if ( $$('formAuth')){
-                                        $$('formAuth').clear();
-                                    }
+                                //     if ( $$('formAuth')){
+                                //         $$('formAuth').clear();
+                                //     }
                         
                        
-                                    Backbone.history.navigate("content", { trigger:true});
-                                    window.location.reload();
+                                //     Backbone.history.navigate("content", { trigger:true});
+                                //     window.location.reload();
+                                // }
+
+                                if ( $$('formAuth')){
+                                    $$('formAuth').clear();
                                 }
-
-
+                    
+                   
+                                Backbone.history.navigate("content", { trigger:true});
+                                window.location.reload();
                             
 
                                 
@@ -88,6 +103,23 @@ function login () {
                             ajaxErrorTemplate("007-006",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
 
                         }
+                    }).then(function(data){
+                        webix.ajax().get("/init/default/api/userprefs/", {
+                            success:function(text, data, XmlHttpRequest){
+                                console.log('oeoe')
+
+                            
+                            },
+                            error:function(text, data, XmlHttpRequest){
+                                ajaxErrorTemplate("007-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                            }
+                        }).catch(error => {
+                            console.log(error);
+                            ajaxErrorTemplate("007-000",error.status,error.statusText,error.responseURL);
+                        });
+
+
+
                     });
                 },
                 error:function(text, data, XmlHttpRequest){

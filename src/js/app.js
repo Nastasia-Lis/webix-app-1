@@ -1,4 +1,4 @@
-console.log("expa 1.0.24");
+console.log("expa 1.0.25");
 // import {lib} from "./modules/expalib.js";
 // lib ();
 
@@ -119,10 +119,11 @@ try{
             });
         }
 
+
         adaptivePoints();
+      
         textInputClean.textInputClean();
 
-      //  getStorageLogVal();
         setUserPrefs();
 
         backButtonLogic ();

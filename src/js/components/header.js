@@ -67,34 +67,6 @@ function header() {
         }
     }
 
-    // function logVisibleClick () {
-    //     try {
-    //         if ( this.config.icon =="wxi-eye-slash"){
-    //             $$("logLayout").config.height = 5;
-    //             $$("webix_log-btn").setValue(1);
-    //             $$("logLayout").resize();
-    //             this.config.icon ="wxi-eye";
-    //             this.refresh();
-    //             setStorageData("LogVisible", JSON.stringify("hide"));
-
-    //             $$("webix_log-btn").config.badge = "";
-    //             $$("webix_log-btn").refresh();
-
-    //         } else if (this.config.icon =="wxi-eye"){
-    //             $$("logLayout").config.height = 90;
-    //             $$("webix_log-btn").setValue(2);
-    //             $$("logLayout").resize();
-    //             this.config.icon ="wxi-eye-slash";
-    //             this.refresh();
-    //             setStorageData("LogVisible", JSON.stringify("show"));
-    //         }
-    //     } catch (error){
-    //         console.log(error);
-    //         catchErrorTemplate("005-000", error);
-    //     }
-    // }
-
-
     const header = {
         view: "toolbar", 
         id: "header",
@@ -195,62 +167,62 @@ function header() {
                     on:{
                         onItemClick:function(id, e, node){
                             try {
-                                // let logoutPath;
-                                // console.log(window.location.pathname)
-                                // if (window.location.host.includes("localhost:3000")){
-                                //     logoutPath = "/index.html/logout";
-                                // } else {
-                                //     logoutPath = "/init/default/spaw/logout";
-                                // }
                             
                                 if (id=="logout"){
                                     if($$("table-editForm") && $$("table-editForm").isDirty() || $$("cp-form") && $$("cp-form").isDirty()){
                                        
-                                        modalBox().then(function(result){
-                                            if (result == 1){
-                                                //window.location.replace(logoutPath);
-                                                Backbone.history.navigate("logout", { trigger:true});
-                                            } else if (result == 2){
+                                        
+                                        try{
+                                            modalBox().then(function(result){
+                                                if (result == 1){
+                                                    //window.location.replace(logoutPath);
+                                                    Backbone.history.navigate("logout", { trigger:true});
+                                                } else if (result == 2){
 
-                                                if ($$("cp-form") || $$("table-editForm")){
-                                                    if ($$("cp-form") && $$("cp-form").isDirty() && $$("cp-form").validate()){
-                                                        let objPass = {op:"",np:""};
-                                                        let passData = $$("cp-form").getValues();
-                                                        objPass.np = passData.newPass;
-                                                        objPass.op = passData.oldPass;
-                                                        webix.ajax().post("/init/default/api/cp", objPass, {
-                                                            success:function(text, data, XmlHttpRequest){
-                                                                data = data.json()
-                                                                if (data.err_type == "i"){
-                                                                    setLogValue("success",data.err);
-                                                                
-                                                                } else if (data.err_type == "e"){
-                                                                    setLogValue("error",data.err);
+                                                    if ($$("cp-form") || $$("table-editForm")){
+                                                        if ($$("cp-form") && $$("cp-form").isDirty() && $$("cp-form").validate()){
+                                                            let objPass = {op:"",np:""};
+                                                            let passData = $$("cp-form").getValues();
+                                                            objPass.np = passData.newPass;
+                                                            objPass.op = passData.oldPass;
+                                                            webix.ajax().post("/init/default/api/cp", objPass, {
+                                                                success:function(text, data, XmlHttpRequest){
+                                                                    data = data.json()
+                                                                    if (data.err_type == "i"){
+                                                                        setLogValue("success",data.err);
+                                                                    
+                                                                    } else if (data.err_type == "e"){
+                                                                        setLogValue("error",data.err);
+                                                                    }
+                                                                },
+                                                                error:function(text, data, XmlHttpRequest){
+                                                                    ajaxErrorTemplate("011-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
                                                                 }
-                                                            },
-                                                            error:function(text, data, XmlHttpRequest){
-                                                                ajaxErrorTemplate("011-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                                                            });
+                                                            //window.location.replace(logoutPath);
+                                                            Backbone.history.navigate("logout", { trigger:true});
+                                                        
+                                                        } else if ($$("table-editForm") && $$("table-editForm").isDirty() && $$("table-editForm").validate()){
+                                                            if ($$("table-editForm").getValues().id){
+                                                                saveItem();
+                                                            } else {
+                                                                saveNewItem(); 
                                                             }
-                                                        });
-                                                        //window.location.replace(logoutPath);
-                                                        Backbone.history.navigate("logout", { trigger:true});
-                                                    
-                                                    } else if ($$("table-editForm") && $$("table-editForm").isDirty() && $$("table-editForm").validate()){
-                                                        if ($$("table-editForm").getValues().id){
-                                                            saveItem();
-                                                        } else {
-                                                            saveNewItem(); 
+                                                        //   window.location.replace(logoutPath);
+                                                            Backbone.history.navigate("logout", { trigger:true});
+                                                        
+                                                        }else {
+                                                            setLogValue("error","Заполните пустые поля");
+                                                            return false;
                                                         }
-                                                     //   window.location.replace(logoutPath);
-                                                        Backbone.history.navigate("logout", { trigger:true});
-                                                    
-                                                    }else {
-                                                        setLogValue("error","Заполните пустые поля");
-                                                        return false;
-                                                    }
-                                                } 
-                                            }
-                                        });
+                                                    } 
+                                                }
+                                            });
+                                        } catch (error){
+                                            console.log(error);
+                                            catchErrorTemplate("005-000", error);
+                                        }
+         
                                         return false;
                                     } else {
                                         Backbone.history.navigate("logout", { trigger:true});
@@ -268,7 +240,113 @@ function header() {
                 on:{
                     onItemClick:function(){
                         try {
-                            setUserLocation (tableNames,userLocation);
+
+                            webix.ajax().get("/init/default/api/userprefs/", {
+                                success:function(text, data, XmlHttpRequest){
+                                    data = data.json().content;
+                                    if (data.err_type == "e"){
+                                        setLogValue("error",data.error);
+                                    }
+
+                                    if (window.location.pathname !== "/index.html/content" &&  window.location.pathname!=="/init/default/spaw/content"){
+                                        
+                                        let settingExists = false;
+                                        let location = {};
+                                        location.href = window.location.href;
+
+                                        let sentObj = {
+                                            name:"userLocationHref",
+                                            prefs:location
+                                        };
+                                    
+                                        try{
+                                            data.forEach(function(el,i){
+                                                if (el.name == "userLocationHref"){
+                                                    settingExists = true;
+
+                                                    webix.ajax().put("/init/default/api/userprefs/"+el.id, sentObj, {
+                                                        success:function(text, data, XmlHttpRequest){
+                                                            data = data.json();
+                                                            if (data.err_type == "e"){
+                                                                setLogValue("error",data.error);
+                                                            }
+                                                        
+                                                        },
+                                                        error:function(text, data, XmlHttpRequest){
+                                                            ajaxErrorTemplate("005-011",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                                                        }
+                                                    }).catch(error => {
+                                                        console.log(error);
+                                                        ajaxErrorTemplate("005-011",error.status,error.statusText,error.responseURL);
+                                                    });
+                                                
+                                                } 
+                                            });
+                                        } catch (error){
+                                            console.log(error);
+                                            catchErrorTemplate("005-000", error);
+                                        }
+
+
+                                        try{
+                                            if (!settingExists){
+                                
+                                                let ownerId = webix.storage.local.get("user").id;
+            
+                                                if (ownerId){
+                                                    sentObj.owner = ownerId;
+                                                } else {
+                                                    webix.ajax("/init/default/api/whoami",{
+                                                        success:function(text, data, XmlHttpRequest){
+                                                            
+                                                            sentObj.owner = data.json().content.id;
+            
+                                                            let userData = {};
+                                                            userData.id = data.json().content.id;
+                                                            userData.name = data.json().content.first_name;
+                                                            userData.username = data.json().content.username;
+                                                            
+                                                            setStorageData("user", JSON.stringify(userData));
+                                                        },
+                                                        error:function(text, data, XmlHttpRequest){
+                                                            ajaxErrorTemplate("005-011",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                                                        }
+                                                    }).catch(error => {
+                                                        console.log(error);
+                                                        ajaxErrorTemplate("005-000",error.status,error.statusText,error.responseURL);
+                                                    });
+                                                }
+
+                                                webix.ajax().post("/init/default/api/userprefs/",sentObj, {
+                                                    success:function(text, data, XmlHttpRequest){
+                                                        data = data.json();
+                                
+                                                        if (data.err_type == "e"){
+                                                            setLogValue("error",data.error);
+                                                        }
+                                                        
+                                                    },
+                                                    error:function(text, data, XmlHttpRequest){
+                                                        ajaxErrorTemplate("005-001",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                                                    }
+                                                }).catch(error => {
+                                                    console.log(error);
+                                                    ajaxErrorTemplate("005-001",error.status,error.statusText,error.responseURL);
+                                                });
+                                            }
+                                        } catch (error){
+                                            console.log(error);
+                                            catchErrorTemplate("005-000", error);
+                                        }
+                                    }
+                                },
+                                error:function(text, data, XmlHttpRequest){
+                                    ajaxErrorTemplate("005-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                                }
+                            }).catch(error => {
+                                console.log(error);
+                                ajaxErrorTemplate("005-000",error.status,error.statusText,error.responseURL);
+                            });
                         } catch (error){
                             console.log(error);
                             catchErrorTemplate("005-000", error);

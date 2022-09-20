@@ -40,12 +40,12 @@ function submitBtn (idElements, url, verb, rtype){
                             $$("table-view-findElements").setValues(prevCountRows.toString());
                         } catch (error){
                             console.log(error);
-                            catchErrorTemplate("009-000", error);
+                            catchErrorTemplate("018-000", error);
             
                         }  
                     },
                     error:function(text, data, XmlHttpRequest){
-                        ajaxErrorTemplate("009-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                        ajaxErrorTemplate("018-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
 
                         if($$("table-newAddBtnId")&&!($$("table-newAddBtnId").isEnabled())){
                             $$("table-newAddBtnId").enable();
@@ -53,14 +53,14 @@ function submitBtn (idElements, url, verb, rtype){
                     }
                 }).catch(error => {
                     console.log(error);
-                    ajaxErrorTemplate("009-000",error.status,error.statusText,error.responseURL);
+                    ajaxErrorTemplate("018-000",error.status,error.statusText,error.responseURL);
                 });
                 
                 
                 //;
             } catch (error){
                 console.log(error);
-                catchErrorTemplate("009-000", error);
+                catchErrorTemplate("018-000", error);
 
             }
 
@@ -71,11 +71,11 @@ function submitBtn (idElements, url, verb, rtype){
                     webix.html.download(blob, "table.docx");
                 } catch (error){
                     console.log(error);
-                    catchErrorTemplate("009-000", error);
+                    catchErrorTemplate("018-000", error);
                 } 
             }).catch(error => {
                 console.log(error);
-                ajaxErrorTemplate("009-000",error.status,error.statusText,error.responseURL);
+                ajaxErrorTemplate("018-000",error.status,error.statusText,error.responseURL);
             });
         } 
     } else if (verb=="post"){
@@ -98,7 +98,7 @@ function submitBtn (idElements, url, verb, rtype){
             });
         } catch (error){
             console.log(error);
-            catchErrorTemplate("009-000", error);
+            catchErrorTemplate("018-000", error);
         } 
     } 
     
@@ -138,11 +138,11 @@ function getComboOptions (refTable){
                             return dataArray;
                         } catch (error){
                             console.log(error);
-                            catchErrorTemplate("009-000", error);
+                            catchErrorTemplate("018-000", error);
                         } 
                     }).catch(error => {
                         console.log(error);
-                        ajaxErrorTemplate("009-000",error.status,error.statusText,error.responseURL);
+                        ajaxErrorTemplate("018-000",error.status,error.statusText,error.responseURL);
                     })
             );
             
@@ -321,7 +321,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                     $$(idCurrTable).refreshColumns(columnsData);
                 } catch (error){
                     console.log(error);
-                    catchErrorTemplate("009-000", error);
+                    catchErrorTemplate("018-000", error);
                 } 
 
     // ---- Таблица - action detail у fields            
@@ -350,7 +350,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                     }
                 } catch (error){
                     console.log(error);
-                    catchErrorTemplate("009-000", error);
+                    catchErrorTemplate("018-000", error);
                 } 
 
     
@@ -421,11 +421,11 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                                                     return dataOptions;
                                                 } catch (error){
                                                     console.log(error);
-                                                    catchErrorTemplate("009-000", error);
+                                                    catchErrorTemplate("018-000", error);
                                                 } 
                                                 }).catch(error => {
                                                     console.log(error);
-                                                    ajaxErrorTemplate("009-000",error.status,error.statusText,error.responseURL);
+                                                    ajaxErrorTemplate("018-000",error.status,error.statusText,error.responseURL);
 
                                                 })
                                             );
@@ -736,7 +736,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                     }
                 } catch (error){
                     console.log(error);
-                    catchErrorTemplate("009-000", error);
+                    catchErrorTemplate("018-000", error);
                 } 
                 
             
@@ -768,8 +768,35 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                                         }
                         
                                         data = data.json().content;
-                                    
-                            
+                           
+                                        let dateFormat;
+
+                                        data.forEach(function(el,i){
+                                           
+                                            if (el.cdt){
+                                                dateFormat = new Date(el.cdt);
+                                                el.cdt = dateFormat;
+                                            }
+
+                                            if (el.edt){
+                                                 dateFormat = new Date(el.edt);
+                                                el.edt = dateFormat;
+                                            }
+
+                                            if (el.sdt){
+                                                 dateFormat = new Date(el.sdt);
+                                                el.sdt = dateFormat;
+                                            }
+
+                                            if (el.time_stamp){
+                                                 dateFormat = new Date(el.time_stamp);
+                                                el.time_stamp = dateFormat;
+                                            }
+
+                                            
+                                        });
+
+
                                         if (data.length !== 0){
                                             
                                             $$(idCurrTable).hideOverlay("Ничего не найдено");
@@ -789,12 +816,12 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                                         }
                                     } catch (error){
                                         console.log(error);
-                                        catchErrorTemplate("009-000", error);
+                                        catchErrorTemplate("018-000", error);
                                     } 
                             
                                 },
                                 error:function(text, data, XmlHttpRequest){
-                                    ajaxErrorTemplate("009-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                                    ajaxErrorTemplate("018-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
                                     prevCountRows = "-";
                                     try {
                                         $$(idFindElem).setValues(prevCountRows.toString());
@@ -811,7 +838,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                                         }
                                     } catch (error){
                                         console.log(error);
-                                        catchErrorTemplate("009-000", error);
+                                        catchErrorTemplate("018-000", error);
 
                                     }
                                 
@@ -819,7 +846,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                     
                         }).catch(error => {
                             console.log(error);
-                            ajaxErrorTemplate("009-000",error.status,error.statusText,error.responseURL);
+                            ajaxErrorTemplate("018-000",error.status,error.statusText,error.responseURL);
                         });
                         }
                 });
@@ -860,9 +887,9 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                 console.log(error);
                // console.log(error.status)
                 if (error.status){
-                    ajaxErrorTemplate("009-000",error.status,error.statusText,error.responseURL);
+                    ajaxErrorTemplate("018-000",error.status,error.statusText,error.responseURL);
                 } else {
-                    catchErrorTemplate("009-000", error);
+                    catchErrorTemplate("018-000", error);
                 }
                 if($$("btnFilterSubmit")&&$$("btnFilterSubmit").isEnabled()){
                     $$("btnFilterSubmit").disable();
@@ -872,7 +899,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
     } catch (error){
 
         console.log(error);
-        catchErrorTemplate("009-000", error);
+        catchErrorTemplate("018-000", error);
     } 
 }
 
@@ -1093,17 +1120,17 @@ function getInfoDashboard (idsParam,single=false){
 
                 } catch (error){
                     console.log(error);
-                    catchErrorTemplate("009-004", error);
+                    catchErrorTemplate("018-004", error);
                 } 
                 
             },
             error:function(text, data, XmlHttpRequest){
-                ajaxErrorTemplate("009-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                ajaxErrorTemplate("018-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
 
             }
         }).catch(error => {
             console.log(error);
-            ajaxErrorTemplate("009-000",error.status,error.statusText,error.responseURL);
+            ajaxErrorTemplate("018-000",error.status,error.statusText,error.responseURL);
         }); 
 
     }
@@ -1651,7 +1678,7 @@ function getInfoDashboard (idsParam,single=false){
                         }
                     } catch (error){
                         console.log(error);
-                        catchErrorTemplate("009-000", error);
+                        catchErrorTemplate("018-000", error);
                 
                     }
 
@@ -1659,16 +1686,16 @@ function getInfoDashboard (idsParam,single=false){
                 
                 error:function(text, data, XmlHttpRequest){
                     console.log(XmlHttpRequest)
-                    ajaxErrorTemplate("009-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                    ajaxErrorTemplate("018-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
                 }
             }).catch(error => {
                 console.log(error);
-                ajaxErrorTemplate("009-000",error.status,error.statusText,error.responseURL);
+                ajaxErrorTemplate("018-000",error.status,error.statusText,error.responseURL);
             });    
         }  
     } catch (error){
         console.log(error);
-        catchErrorTemplate("009-000", error);
+        catchErrorTemplate("018-000", error);
 
     }
 }
@@ -1712,17 +1739,17 @@ function getInfoEditTree() {
 
             } catch (error){
                 console.log(error);
-                catchErrorTemplate("009-004", error);
+                catchErrorTemplate("018-004", error);
             } 
             
         },
         error:function(text, data, XmlHttpRequest){
-            ajaxErrorTemplate("009-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+            ajaxErrorTemplate("018-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
 
         }
     }).catch(error => {
         console.log(error);
-        ajaxErrorTemplate("009-000",error.status,error.statusText,error.responseURL);
+        ajaxErrorTemplate("018-000",error.status,error.statusText,error.responseURL);
     }); 
   
 }

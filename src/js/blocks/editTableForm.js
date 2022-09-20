@@ -4,6 +4,7 @@ import {tableNames} from "./router.js";
 import {catchErrorTemplate,ajaxErrorTemplate,setLogValue} from "./logBlock.js";
 
 import {modalBox, popupExec} from "./notifications.js";
+import { treeSidebar } from '../components/sidebar.js';
 
 let currId;
 
@@ -257,7 +258,7 @@ function createEditFields (parentElement, viewPosition=1) {
                         refTableName= el.name;
                     }
                 });
-
+        
                 inputsArray.push(
                     {cols:[
                     {   view:"combo",
@@ -269,10 +270,23 @@ function createEditFields (parentElement, viewPosition=1) {
                         options:{
                             data:getComboOptions(findTableId)
                         },
+
                         on:{
                             onItemClick:function(){
                                 $$(parentElement).clearValidation();
                             },
+                            onChange:function(){
+                               // console.log(this.getList())
+                                $$(el.id).setValue(this.getValue()); 
+                                $$(el.id).refresh()
+
+                            },
+                            onBindRequest:function(data){
+                               // console.log(data)
+                            }
+                        },
+                        ready:function(){
+                            //console.log("rea")
                         }
                     },
                     {

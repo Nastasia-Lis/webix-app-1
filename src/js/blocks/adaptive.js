@@ -1,3 +1,4 @@
+import {catchErrorTemplate} from "./logBlock.js";
 
 function resizeAdaptive (){
 
@@ -5,22 +6,27 @@ function resizeAdaptive (){
    
         
       // sidebar
-        if (window.innerWidth< 850 && $$("tree") && $$("tree").isVisible()){
-            $$("tree").hide();
-        }
-    
-        if ($$("tree").isVisible()){
-        } else {
-            if(window.innerWidth <= 800){
-                if($$("sideMenuResizer")){
-                    $$("sideMenuResizer").hide(); 
-                }
-            } 
-        }
+        try{
+            if (window.innerWidth< 850 && $$("tree") && $$("tree").isVisible()){
+                $$("tree").hide();
+            }
+        
+            if ($$("tree").isVisible()){
+            } else {
+                if(window.innerWidth <= 800){
+                    if($$("sideMenuResizer")){
+                        $$("sideMenuResizer").hide(); 
+                    }
+                } 
+            }
 
-        if (window.innerWidth > 850 && $$("tree")){
-            $$("tree").config.width = 250;
-            $$("tree").resize();
+            if (window.innerWidth > 850 && $$("tree")){
+                $$("tree").config.width = 250;
+                $$("tree").resize();
+            }
+        } catch (error){
+            console.log(error);
+            catchErrorTemplate("017-007", error);
         }
 
 
@@ -28,152 +34,157 @@ function resizeAdaptive (){
 
 
         // form actions popup
-        if (window.innerWidth < 830 && !($$("contextActionsBtn"))){
+        try{
+            if (window.innerWidth < 830 && !($$("contextActionsBtn"))){
 
-            if ($$("customInputsMain")){
-                const filterBar = $$("table-view-filterIdView").getParentView();
-                let customInputsCollection;
-                customInputsCollection = Object.values($$("customInputs")._collection); 
+                if ($$("customInputsMain")){
+                    const filterBar = $$("table-view-filterIdView").getParentView();
+                    let customInputsCollection;
+                    customInputsCollection = Object.values($$("customInputs")._collection); 
 
-                customInputsCollection.forEach(function(el,i){
-                    el.bottomPadding = 10;
-                    if (el.width){
-                        delete el.width;
-                    }
-
-                    if (el.minWidth){
-                        delete el.minWidth;
-                    }
-
-                    if (el.maxWidth){
-                        delete el.maxWidth;
-                    }
-                });
-                $$("customInputsMain").getParentView().removeView($$("customInputsMain"));
-
-                customInputsCollection = {id:"customInputsAdaptive",rows:[{id:"customInputs",rows:customInputsCollection}]} 
-
-     
-                $$(filterBar.config.id).addView( {
-                    view:"button", 
-                    id:"contextActionsBtnAdaptive",
-                    maxWidth:100, 
-                    value:"Действия", 
-                    css:"webix_primary", 
-                    popup:webix.ui({
-                            view:"popup",
-                            css:"webix_popup-actions-container webix_popup-config",
-                            modal:true,
-                            id:"contextActionsPopup",
-                            escHide:true,
-                            position:"center",
-                        //  height:400,
-                            width:400,
-                            body:{
-
-                                rows:[
-                                    {cols:[
-                                        {template:"Доступные действия", css:"webix_template-actions", borderless:true, height:40 },
-                                    //   {},
-                                        {
-                                            view:"button",
-                                            id:"buttonClosePopupActions",
-                                            css:"webix_close-btn",
-                                            type:"icon",
-                                            hotkey: "esc",
-                                            width:25,
-                                            icon: 'wxi-close',
-                                            click:function(){
-                                                if ($$("contextActionsPopup")){
-                                                    $$("contextActionsPopup").hide();
-                                                }
-                                            
-                                            }
-                                        },
-                                    ]},
-                                    {
-                                        view:"scrollview",
-                                        borderless:true,
-                                        scroll:"y", 
-                                        body:{ 
-                                        id:"contextActionsPopupContainer",
-                                        css:"webix_context-actions-popup",
-                                        rows:[ 
-                                            customInputsCollection
-                                        ]
-                                        }
-                                    }
-                            
-                                ]
-                    
-                            
-                            }
-
-                         
-                        }),
-                        click:function(){
-                            if ( $$("contextActionsPopup").config.height !== $$("customInputsAdaptive").$height +60){
-                                $$("contextActionsPopup").config.height = $$("customInputsAdaptive").$height +60
-                                $$("contextActionsPopup").resize();
-                            }
+                    customInputsCollection.forEach(function(el,i){
+                        el.bottomPadding = 10;
+                        if (el.width){
+                            delete el.width;
                         }
-                     
-                    
-                },2);
-            }
 
-        } else if (window.innerWidth > 830 && $$("contextActionsBtnAdaptive")||window.innerWidth > 830 && $$("contextActionsBtn")){
- 
-            if ($$("customInputsAdaptive")){
-                const  filterBar = $$("table-view-filterIdView").getParentView();
-                const collection = {id:"customInputs",cols:$$("customInputsAdaptive")._collection[0].rows}
-             
-                $$("contextActionsPopup").destructor();
+                        if (el.minWidth){
+                            delete el.minWidth;
+                        }
 
-             $$("contextActionsBtnAdaptive").getParentView().removeView($$("contextActionsBtnAdaptive"));
+                        if (el.maxWidth){
+                            delete el.maxWidth;
+                        }
+                    });
+                    $$("customInputsMain").getParentView().removeView($$("customInputsMain"));
 
-                if (!($$("customInputs"))){
-                $$(filterBar.config.id).addView( 
-                    {id:"customInputsMain",cols:
-                        [
-                            collection
-                        ]
-                    }
-                ,2);
-            }
-            } 
+                    customInputsCollection = {id:"customInputsAdaptive",rows:[{id:"customInputs",rows:customInputsCollection}]} 
 
-        }
- 
-        if($$("contextActionsPopup") && window.innerWidth/$$("contextActionsPopup").$width < 1.3){
-
-            if( $$("contextActionsPopup").$width > 100){
-                let size = $$("contextActionsPopup").$width - 20;
-
-             $$("contextActionsPopup").config.width = size;
-      
-            $$("contextActionsPopup").resize();
-
-            }
-            //$$("sideMenuResizer").hide();
-        } 
         
-        if($$("contextActionsPopup") && window.innerWidth/$$("contextActionsPopup").$width > 1.3){
+                    $$(filterBar.config.id).addView( {
+                        view:"button", 
+                        id:"contextActionsBtnAdaptive",
+                        maxWidth:100, 
+                        value:"Действия", 
+                        css:"webix_primary", 
+                        popup:webix.ui({
+                                view:"popup",
+                                css:"webix_popup-actions-container webix_popup-config",
+                                modal:true,
+                                id:"contextActionsPopup",
+                                escHide:true,
+                                position:"center",
+                            //  height:400,
+                                width:400,
+                                body:{
 
-            let size = $$("contextActionsPopup").$width + 20;
+                                    rows:[
+                                        {cols:[
+                                            {template:"Доступные действия", css:"webix_template-actions", borderless:true, height:40 },
+                                        //   {},
+                                            {
+                                                view:"button",
+                                                id:"buttonClosePopupActions",
+                                                css:"webix_close-btn",
+                                                type:"icon",
+                                                hotkey: "esc",
+                                                width:25,
+                                                icon: 'wxi-close',
+                                                click:function(){
+                                                    if ($$("contextActionsPopup")){
+                                                        $$("contextActionsPopup").hide();
+                                                    }
+                                                
+                                                }
+                                            },
+                                        ]},
+                                        {
+                                            view:"scrollview",
+                                            borderless:true,
+                                            scroll:"y", 
+                                            body:{ 
+                                            id:"contextActionsPopupContainer",
+                                            css:"webix_context-actions-popup",
+                                            rows:[ 
+                                                customInputsCollection
+                                            ]
+                                            }
+                                        }
+                                
+                                    ]
+                        
+                                
+                                }
 
-            $$("contextActionsPopup").config.width = size;
-      
-            $$("contextActionsPopup").resize();
+                            
+                            }),
+                            click:function(){
+                                if ( $$("contextActionsPopup").config.height !== $$("customInputsAdaptive").$height +60){
+                                    $$("contextActionsPopup").config.height = $$("customInputsAdaptive").$height +60
+                                    $$("contextActionsPopup").resize();
+                                }
+                            }
+                        
+                        
+                    },2);
+                }
 
-           
+            } else if (window.innerWidth > 830 && $$("contextActionsBtnAdaptive")||window.innerWidth > 830 && $$("contextActionsBtn")){
+    
+                if ($$("customInputsAdaptive")){
+                    const  filterBar = $$("table-view-filterIdView").getParentView();
+                    const collection = {id:"customInputs",cols:$$("customInputsAdaptive")._collection[0].rows}
+                
+                    $$("contextActionsPopup").destructor();
+
+                $$("contextActionsBtnAdaptive").getParentView().removeView($$("contextActionsBtnAdaptive"));
+
+                    if (!($$("customInputs"))){
+                    $$(filterBar.config.id).addView( 
+                        {id:"customInputsMain",cols:
+                            [
+                                collection
+                            ]
+                        }
+                    ,2);
+                }
+                } 
+
+            }
+    
+            if($$("contextActionsPopup") && window.innerWidth/$$("contextActionsPopup").$width < 1.3){
+
+                if( $$("contextActionsPopup").$width > 100){
+                    let size = $$("contextActionsPopup").$width - 20;
+
+                $$("contextActionsPopup").config.width = size;
+        
+                $$("contextActionsPopup").resize();
+
+                }
+                //$$("sideMenuResizer").hide();
+            } 
+            
+            if($$("contextActionsPopup") && window.innerWidth/$$("contextActionsPopup").$width > 1.3){
+
+                let size = $$("contextActionsPopup").$width + 20;
+
+                $$("contextActionsPopup").config.width = size;
+        
+                $$("contextActionsPopup").resize();
+
+            
+            }
+        } catch (error){
+            console.log(error);
+            catchErrorTemplate("017-007", error);
         }
 
 
 
          // dashboards
-
-        if (window.innerWidth < 850){
+        try{
+            if (window.innerWidth < 850){
           
                 if ($$("dashboard-tool") && $$("dashboard-tool").isVisible()){
                     $$("dashboard-tool").hide();
@@ -244,6 +255,10 @@ function resizeAdaptive (){
                         },0);
                     }
              }
+            }
+        } catch (error){
+            console.log(error);
+            catchErrorTemplate("017-007", error);
         }
 
 
@@ -254,9 +269,13 @@ function resizeAdaptive (){
 
 
 function adaptivePoints (){
-
-    if (window.innerWidth < 850 && $$("tree") && $$("tree").isVisible()){
-        $$("tree").hide();
+    try{
+        if (window.innerWidth < 850 && $$("tree") && $$("tree").isVisible()){
+            $$("tree").hide();
+        }
+    } catch (error){
+        console.log(error);
+        catchErrorTemplate("017-007", error);
     }
 
 
