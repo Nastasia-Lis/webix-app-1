@@ -5,6 +5,31 @@
 @import "src/scss/btns";
 
 
+html, body {
+    scrollbar-width: 9px!important;  
+   // scrollbar-color: #b3b3b3 #ffffff!important;    
+}
+
+
+/* полоса прокрутки (скроллбар) */
+::-webkit-scrollbar {
+    width: auto!important;   /* ширина для вертикального скролла */
+    height: auto!important; /* высота для горизонтального скролла */
+  //  background-color: #e1e1e1!important;
+}
+
+/* ползунок скроллбара */
+::-webkit-scrollbar-thumb {
+    background-color: #b3b3b3!important;  
+    border-radius: 0px!important;
+}
+::-webkit-scrollbar-thumb:hover {
+    background-color: #c4c3c3!important; 
+}
+
+::-webkit-scrollbar-thumb:active {
+    background-color: #a0a0a0!important; 
+}
 
 .webix_view,
 .webix_confirm  {
@@ -770,3 +795,4 @@ label, button{
     display: flex!important;
     justify-content: space-between!important;
 }
+

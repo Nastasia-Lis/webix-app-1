@@ -3,7 +3,6 @@ import {catchErrorTemplate,ajaxErrorTemplate} from "./logBlock.js";
 
 let popupLibData = {};
 
-
 function tabbarClick (id){
     function btnSubmitState (state){
         try {

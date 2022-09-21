@@ -185,17 +185,22 @@ const userprefsOther = {
                     {"id":2, "value":"Выключено"}
                 ],
                 on:{
-                    onChange:function(newValue, oldValue){
-                        if (newValue == 1 && !($$("userprefsAutorefCounter").isVisible())){
-                            $$("userprefsAutorefCounter").show();
-                        }
+                    onChange:function(newValue, oldValue,config){
+                        try{
 
-                        if (newValue == 2 && $$("userprefsAutorefCounter").isVisible()){
-                            $$("userprefsAutorefCounter").hide();
-                        }
-                    
-                        if (newValue !== oldValue){
-                            defaultValue.userprefsOther.autorefOpt = oldValue;
+            
+                            if (newValue == 1 && !($$("userprefsAutorefCounter").isVisible())){
+                                $$("userprefsAutorefCounter").show();
+                            }
+
+                            if (newValue == 2 && $$("userprefsAutorefCounter").isVisible()){
+                                $$("userprefsAutorefCounter").hide();
+                            }
+                        
+
+                        } catch (error){
+                            console.log(error);
+                            catchErrorTemplate("015-000", error);
                         }
                      
                     }
@@ -210,11 +215,9 @@ const userprefsOther = {
                 min:15000, 
                 max:900000,
                 on:{
-                    onChange:function(newValue, oldValue){
+                    onChange:function(newValue, oldValue, config){
                         try{
-                            if (newValue !== oldValue){
-                                defaultValue.userprefsOther.autorefCounterOpt = oldValue;
-                            }
+
                             const minVal = $$("userprefsAutorefCounter").config.min;
                             const maxVal = $$("userprefsAutorefCounter").config.max;
                             
@@ -237,10 +240,19 @@ const userprefsOther = {
             {}
         ],
         on:{
-            // onBeforeLoad:function(){
-            //     console.log(this.getValues())
-            //     defaultValue.userprefsOther = this.getValues()  
-            // }
+            onChange:function(){
+                if (this.isDirty() && !($$("userprefsSaveBtn").isEnabled())){
+                    $$("userprefsSaveBtn").enable();
+                } else if (!(this.isDirty())){
+                    $$("userprefsSaveBtn").disable();
+                }
+
+                if (this.isDirty() && !($$("userprefsResetBtn").isEnabled())){
+                    $$("userprefsResetBtn").enable();
+                } else if (!(this.isDirty())){
+                    $$("userprefsResetBtn").disable();
+                }  
+            }
         }
     }
 };
@@ -274,9 +286,9 @@ const userprefsWorkspace = {
                     
                             onChange:function(newValue, oldValue, config){
                                 try{
+
                                     if (newValue !== oldValue){
-                                        defaultValue.userprefsWorkspace.logBlockOpt = oldValue;
-                                    
+                                 
                                         if (newValue == 1){
                                             $$("webix_log-btn").setValue(2);
                                         } else {
@@ -309,24 +321,29 @@ const userprefsWorkspace = {
                             onAfterRender: function () {
                                 this.getInputNode().setAttribute("title","Показывать/не показывать всплывающее окно при загрузке приложения");
                             },
-                            onChange:function(newValue, oldValue, config){
-                                try{
-                                    if (newValue !== oldValue){
-                                        defaultValue.userprefsWorkspace.LoginActionOpt = oldValue;
-                                    }
-                                } catch (error){
-                                    console.log(error);
-                                    catchErrorTemplate("015-000", error);
-                                }
-     
-                            }
+   
                         }
                     },
                 ]},
                 {}
             ]},
     
-        ]
+        ],
+        on:{
+            onChange:function(){
+                if (this.isDirty() && !($$("userprefsSaveBtn").isEnabled())){
+                    $$("userprefsSaveBtn").enable();
+                } else if (!(this.isDirty())){
+                    $$("userprefsSaveBtn").disable();
+                }
+
+                if (this.isDirty() && !($$("userprefsResetBtn").isEnabled())){
+                    $$("userprefsResetBtn").enable();
+                } else if (!(this.isDirty())){
+                    $$("userprefsResetBtn").disable();
+                }  
+            }
+        }
     }
     
    
@@ -338,7 +355,9 @@ const userprefsConfirmBtns =  {
         {width:20},          
         {   view:"button", 
             height:48,
-            value:"Сбросить" 
+            value:"Сбросить" ,
+            id:"userprefsResetBtn",
+            disabled:true,
         },
         {width:10}, 
         {   view:"button", 
@@ -346,6 +365,7 @@ const userprefsConfirmBtns =  {
             height:48, 
             id:"userprefsSaveBtn",
             css:"webix_primary",
+            disabled:true,
             click: saveSettings,
         },
         {width:20}, 
@@ -368,6 +388,7 @@ const userprefsTabbar =  {
             on:{
                 onBeforeTabClick:function(id){
                     const formId = $$("userprefsTabbar").getValue()+"Form";
+ 
                     try{
                         if ($$(formId).isDirty()){
                             webix.modalbox({
@@ -378,8 +399,19 @@ const userprefsTabbar =  {
                                 text:"Выберите действие перед тем как продолжить"
                             }).then(function(result){
                                 if ( result == 1){
-                                    $$(formId).setValues(defaultValue[$$("userprefsTabbar").getValue()])
+                                    
+                                    let storageData = webix.storage.local.get(formId);
+                                    $$(formId).setValues(storageData);
+
                                     $$("userprefsTabbar").setValue(id);
+                                    if ($$("userprefsSaveBtn").isEnabled()){
+                                        $$("userprefsSaveBtn").disable();
+                                    }
+
+                                    if ($$("userprefsResetBtn").isEnabled()){
+                                        $$("userprefsResetBtn").disable();
+                                    }
+
                                 } else if ( result == 2){
                                     saveSettings ();
                                     $$("userprefsTabbar").setValue(id);

@@ -1,3 +1,5 @@
+@charset "UTF-8";
+
 :root {
   --white: #fff;
   --gray: rgb(209, 209, 209);
@@ -257,6 +259,35 @@
   color: var(--primary) !important;
   border-radius: 5px !important;
   border: 1px solid var(--gray) !important;
+}
+
+html,
+body {
+  scrollbar-width: 9px !important;
+}
+
+/* полоса прокрутки (скроллбар) */
+
+::-webkit-scrollbar {
+  width: auto !important;
+  /* ширина для вертикального скролла */
+  height: auto !important;
+  /* высота для горизонтального скролла */
+}
+
+/* ползунок скроллбара */
+
+::-webkit-scrollbar-thumb {
+  background-color: #b3b3b3 !important;
+  border-radius: 0px !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #c4c3c3 !important;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background-color: #a0a0a0 !important;
 }
 
 .webix_view,

@@ -51,11 +51,14 @@ function setUserPrefs (){
                 if (window.location.pathname=="/index.html/content" || window.location.pathname=="/init/default/spaw/content"){
                     let userprefsWorkspace = webix.storage.local.get("userprefsWorkspaceForm");
                     let userLocation = webix.storage.local.get("userLocationHref");
-                        console.log(userLocation,userprefsWorkspace)
-                    if (userprefsWorkspace && userprefsWorkspace.LoginActionOpt){
+
+                        const url = new URL(userLocation.href);
+
+                    if (userprefsWorkspace && userprefsWorkspace.LoginActionOpt && url.origin == window.location.origin ){
                         if (userprefsWorkspace.LoginActionOpt == 2){
                             if (userLocation && userLocation.href && userLocation.href !== window.location.href ){
-                                window.location.replace(userLocation.href)
+                                //Backbone.history.navigate(window.location.pathname, { trigger:true});
+                                window.location.replace(userLocation.href);
                             }
                         }
                     }

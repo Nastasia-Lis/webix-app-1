@@ -186,6 +186,7 @@ function removeItem() {
                 $$( "table" ).remove($$("table-editForm").getValues().id);
                 let formValues = $$("table-editForm").getValues();
         
+                console.log("/init/default/api/"+currId+"/"+formValues.id+".json",formValues)
                 webix.ajax().del("/init/default/api/"+currId+"/"+formValues.id+".json", formValues,{
                     success:function(text, data, XmlHttpRequest){
                         data = data.json();

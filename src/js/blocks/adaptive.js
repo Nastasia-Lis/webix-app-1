@@ -2,12 +2,38 @@ import {catchErrorTemplate} from "./logBlock.js";
 
 function resizeAdaptive (){
 
+    function autoResizePopup (popupId){
+                
+        if($$(popupId) && window.innerWidth/$$(popupId).$width < 1.3){
+
+            if( $$(popupId).$width > 100){
+                let size = $$(popupId).$width - 20;
+                $$(popupId).config.width = size;
+    
+                $$(popupId).resize();
+
+            }
+
+        } 
+    
+        if($$(popupId) && window.innerWidth/$$(popupId).$width > 1.3){
+
+            let size = $$(popupId).$width + 20;
+
+            $$(popupId).config.width = size;
+    
+            $$(popupId).resize();
+
+        
+        }
+    }
+
     window.addEventListener('resize', function(event) {
    
         
       // sidebar
         try{
-            if (window.innerWidth< 850 && $$("tree") && $$("tree").isVisible()){
+            if (window.innerWidth < 850 && $$("tree") && $$("tree").isVisible()){
                 $$("tree").hide();
             }
         
@@ -130,14 +156,15 @@ function resizeAdaptive (){
                 }
 
             } else if (window.innerWidth > 830 && $$("contextActionsBtnAdaptive")||window.innerWidth > 830 && $$("contextActionsBtn")){
-    
+
                 if ($$("customInputsAdaptive")){
                     const  filterBar = $$("table-view-filterIdView").getParentView();
                     const collection = {id:"customInputs",cols:$$("customInputsAdaptive")._collection[0].rows}
-                
-                    $$("contextActionsPopup").destructor();
 
-                $$("contextActionsBtnAdaptive").getParentView().removeView($$("contextActionsBtnAdaptive"));
+                    if($$("contextActionsBtnAdaptive")){
+                      $$("contextActionsBtnAdaptive").getParentView().removeView($$("contextActionsBtnAdaptive"));
+                    }
+                    $$("contextActionsPopup").destructor();
 
                     if (!($$("customInputs"))){
                     $$(filterBar.config.id).addView( 
@@ -151,30 +178,10 @@ function resizeAdaptive (){
                 } 
 
             }
+
+
+            autoResizePopup ("contextActionsPopup");
     
-            if($$("contextActionsPopup") && window.innerWidth/$$("contextActionsPopup").$width < 1.3){
-
-                if( $$("contextActionsPopup").$width > 100){
-                    let size = $$("contextActionsPopup").$width - 20;
-
-                $$("contextActionsPopup").config.width = size;
-        
-                $$("contextActionsPopup").resize();
-
-                }
-                //$$("sideMenuResizer").hide();
-            } 
-            
-            if($$("contextActionsPopup") && window.innerWidth/$$("contextActionsPopup").$width > 1.3){
-
-                let size = $$("contextActionsPopup").$width + 20;
-
-                $$("contextActionsPopup").config.width = size;
-        
-                $$("contextActionsPopup").resize();
-
-            
-            }
         } catch (error){
             console.log(error);
             catchErrorTemplate("017-007", error);
@@ -182,80 +189,117 @@ function resizeAdaptive (){
 
 
 
-         // dashboards
+        // dashboards
         try{
             if (window.innerWidth < 850){
-          
-                if ($$("dashboard-tool") && $$("dashboard-tool").isVisible()){
-                    $$("dashboard-tool").hide();
-                    console.log($$("dashboard-tool")._collection)
-                    
-                    if (!$$("my_button")){
-                        $$("dashboardInfoContainer").addView({
-                            view:"button", 
-                            id:"dashFilterBtn", 
-                            value:"Фильтры", 
-                            css:{"margin":"10px 0px!important"}, 
-                            height:46,
-                            margin:10,
-                            popup:webix.ui({
-                                view:"popup",
-                                css:"webix_popup-dash-container webix_popup-config",
-                                modal:true,
-                                id:"contextDashFilterPopup",
-                                escHide:true,
-                                position:"center",
-                                body:{
+                
+                if ($$("dashboard-tool-main") && $$("dashboard-tool-main").isVisible()){
+                  
+                    $$("dashboard-tool-main").hide();
+                    let tools;
 
-                                    rows:[
-                                        {cols:[
-                                            {template:"Фильтр", css:"webix_template-filter", borderless:true, height:40 },
-                                        //   {},
-                                            {
-                                                view:"button",
-                                                id:"buttonClosePopupDashFilter",
-                                                css:"webix_close-btn",
-                                                type:"icon",
-                                                hotkey: "esc",
-                                                width:25,
-                                                icon: 'wxi-close',
-                                                click:function(){
-                                                    if ($$("contextDashFilterPopup")){
-                                                        $$("contextDashFilterPopup").hide();
-                                                    }
-                                                
-                                                }
-                                            },
-                                        ]},
-                                        {
-                                            view:"scrollview",
-                                            borderless:true,
-                                            scroll:"y", 
-                                            body:{ 
-                                          //  id:"contextActionsPopupContainer",
-                                            css:"webix_context-actions-popup",
-                                            rows:[ 
-                                              ///////
-                                            ]
-                                            }
-                                        }
-                                
-                                    ]
-                          
-                                   
-                                }
-                            }),
-                            click:function(){
-                                if ( !($$("dashboard-tool").isVisible())){
-                                    $$("dashboard-tool").show();
-                                } else {
-                                    $$("dashboard-tool").hide();
-                                }
-                            }
-                        },0);
+                         
+                    if ($$("dashboard-tool-main")){
+                        tools = $$("dashboard-tool-main")._collection;
                     }
+            
+
+                    if (!$$("dashFilterBtn")){ //id:"dashboard-tool-adaptive"
+                        $$("dashboardInfoContainer").addView(
+                            {id:"dashboard-tool-adaptive",cols:[
+                                {
+                                    view:"button", 
+                                    id:"dashFilterBtn", 
+                                    value:"Фильтры", 
+                                    css:{"margin":"10px 0px!important"}, 
+                                    height:46,
+                                    margin:10,
+                                    popup:webix.ui({
+                                        view:"popup",
+                                        css:"webix_popup-dash-container webix_popup-config",
+                                        modal:true,
+                                        id:"contextDashFilterPopup",
+                                        escHide:true,
+                                        position:"center",
+                                        body:{
+                                            id:"contextDashFilterPopupContainer",rows:[
+
+                                            ]
+                                        }
+                                    }),
+                                    click:function(){
+                                      
+                                        if ($$("dashboard-tool-main")){
+                                            if($$("dashboard-tool-main")){
+                                                $$("dashboard-tool-main").getParentView().removeView($$("dashboard-tool-main"));
+                                            }
+                                            $$("contextDashFilterPopupContainer").addView( {id:"dashToolInputsAdaptive",  rows:tools});
+                                            if($$("buttonClosePopupDashFilter")){
+                                                $$("buttonClosePopupDashFilter").show();
+                                            }
+
+
+                                            if( $$("dashboard-tool-main")){
+                                                $$("dashboard-tool-main").getParentView().removeView( $$("dashboard-tool-main"));
+                                            }
+                                        } else if($$("dashboard-tool-adaptive")){
+                                            $$("contextDashFilterPopup").show();
+                                        }
+
+                                        
+                                    }
+                                }
+                            ]}
+                        ,0);
+                    }
+
+
+                    if(!($$("dashToolInputsAdaptive")) && $$("dashboard-tool-main")){
+                       
+                        $$("dashboard-tool-main").getParentView().removeView( $$("dashboard-tool-main"));
+                      
+                    }
+
+                    
              }
             }
+
+
+            if (window.innerWidth > 850){
+
+                if($$("dashboard-tool-adaptive")){
+                    let tools = $$("contextDashFilterPopup").config.body.rows;
+                    console.log($$("dashToolInputsAdaptive"))
+                    if($$("dashboard-tool-adaptive")){
+                        $$("dashboard-tool-adaptive").getParentView().removeView($$("dashboard-tool-adaptive"));
+                    }
+
+                    if ($$("contextDashFilterPopup")){
+                        $$("contextDashFilterPopup").destructor();
+                    }
+
+                    if($$("dashFilterBtn")){
+                        $$("dashFilterBtn").getParentView().removeView($$("dashFilterBtn"));
+                    }
+
+                    $$("dashboardTool").addView({  
+                        id:"dashboard-tool-main",
+                        padding:20,
+                        minWidth:250,
+                        rows:tools, 
+                    });
+                    
+                   // $$("contextDashFilterPopupContainer").addView( {id:"dashboard-tool-main", rows:tools});
+
+                    if($$("buttonClosePopupDashFilter") && $$("buttonClosePopupDashFilter").isVisible()){
+                        $$("buttonClosePopupDashFilter").hide();
+                    }
+                }
+               
+            }
+
+            autoResizePopup ("contextDashFilterPopupContainer");
+             
         } catch (error){
             console.log(error);
             catchErrorTemplate("017-007", error);

@@ -96,7 +96,9 @@ function contextMenu (){
                         break;
                     }
                     case "Удалить": {
-                        webix.ajax().del(url+titem.id).then(function (data) {
+                        console.log(url+titem.id+".json")
+                        console.log(titem)
+                        webix.ajax().del(url+titem.id,titem).then(function (data) {
                             if (data.json().err_type !== "e"&&data.json().err_type !== "x"){
                                 tree.remove(titem.id);
                                 setLogValue("success","Данные удалены");

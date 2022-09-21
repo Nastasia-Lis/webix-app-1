@@ -362,7 +362,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                         $$(filterBar.config.id).removeView($$("contextActionsBtn") );
                     }
 
-                    if (data.inputs ){  //-----------------------------------------------------------------
+                    if (data.inputs){  //-----------------------------------------------------------------
                        
                         let objInuts = Object.keys(data.inputs);
                         
@@ -658,11 +658,11 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                             });
 
                             customInputs.push({});
-                     
-                            inpObj = {id:"customInputs",css:"webix_custom-inp", rows:customInputs};
+                           // {id:"customInputsAdaptive",rows:[{id:"customInputs",css:"webix_custom-inp", rows:customInputs}]} 
+                            inpObj = {id:"customInputsAdaptive",rows:[{id:"customInputs",css:"webix_custom-inp", rows:customInputs}]} ;
                             $$(filterBar.config.id).addView({
                                 view:"button", 
-                                id:"contextActionsBtn",
+                                id:"contextActionsBtnAdaptive",
                                 maxWidth:100, 
                                 
                                 value:"Действия", 
@@ -885,8 +885,17 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
             
             }).catch(error => {
                 console.log(error);
-               // console.log(error.status)
                 if (error.status){
+                    if (error.status == "401"){
+                        webix.alert({
+                            title: "Пользователь не найден",
+                            text: "Войдите в систему перед тем как продолжить",
+                            ok:"Войти",
+                            modal:true,
+                        }).then(function(){
+                            Backbone.history.navigate("/", { trigger:true});
+                        });
+                    }
                     ajaxErrorTemplate("018-000",error.status,error.statusText,error.responseURL);
                 } else {
                     catchErrorTemplate("018-000", error);
@@ -915,8 +924,8 @@ function getInfoDashboard (idsParam,single=false){
 
                 try {
                     if($$("dashBodyScroll")){
-                        let parent = $$("dashBodyScroll").getParentView()
-                        parent.removeView($$("dashBodyScroll"))
+                        let parent = $$("dashBodyScroll").getParentView();
+                        parent.removeView($$("dashBodyScroll"));
                     }
 
                     if (!action){ //не с помощью кнопки фильтра
@@ -926,11 +935,17 @@ function getInfoDashboard (idsParam,single=false){
                         }
                         //$$("dashboardInfoContainer").getParentView().removeView($$("dashboardInfoContainer"))
                         if($$("dash-template")){
-                            $$("dash-template").getParentView().removeView($$("dash-template"))
+                            $$("dash-template").getParentView().removeView($$("dash-template"));
                         }
-                        if($$("dashboard-tool")){
-                            $$("dashboard-tool").getParentView().removeView($$("dashboard-tool"))
+                        if($$("dashboard-tool-main")){
+                            $$("dashboard-tool-main").getParentView().removeView($$("dashboard-tool-main"));
                         }
+
+                        if($$("dashboard-tool-adaptive")){
+                            $$("dashboard-tool-adaptive").getParentView().removeView($$("dashboard-tool-adaptive"));
+                        }
+
+                        
                     }
 
              
@@ -938,7 +953,7 @@ function getInfoDashboard (idsParam,single=false){
                     if (dataCharts == undefined){
                         $$("dashboardTool").addView({
                             view:"scrollview",
-                            id:"dashboard-tool",
+                            id:"dashboard-tool-main",
                             borderless:true,
                             css:{"margin":"20px!important","height":"50px!important"},
                             body: {
@@ -990,7 +1005,7 @@ function getInfoDashboard (idsParam,single=false){
                             delete el.title;
                             el.borderless = true;
                             el.minWidth = 250;
-                      
+                         
                             dashLayout[0].rows.push({
                                 css:"webix_dash-chart-headline",rows:[ 
                                     {   template:titleTemplate,
@@ -1022,21 +1037,104 @@ function getInfoDashboard (idsParam,single=false){
 
                         
                         if (!action){
-                            $$("dashboardTool").addView({
-                                id:"dashboard-tool",
-                                padding:20,
-                                minWidth:250,
-                                rows:[
-                                    {rows:[
-                                        {  template:"Фильтр",height:30, 
-                                            css:"webix_dash-filter-headline",
-                                            borderless:true
-                                        },
-                                    ]},
-                                    
-                                    { rows:inputsArray}
-                                ], 
-                            });
+
+                            if (window.innerWidth > 830){
+                                $$("dashboardTool").addView({
+                                    id:"dashboard-tool-main",
+                                    padding:20,
+                                    minWidth:250,
+                                    rows:[
+                                        {id:"dashboardToolHeadContainer",cols:[
+                                            
+                                            {  template:"Фильтр",height:30, 
+                                                css:"webix_dash-filter-headline",
+                                                borderless:true
+                                            },
+                                            {
+                                                view:"button",
+                                                id:"buttonClosePopupDashFilter",
+                                                css:"webix_close-btn",
+                                                type:"icon",
+                                                hotkey: "esc",
+                                                hidden:true,
+                                                width:25,
+                                                icon: 'wxi-close',
+                                                click:function(){
+                                                    if ($$("contextDashFilterPopup")){
+                                                        $$("contextDashFilterPopup").hide();
+                                                    }
+                                                
+                                                }
+                                            }
+                                        ]},
+                                        
+                                        { rows:inputsArray}
+                                    ], 
+                                });
+                            } else {
+                                //inputsArray
+                                if (!$$("dashFilterBtn")){
+                                    $$("dashboardInfoContainer").addView(
+                                        {id:"dashboard-tool-adaptive",cols:[
+
+                                            {
+                                                view:"button", 
+                                                id:"dashFilterBtn", 
+                                                value:"Фильтры", 
+                                                css:{"margin":"10px 0px!important"}, 
+                                                height:46,
+                                                margin:10,
+                                                popup:webix.ui({
+                                                    view:"popup",
+                                                    css:"webix_popup-dash-container webix_popup-config",
+                                                    modal:true,
+                                                    id:"contextDashFilterPopup",
+                                                    escHide:true,
+                                                    position:"center",
+                                                    body:{
+                                                        id:"contextDashFilterPopupContainer",
+                                                        rows:[
+                                                            {id:"dashboardToolHeadContainer",cols:[
+                                                                
+                                                                {  template:"Фильтр",height:30, 
+                                                                    css:"webix_dash-filter-headline",
+                                                                    borderless:true
+                                                                },
+                                                                {
+                                                                    view:"button",
+                                                                    id:"buttonClosePopupDashFilter",
+                                                                    css:"webix_close-btn",
+                                                                    type:"icon",
+                                                                    hotkey: "esc",
+                                                                    width:25,
+                                                                    icon: 'wxi-close',
+                                                                    click:function(){
+                                                                        if ($$("contextDashFilterPopup")){
+                                                                            $$("contextDashFilterPopup").hide();
+                                                                        }
+                                                                    
+                                                                    }
+                                                                }
+                                                            ]},
+                                                            
+                                                            {id:"dashToolInputsAdaptive", rows:inputsArray}
+                                                        ],
+                                                    }
+                                                }),
+                                                click:function(){
+                                                
+                                                    let size = window.innerWidth - 130;
+                                                    
+                                                    if( size > 200){
+                                                        $$("contextDashFilterPopupContainer").config.width = size;
+                                                        $$("contextDashFilterPopupContainer").resize();
+                                                    }
+                                                }
+                                            }
+                                        ]}
+                                    ,0);
+                                }
+                            }
 
                         
                             $$("dashboardInfoContainer").addView(
@@ -1052,7 +1150,8 @@ function getInfoDashboard (idsParam,single=false){
                                     },
                                     {
                                         view:"scrollview", 
-                                        scroll:"auto",
+                                        //scroll:"auto",
+                                        scroll:"y",
                                         id:"dashBodyScroll",
                                         borderless:true, 
                                         body:{
@@ -1076,7 +1175,7 @@ function getInfoDashboard (idsParam,single=false){
 
                                     {
                                         view:"scrollview", 
-                                        scroll:"auto",
+                                        scroll:"y",
                                         id:"dashBodyScroll",
                                         borderless:true, 
                                         body:{
