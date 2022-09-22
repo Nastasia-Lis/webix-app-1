@@ -1094,30 +1094,33 @@ function getInfoDashboard (idsParam,single=false){
                                                     body:{
                                                         id:"contextDashFilterPopupContainer",
                                                         rows:[
-                                                            {id:"dashboardToolHeadContainer",cols:[
-                                                                
-                                                                {  template:"Фильтр",height:30, 
-                                                                    css:"webix_dash-filter-headline",
-                                                                    borderless:true
-                                                                },
-                                                                {
-                                                                    view:"button",
-                                                                    id:"buttonClosePopupDashFilter",
-                                                                    css:"webix_close-btn",
-                                                                    type:"icon",
-                                                                    hotkey: "esc",
-                                                                    width:25,
-                                                                    icon: 'wxi-close',
-                                                                    click:function(){
-                                                                        if ($$("contextDashFilterPopup")){
-                                                                            $$("contextDashFilterPopup").hide();
-                                                                        }
+
+                                                            {id:"dashToolInputsAdaptive",rows:[
+                                                                {id:"dashboardToolHeadContainer",cols:[
                                                                     
+                                                                    {  template:"Фильтр",height:30, 
+                                                                        css:"webix_dash-filter-headline",
+                                                                        borderless:true
+                                                                    },
+                                                                    {
+                                                                        view:"button",
+                                                                        id:"buttonClosePopupDashFilter",
+                                                                        css:"webix_close-btn",
+                                                                        type:"icon",
+                                                                        hotkey: "esc",
+                                                                        width:25,
+                                                                        icon: 'wxi-close',
+                                                                        click:function(){
+                                                                            if ($$("contextDashFilterPopup")){
+                                                                                $$("contextDashFilterPopup").hide();
+                                                                            }
+                                                                        
+                                                                        }
                                                                     }
-                                                                }
-                                                            ]},
-                                                            
-                                                            {id:"dashToolInputsAdaptive", rows:inputsArray}
+                                                                ]},
+                                                                
+                                                                { rows:inputsArray}
+                                                            ]}
                                                         ],
                                                     }
                                                 }),

@@ -33,6 +33,7 @@ function createElements(specificElement){
             }
 
             if (!$$("tables")){
+
                 $$("container").addView(
                     {id:"tables", hidden:true, view:"scrollview", body: { view:"flexlayout", cols:[
                                                     
@@ -46,12 +47,15 @@ function createElements(specificElement){
                         
                             {  view:"resizer",class:"webix_resizers",},
                             
-                            editTableBar,
-                            filterForm
+                            editTableBar(),filterForm(),
+                            
+                            
                         ]
                         }
                     
                     },
+
+                 
                 5);
             }
 
@@ -143,13 +147,21 @@ function removeElements(){
 function getDataFields (routes, menuItem){
     return  webix.ajax("/init/default/api/whoami",{
          success:function(text, data, XmlHttpRequest){
-             $$("userAuth").hide();
-             $$("mainLayout").show();
-             userInfo.push(data.json().content.first_name, data.json().content.username)
- 
-             createElements();
-             webix.ajax().get("/init/default/api/fields.json",false).then(function (data) {
-                 let srcTree = data.json().content;
+                $$("userAuth").hide();
+                $$("mainLayout").show();
+                userInfo.push(data.json().content.first_name, data.json().content.username)
+                
+             
+                let userStorageData = {};
+                userStorageData.id = data.json().content.id;
+                userStorageData.name = data.json().content.first_name;
+                userStorageData.username = data.json().content.username;
+            
+                setStorageData("user", JSON.stringify(userStorageData));
+
+                createElements();
+                webix.ajax().get("/init/default/api/fields.json",false).then(function (data) {
+                    let srcTree = data.json().content;
    
                 //  srcTree.treeTemplate={
                      

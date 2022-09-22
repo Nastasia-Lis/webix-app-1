@@ -2,9 +2,9 @@ import {catchErrorTemplate} from "./logBlock.js";
 
 function resizeAdaptive (){
 
-    function autoResizePopup (popupId){
-                
-        if($$(popupId) && window.innerWidth/$$(popupId).$width < 1.3){
+    function autoResizePopup (popupId,k=1.3){
+
+        if($$(popupId) && window.innerWidth/$$(popupId).$width < k){
 
             if( $$(popupId).$width > 100){
                 let size = $$(popupId).$width - 20;
@@ -16,7 +16,7 @@ function resizeAdaptive (){
 
         } 
     
-        if($$(popupId) && window.innerWidth/$$(popupId).$width > 1.3){
+        if($$(popupId) && window.innerWidth/$$(popupId).$width > k){
 
             let size = $$(popupId).$width + 20;
 
@@ -202,8 +202,8 @@ function resizeAdaptive (){
                     if ($$("dashboard-tool-main")){
                         tools = $$("dashboard-tool-main")._collection;
                     }
-            
 
+               
                     if (!$$("dashFilterBtn")){ //id:"dashboard-tool-adaptive"
                         $$("dashboardInfoContainer").addView(
                             {id:"dashboard-tool-adaptive",cols:[
@@ -228,37 +228,37 @@ function resizeAdaptive (){
                                         }
                                     }),
                                     click:function(){
-                                      
-                                        if ($$("dashboard-tool-main")){
-                                            if($$("dashboard-tool-main")){
-                                                $$("dashboard-tool-main").getParentView().removeView($$("dashboard-tool-main"));
-                                            }
-                                            $$("contextDashFilterPopupContainer").addView( {id:"dashToolInputsAdaptive",  rows:tools});
-                                            if($$("buttonClosePopupDashFilter")){
-                                                $$("buttonClosePopupDashFilter").show();
-                                            }
-
-
-                                            if( $$("dashboard-tool-main")){
-                                                $$("dashboard-tool-main").getParentView().removeView( $$("dashboard-tool-main"));
-                                            }
-                                        } else if($$("dashboard-tool-adaptive")){
-                                            $$("contextDashFilterPopup").show();
+                                    
+                                        $$("contextDashFilterPopup").show();
+ 
+                                        if ($$("buttonClosePopupDashFilter") && !($$("buttonClosePopupDashFilter").isVisible())){
+                                            $$("buttonClosePopupDashFilter").show();
                                         }
 
-                                        
                                     }
                                 }
                             ]}
                         ,0);
                     }
 
-
-                    if(!($$("dashToolInputsAdaptive")) && $$("dashboard-tool-main")){
+                    if($$("dashboard-tool-main")){
                        
                         $$("dashboard-tool-main").getParentView().removeView( $$("dashboard-tool-main"));
                       
                     }
+
+                    if (!$$("dashToolInputsAdaptive")){
+                                            
+                        $$("contextDashFilterPopupContainer").addView( {id:"dashToolInputsAdaptive",  rows:tools});
+
+                        if( $$("dashboard-tool-main")){
+                            $$("dashboard-tool-main").getParentView().removeView( $$("dashboard-tool-main"));
+                        }
+                    }
+
+
+
+                   
 
                     
              }
@@ -268,8 +268,9 @@ function resizeAdaptive (){
             if (window.innerWidth > 850){
 
                 if($$("dashboard-tool-adaptive")){
-                    let tools = $$("contextDashFilterPopup").config.body.rows;
-                    console.log($$("dashToolInputsAdaptive"))
+
+                   let tools = $$("dashToolInputsAdaptive")._collection;
+            
                     if($$("dashboard-tool-adaptive")){
                         $$("dashboard-tool-adaptive").getParentView().removeView($$("dashboard-tool-adaptive"));
                     }
@@ -289,7 +290,6 @@ function resizeAdaptive (){
                         rows:tools, 
                     });
                     
-                   // $$("contextDashFilterPopupContainer").addView( {id:"dashboard-tool-main", rows:tools});
 
                     if($$("buttonClosePopupDashFilter") && $$("buttonClosePopupDashFilter").isVisible()){
                         $$("buttonClosePopupDashFilter").hide();
@@ -299,6 +299,102 @@ function resizeAdaptive (){
             }
 
             autoResizePopup ("contextDashFilterPopupContainer");
+             
+        } catch (error){
+            console.log(error);
+            catchErrorTemplate("017-007", error);
+        }
+
+
+
+
+        // table edit bar
+        try{
+            if (window.innerWidth < 1200){
+
+
+                $$("table-editForm").clear();
+                $$("table-editForm").clearValidation();
+
+                if ($$("table-saveNewBtn").isVisible()) {
+                    $$("table-saveNewBtn").hide();
+                } else if ($$("table-saveBtn").isVisible()){
+                    $$("table-saveBtn").hide();
+                }
+                $$("table-delBtnId").disable();
+                $$("table-newAddBtnId").enable();
+
+                if ($$("inputsTable")){
+                    $$("inputsTable").getParentView().removeView($$("inputsTable"))
+                }
+
+                if( $$("table-editTableBtnId") && !( $$("table-editTableBtnId").isVisible())){
+                    $$("table-editTableBtnId").show();
+                }
+
+                if ($$("editTableBarContainer") && $$("editTableBarContainer").isVisible()){
+                    $$("editTableBarContainer").hide();
+                }
+             
+            }
+
+
+            if (window.innerWidth > 1200){
+
+                if( $$("table-editTableBtnId") && $$("table-editTableBtnId").isVisible()){
+                    $$("table-editTableBtnId").hide();
+                }
+
+                if ($$("editTableBarContainer") && !($$("editTableBarContainer").isVisible())){
+                    $$("editTableBarContainer").show();
+                }
+
+                $$("editTableBarAdaptive").config.width = 350;
+                $$("editTableBarAdaptive").resize();
+
+                $$("editTableBarContainer").addView($$("editTableBarAdaptive"))
+
+                
+
+                if ($$("tableEditPopup")){
+                    $$("tableEditPopup").destructor();
+                }
+
+                if($$("editTableBarHeadline") && $$("editTableBarHeadline").isVisible()){
+                    $$("editTableBarHeadline").hide();
+                } 
+   
+            }
+
+            autoResizePopup ("editTableBarAdaptive", 1.5);
+             
+        } catch (error){
+            console.log(error);
+            catchErrorTemplate("017-007", error);
+        }
+
+
+
+        // table filter bar
+        try{
+            if (window.innerWidth < 1200){
+                if ($$("editTableBarContainer") && $$("editTableBarContainer").isVisible()){
+                    $$("editTableBarContainer").hide();
+                }
+
+                if ($$("filterTableBarContainer") && $$("filterTableBarContainer").isVisible()){
+                    $$("filterTableBarContainer").hide();
+                }
+             
+            }
+
+
+            if (window.innerWidth > 1200){
+
+            }
+
+            autoResizePopup ("editFilterBarAdaptive", 1.5);
+            autoResizePopup ("popupFilterEdit", 1.5);
              
         } catch (error){
             console.log(error);
@@ -317,10 +413,35 @@ function adaptivePoints (){
         if (window.innerWidth < 850 && $$("tree") && $$("tree").isVisible()){
             $$("tree").hide();
         }
+
+
+       // table filter popup
+        if(!$$("tableFilterPopup")){
+            webix.ui({
+                view:"popup",
+                css:"webix_popup-table-container webix_popup-config",
+                modal:true,
+                id:"tableFilterPopup",
+                escHide:true,
+                position:"center",
+                body:{
+                    id:"tableFilterPopupContainer",rows:[
+
+                    ]
+                }
+            });
+        }
+           
+
+      
+
     } catch (error){
         console.log(error);
         catchErrorTemplate("017-007", error);
     }
+
+
+
 
 
     // if(window.innerWidth < 550 && $$("sideMenuResizer")){

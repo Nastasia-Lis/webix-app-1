@@ -1,4 +1,4 @@
-console.log("expa 1.0.26");
+console.log("expa 1.0.27");
 // import {lib} from "./modules/expalib.js";
 // lib ();
 
@@ -19,6 +19,9 @@ try{
         webix.protoUI({
             name:"edittree"
         }, webix.EditAbility, webix.ui.tree);
+
+
+     
 
         webix.ui({
             view:"scrollview",

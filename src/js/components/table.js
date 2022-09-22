@@ -17,28 +17,89 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
 
     function filterBtnClick (){
         try{
-            $$(idTable).clearSelection();
-            let btnClass = document.querySelector(".webix_btn-filter");
+            if (window.innerWidth > 1200){
 
-            if(!(btnClass.classList.contains("webix_primary"))){
-                $$("filterTableForm").show();
-                $$("table-editForm").hide();
-            
+                if ($$("editFilterBarAdaptive").getParentView().config.id !==  "filterTableBarContainer"){
+                    $$("filterTableBarContainer").addView($$("editFilterBarAdaptive"));
+                }
+
+
+                
+                if($$("editFilterBarHeadline")){
+                    $$("editFilterBarHeadline").hide();
+                }
+                $$("editFilterBarAdaptive").config.width = 350;
+                $$("editFilterBarAdaptive").resize();
+
+                $$(idTable).clearSelection();
+                let btnClass = document.querySelector(".webix_btn-filter");
+
+                if(!(btnClass.classList.contains("webix_primary"))){
+                    $$("filterTableForm").show();
+                    $$("table-editForm").hide();
+                
+                    if($$("filterTableForm").getChildViews() !== 0){
+                        createFilterElements("filterTableForm",3);
+                    }
+                    btnClass.classList.add("webix_primary");
+                    btnClass.classList.remove("webix_secondary");
+                    $$(idBtnEdit).show();
+
+                    if ($$("editTableBarContainer") && $$("editTableBarContainer").isVisible()){
+                        $$("editTableBarContainer").hide();
+                    }
+
+                    if ($$("filterTableBarContainer") && !($$("filterTableBarContainer").isVisible())){
+                        $$("filterTableBarContainer").show();
+                    }
+                
+                } else {
+                    $$("filterTableForm").hide();
+                    $$("table-editForm").show();
+                    btnClass.classList.add("webix_secondary");
+                    btnClass.classList.remove("webix_primary");
+                    $$(idBtnEdit).hide();
+                    
+                    if ($$("filterTableBarContainer") && $$("filterTableBarContainer").isVisible()){
+                        $$("filterTableBarContainer").hide();
+                    }
+
+                    if ($$("editTableBarContainer") && !($$("editTableBarContainer").isVisible())){
+                        $$("editTableBarContainer").show();
+                    }
+                }
+            } else {
+          
+                if ($$("tableFilterPopup")){
+                    $$("tableFilterPopup").show();
+                }
+
+                if ($$("tableFilterPopupContainer") && !($$("tableFilterPopupContainer").isVisible())){
+                    $$("tableFilterPopupContainer").show();
+                }
+
+                if ($$("tableFilterPopupContainer")){
+                    $$("tableFilterPopupContainer").addView($$("editFilterBarAdaptive"));
+                }
+             
+
+                if($$("editFilterBarHeadline") && !($$("editFilterBarHeadline").isVisible())){
+                    $$("editFilterBarHeadline").show();
+                }
+                console.log($$("filterTableForm").getChildViews())
                 if($$("filterTableForm").getChildViews() !== 0){
                     createFilterElements("filterTableForm",3);
-
                 }
-                btnClass.classList.add("webix_primary");
-                btnClass.classList.remove("webix_secondary");
-                $$(idBtnEdit).show();
-            
-            } else {
-            
-                $$("filterTableForm").hide();
-                $$("table-editForm").show();
-                btnClass.classList.add("webix_secondary");
-                btnClass.classList.remove("webix_primary");
-                $$(idBtnEdit).hide();
+
+                $$("filterTableForm").show();
+
+                let size = window.innerWidth - 200;
+
+                if( $$("editFilterBarAdaptive").$width > 200){
+                    $$("editFilterBarAdaptive").config.width = size;
+                    $$("editFilterBarAdaptive").resize();
+                }
+
             }
         } catch (error){
             console.log(error);
@@ -49,13 +110,56 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
 
     function editBtnClick() {
         try {
-            let btnClass = document.querySelector(".webix_btn-filter");
-            $$("filterTableForm").hide();
-            $$("table-editForm").show();
-            btnClass.classList.add("webix_secondary");
-            btnClass.classList.remove("webix_primary");
-            $$(idBtnEdit).hide();
-            this.hide();
+
+            if (window.innerWidth > 1200){
+                let btnClass = document.querySelector(".webix_btn-filter");
+                $$("filterTableForm").hide();
+                $$("table-editForm").show();
+                btnClass.classList.add("webix_secondary");
+                btnClass.classList.remove("webix_primary");
+                $$(idBtnEdit).hide();
+                if ($$("editTableBarContainer") ){
+                    $$("editTableBarContainer").show();
+                }
+               // this.hide();
+
+            } else {
+                if (!($$("tableEditPopup"))){
+                    webix.ui({
+                        view:"popup",
+                        css:"webix_popup-table-container webix_popup-config",
+                        modal:true,
+                        id:"tableEditPopup",
+                        escHide:true,
+                        position:"center",
+                        body:{
+                            id:"tableEditPopupContainer",rows:[
+
+                            ]
+                        }
+                    }).show();
+                    $$("tableEditPopupContainer").addView($$("editTableBarAdaptive"))
+
+                    if($$("editTableBarHeadline") && !($$("editTableBarHeadline").isVisible())){
+                        $$("editTableBarHeadline").show();
+                    }
+
+                   
+                } else {
+                    $$("tableEditPopup").show();
+                    if (!($$("table-newAddBtnId").isEnabled())){
+                        $$("table-newAddBtnId").enable();
+                    }
+
+                    let size = window.innerWidth - 200;
+
+                    if( $$("editTableBarAdaptive").$width > 200){
+                        $$("editTableBarAdaptive").config.width = size;
+                        $$("editTableBarAdaptive").resize();
+                    }
+                }
+             
+            }
         } catch (error){
             console.log(error);
             catchErrorTemplate("012-000", error);
@@ -805,7 +909,7 @@ let onFuncTable = {
 
     onAfterSelect(id){
         try {
-            if ($$("table-editTableBtnId").isVisible()){
+            if ($$("table-editTableBtnId").isVisible() && window.innerWidth > 1200){
                 $$("table-editTableBtnId").hide();
             }
 
@@ -813,7 +917,7 @@ let onFuncTable = {
                 $$("table-newAddBtnId").enable();
             }
 
-            if ($$("EditEmptyTempalte")&&$$("EditEmptyTempalte").isVisible()){
+            if ($$("EditEmptyTempalte") && $$("EditEmptyTempalte").isVisible()){
                 $$("EditEmptyTempalte").hide();
             }
 
@@ -825,6 +929,39 @@ let onFuncTable = {
                 btnClass.classList.remove("webix_primary");
                 
             }
+            if (window.innerWidth < 1200){
+
+                if (!($$("tableEditPopup"))){
+                    webix.ui({
+                        view:"popup",
+                        css:"webix_popup-table-container webix_popup-config",
+                        modal:true,
+                        id:"tableEditPopup",
+                        escHide:true,
+                        position:"center",
+                        body:{
+                            id:"tableEditPopupContainer",rows:[
+
+                            ]
+                        }
+                    }).show();
+                    $$("tableEditPopupContainer").addView($$("editTableBarAdaptive"))
+
+                    if($$("editTableBarHeadline") && !($$("editTableBarHeadline").isVisible())){
+                        $$("editTableBarHeadline").show();
+                    }
+              
+                } else {
+                    $$("tableEditPopup").show();
+                   
+                }
+
+                if ($$("EditEmptyTempalte") && $$("EditEmptyTempalte").isVisible()){
+                    $$("EditEmptyTempalte").hide();
+                }
+
+            }
+            
         
         } catch (error){
             console.log(error);
@@ -835,12 +972,6 @@ let onFuncTable = {
 
         function toEditForm () {
             try {
- 
-                // $$("table-editForm").setValues(values);
-                // $$("table-editForm").clear();
-
-                // $$("table").select($$("table").getSelectedId())
-                
                 $$("table-editForm").setValues(values);
                 $$("table-saveNewBtn").hide();
                 $$("table-saveBtn").show();
@@ -915,6 +1046,14 @@ let onFuncTable = {
             catchErrorTemplate("012-000", error);
         }
     },
+    onAfterRender:function(){
+        if (window.innerWidth < 1200 ){
+            if ($$("table-editTableBtnId") && !($$("table-editTableBtnId").isVisible())){
+               $$("table-editTableBtnId").show(); 
+            }
+            
+        }
+    }
 
     
  

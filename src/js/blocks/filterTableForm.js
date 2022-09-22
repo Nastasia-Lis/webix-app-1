@@ -331,6 +331,15 @@ function editFiltersBtn (){
     }).show();
 
 
+    
+    let size = window.innerWidth - 200;
+
+    if( $$("popupFilterEdit").$width > 200){
+        $$("popupFilterEdit").config.width = size;
+        $$("popupFilterEdit").resize();
+    }
+
+
 // select option
     let nameList = [
         {cols:[
@@ -540,6 +549,9 @@ function resetFilterBtn (){
                 let filterCountRows = $$("table").count();
                 $$("table-idFilterElements").setValues(filterCountRows.toString());
                 setLogValue("success", "Фильтры очищены");
+                if ($$("tableFilterPopup") && $$("tableFilterPopup").isVisible()){
+                    $$("tableFilterPopup").hide();
+                }
             },
             error:function(text, data, XmlHttpRequest){
                 ajaxErrorTemplate("004-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
@@ -720,6 +732,9 @@ function filterSubmitBtn (){
         
                 if (notifyType == "i"){
                     setLogValue("success","Фильтры успшено применены");
+                    if ($$("tableFilterPopup") && $$("tableFilterPopup").isVisible()){
+                        $$("tableFilterPopup").hide();
+                    }
                 } else if (notifyType == "e"){
                     setLogValue("error",notifyMsg);
                 } else if (notifyType == "x"){
@@ -781,120 +796,274 @@ function filterLibraryBtn (){
     }
 }
 
+function filterForm (){
+    return {id:"filterTableBarContainer", hidden:true, rows:[
+            {id:"editFilterBarAdaptive", rows:[
+                {id:"editFilterBarHeadline",hidden:true,cols:[
+                    {  template:"Редактор записей",height:30, 
+                        css:"table-filter-headline",
+                        borderless:true,
+                    },
+                    {
+                        view:"button",
+                    // id:"buttonClosePopupTableEdit",
+                        css:"webix_close-btn",
+                        type:"icon",
+                        hotkey: "esc",
+                        width:25,
+                        icon: 'wxi-close',
+                        click:function(){
+                            if($$("table-editForm")){
+                            
+                                
 
-let filterForm;
-try {
+                                    // if ( $$("inputsTable")){
+                                    //     $$("inputsTable").getParentView().removeView($$("inputsTable"))
+                                    // }
 
-    filterForm =  {   
-        view:"form", 
-        hidden:true,
-        id:"filterTableForm",
-        minHeight:350,
-        minWidth:210,
-        width: 320,
-        scroll:true,
-        elements:[
-            {   id:"form-adaptive",
-                minHeight:48,
-                css:"webix_form-adaptive",
-                margin:5,
-                rows:[
-                    {   margin:5, 
-                        rows:[
-                        {   responsive:"form-adaptive",  
-                            margin:5, 
-                            cols:[
-                                {   view:"button",
-                                    value:"Редактор фильтров",
-                                    height:48,
-                                    minWidth:140, 
-                                    click:editFiltersBtn,
-                                    on: {
-                                        onAfterRender: function () {
-                                            this.getInputNode().setAttribute("title","Добавить/удалить фильтры");
-                                        },
+                                    // $$("table").filter(false);
+                                
+                                    // $$("table-delBtnId").disable();
+                                    // $$("table-saveBtn").hide();
+                                    // $$("table-saveNewBtn").hide();
+
+                                    if ($$("tableFilterPopup")){
+                                        $$("tableFilterPopup").hide();
+                                    }
+                                
+                            }
+                        
+                        }
+                    }
+                ]},
+                {
+                    view:"form", 
+                    hidden:true,
+                    id:"filterTableForm",
+                    minHeight:350,
+                    minWidth:210,
+                    width: 320,
+                    scroll:true,
+                    borderless:true,
+                    elements:[
+                        {   id:"form-adaptive",
+                            minHeight:48,
+                            css:"webix_form-adaptive",
+                            margin:5,
+                            rows:[
+                                {   margin:5, 
+                                    rows:[
+                                    {   responsive:"form-adaptive",  
+                                        margin:5, 
+                                        cols:[
+                                            {   view:"button",
+                                                value:"Редактор фильтров",
+                                                height:48,
+                                                minWidth:140, 
+                                                click:editFiltersBtn,
+                                                on: {
+                                                    onAfterRender: function () {
+                                                        this.getInputNode().setAttribute("title","Добавить/удалить фильтры");
+                                                    },
+                                                },
+                                            },
+                                            {   view:"button",
+                                                id:"resetFilterBtn",
+                                                disabled:true,
+                                                height:48,
+                                                minWidth:50,
+                                                width:65,
+                                                hotkey: "shift+esc",
+                                                css:"webix_danger", 
+                                                type:"icon", 
+                                                icon:"wxi-trash", 
+                                                click:resetFilterBtn,
+                                                on: {
+                                                    onAfterRender: function () {
+                                                        this.getInputNode().setAttribute("title", "Сбросить фильтры");
+                                                    }
+                                                } 
+                                            },
+                                        ],
                                     },
+                                    ]
                                 },
-                                {   view:"button",
-                                    id:"resetFilterBtn",
-                                    disabled:true,
-                                    height:48,
-                                    minWidth:50,
-                                    width:65,
-                                    hotkey: "shift+esc",
-                                    css:"webix_danger", 
-                                    type:"icon", 
-                                    icon:"wxi-trash", 
-                                    click:resetFilterBtn,
-                                    on: {
-                                        onAfterRender: function () {
-                                            this.getInputNode().setAttribute("title", "Сбросить фильтры");
+
+                                {   id:"btns-adaptive",
+                                    css:{"margin-top":"5px!important"},
+                                    
+                                    rows:[
+                                        {   responsive:"btns-adaptive", 
+                                            margin:5, 
+                                            cols:[
+                                                {   view:"button",
+                                                    id:"btnFilterSubmit",
+                                                    height:48,
+                                                    minWidth:70, 
+                                                    css:"webix_primary",
+                                                    hotkey: "Enter",
+                                                    disabled:true,
+                                                    value:"Применить фильтры", 
+                                                    click:filterSubmitBtn,
+                                                
+                                                },
+                                                {   view:"button",
+                                                    id:"filterLibrarySaveBtn",
+                                                    disabled:true,
+                                                    height:48,
+                                                    minWidth:50,
+                                                    width:65,
+                                                    hotkey: "shift+esc",
+                                                    type:"icon", 
+                                                    icon:"wxi-file", 
+                                                    click:filterLibraryBtn,
+                                                    on: {
+                                                        onAfterRender: function () {
+                                                            this.getInputNode().setAttribute("title", "Сохранить шаблон с полями в библиотеку");
+                                                        }
+                                                    } 
+                                                },
+                                        
+                                            ]
+                                        },
+                                        {height:10},
+
+                                        {   id:"filterEmptyTempalte",
+                                            template:"<div style='color:#858585;font-size:13px!important'>Добавьте фильтры из редактора</div>", 
+                                            borderless:true
                                         }
-                                    } 
-                                },
-                            ],
+                                    ]
+                                }
+                            ]
                         },
-                        ]
+                    ],
+                    rules:{
+                        $all:webix.rules.isNotEmpty
                     },
 
-                    {   id:"btns-adaptive",
-                        css:{"margin-top":"5px!important"},
+
+                    ready:function(){
+                        this.validate();
+                    },
+
+                }
+            ]}
+    ]};
+}
+//let filterForm;
+try {
+   
+
+    // filterForm =  {   
+    //     view:"form", 
+    //     hidden:true,
+    //     id:"filterTableForm",
+    //     minHeight:350,
+    //     minWidth:210,
+    //     width: 320,
+    //     scroll:true,
+    //     elements:[
+    //         {   id:"form-adaptive",
+    //             minHeight:48,
+    //             css:"webix_form-adaptive",
+    //             margin:5,
+    //             rows:[
+    //                 {   margin:5, 
+    //                     rows:[
+    //                     {   responsive:"form-adaptive",  
+    //                         margin:5, 
+    //                         cols:[
+    //                             {   view:"button",
+    //                                 value:"Редактор фильтров",
+    //                                 height:48,
+    //                                 minWidth:140, 
+    //                                 click:editFiltersBtn,
+    //                                 on: {
+    //                                     onAfterRender: function () {
+    //                                         this.getInputNode().setAttribute("title","Добавить/удалить фильтры");
+    //                                     },
+    //                                 },
+    //                             },
+    //                             {   view:"button",
+    //                                 id:"resetFilterBtn",
+    //                                 disabled:true,
+    //                                 height:48,
+    //                                 minWidth:50,
+    //                                 width:65,
+    //                                 hotkey: "shift+esc",
+    //                                 css:"webix_danger", 
+    //                                 type:"icon", 
+    //                                 icon:"wxi-trash", 
+    //                                 click:resetFilterBtn,
+    //                                 on: {
+    //                                     onAfterRender: function () {
+    //                                         this.getInputNode().setAttribute("title", "Сбросить фильтры");
+    //                                     }
+    //                                 } 
+    //                             },
+    //                         ],
+    //                     },
+    //                     ]
+    //                 },
+
+    //                 {   id:"btns-adaptive",
+    //                     css:{"margin-top":"5px!important"},
                         
-                        rows:[
-                            {   responsive:"btns-adaptive", 
-                                margin:5, 
-                                cols:[
-                                    {   view:"button",
-                                        id:"btnFilterSubmit",
-                                        height:48,
-                                        minWidth:70, 
-                                        css:"webix_primary",
-                                        hotkey: "Enter",
-                                        disabled:true,
-                                        value:"Применить фильтры", 
-                                        click:filterSubmitBtn,
+    //                     rows:[
+    //                         {   responsive:"btns-adaptive", 
+    //                             margin:5, 
+    //                             cols:[
+    //                                 {   view:"button",
+    //                                     id:"btnFilterSubmit",
+    //                                     height:48,
+    //                                     minWidth:70, 
+    //                                     css:"webix_primary",
+    //                                     hotkey: "Enter",
+    //                                     disabled:true,
+    //                                     value:"Применить фильтры", 
+    //                                     click:filterSubmitBtn,
                                     
-                                    },
-                                    {   view:"button",
-                                        id:"filterLibrarySaveBtn",
-                                        disabled:true,
-                                        height:48,
-                                        minWidth:50,
-                                        width:65,
-                                        hotkey: "shift+esc",
-                                        type:"icon", 
-                                        icon:"wxi-file", 
-                                        click:filterLibraryBtn,
-                                        on: {
-                                            onAfterRender: function () {
-                                                this.getInputNode().setAttribute("title", "Сохранить шаблон с полями в библиотеку");
-                                            }
-                                        } 
-                                    },
+    //                                 },
+    //                                 {   view:"button",
+    //                                     id:"filterLibrarySaveBtn",
+    //                                     disabled:true,
+    //                                     height:48,
+    //                                     minWidth:50,
+    //                                     width:65,
+    //                                     hotkey: "shift+esc",
+    //                                     type:"icon", 
+    //                                     icon:"wxi-file", 
+    //                                     click:filterLibraryBtn,
+    //                                     on: {
+    //                                         onAfterRender: function () {
+    //                                             this.getInputNode().setAttribute("title", "Сохранить шаблон с полями в библиотеку");
+    //                                         }
+    //                                     } 
+    //                                 },
                             
-                                ]
-                            },
-                            {height:10},
+    //                             ]
+    //                         },
+    //                         {height:10},
 
-                            {   id:"filterEmptyTempalte",
-                                template:"<div style='color:#858585;font-size:13px!important'>Добавьте фильтры из редактора</div>", 
-                                borderless:true
-                            }
-                        ]
-                    }
-                ]
-            },
-        ],
-        rules:{
-            $all:webix.rules.isNotEmpty
-        },
+    //                         {   id:"filterEmptyTempalte",
+    //                             template:"<div style='color:#858585;font-size:13px!important'>Добавьте фильтры из редактора</div>", 
+    //                             borderless:true
+    //                         }
+    //                     ]
+    //                 }
+    //             ]
+    //         },
+    //     ],
+    //     rules:{
+    //         $all:webix.rules.isNotEmpty
+    //     },
 
 
-        ready:function(){
-            this.validate();
-        },
+    //     ready:function(){
+    //         this.validate();
+    //     },
 
-    };
+    // };
 }catch(error){
     console.log(error);
     catchErrorTemplate("004-003", error);

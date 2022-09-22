@@ -2,13 +2,11 @@ import {getComboOptions} from './content.js';
 import {headerContextId} from '../components/header.js';
 import {tableNames} from "./router.js";
 import {catchErrorTemplate,ajaxErrorTemplate,setLogValue} from "./logBlock.js";
-
 import {modalBox, popupExec} from "./notifications.js";
-import { treeSidebar } from '../components/sidebar.js';
 
 let currId;
 
-let editTableBar;
+//let editTableBar;
 
 function getCurrId (){
     let itemTreeId = $$("tree").getSelectedItem().id;
@@ -57,8 +55,14 @@ function saveItem(addBtnClick=false){
                             $$("table-saveBtn").hide();
                             $$("table-saveNewBtn").show();
                         }
+ 
 
                         if (data.err_type == "i"){
+                            
+                            if (window.innerWidth < 1200 && $$("tableEditPopup")){
+                                $$("tableEditPopup").hide();
+                            }
+
                             setLogValue("success","Данные сохранены");
                         } if (data.err_type == "e"){
                             setLogValue("error",data.error);
@@ -151,7 +155,12 @@ function saveNewItem (){
                             $$("EditEmptyTempalte").show();
                         }
 
+                        
+
                         if (data.err_type == "i"){
+                            if (window.innerWidth < 1200 && $$("tableEditPopup")){
+                                $$("tableEditPopup").hide();
+                            }
                             setLogValue("success","Данные успешно добавлены");
                         } else if (data.err_type == "e"){
                             setLogValue("error",data.error);
@@ -193,8 +202,15 @@ function removeItem() {
                         clearItem();
                         defaultStateForm ();
                         $$("inputsTable").hide();
+
+                        if (window.innerWidth < 1200 && $$("tableEditPopup")){
+                            $$("tableEditPopup").hide();
+                        }
                         
                         if (data.err_type == "i"){
+                            if (window.innerWidth < 1200 && $$("tableEditPopup")){
+                                $$("tableEditPopup").hide();
+                            }
                             setLogValue("success","Данные успешно удалены");
                         } if (data.err_type == "e"){
                             setLogValue("error",data.error);
@@ -305,6 +321,10 @@ function createEditFields (parentElement, viewPosition=1) {
                         click:function(){
                             try {
                                 $$("tree").select(findTableId);
+
+                                if ($$("tableEditPopup") && $$("tableEditPopup").isVisible()){
+                                    $$("tableEditPopup").hide();
+                                }
                             } catch (e){
                                 console.log(e);
                                 setLogValue("error","Таблица не найдена");
@@ -428,99 +448,267 @@ function defaultStateForm () {
 //--- components
 
 
+
+
+function editTableBar (){
+    return {id:"editTableBarContainer",rows:[
+        {id:"editTableBarAdaptive", rows:[
+            {id:"editTableBarHeadline",hidden:true,cols:[
+                {  template:"Редактор записей",height:30, 
+                    css:"table-edit-headline",
+                    borderless:true,
+                },
+                {
+                    view:"button",
+                    id:"buttonClosePopupTableEdit",
+                    css:"webix_close-btn",
+                    type:"icon",
+                    hotkey: "esc",
+                    width:25,
+                    icon: 'wxi-close',
+                    click:function(){
+                        if($$("table-editForm")){
+                            if($$("table-editForm").isDirty()){
+                                modalBox().then(function(result){
+                                    if (result == 1){
+
+                                        if ($$("tableEditPopup")){
+                                            $$("tableEditPopup").hide();
+                                        }
+                                    } else if (result == 2){
+                                        if ($$("table-editForm").validate()){
+                                            if ($$("table-editForm").getValues().id){
+                                                saveItem();
+                                            } else {
+                                                saveNewItem(); 
+                                            }
+                                            $$("table-editForm").clear();
+                                            $$("table-delBtnId").enable();
+                                            if ($$("tableEditPopup")){
+                                                $$("tableEditPopup").hide();
+                                            }
+                                        
+                                        } else {
+                                            setLogValue("error","Заполните пустые поля");
+                                            return false;
+                                        }
+                                        
+                                    }
+                                });
+
+                               
+                            } else {
+
+                                if ( $$("inputsTable")){
+                                    $$("inputsTable").getParentView().removeView($$("inputsTable"))
+                                }
+
+                                $$("table").filter(false);
+                            
+                                $$("table-delBtnId").disable();
+                                $$("table-saveBtn").hide();
+                                $$("table-saveNewBtn").hide();
+
+                                if ($$("tableEditPopup")){
+                                    $$("tableEditPopup").hide();
+                                }
+                            }
+                        }
+                    
+                    }
+                }
+            ]},
+            {
+                view:"form", 
+                id:"table-editForm",
+                css:"webix_form-edit",
+                minHeight:350,
+                minWidth:210,
+                width: 320,
+                scroll:true,
+                borderless:true,
+                elements:[
+            
+                    {//id:"form-adaptive",
+                    minHeight:48,css:"webix_form-adaptive", margin:5, rows:[{margin:5, rows:[
+                    
+                        
+                        {//responsive:"form-adaptive",  
+                        margin:5, 
+            
+                            cols: [
+                                {   view:"button",
+                                    id:"table-newAddBtnId",
+                                    height:48,
+                                    minWidth:90, 
+                                    hotkey: "shift",
+                                    value:"Новая запись", click:addItem},
+                                    
+                                {   view:"button",
+                                    id:"table-delBtnId",
+                                    disabled:true,
+                                    height:48,
+                                    minWidth:90,
+                                    width:100,
+                                    hotkey: "shift+esc",
+                                    css:"webix_danger", 
+                                    type:"icon", 
+                                    icon:"wxi-trash", 
+                                    click:removeItem,
+                                    on: {
+                                        onAfterRender: function () {
+                                            this.getInputNode().setAttribute("title","Удалить запись из таблицы");
+                                        }
+                                    } 
+                                },
+                            ]
+                        },
+                        
+                    ]},
+            
+                {margin:10, rows:[ { 
+                        view:"button", 
+                        id:"table-saveBtn",
+                        hidden:true, 
+                        value:"Сохранить", 
+                        height:48, 
+                        css:"webix_primary", 
+                        click:function(){
+                            saveItem();
+                        },
+                        hotkey: "enter" 
+                    },
+                    { 
+                        view:"button", 
+                        id:"table-saveNewBtn",
+                        value:"Сохранить новую запись",
+                        hidden:true,  
+                        height:48,
+                        hotkey: "enter" ,
+                        css:"webix_primary", 
+                        click:saveNewItem
+                    },
+                    {id:"EditEmptyTempalte",template:"<div style='color:#858585;font-size:13px!important'>Добавьте новую запись или выберите существующую из таблицы</div>", borderless:true}
+            
+            
+                    ]},
+            
+            
+                    
+                ]},
+            
+                ],
+                
+                rules:{
+                    $all:webix.rules.isNotEmpty
+                },
+            
+            
+                ready:function(){
+                    this.validate();
+                },
+            
+            }
+        ]}
+    ]}
+}
+
 try{
 
 
- editTableBar = {
-    view:"form", 
-    id:"table-editForm",
-    css:"webix_form-edit",
-    minHeight:350,
-    minWidth:210,
-    width: 320,
-    scroll:true,
-    elements:[
+//  editTableBar = {
+//     view:"form", 
+//     id:"table-editForm",
+//     css:"webix_form-edit",
+//     minHeight:350,
+//     minWidth:210,
+//     width: 320,
+//     scroll:true,
+//     elements:[
 
-        {//id:"form-adaptive",
-        minHeight:48,css:"webix_form-adaptive", margin:5, rows:[{margin:5, rows:[
+//         {//id:"form-adaptive",
+//         minHeight:48,css:"webix_form-adaptive", margin:5, rows:[{margin:5, rows:[
            
             
-            {//responsive:"form-adaptive",  
-            margin:5, 
+//             {//responsive:"form-adaptive",  
+//             margin:5, 
 
-                cols: [
-                    {   view:"button",
-                        id:"table-newAddBtnId",
-                        height:48,
-                        minWidth:90, 
-                        hotkey: "shift",
-                        value:"Новая запись", click:addItem},
+//                 cols: [
+//                     {   view:"button",
+//                         id:"table-newAddBtnId",
+//                         height:48,
+//                         minWidth:90, 
+//                         hotkey: "shift",
+//                         value:"Новая запись", click:addItem},
                         
-                    {   view:"button",
-                        id:"table-delBtnId",
-                        disabled:true,
-                        height:48,
-                        minWidth:90,
-                        width:100,
-                        hotkey: "shift+esc",
-                        css:"webix_danger", 
-                        type:"icon", 
-                        icon:"wxi-trash", 
-                        click:removeItem,
-                        on: {
-                            onAfterRender: function () {
-                                this.getInputNode().setAttribute("title","Удалить запись из таблицы");
-                            }
-                        } 
-                    },
-                ]
-            },
+//                     {   view:"button",
+//                         id:"table-delBtnId",
+//                         disabled:true,
+//                         height:48,
+//                         minWidth:90,
+//                         width:100,
+//                         hotkey: "shift+esc",
+//                         css:"webix_danger", 
+//                         type:"icon", 
+//                         icon:"wxi-trash", 
+//                         click:removeItem,
+//                         on: {
+//                             onAfterRender: function () {
+//                                 this.getInputNode().setAttribute("title","Удалить запись из таблицы");
+//                             }
+//                         } 
+//                     },
+//                 ]
+//             },
             
-        ]},
+//         ]},
 
-       {margin:10, rows:[ { 
-            view:"button", 
-            id:"table-saveBtn",
-            hidden:true, 
-            value:"Сохранить", 
-            height:48, 
-            css:"webix_primary", 
-            click:function(){
-                saveItem();
-            },
-            hotkey: "enter" 
-        },
-        { 
-            view:"button", 
-            id:"table-saveNewBtn",
-            value:"Сохранить новую запись",
-            hidden:true,  
-            height:48,
-            hotkey: "enter" ,
-            css:"webix_primary", 
-            click:saveNewItem
-        },
-        {id:"EditEmptyTempalte",template:"<div style='color:#858585;font-size:13px!important'>Добавьте новую запись или выберите существующую из таблицы</div>", borderless:true}
+//        {margin:10, rows:[ { 
+//             view:"button", 
+//             id:"table-saveBtn",
+//             hidden:true, 
+//             value:"Сохранить", 
+//             height:48, 
+//             css:"webix_primary", 
+//             click:function(){
+//                 saveItem();
+//             },
+//             hotkey: "enter" 
+//         },
+//         { 
+//             view:"button", 
+//             id:"table-saveNewBtn",
+//             value:"Сохранить новую запись",
+//             hidden:true,  
+//             height:48,
+//             hotkey: "enter" ,
+//             css:"webix_primary", 
+//             click:saveNewItem
+//         },
+//         {id:"EditEmptyTempalte",template:"<div style='color:#858585;font-size:13px!important'>Добавьте новую запись или выберите существующую из таблицы</div>", borderless:true}
 
 
-        ]},
+//         ]},
 
 
         
-    ]},
+//     ]},
 
-    ],
+//     ],
     
-    rules:{
-        $all:webix.rules.isNotEmpty
-    },
+//     rules:{
+//         $all:webix.rules.isNotEmpty
+//     },
 
 
-    ready:function(){
-        this.validate();
-    },
+//     ready:function(){
+//         this.validate();
+//     },
 
-};
+// };
+
+
+
 } catch (error){
     alert("Ошибка при выполнении"+" "+ error);
     console.log(error);

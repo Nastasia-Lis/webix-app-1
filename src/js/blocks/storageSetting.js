@@ -42,23 +42,25 @@ function setUserPrefs (){
             try{
                 let user = webix.storage.local.get("user");
                 data = data.json().content;
-                data.forEach(function(el,i){
-                    if (el.owner == user.id){
-                        setStorageData (el.name, el.prefs);
-                    }
-                });
-      
-                if (window.location.pathname=="/index.html/content" || window.location.pathname=="/init/default/spaw/content"){
-                    let userprefsWorkspace = webix.storage.local.get("userprefsWorkspaceForm");
-                    let userLocation = webix.storage.local.get("userLocationHref");
+                if (user){
+                    data.forEach(function(el,i){
+                        if (el.owner == user.id){
+                            setStorageData (el.name, el.prefs);
+                        }
+                    });
+        
+                    if (window.location.pathname=="/index.html/content" || window.location.pathname=="/init/default/spaw/content"){
+                        let userprefsWorkspace = webix.storage.local.get("userprefsWorkspaceForm");
+                        let userLocation = webix.storage.local.get("userLocationHref");
 
-                        const url = new URL(userLocation.href);
+                            const url = new URL(userLocation.href);
 
-                    if (userprefsWorkspace && userprefsWorkspace.LoginActionOpt && url.origin == window.location.origin ){
-                        if (userprefsWorkspace.LoginActionOpt == 2){
-                            if (userLocation && userLocation.href && userLocation.href !== window.location.href ){
-                                //Backbone.history.navigate(window.location.pathname, { trigger:true});
-                                window.location.replace(userLocation.href);
+                        if (userprefsWorkspace && userprefsWorkspace.LoginActionOpt && url.origin == window.location.origin ){
+                            if (userprefsWorkspace.LoginActionOpt == 2){
+                                if (userLocation && userLocation.href && userLocation.href !== window.location.href ){
+                                    //Backbone.history.navigate(window.location.pathname, { trigger:true});
+                                    window.location.replace(userLocation.href);
+                                }
                             }
                         }
                     }
