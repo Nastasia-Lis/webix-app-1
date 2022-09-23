@@ -1,5 +1,6 @@
 import {catchErrorTemplate} from "./logBlock.js";
 
+
 function resizeAdaptive (){
 
     function autoResizePopup (popupId,k=1.3){
@@ -312,22 +313,6 @@ function resizeAdaptive (){
         try{
             if (window.innerWidth < 1200){
 
-
-                $$("table-editForm").clear();
-                $$("table-editForm").clearValidation();
-
-                if ($$("table-saveNewBtn").isVisible()) {
-                    $$("table-saveNewBtn").hide();
-                } else if ($$("table-saveBtn").isVisible()){
-                    $$("table-saveBtn").hide();
-                }
-                $$("table-delBtnId").disable();
-                $$("table-newAddBtnId").enable();
-
-                if ($$("inputsTable")){
-                    $$("inputsTable").getParentView().removeView($$("inputsTable"))
-                }
-
                 if( $$("table-editTableBtnId") && !( $$("table-editTableBtnId").isVisible())){
                     $$("table-editTableBtnId").show();
                 }
@@ -335,35 +320,105 @@ function resizeAdaptive (){
                 if ($$("editTableBarContainer") && $$("editTableBarContainer").isVisible()){
                     $$("editTableBarContainer").hide();
                 }
+               
+
+                if ($$("table-editForm").isDirty()){
+                   if (!($$("tableEditPopup"))){
+                    webix.ui({
+                        view:"popup",
+                        css:"webix_popup-table-container webix_popup-config",
+                        modal:true,
+                        id:"tableEditPopup",
+                        escHide:true,
+                        position:"center",
+                        body:{
+                            id:"tableEditPopupContainer",rows:[
+
+                            ]
+                        }
+                    }).show();
+
+
+                    $$("tableEditPopupContainer").addView($$("editTableBarAdaptive"));
+
+                    if($$("editTableBarHeadline") && !($$("editTableBarHeadline").isVisible())){
+                        $$("editTableBarHeadline").show();
+                    }
+
+      
+                    } else {
+                        $$("tableEditPopup").show();
+
+                        if ($$("tableEditPopupContainer").getChildViews().length){
+                            
+                            if (!($$("table-newAddBtnId").isEnabled())){
+                                $$("table-newAddBtnId").enable();
+                            }
+
+                            if ($$("editTableBarContainer") ){
+                                $$("editTableBarContainer").show();
+                            }
+
+                        } else {
+                            $$("tableEditPopupContainer").addView($$("editTableBarAdaptive"));
+
+                            if($$("editTableBarHeadline") && !($$("editTableBarHeadline").isVisible())){
+                                $$("editTableBarHeadline").show();
+                            }
+                        }
+                    }
+                    if($$("table-saveNewBtn").isEnabled() && $$("table-newAddBtnId").isEnabled()){
+                        $$("table-newAddBtnId").disable();
+                    } else {
+                        $$("table-newAddBtnId").enable();
+                    }
+                }
+
+                autoResizePopup ("editFilterBarAdaptive", 1.5);
+
              
             }
 
-
+   
             if (window.innerWidth > 1200){
+            
+                if ($$("tableEditPopup")){
+                    $$("tableEditPopup").hide();
+                } 
+
+                if ($$("editTableBarContainer").isVisible() || $$("filterTableBarContainer").isVisible()){
+
+                } else {
+                    if ($$("editTableBarContainer") && !($$("editTableBarContainer").isVisible())){
+                        $$("editTableBarContainer").show();
+                    }
+
+                    $$("filterTableForm").hide();
+
+                        
+                    if ($$("table-editForm")){
+                        $$("table-editForm").show();
+                    }
+                }
+            
+
+                $$("editTableBarContainer").addView($$("editTableBarAdaptive"))
+
+                if ( $$("editTableBarAdaptive") && !( $$("editTableBarAdaptive").isVisible())){
+                    $$("editTableBarAdaptive").show();
+                }
 
                 if( $$("table-editTableBtnId") && $$("table-editTableBtnId").isVisible()){
                     $$("table-editTableBtnId").hide();
                 }
 
-                if ($$("editTableBarContainer") && !($$("editTableBarContainer").isVisible())){
-                    $$("editTableBarContainer").show();
-                }
-
                 $$("editTableBarAdaptive").config.width = 350;
                 $$("editTableBarAdaptive").resize();
-
-                $$("editTableBarContainer").addView($$("editTableBarAdaptive"))
-
-                
-
-                if ($$("tableEditPopup")){
-                    $$("tableEditPopup").destructor();
-                }
 
                 if($$("editTableBarHeadline") && $$("editTableBarHeadline").isVisible()){
                     $$("editTableBarHeadline").hide();
                 } 
-   
+
             }
 
             autoResizePopup ("editTableBarAdaptive", 1.5);
@@ -378,23 +433,116 @@ function resizeAdaptive (){
         // table filter bar
         try{
             if (window.innerWidth < 1200){
-                if ($$("editTableBarContainer") && $$("editTableBarContainer").isVisible()){
-                    $$("editTableBarContainer").hide();
+
+                let btnClass = document.querySelector(".webix_btn-filter");
+                
+                if(btnClass && btnClass.classList.contains("webix_primary")){
+                    btnClass.classList.add("webix_secondary");
+                    btnClass.classList.remove("webix_primary");
                 }
+
 
                 if ($$("filterTableBarContainer") && $$("filterTableBarContainer").isVisible()){
                     $$("filterTableBarContainer").hide();
+ 
                 }
-             
+
+                if ($$("filterTableForm").isDirty()){
+
+                    if ($$("editTableBarContainer") && $$("editTableBarContainer").isVisible()){
+                        $$("editTableBarContainer").hide();
+                    }
+              
+                    if ($$("tableFilterPopup")){
+                        $$("tableFilterPopup").show();
+                    }
+    
+                    if ($$("tableFilterPopupContainer") && !($$("tableFilterPopupContainer").isVisible())){
+                        $$("tableFilterPopupContainer").show();
+                    }
+    
+                    let filterFormValues;
+    
+                    if ($$("filterTableForm").getValues()){
+                        filterFormValues = $$("filterTableForm").getValues();
+                        
+                    }
+    
+                    if ($$("tableFilterPopupContainer")){
+                        $$("tableFilterPopupContainer").addView($$("editFilterBarAdaptive"));
+                    }
+       
+                    if($$("editFilterBarHeadline") && !($$("editFilterBarHeadline").isVisible())){
+                        $$("editFilterBarHeadline").show();
+                    }
+    
+                    $$("filterTableForm").show();
+    
+                    if (filterFormValues){
+                        $$("filterTableForm").setValues(filterFormValues);
+                        $$("filterTableForm").setDirty();
+                        filterFormValues = null;
+                    }
+
+                }
+
+                autoResizePopup ("popupFilterEdit", 1.5);
+
             }
 
 
             if (window.innerWidth > 1200){
 
+                if ($$("tableFilterPopup").isVisible()){
+                    $$("tableFilterPopup").hide();
+
+                    let filterFormValues;
+
+                    if ($$("filterTableForm").getValues()){
+                        filterFormValues = $$("filterTableForm").getValues();
+                    }
+                    
+                    if ($$("editFilterBarAdaptive").getParentView().config.id !==  "filterTableBarContainer"){
+                        $$("filterTableBarContainer").addView($$("editFilterBarAdaptive"));
+                    }
+    
+                    if($$("editFilterBarHeadline")){
+                        $$("editFilterBarHeadline").hide();
+                    }
+                    $$("editFilterBarAdaptive").config.width = 350;
+                    $$("editFilterBarAdaptive").resize();
+    
+     
+                    let btnClass = document.querySelector(".webix_btn-filter");
+
+                    if ($$("filterTableBarContainer") && !($$("filterTableBarContainer").isVisible())){
+                        $$("filterTableForm").show();
+                        $$("table-editForm").hide();
+                    
+
+                        if (filterFormValues){
+                            $$("filterTableForm").setValues(filterFormValues);
+                            filterFormValues = null;
+                        }
+        
+                        btnClass.classList.add("webix_primary");
+                        btnClass.classList.remove("webix_secondary");
+
+    
+                        if ($$("editTableBarContainer") && $$("editTableBarContainer").isVisible()){
+                            $$("editTableBarContainer").hide();
+                        }
+    
+                        if ($$("filterTableBarContainer") && !($$("filterTableBarContainer").isVisible())){
+                            $$("filterTableBarContainer").show();
+                        }
+                    }
+                    
+                }
             }
 
-            autoResizePopup ("editFilterBarAdaptive", 1.5);
-            autoResizePopup ("popupFilterEdit", 1.5);
+           
+          
              
         } catch (error){
             console.log(error);
@@ -407,11 +555,26 @@ function resizeAdaptive (){
 
 
 
-
 function adaptivePoints (){
     try{
         if (window.innerWidth < 850 && $$("tree") && $$("tree").isVisible()){
             $$("tree").hide();
+        }
+
+        if (window.innerWidth < 1200 ){
+         
+
+            $$("tree").attachEvent("onAfterLoad", function(){
+                console.log($$("editTableBarContainer"))
+                if ($$("editTableBarContainer") && $$("editTableBarContainer").isVisible()){
+                    $$("editTableBarContainer").hide();
+                }
+            });
+        }
+        
+    
+        if ($$("editTableBarContainer") && $$("editTableBarContainer").isVisible()){
+            $$("editTableBarContainer").hide();
         }
 
 
@@ -431,7 +594,6 @@ function adaptivePoints (){
                 }
             });
         }
-           
 
       
 

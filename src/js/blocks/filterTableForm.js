@@ -1,7 +1,8 @@
 import {setLogValue} from './logBlock.js';
 import {catchErrorTemplate,ajaxErrorTemplate} from "./logBlock.js";
+import {setStorageData, setUserLocation} from "./storageSetting.js";
+import {modalBox,popupExec} from "./notifications.js";
 
-let popupLibData = {};
 
 function tabbarClick (id){
     function btnSubmitState (state){
@@ -63,6 +64,39 @@ function popupSubmitBtn (){
         
         if (tabbarValue =="editFormPopupLib"){
             webix.message({type:"debug",expire:3000, text:"Библиотека в разработке"});
+
+            let radioValue = $$("filterEditLib").getOption($$("filterEditLib").getValue());
+            //"filter-template_"+nameTemplate
+            
+            webix.ajax().get("/init/default/api/userprefs/", {
+                success:function(text, data, XmlHttpRequest){
+                    data = data.json().content;
+
+                    data.forEach(function(el,i){
+                        if (el.name == "filter-template_"+radioValue.value){
+                            let prefs = JSON.parse(el.prefs);
+                            console.log( $$("editFormPopupScroll"));
+
+                            $$("editFormPopupScroll").addView(prefs.collecton,1);
+                        }
+                    });
+
+ 
+                    
+                    if (data.err_type == "e"){
+                        setLogValue("error",data.error);
+                    }
+                    
+                },
+                error:function(text, data, XmlHttpRequest){
+                    ajaxErrorTemplate("004-001",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                }
+            }).catch(error => {
+                console.log(error);
+                ajaxErrorTemplate("004-001",error.status,error.statusText,error.responseURL);
+            });
+
+
 
         } else if (tabbarValue=="editFormScroll"){
 
@@ -187,7 +221,74 @@ function popupSubmitBtn (){
     }
 }
 
+
+
+
 function editFiltersBtn (){
+
+    // let optionDataTemplate = new webix.DataCollection({url:{
+    //     $proxy:true,
+    //     load: function(){
+    //         return ( webix.ajax().get("/init/default/api/userprefs/").then(function (data) {   
+                    
+    //                 let dataSrc = data.json().content;
+                        
+    //                 let dataOptions=[];
+
+    //                 try{
+    //                     dataSrc.forEach(function(data, i) {
+    //                         if(data.name.includes("filter-template_")){
+    //                             let prefs = JSON.parse(data.prefs);
+    //                             dataOptions.push( 
+    //                                 {id:i+1, value:prefs.name},
+    //                             );
+    //                         }
+    //                     });
+
+    //                     return dataOptions;
+    //                 } catch (error){
+    //                     console.log(error);
+    //                     catchErrorTemplate("004-000", error);
+    //                 } 
+
+    //                 }).catch(error => {
+    //                     console.log(error);
+    //                     ajaxErrorTemplate("004-000",error.status,error.statusText,error.responseURL);
+
+    //                 })
+    //             );
+            
+        
+            
+    //     }
+    // }});
+
+
+    webix.ajax().get("/init/default/api/userprefs/").then(function (data) {   
+                    
+        let dataSrc = data.json().content;
+
+        try{
+            dataSrc.forEach(function(data, i) {
+                if(data.name.includes("filter-template_")){
+                    let prefs = JSON.parse(data.prefs);
+                    $$("filterEditLib").addOption( {id:i+1, value:prefs.name})
+                }
+            });
+
+            if ( $$("filterEditLib").data.options.length == 0 ){
+                $$("filterEditLib").addOption({"id":"radioNoneContent",disabled:true, "value":"Сохранённых шаблонов нет"})
+            }
+        } catch (error){
+            console.log(error);
+            catchErrorTemplate("004-000", error);
+        } 
+
+ 
+    });
+
+  
+    
     webix.ui({
         view:"popup",
         id:"popupFilterEdit",
@@ -268,39 +369,25 @@ function editFiltersBtn (){
                                             {   view:"radio", 
                                                 id:"filterEditLib",
                                                 vertical:true,
-                                                options:[
-                                                    {"id":"radioNoneContent",disabled:true, "value":"Сохранённых шаблонов нет"},
-                                                ],
+                                                options:[],
                                                 on:{
                                                     onChange:function(){
-                                                        try {
-                                                            if (this.getValue()&&$$("popupFilterSubmitBtn")){
-                                                                if(!($$("popupFilterSubmitBtn").isEnabled())){
-                                                                    $$("popupFilterSubmitBtn").enable();
-                                                                }
+                                                        if (this.getValue()){
+                                                            if(!($$("popupFilterSubmitBtn").isEnabled())){
+                                                                $$("popupFilterSubmitBtn").enable();
                                                             }
-                                                        } catch (error){
-                                                            console.log(error);
-                                                            catchErrorTemplate("004-000", error);
-
+                                                        } else {
+                                                            if($$("popupFilterSubmitBtn").isEnabled()){
+                                                                $$("popupFilterSubmitBtn").disable();
+                                                            }
                                                         }
                                                     },
                                                 
-                                                    onAfterRender:function(){
-                                                        try {
-                                                            if (Object.keys(popupLibData).length>0){
-                                                                $$("filterEditLib").addOption(popupLibData);
-                                                                $$("filterEditLib").removeOption("radioNoneContent");
-                                                            }
-                                                        } catch (error){
-                                                            console.log(error);
-                                                            catchErrorTemplate("004-000", error);
-
-                                                        }
-                                                    }
+                                                
                                                 }
                                             }
                                         ],
+                
                                     },
                                 ]},
                           
@@ -331,12 +418,14 @@ function editFiltersBtn (){
     }).show();
 
 
-    
-    let size = window.innerWidth - 200;
+    if (window.innerWidth < 1200 ){
 
-    if( $$("popupFilterEdit").$width > 200){
-        $$("popupFilterEdit").config.width = size;
-        $$("popupFilterEdit").resize();
+        let size = window.innerWidth - 500;
+
+        if( $$("popupFilterEdit").$width > 200){
+            $$("popupFilterEdit").config.width = size;
+            $$("popupFilterEdit").resize();
+        }
     }
 
 
@@ -769,16 +858,136 @@ function filterLibraryBtn (){
             },
             width:350,
         }).then(function(result){
-            let nameTemplate = result;
-            let filterElements = $$("filterTableForm").elements;
-            let filterTemplate = [];
-            Object.values(filterElements).forEach(function(el,i){
-                if ($$(el.config.id).isVisible()){
-                    filterTemplate.push(el); // сохранить куда то массив с элементами
+          
+
+            webix.ajax().get("/init/default/api/userprefs/", {
+                success:function(text, data, XmlHttpRequest){
+                    data = data.json().content;
+                    if (data.err_type == "e"){
+                        setLogValue("error",data.error);
+                    }
+
+                    
+                    let nameTemplate = result;
+                    let template = {
+                        name:nameTemplate,
+                        collecton:{rows:$$("inputsFilter")._collection},
+                        values: $$("filterTableForm").getValues()
+                    };
+
+                    let settingExists = false;
+                    let sentObj = {
+                        name:"filter-template_"+nameTemplate,
+                        prefs:template,
+                    };
+
+                    try{
+                        data.forEach(function(el,i){
+                            if (el.name == "filter-template_"+nameTemplate){
+                                settingExists = true;
+
+                                modalBox("Шаблон с таким именем существует", "После сохранения предыдущие данные будут стёрты", ["Отмена", "Сохранить изменения"])
+                                .then(function(result){
+                             
+                                    if (result == 0){
+                
+                                    } else if (result == 1){
+                                        webix.ajax().put("/init/default/api/userprefs/"+el.id, sentObj, {
+                                            success:function(text, data, XmlHttpRequest){
+                                                data = data.json();
+                                                if (data.err_type == "i"){
+                                                    setLogValue("success","Шаблон"+" «"+nameTemplate+"» "+" сохранён в библиотеку");
+                                                } if (data.err_type == "e"){
+                                                    setLogValue("error",data.error);
+                                                }
+                                            
+                                            },
+                                            error:function(text, data, XmlHttpRequest){
+                                            ajaxErrorTemplate("004-011",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                                            }
+                                        }).catch(error => {
+                                            console.log(error);
+                                            ajaxErrorTemplate("004-011",error.status,error.statusText,error.responseURL);
+                                        });
+                                        
+                                    }
+                                });
+
+                             
+                            
+                            } 
+                        });
+                    } catch (error){
+                        console.log(error);
+                        catchErrorTemplate("004-000", error);
+                    }
+
+
+                    try{
+                        if (!settingExists){
+                            
+                            let ownerId = webix.storage.local.get("user").id;
+            
+                            if (ownerId){
+                                sentObj.owner = ownerId;
+                            } else {
+                                webix.ajax("/init/default/api/whoami",{
+                                    success:function(text, data, XmlHttpRequest){
+                                        
+                                        sentObj.owner = data.json().content.id;
+
+                                        let userData = {};
+                                        userData.id = data.json().content.id;
+                                        userData.name = data.json().content.first_name;
+                                        userData.username = data.json().content.username;
+                                        
+                                        setStorageData("user", JSON.stringify(userData));
+                                    },
+                                    error:function(text, data, XmlHttpRequest){
+                                        ajaxErrorTemplate("005-011",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                                    }
+                                }).catch(error => {
+                                    console.log(error);
+                                    ajaxErrorTemplate("005-000",error.status,error.statusText,error.responseURL);
+                                });
+                            }
+
+
+                            webix.ajax().post("/init/default/api/userprefs/",sentObj, {
+                                success:function(text, data, XmlHttpRequest){
+                                    data = data.json();
+            
+                                    if (data.err_type == "i"){
+                                        setLogValue("success","Шаблон"+" «"+nameTemplate+"» "+" сохранён в библиотеку");
+                                    } else if (data.err_type == "e"){
+                                        setLogValue("error",data.error);
+                                    }
+                                    
+                                },
+                                error:function(text, data, XmlHttpRequest){
+                                    ajaxErrorTemplate("004-001",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                                }
+                            }).catch(error => {
+                                console.log(error);
+                                ajaxErrorTemplate("004-001",error.status,error.statusText,error.responseURL);
+                            });
+                        }
+                    } catch (error){
+                        console.log(error);
+                        catchErrorTemplate("004-000", error);
+                    }
+
+                
+                },
+                error:function(text, data, XmlHttpRequest){
+                    ajaxErrorTemplate("004-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
                 }
+            }).catch(error => {
+                console.log(error);
+                ajaxErrorTemplate("004-000",error.status,error.statusText,error.responseURL);
             });
 
-            popupLibData = {id:webix.uid(), value:nameTemplate}
+
             webix.message({type:"success",expire:1000, text:"Шаблон"+" «"+nameTemplate+"» "+" сохранён в библиотеку"});
 
 

@@ -19,12 +19,16 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
         try{
             if (window.innerWidth > 1200){
 
+                let filterFormValues;
+
+                if ($$("filterTableForm").getValues()){
+                    filterFormValues = $$("filterTableForm").getValues();
+                }
+                
                 if ($$("editFilterBarAdaptive").getParentView().config.id !==  "filterTableBarContainer"){
                     $$("filterTableBarContainer").addView($$("editFilterBarAdaptive"));
                 }
 
-
-                
                 if($$("editFilterBarHeadline")){
                     $$("editFilterBarHeadline").hide();
                 }
@@ -41,6 +45,12 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
                     if($$("filterTableForm").getChildViews() !== 0){
                         createFilterElements("filterTableForm",3);
                     }
+
+                    if (filterFormValues){
+                        $$("filterTableForm").setValues(filterFormValues);
+                        filterFormValues = null;
+                    }
+    
                     btnClass.classList.add("webix_primary");
                     btnClass.classList.remove("webix_secondary");
                     $$(idBtnEdit).show();
@@ -69,6 +79,11 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
                     }
                 }
             } else {
+
+                
+                if ($$("editTableBarContainer") && $$("editTableBarContainer").isVisible()){
+                    $$("editTableBarContainer").hide();
+                }
           
                 if ($$("tableFilterPopup")){
                     $$("tableFilterPopup").show();
@@ -78,20 +93,32 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
                     $$("tableFilterPopupContainer").show();
                 }
 
+                let filterFormValues;
+
+                if ($$("filterTableForm").getValues()){
+                    filterFormValues = $$("filterTableForm").getValues();
+                    
+                }
+
                 if ($$("tableFilterPopupContainer")){
                     $$("tableFilterPopupContainer").addView($$("editFilterBarAdaptive"));
                 }
-             
-
+   
                 if($$("editFilterBarHeadline") && !($$("editFilterBarHeadline").isVisible())){
                     $$("editFilterBarHeadline").show();
                 }
-                console.log($$("filterTableForm").getChildViews())
+     
                 if($$("filterTableForm").getChildViews() !== 0){
                     createFilterElements("filterTableForm",3);
                 }
 
                 $$("filterTableForm").show();
+
+                if (filterFormValues){
+                    $$("filterTableForm").setValues(filterFormValues);
+                    $$("filterTableForm").setDirty();
+                    filterFormValues = null;
+                }
 
                 let size = window.innerWidth - 200;
 
@@ -121,6 +148,9 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
                 if ($$("editTableBarContainer") ){
                     $$("editTableBarContainer").show();
                 }
+                if ($$("filterTableBarContainer") && $$("filterTableBarContainer").isVisible()){
+                    $$("filterTableBarContainer").hide();
+                }
                // this.hide();
 
             } else {
@@ -138,27 +168,58 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
                             ]
                         }
                     }).show();
-                    $$("tableEditPopupContainer").addView($$("editTableBarAdaptive"))
+
+
+                    $$("tableEditPopupContainer").addView($$("editTableBarAdaptive"));
 
                     if($$("editTableBarHeadline") && !($$("editTableBarHeadline").isVisible())){
                         $$("editTableBarHeadline").show();
                     }
 
-                   
-                } else {
-                    $$("tableEditPopup").show();
-                    if (!($$("table-newAddBtnId").isEnabled())){
-                        $$("table-newAddBtnId").enable();
-                    }
-
-                    let size = window.innerWidth - 200;
+                    let size = window.innerWidth - 500;
 
                     if( $$("editTableBarAdaptive").$width > 200){
                         $$("editTableBarAdaptive").config.width = size;
                         $$("editTableBarAdaptive").resize();
                     }
+
+              
+                   
+                } else {
+                   // console.log($$("tableEditPopupContainer").getChildViews(), $$("tableEditPopupContainer").getChildViews().length,"ch")
+                    $$("tableEditPopup").show();
+                    let size = window.innerWidth - 500;
+
+                    if( $$("editTableBarAdaptive").$width > 200){
+                        $$("editTableBarAdaptive").config.width = size;
+                        $$("editTableBarAdaptive").resize();
+                    }
+
+                    if ($$("tableEditPopupContainer").getChildViews().length){
+                        
+                        if (!($$("table-newAddBtnId").isEnabled())){
+                            $$("table-newAddBtnId").enable();
+                        }
+
+                        if ($$("editTableBarContainer") ){
+                            $$("editTableBarContainer").show();
+                        }
+
+                    } else {
+                        $$("tableEditPopupContainer").addView($$("editTableBarAdaptive"));
+
+                        if($$("editTableBarHeadline") && !($$("editTableBarHeadline").isVisible())){
+                            $$("editTableBarHeadline").show();
+                        }
+                    }
                 }
-             
+                if($$("table-newAddBtnId")){
+                    if($$("table-saveNewBtn").isVisible() && $$("table-newAddBtnId").isEnabled()){
+                        $$("table-newAddBtnId").disable();
+                    } else {
+                        $$("table-newAddBtnId").enable();
+                    }
+                }
             }
         } catch (error){
             console.log(error);

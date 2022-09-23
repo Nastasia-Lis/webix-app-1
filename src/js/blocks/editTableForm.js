@@ -471,7 +471,7 @@ function editTableBar (){
                             if($$("table-editForm").isDirty()){
                                 modalBox().then(function(result){
                                     if (result == 1){
-
+                                        $$("table-editForm").clear();
                                         if ($$("tableEditPopup")){
                                             $$("tableEditPopup").hide();
                                         }
@@ -512,9 +512,9 @@ function editTableBar (){
                                 if ($$("tableEditPopup")){
                                     $$("tableEditPopup").hide();
                                 }
+                                
                             }
                         }
-                    
                     }
                 }
             ]},
@@ -586,7 +586,7 @@ function editTableBar (){
                         height:48,
                         hotkey: "enter" ,
                         css:"webix_primary", 
-                        click:saveNewItem
+                        click:saveNewItem,
                     },
                     {id:"EditEmptyTempalte",template:"<div style='color:#858585;font-size:13px!important'>Добавьте новую запись или выберите существующую из таблицы</div>", borderless:true}
             
@@ -614,99 +614,6 @@ function editTableBar (){
 }
 
 try{
-
-
-//  editTableBar = {
-//     view:"form", 
-//     id:"table-editForm",
-//     css:"webix_form-edit",
-//     minHeight:350,
-//     minWidth:210,
-//     width: 320,
-//     scroll:true,
-//     elements:[
-
-//         {//id:"form-adaptive",
-//         minHeight:48,css:"webix_form-adaptive", margin:5, rows:[{margin:5, rows:[
-           
-            
-//             {//responsive:"form-adaptive",  
-//             margin:5, 
-
-//                 cols: [
-//                     {   view:"button",
-//                         id:"table-newAddBtnId",
-//                         height:48,
-//                         minWidth:90, 
-//                         hotkey: "shift",
-//                         value:"Новая запись", click:addItem},
-                        
-//                     {   view:"button",
-//                         id:"table-delBtnId",
-//                         disabled:true,
-//                         height:48,
-//                         minWidth:90,
-//                         width:100,
-//                         hotkey: "shift+esc",
-//                         css:"webix_danger", 
-//                         type:"icon", 
-//                         icon:"wxi-trash", 
-//                         click:removeItem,
-//                         on: {
-//                             onAfterRender: function () {
-//                                 this.getInputNode().setAttribute("title","Удалить запись из таблицы");
-//                             }
-//                         } 
-//                     },
-//                 ]
-//             },
-            
-//         ]},
-
-//        {margin:10, rows:[ { 
-//             view:"button", 
-//             id:"table-saveBtn",
-//             hidden:true, 
-//             value:"Сохранить", 
-//             height:48, 
-//             css:"webix_primary", 
-//             click:function(){
-//                 saveItem();
-//             },
-//             hotkey: "enter" 
-//         },
-//         { 
-//             view:"button", 
-//             id:"table-saveNewBtn",
-//             value:"Сохранить новую запись",
-//             hidden:true,  
-//             height:48,
-//             hotkey: "enter" ,
-//             css:"webix_primary", 
-//             click:saveNewItem
-//         },
-//         {id:"EditEmptyTempalte",template:"<div style='color:#858585;font-size:13px!important'>Добавьте новую запись или выберите существующую из таблицы</div>", borderless:true}
-
-
-//         ]},
-
-
-        
-//     ]},
-
-//     ],
-    
-//     rules:{
-//         $all:webix.rules.isNotEmpty
-//     },
-
-
-//     ready:function(){
-//         this.validate();
-//     },
-
-// };
-
 
 
 } catch (error){
