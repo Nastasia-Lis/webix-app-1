@@ -194,8 +194,7 @@ function removeItem() {
                
                 $$( "table" ).remove($$("table-editForm").getValues().id);
                 let formValues = $$("table-editForm").getValues();
-        
-                console.log("/init/default/api/"+currId+"/"+formValues.id+".json",formValues)
+
                 webix.ajax().del("/init/default/api/"+currId+"/"+formValues.id+".json", formValues,{
                     success:function(text, data, XmlHttpRequest){
                         data = data.json();
@@ -246,23 +245,33 @@ function createEditFields (parentElement, viewPosition=1) {
 
         if(Object.keys($$(parentElement).elements).length==0  ){
             let inputsArray = [];
+          
             columnsData.forEach((el,i) => {
                 if (el.type == "datetime"){
+                    // inputsArray.push({   
+                    //     view: "datepicker",
+                    //     format:"%d.%m.%Y %H:%i:%s",
+                    //     id:el.id,
+                    //     name:el.id, 
+                    //     label:el.label, 
+                    //     placeholder:"дд.мм.гг", 
+                    //     timepicker: true,
+                    //     labelPosition:"top",
+                    //     on:{
+                    //         onItemClick:function(){
+                    //             $$(parentElement).clearValidation();
+                    //         }
+                    //     }
+                    // });
+
                     inputsArray.push({   
-                        view: "datepicker",
-                        format:"%d.%m.%Y %H:%i:%s",
+                      //  format:"%d.%m.%Y %H:%i:%s",
                         id:el.id,
-                        name:el.id, 
+                       // name:el.id, 
                         label:el.label, 
-                        placeholder:"дд.мм.гг", 
-                        timepicker: true,
-                        labelPosition:"top",
-                        on:{
-                            onItemClick:function(){
-                                $$(parentElement).clearValidation();
-                            }
-                        }
+                        type:"date",
                     });
+
                 } 
                 
 
@@ -276,89 +285,134 @@ function createEditFields (parentElement, viewPosition=1) {
                     }
                 });
         
+                // inputsArray.push(
+                //     {cols:[
+                //     {   view:"combo",
+                //         placeholder:"Выберите вариант",  
+                //         label:el.label, 
+                //         id:el.id,
+                //         name:el.id, 
+                //         labelPosition:"top",
+                //         options:{
+                //             data:getComboOptions(findTableId)
+                //         },
+
+                //         on:{
+                //             onItemClick:function(){
+                //                 $$(parentElement).clearValidation();
+                //             },
+                //             onChange:function(){
+                //                // console.log(this.getList())
+                //                 $$(el.id).setValue(this.getValue()); 
+                //                 $$(el.id).refresh()
+
+                //             },
+                //             onBindRequest:function(data){
+                //                // console.log(data)
+                //             }
+                //         },
+                //         ready:function(){
+                //             //console.log("rea")
+                //         }
+                //     },
+                //     {
+                //         view:"button",
+                //         css:{"vertical-align":"bottom!important","height":"38px!important"},
+                //         type:"icon",
+                //         icon: 'wxi-angle-right',
+                //         inputHeight:38,
+                //         width: 40,
+                //         on: {
+                //             onAfterRender: function () {
+                //                 this.getInputNode().setAttribute("title","Перейти в таблицу"+" "+"«"+refTableName+"»");
+                //             },
+                //         },
+                //         click:function(){
+                //             try {
+                //                 $$("tree").select(findTableId);
+
+                //                 if ($$("tableEditPopup") && $$("tableEditPopup").isVisible()){
+                //                     $$("tableEditPopup").hide();
+                //                 }
+                //             } catch (e){
+                //                 console.log(e);
+                //                 setLogValue("error","Таблица не найдена");
+
+                //                 if ($$("EditEmptyTempalte")&&$$("EditEmptyTempalte").isVisible()){
+                //                     $$("EditEmptyTempalte").hide();
+                //                 }
+                //             }
+                            
+                //         }
+                //     }
+                //     ]}
+
+                // );
+
+
                 inputsArray.push(
-                    {cols:[
-                    {   view:"combo",
-                        placeholder:"Выберите вариант",  
+                 
+                    {   type:"combo",
                         label:el.label, 
                         id:el.id,
-                        name:el.id, 
-                        labelPosition:"top",
                         options:{
                             data:getComboOptions(findTableId)
                         },
-
-                        on:{
-                            onItemClick:function(){
-                                $$(parentElement).clearValidation();
-                            },
-                            onChange:function(){
-                               // console.log(this.getList())
-                                $$(el.id).setValue(this.getValue()); 
-                                $$(el.id).refresh()
-
-                            },
-                            onBindRequest:function(data){
-                               // console.log(data)
-                            }
-                        },
-                        ready:function(){
-                            //console.log("rea")
-                        }
-                    },
-                    {
-                        view:"button",
-                        css:{"vertical-align":"bottom!important","height":"38px!important"},
-                        type:"icon",
-                        icon: 'wxi-angle-right',
-                        inputHeight:38,
-                        width: 40,
-                        on: {
-                            onAfterRender: function () {
-                                this.getInputNode().setAttribute("title","Перейти в таблицу"+" "+"«"+refTableName+"»");
-                            },
-                        },
-                        click:function(){
-                            try {
-                                $$("tree").select(findTableId);
-
-                                if ($$("tableEditPopup") && $$("tableEditPopup").isVisible()){
-                                    $$("tableEditPopup").hide();
-                                }
-                            } catch (e){
-                                console.log(e);
-                                setLogValue("error","Таблица не найдена");
-
-                                if ($$("EditEmptyTempalte")&&$$("EditEmptyTempalte").isVisible()){
-                                    $$("EditEmptyTempalte").hide();
-                                }
-                            }
-                            
-                        }
+                        // options:[
+                        //     {id:1, value:"red"},
+                        //     {id:2, value:"blue"},
+                        //     {id:3, value:"green"},
+                        //     {id:4, value:"orange"},
+                        //     {id:5, value:"grey"},
+                        //     {id:6, value:"yellow"}
+                        // ]  
+               
                     }
-                    ]}
 
+                    // {   type:"combo",
+                    //     label:el.label, 
+                    //     id:el.id,
+                    //     options:[
+                    //        {id:1, value:'ueueu'}
+                    //     ],
+                    // }
                 );
                 
             } else if (el.type.includes("boolean")) {
 
+                // inputsArray.push(
+                //     {cols:[
+                //     {   view:"combo",
+                //         placeholder:"Выберите вариант",  
+                //         label:el.label, 
+                //         id:el.id,
+                //         name:el.id, 
+                //         labelPosition:"top",
+                //         options:[
+                //             {id:1, value: "Да"},
+                //             {id:2, value: "Нет"}
+                //         ],
+                //         on:{
+                //             onItemClick:function(){
+                //                 $$(parentElement).clearValidation();
+                //             },
+                //         }
+                //     },
+                    
+                //     ]}
+
+                // );
+
                 inputsArray.push(
                     {cols:[
-                    {   view:"combo",
-                        placeholder:"Выберите вариант",  
+                    {   type:"select",
                         label:el.label, 
                         id:el.id,
-                        name:el.id, 
-                        labelPosition:"top",
                         options:[
                             {id:1, value: "Да"},
                             {id:2, value: "Нет"}
                         ],
-                        on:{
-                            onItemClick:function(){
-                                $$(parentElement).clearValidation();
-                            },
-                        }
+
                     },
                     
                     ]}
@@ -367,23 +421,35 @@ function createEditFields (parentElement, viewPosition=1) {
                 
             } else if (el.type.includes("integer")) {
 
+                // inputsArray.push(
+                //     {cols:[
+                //         {
+                //             view:"text", 
+                //             name:el.id,
+                //             id:el.id, 
+                //             label:el.label, 
+                //             labelPosition:"top",
+                //             invalidMessage:"Поле поддерживает только числовой формат",
+                //             on:{
+                //                 onKeyPress:function(){
+                //                     $$(parentElement).clearValidation();
+                //                 }
+                //             },
+                //             validate:function(val){
+                //                 return !isNaN(val*1);
+                //             }
+                //         },
+                    
+                //     ]}
+
+                // );
+
                 inputsArray.push(
                     {cols:[
                         {
-                            view:"text", 
-                            name:el.id,
+                            type:"text", 
                             id:el.id, 
                             label:el.label, 
-                            labelPosition:"top",
-                            invalidMessage:"Поле поддерживает только числовой формат",
-                            on:{
-                                onKeyPress:function(){
-                                    $$(parentElement).clearValidation();
-                                }
-                            },
-                            validate:function(val){
-                                return !isNaN(val*1);
-                            }
                         },
                     
                     ]}
@@ -391,18 +457,27 @@ function createEditFields (parentElement, viewPosition=1) {
                 );
                 
             } else {
+                    // inputsArray.push(
+                    //     {
+                    //     view:"text", 
+                    //     name:el.id,
+                    //     id:el.id, 
+                    //     label:el.label, 
+                    //     labelPosition:"top",
+                    //     on:{
+                    //         onKeyPress:function(){
+                    //             $$(parentElement).clearValidation();
+                    //         }
+                    //     }
+                    //     }
+                    // );
+
+                //date and text = property
                     inputsArray.push(
                         {
-                        view:"text", 
-                        name:el.id,
                         id:el.id, 
                         label:el.label, 
-                        labelPosition:"top",
-                        on:{
-                            onKeyPress:function(){
-                                $$(parentElement).clearValidation();
-                            }
-                        }
+                        type:"text",
                         }
                     );
                 }
@@ -412,9 +487,9 @@ function createEditFields (parentElement, viewPosition=1) {
 
             if(parentElement=="table-editForm"){
                 $$("table-delBtnId").enable();
-            }
-            
-            return ($$(parentElement).addView( inpObj, viewPosition));
+            }   
+            $$("editTableFormProperty").define("elements", inputsArray);
+ 
             
         } else {
             $$(parentElement).clear();
@@ -528,74 +603,88 @@ function editTableBar (){
                 scroll:true,
                 borderless:true,
                 elements:[
-            
-                    {//id:"form-adaptive",
-                    minHeight:48,css:"webix_form-adaptive", margin:5, rows:[{margin:5, rows:[
-                    
-                        
-                        {//responsive:"form-adaptive",  
+                    {
+                        minHeight:48,
+                        css:"webix_form-adaptive", 
                         margin:5, 
-            
-                            cols: [
-                                {   view:"button",
-                                    id:"table-newAddBtnId",
-                                    height:48,
-                                    minWidth:90, 
-                                    hotkey: "shift",
-                                    value:"Новая запись", click:addItem},
-                                    
-                                {   view:"button",
-                                    id:"table-delBtnId",
-                                    disabled:true,
-                                    height:48,
-                                    minWidth:90,
-                                    width:100,
-                                    hotkey: "shift+esc",
-                                    css:"webix_danger", 
-                                    type:"icon", 
-                                    icon:"wxi-trash", 
-                                    click:removeItem,
-                                    on: {
-                                        onAfterRender: function () {
-                                            this.getInputNode().setAttribute("title","Удалить запись из таблицы");
-                                        }
-                                    } 
-                                },
-                            ]
-                        },
-                        
-                    ]},
-            
-                {margin:10, rows:[ { 
-                        view:"button", 
-                        id:"table-saveBtn",
-                        hidden:true, 
-                        value:"Сохранить", 
-                        height:48, 
-                        css:"webix_primary", 
-                        click:function(){
-                            saveItem();
-                        },
-                        hotkey: "enter" 
-                    },
-                    { 
-                        view:"button", 
-                        id:"table-saveNewBtn",
-                        value:"Сохранить новую запись",
-                        hidden:true,  
-                        height:48,
-                        hotkey: "enter" ,
-                        css:"webix_primary", 
-                        click:saveNewItem,
-                    },
-                    {id:"EditEmptyTempalte",template:"<div style='color:#858585;font-size:13px!important'>Добавьте новую запись или выберите существующую из таблицы</div>", borderless:true}
-            
-            
-                    ]},
-            
-            
+                        rows:[{
+                            margin:5, 
+                            rows:[
+                                {
+                                    margin:5, 
                     
-                ]},
+                                    cols: [
+                                        {   view:"button",
+                                            id:"table-newAddBtnId",
+                                            height:48,
+                                            minWidth:90, 
+                                            disabled:true,
+                                            hotkey: "shift",
+                                            value:"Новая запись", click:addItem
+                                        },
+                                            
+                                        {   view:"button",
+                                            id:"table-delBtnId",
+                                            disabled:true,
+                                            height:48,
+                                            minWidth:90,
+                                            width:100,
+                                            hotkey: "shift+esc",
+                                            css:"webix_danger", 
+                                            type:"icon", 
+                                            icon:"wxi-trash", 
+                                            click:removeItem,
+                                            on: {
+                                                onAfterRender: function () {
+                                                    this.getInputNode().setAttribute("title","Удалить запись из таблицы");
+                                                }
+                                            } 
+                                        },
+                                    ]
+                                },
+                        
+                            ]
+                            },
+                
+                            {   margin:10, 
+                                rows:[ 
+                                    { 
+                                        view:"button", 
+                                        id:"table-saveBtn",
+                                        hidden:true, 
+                                        value:"Сохранить", 
+                                        height:48, 
+                                        css:"webix_primary", 
+                                        click:function(){
+                                            saveItem();
+                                        },
+                                        hotkey: "enter" 
+                                    },
+                                    { 
+                                        view:"button", 
+                                        id:"table-saveNewBtn",
+                                        value:"Сохранить новую запись",
+                                        hidden:true,  
+                                        height:48,
+                                        hotkey: "enter" ,
+                                        css:"webix_primary", 
+                                        click:saveNewItem,
+                                    },
+                                    {   id:"EditEmptyTempalte",
+                                        template:"<div style='color:#858585;font-size:13px!important'>Добавьте новую запись или выберите существующую из таблицы</div>", 
+                                        borderless:true
+                                    },
+                                ]
+                            },
+
+                        ]
+                    },
+
+                    {   view:"property",  
+                        id:"editTableFormProperty", 
+                        width:300,
+                        elements:[]
+                    }
             
                 ],
                 
@@ -619,55 +708,6 @@ try{
 } catch (error){
     alert("Ошибка при выполнении"+" "+ error);
     console.log(error);
-
-    // let script = document.createElement("script");
-    // script.setAttribute("src", "/js/codebase/webix.js");
-    // script.setAttribute("type", "text/javascript");
-    // script.setAttribute("async", true);
-    // document.body.appendChild(script);
-
-    // script.addEventListener("load", () => {
-    //     console.log("Файл загружен")
-    // });
-    
-    // script.addEventListener("error", (ev) => {
-    //     console.log("Загрузка не удалась", ev);
-    // });
-
-
-    // const loadScript = (FILE_URL, async = true, type = "text/javascript") => {
-    //     return new Promise((resolve, reject) => {
-    //         try {
-    //             const scriptEle = document.createElement("script");
-    //             scriptEle.type = type;
-    //             scriptEle.async = async;
-    //             scriptEle.src =FILE_URL;
-    
-    //             scriptEle.addEventListener("load", (ev) => {
-    //                 resolve({ status: true });
-    //             });
-    
-    //             scriptEle.addEventListener("error", (ev) => {
-    //                 reject({
-    //                     status: false,
-    //                     message: `Failed to load the script ${FILE_URL}`
-    //                 });
-    //             });
-    
-    //             document.body.appendChild(scriptEle);
-    //         } catch (error) {
-    //             reject(error);
-    //         }
-    //     });
-    // };
-    
-    // loadScript("/js/codebase/webix.js")
-    //     .then( data  => {
-    //         console.log("Script loaded successfully", data);
-    //     })
-    //     .catch( err => {
-    //         console.error(err);
-    //     });
     window.stop();
    
 }

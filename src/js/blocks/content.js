@@ -105,6 +105,7 @@ function submitBtn (idElements, url, verb, rtype){
 }
 
 function getComboOptions (refTable){
+    console.log()
     return new webix.DataCollection({url:{
         $proxy:true,
         load: function(){
@@ -135,7 +136,11 @@ function getComboOptions (refTable){
                                 }
                                 dataArray.push({ "id":el.id, "value":el[keyArray]});
                             });
-                            return dataArray;
+
+                            
+                        console.log($$("editTableFormProperty").parse(dataArray))
+
+                             return dataArray;
                         } catch (error){
                             console.log(error);
                             catchErrorTemplate("018-000", error);
@@ -340,11 +345,11 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                     });
                     
                     if (actionKey !== undefined){
-                        //urlFieldAction = data.actions[actionKey].url;
+                        let urlFieldAction = data.actions[actionKey].url;
                     
                         if (checkAction){
                             let columns = $$(idCurrTable).config.columns;
-                            columns.splice(0,0,{ id:"action-first"+idCol, maxWidth:130, header:"Подробнее", template:"<span class='webix_icon wxi-angle-down'></span> "});
+                            columns.splice(0,0,{ id:"action-first"+idCol, maxWidth:130, src:urlFieldAction, header:"Подробнее", template:"<span class='webix_icon wxi-angle-down'></span> "});
                             $$(idCurrTable).refreshColumns();
                         }
                     }
@@ -378,15 +383,22 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                                 {   view:"text",
                                     placeholder:dataInputsArray[el].label, 
                                     id: "customInputs"+i,
-                                    
-                                   // maxWidth:300,
-                                   // minWidth:150,
                                     height:48,
                                     labelPosition:"top",
                                     on: {
                                         onAfterRender: function () {
                                             this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
                                         },
+                                        onChange:function(){
+                                            let inputs = $$("customInputs").getChildViews();
+                                            inputs.forEach(function(el,i){
+                                                console.log(el.config.view)
+                                                if (el.config.view == "button" && !($$(el.config.id).isEnabled())){
+                                                    $$(el.config.id).enable();
+                                                }
+                                            });
+
+                                        }
                                     }
                                 });
                             } else if (dataInputsArray[el].type == "apiselect") {
@@ -437,22 +449,21 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
 
 
                                 customInputs.push(
-                                    { view:"combo",
-                                   // width:250,
-                                    height:48,
-                                    id: "customCombo"+i,
-                                    placeholder:dataInputsArray[el].label, 
-                                    labelPosition:"top", 
-                                    
-                                    options:{
-                                        data:optionData
-                                    },
-                                    on: {
-                                        onAfterRender: function () {
-                                            this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
+                                    {   view:"combo",
+                                        height:48,
+                                        id: "customCombo"+i,
+                                        placeholder:dataInputsArray[el].label, 
+                                        labelPosition:"top", 
+                                        options:{
+                                            data:optionData
                                         },
-                                    }               
-                                });
+                                        on: {
+                                            onAfterRender: function () {
+                                                this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
+                                            },
+                                        }               
+                                    }
+                                );
 
                             } else if (dataInputsArray[el].type == "submit" || dataInputsArray[el].type == "button") {
                                 let actionType = dataInputsArray[el].action;
@@ -471,7 +482,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                                                 id:"customBtnDel"+i,
                                                 css:"webix_danger", 
                                                 type:"icon", 
-                                               
+                                                disabled:true,
                                                 icon:"wxi-trash", 
                                                 inputHeight:48,
                                                 height:48,
@@ -497,10 +508,7 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                                                 css:"webix_primary", 
                                                 id:"customBtn"+i,
                                                 inputHeight:46,
-                                                
                                                 height:46, 
-                                               // minWidth:100,
-                                               // maxWidth:550,
                                                 value:dataInputsArray[el].label,
                                                 click:function (id) {
 
@@ -538,7 +546,6 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                                         {   view: "uploader", 
                                             value: "Upload file", 
                                             id:"customUploader"+i,
-                                             
                                             height:48,
                                             autosend:false,
                                             upload: data.actions.submit.url,
@@ -572,6 +579,16 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                                                 onAfterRender: function () {
                                                     this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
                                                 },
+                                                onChange:function(){
+                                                    let inputs = $$("customInputs").getChildViews();
+                                                    inputs.forEach(function(el,i){
+                                                        console.log(el.config.view)
+                                                        if (el.config.view == "button" && !($$(el.config.id).isEnabled())){
+                                                            $$(el.config.id).enable();
+                                                        }
+                                                    });
+
+                                                }
                                             }
                                         }
                                 );
@@ -588,6 +605,17 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
                                                 onAfterRender: function () {
                                                     this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
                                                 },
+
+                                                onChange:function(){
+                                                    let inputs = $$("customInputs").getChildViews();
+                                                    inputs.forEach(function(el,i){
+                                                        console.log(el.config.view)
+                                                        if (el.config.view == "button" && !($$(el.config.id).isEnabled())){
+                                                            $$(el.config.id).enable();
+                                                        }
+                                                    });
+
+                                                }
                                             }
                                         }
                                 );

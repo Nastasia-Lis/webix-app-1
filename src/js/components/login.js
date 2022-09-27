@@ -142,7 +142,7 @@ function login () {
     return {
         view:"form",
         id:"formAuth",
-        maxWidth: 300,
+        width:250,
         borderless:true,
         elements: [
             {view:"text", label:"Логин", name:"username",invalidMessage:"Поле должно быть заполнено"  },

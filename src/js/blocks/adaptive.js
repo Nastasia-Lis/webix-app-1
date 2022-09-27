@@ -322,7 +322,7 @@ function resizeAdaptive (){
                 }
                
 
-                if ($$("table-editForm").isDirty()){
+                if ($$("table-editForm") && $$("table-editForm").isDirty()){
                    if (!($$("tableEditPopup"))){
                     webix.ui({
                         view:"popup",
@@ -386,23 +386,28 @@ function resizeAdaptive (){
                     $$("tableEditPopup").hide();
                 } 
 
-                if ($$("editTableBarContainer").isVisible() || $$("filterTableBarContainer").isVisible()){
+                if ($$("editTableBarContainer")&& $$("editTableBarContainer").isVisible() || $$("filterTableBarContainer") && $$("filterTableBarContainer").isVisible()){
 
                 } else {
                     if ($$("editTableBarContainer") && !($$("editTableBarContainer").isVisible())){
                         $$("editTableBarContainer").show();
                     }
 
-                    $$("filterTableForm").hide();
 
+                    if ($$("filterTableForm")){
+                        $$("filterTableForm").hide();
+
+                    }
+                    
                         
                     if ($$("table-editForm")){
                         $$("table-editForm").show();
                     }
                 }
             
-
-                $$("editTableBarContainer").addView($$("editTableBarAdaptive"))
+                if ( $$("editTableBarContainer")){
+                    $$("editTableBarContainer").addView($$("editTableBarAdaptive"))
+                }
 
                 if ( $$("editTableBarAdaptive") && !( $$("editTableBarAdaptive").isVisible())){
                     $$("editTableBarAdaptive").show();
@@ -412,8 +417,11 @@ function resizeAdaptive (){
                     $$("table-editTableBtnId").hide();
                 }
 
-                $$("editTableBarAdaptive").config.width = 350;
-                $$("editTableBarAdaptive").resize();
+
+                if ( $$("editTableBarAdaptive")){
+                    $$("editTableBarAdaptive").config.width = 350;
+                    $$("editTableBarAdaptive").resize();
+                }
 
                 if($$("editTableBarHeadline") && $$("editTableBarHeadline").isVisible()){
                     $$("editTableBarHeadline").hide();
@@ -447,7 +455,7 @@ function resizeAdaptive (){
  
                 }
 
-                if ($$("filterTableForm").isDirty()){
+                if ($$("filterTableForm") && $$("filterTableForm").isDirty()){
 
                     if ($$("editTableBarContainer") && $$("editTableBarContainer").isVisible()){
                         $$("editTableBarContainer").hide();
@@ -565,7 +573,6 @@ function adaptivePoints (){
          
 
             $$("tree").attachEvent("onAfterLoad", function(){
-                console.log($$("editTableBarContainer"))
                 if ($$("editTableBarContainer") && $$("editTableBarContainer").isVisible()){
                     $$("editTableBarContainer").hide();
                 }

@@ -307,6 +307,7 @@ const userprefsWorkspace = {
                         }
                     },
                     {height:15},
+                    {cols:[
                     {   view:"select", 
                         name:"LoginActionOpt",
                         label:"Действие после входа в систему", 
@@ -324,8 +325,10 @@ const userprefsWorkspace = {
    
                         }
                     },
+                    {}
+                    ]}
                 ]},
-                {}
+               //{}
             ]},
     
         ],
@@ -351,25 +354,30 @@ const userprefsWorkspace = {
 
 
 const userprefsConfirmBtns =  { 
-    cols:[
-        {width:20},          
+    id:"a1", rows:[
+    {responsive:"a1",cols:[
+      //  {width:20},          
         {   view:"button", 
+        
             height:48,
+            minWidth:200,
             value:"Сбросить" ,
             id:"userprefsResetBtn",
             disabled:true,
         },
-        {width:10}, 
+        //{width:10}, 
         {   view:"button", 
             value:"Сохранить настройки" ,
             height:48, 
+            minWidth:200,
             id:"userprefsSaveBtn",
             css:"webix_primary",
             disabled:true,
             click: saveSettings,
         },
-        {width:20}, 
+       // {width:20}, 
      
+    ]}
     ]
 };
 

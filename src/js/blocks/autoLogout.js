@@ -14,8 +14,6 @@ function resetTimer (){
     window.addEventListener('scroll', resetTimer, true); 
 
     function logout() {
-        //console.log(window.location.href,"wr")
-        //setUserLocation ("",window.location.href);
       
         webix.ajax().get("/init/default/api/userprefs/", {
             success:function(text, data, XmlHttpRequest){

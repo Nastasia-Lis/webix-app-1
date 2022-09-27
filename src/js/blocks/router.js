@@ -162,148 +162,65 @@ function getDataFields (routes, menuItem){
                 createElements();
                 webix.ajax().get("/init/default/api/fields.json",false).then(function (data) {
                     let srcTree = data.json().content;
-   
-                //  srcTree.treeTemplate={
-                     
-                //      "fields": {
-                //          "id": {
-                //              "type": "id",
-                //              "unique": false,
-                //              "notnull": false,
-                //              "length": 512,
-                //              "label": "Id",
-                //              "comment": null,
-                //              "default": "None"
-                //          },
-                //          "pid": {
-                //              "type": "reference trees",
-                //              "unique": false,
-                //              "notnull": false,
-                //              "length": 512,
-                //              "label": "Родитель",
-                //              "comment": null,
-                //              "default": "None"
-                //          },
-                //          "owner": {
-                //              "type": "reference auth_user",
-                //              "unique": false,
-                //              "notnull": false,
-                //              "length": 512,
-                //              "label": "Владелец",
-                //              "comment": null,
-                //              "default": "None"
-                //          },
-                //          "ttype": {
-                //              "type": "integer",
-                //              "unique": false,
-                //              "notnull": false,
-                //              "length": 512,
-                //              "label": "Тип",
-                //              "comment": "Тип записи|1=системная;2=пользовательская|Перечисление",
-                //              "default": "1"
-                //          },
-                //          "name": {
-                //              "type": "string",
-                //              "unique": false,
-                //              "notnull": false,
-                //              "length": 100,
-                //              "label": "Наименование",
-                //              "comment": null,
-                //              "default": ""
-                //          },
-                //          "descr": {
-                //              "type": "string",
-                //              "unique": false,
-                //              "notnull": false,
-                //              "length": 1000,
-                //              "label": "Описание",
-                //              "comment": null,
-                //              "default": ""
-                //          },
-                //          "value": {
-                //              "type": "string",
-                //              "unique": false,
-                //              "notnull": false,
-                //              "length": 1000,
-                //              "label": "Значение",
-                //              "comment": null,
-                //              "default": ""
-                //          },
-                //          "cdt": {
-                //              "type": "datetime",
-                //              "unique": false,
-                //              "notnull": false,
-                //              "length": 512,
-                //              "label": "Создано",
-                //              "comment": null,
-                //              "default": "now"
-                //          }
-                //      },
-                //      "singular": "Классификатор-пример",
-                //      "ref_name": "name",
-                //      "plural": "Классификаторы-пример",
-                //      "type": "treeConf"
-                     
-                //  };
  
-                 let obj = Object.keys(srcTree);
- 
-                 let dataChilds = {tables:[], forms:[], dashboards:[], treeConf:[]};
+                    let obj = Object.keys(srcTree);
+    
+                    let dataChilds = {tables:[], forms:[], dashboards:[], treeConf:[]};
+                    
+                    try{
+                        $$("tree").unselectAll();
+    
+                        obj.forEach(function(data) {
+    
+                            if (srcTree[data].type == "treeConf" ){
+    
+                                dataChilds.treeConf.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type});
+                                tableNames.push({name:srcTree[data].plural , id:data}); 
+                                
+                            } 
                 
-                 try{
-                     $$("tree").unselectAll();
- 
-                     obj.forEach(function(data) {
- 
-                         if (srcTree[data].type == "treeConf" ){
- 
-                             dataChilds.treeConf.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type});
-                             tableNames.push({name:srcTree[data].plural , id:data}); 
-                             
-                         } 
-             
-                         if (srcTree[data].type == "dbtable"){
-                             if(srcTree[data].plural){
-                                 dataChilds.tables.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type});
-                                 tableNames.push({name:srcTree[data].plural , id:data});
-                             } else if (srcTree[data].singular) {
-                                 dataChilds.tables.push({"id":data, "value":srcTree[data].singular, "type":srcTree[data].type});
-                                 tableNames.push({name:srcTree[data].singular , id:data});
-                             }
-         
-                         } 
-                         
-                         if (srcTree[data].type == "tform" ){
- 
-                             if(srcTree[data].plural){
-                                 dataChilds.forms.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type});
-                                 tableNames.push({name:srcTree[data].plural , id:data}); 
-                             }else if (srcTree[data].singular) {
-                                 dataChilds.forms.push({"id":data, "value":srcTree[data].singular, "type":srcTree[data].type});
-                                 tableNames.push({name:srcTree[data].singular , id:data}); 
-         
-                             }
-                             
-                         } 
- 
-                         if (srcTree[data].type == "dashboard" ){
-                     
-                             if(srcTree[data].plural){
-                                 dataChilds.dashboards.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type});
-                                 tableNames.push({name:srcTree[data].plural , id:data}); 
-                             }else if (srcTree[data].singular) {
-                                 dataChilds.dashboards.push({"id":data, "value":srcTree[data].singular, "type":srcTree[data].type});
-                                 tableNames.push({name:srcTree[data].singular , id:data}); 
-         
-                             }
-                         }   
- 
-                     });
-                 } catch (error){
-                     console.log(error);
-                     catchErrorTemplate("015-000", error);
- 
-                 }
+                            if (srcTree[data].type == "dbtable"){
+                                if(srcTree[data].plural){
+                                    dataChilds.tables.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type});
+                                    tableNames.push({name:srcTree[data].plural , id:data});
+                                } else if (srcTree[data].singular) {
+                                    dataChilds.tables.push({"id":data, "value":srcTree[data].singular, "type":srcTree[data].type});
+                                    tableNames.push({name:srcTree[data].singular , id:data});
+                                }
+            
+                            } 
+                            
+                            if (srcTree[data].type == "tform" ){
+    
+                                if(srcTree[data].plural){
+                                    dataChilds.forms.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type});
+                                    tableNames.push({name:srcTree[data].plural , id:data}); 
+                                }else if (srcTree[data].singular) {
+                                    dataChilds.forms.push({"id":data, "value":srcTree[data].singular, "type":srcTree[data].type});
+                                    tableNames.push({name:srcTree[data].singular , id:data}); 
+            
+                                }
+                                
+                            } 
+    
+                            if (srcTree[data].type == "dashboard" ){
+                        
+                                if(srcTree[data].plural){
+                                    dataChilds.dashboards.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type});
+                                    tableNames.push({name:srcTree[data].plural , id:data}); 
+                                }else if (srcTree[data].singular) {
+                                    dataChilds.dashboards.push({"id":data, "value":srcTree[data].singular, "type":srcTree[data].type});
+                                    tableNames.push({name:srcTree[data].singular , id:data}); 
+            
+                                }
+                            }   
+    
+                        });
+                    } catch (error){
+                        console.log(error);
+                        catchErrorTemplate("015-000", error);
+    
+                    }
      
  
                  webix.ajax().get("/init/default/api/mmenu.json").then(function (data) {
@@ -362,50 +279,49 @@ function getDataFields (routes, menuItem){
  
                                 } 
                                 
-                                //else {
-                         
-                                    if (el.childs.length > 0){
-                                        dataChilds[el.name]=[];
-                                        el.childs.forEach(function(child,i){
-                                            dataChilds[el.name].push({id:child.name, value:child.title });
-                                            tableNames.push({name:child.title , id:child.name}); 
-                                        });
-                                    }
-             
-                                    if (el.name.includes("delim")){
 
-                                    } else {
-                                        let singleItem;
-                                        obj.forEach(function(data) {
-                                            if (data==el.name){
-                                                singleItem = el.title;
-                                                menuTree.push({id:el.name+"-single", value:el.title, typeof:srcTree[data].type});
+                                if (el.childs.length > 0){
+                                    dataChilds[el.name]=[];
+                                    el.childs.forEach(function(child,i){
+                                        dataChilds[el.name].push({id:child.name, value:child.title });
+                                        tableNames.push({name:child.title , id:child.name}); 
+                                    });
+                                }
+             
+                                if (el.name.includes("delim")){
+
+                                } else {
+                                    let singleItem;
+                                    obj.forEach(function(data) {
+                                        if (data==el.name){
+                                            singleItem = el.title;
+                                            menuTree.push({id:el.name+"-single", value:el.title, typeof:srcTree[data].type});
+                                        }
+                                    });
+                                    if (!singleItem){
+                                        if (el.title){
+                                            if (el.typeof){
+                                                menuTree.push({id:el.name, value:el.title,typeof:el.typeof, data:dataChilds[el.name]});
+                                            }else {
+                                                menuTree.push({id:el.name, value:el.title, data:dataChilds[el.name]});
                                             }
-                                        });
-                                        if (!singleItem){
-                                            if (el.title){
-                                                if (el.typeof){
-                                                    menuTree.push({id:el.name, value:el.title,typeof:el.typeof, data:dataChilds[el.name]});
-                                                }else {
-                                                    menuTree.push({id:el.name, value:el.title, data:dataChilds[el.name]});
-                                                }
-                                                
                                             
-                                            } else {
-                                                menuTree.push({id:el.name, value:"Без названия", data:dataChilds[el.name]});
-                                            }
+                                        
+                                        } else {
+                                            menuTree.push({id:el.name, value:"Без названия", data:dataChilds[el.name]});
                                         }
                                     }
-                            // }
- 
+                                }
+
                          });
                      
  
                          $$("tree").clearAll();
-                        // menuTree.push({id:"treeTempl", value:"Классификатор-пример", data:dataChilds.treeConf});
                          $$("tree").parse(menuTree);
                          $$("button-context-menu").config.popup.data = dataAuth;
                          $$("button-context-menu").enable();
+
+                         
                      } catch (error){
                          console.log(error);
                          catchErrorTemplate("015-000", error);
@@ -686,8 +602,6 @@ function router (){
         },
 
         experimental: function (){
-            console.log("exp");
-
             try {
                 if($$("webix__null-content")){
                     $$("container").removeView($$("webix__null-content"));
@@ -709,8 +623,6 @@ function router (){
                     createElements("treeTempl");
                     getInfoEditTree();
                     $$("treeTempl").show();
-                    console.log($$("treeTempl"))
-                    console.log($$("treeTempl").isVisible())
                 }
     
                 $$("tree").closeAll();

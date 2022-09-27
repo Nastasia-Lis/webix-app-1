@@ -1,4 +1,4 @@
-console.log("expa 1.0.28");
+console.log("expa 1.0.29");
 // import {lib} from "./modules/expalib.js";
 // lib ();
 
@@ -34,13 +34,12 @@ try{
                             {},
                             {hidden:true, id: "userAuth", 
                             cols: [
-                                {},
-                                {   rows:[
-                                        {},
-                                        login(),
-                                        {}
-                                    ]},
-                                {}
+                                {
+                                    view:"align", 
+                                    align:"middle,center",
+                                    body:login()
+                                },
+
                             ]},
                             {hidden:true, id:"mainLayout", rows: [
                                 

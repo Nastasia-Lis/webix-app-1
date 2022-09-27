@@ -41,6 +41,36 @@ function treeSidebar () {
                         $$("EditEmptyTempalte").show();
                     }
 
+                    if ($$("filterEmptyTempalte")){
+                        $$("filterEmptyTempalte").show();
+                    }
+                    
+                    if ($$("filterTableBarContainer") && $$("filterTableBarContainer").isVisible()){
+                        $$("filterTableBarContainer").hide();
+                    }
+    
+                    if ($$("editTableBarContainer") && !($$("editTableBarContainer").isVisible())){
+                        $$("editTableBarContainer").show();
+                    }
+
+                    if ($$("btnFilterSubmit").isEnabled()){
+                        $$("btnFilterSubmit").disable();
+                    }
+                    if ($$("filterLibrarySaveBtn").isEnabled()){
+                        $$("filterLibrarySaveBtn").disable();
+                    }
+                    if ($$("resetFilterBtn").isEnabled()){
+                        $$("resetFilterBtn").disable();
+                    }
+
+                    let btnClass = document.querySelector(".webix_btn-filter");
+                    if (btnClass && btnClass.classList.contains("webix_primary")){
+                        btnClass.classList.add("webix_secondary");
+                        btnClass.classList.remove("webix_primary");
+                    }
+               
+                    
+
                     if($$("treeTempl") && !($$(ids)) ){
                         $$("treeTempl").hide();
                     }

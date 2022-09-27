@@ -43,7 +43,7 @@ function setLogValue (typeNotify,notifyText) {
             $$("logBlock-list").add({
                 date:currentDate,
                 value:notifyText,
-                src:"Expa v1.0.28"
+                src:"Expa v1.0.29"
             });
         }
         
@@ -130,12 +130,18 @@ const logLayout = {
 
 
 function catchErrorTemplate (code,error,otherType=false) {
-    $$("webix_log-btn").setValue(2);
-    notifyCounter = 0;
-    if (!otherType){
-        return setLogValue("error","ОШИБКА "+code+": "+error.stack);
-    } else {
-        return setLogValue("error","ОШИБКА "+code+": "+error);
+    try{
+        $$("webix_log-btn").setValue(2);
+        notifyCounter = 0;
+        if (!otherType){
+            return setLogValue("error","ОШИБКА "+code+": "+error.stack);
+        } else {
+            return setLogValue("error","ОШИБКА "+code+": "+error);
+        }
+    } catch (error){
+        console.log(error);
+        alert("Ошибка при выполнении"+" "+ error);
+        window.stop();
     }
 }
 

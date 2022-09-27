@@ -2,6 +2,11 @@ import {setLogValue} from './logBlock.js';
 import {catchErrorTemplate,ajaxErrorTemplate} from "./logBlock.js";
 import {setStorageData, setUserLocation} from "./storageSetting.js";
 import {modalBox,popupExec} from "./notifications.js";
+import {createChildFields} from "../components/table.js";
+import { dashboardLayout } from '../components/dashboard.js';
+
+
+
 
 
 function tabbarClick (id){
@@ -30,6 +35,13 @@ function tabbarClick (id){
             } else {
                 btnSubmitState ("disable");
             }
+
+
+            if (!($$("editFormPopupLibRemoveBtn").isVisible())){
+                $$("editFormPopupLibRemoveBtn").show();
+            }
+
+            
         }
 
         if (id =="editFormScroll"){
@@ -42,10 +54,14 @@ function tabbarClick (id){
                 }
             });
 
-            if (counter >0){
+            if (counter > 0){
                 btnSubmitState ("enable");
             } else {
                 btnSubmitState ("disable");
+            }
+
+            if ($$("editFormPopupLibRemoveBtn").isVisible()){
+                $$("editFormPopupLibRemoveBtn").hide();
             }
         
         }
@@ -57,36 +73,162 @@ function tabbarClick (id){
 }
 
 function popupSubmitBtn (){
+
+    function showField (condition,elementClass,el){
+
+        let htmlElement = document.querySelectorAll(".webix_filter-inputs");
+    
+        if (condition){
+            htmlElement.forEach(function(elem,i){
+                if (elem.classList.contains(elementClass)){
+                    if (!(elem.classList.contains("webix_show-content"))){
+                        elem.classList.add("webix_show-content");
+                    }
+                    if (elem.classList.contains("webix_hide-content")){
+                        elem.classList.remove("webix_hide-content");
+                       
+                    }
+
+                } else {
+                    if (!(elem.classList.contains("webix_hide-content"))){
+                        elem.classList.add("webix_hide-content");
+                    }
+
+                }
+            });
+        
+            $$(el).show();
+
+            if($$(el+"_container-btns")&&!($$(el+"_container-btns").isVisible())){
+                $$(el+"_container-btns").show();
+            }
+
+
+            $$("resetFilterBtn").enable();
+
+            if (!($$("filterLibrarySaveBtn").isEnabled())){
+                $$("filterLibrarySaveBtn").enable();
+            }
+
+            if ($$("filterEmptyTempalte").isVisible()){
+                $$("filterEmptyTempalte").hide();
+                $$("filterEmptyTempalte").refresh();
+            }
+
+
+        } else{
+
+            if ($$(el).isVisible()){
+           
+                htmlElement.forEach(function(elem,i){
+                    if (elem.classList.contains(elementClass)){
+                        if (!(elem.classList.contains("webix_hide-content"))){
+                            elem.classList.add("webix_hide-content");
+                        }
+                        if (elem.classList.contains("webix_show-content")){
+                            elem.classList.remove("webix_show-content");
+                        }
+                    }
+                });
+                $$(el).hide();
+            
+            }
+            
+            if($$(el+"_container-btns")&&$$(el+"_container-btns").isVisible()){
+            
+                $$(el+"_container-btns").hide();
+            }
+    
+            if($$(el+"_rows")){
+
+            let countChild = $$(el+"_rows").getChildViews();
+            
+
+            Object.values(countChild).forEach(function(elem,i){
+                if (elem.config.id.includes("child")){
+                    $$(el+"_rows").removeView($$(elem.config.id));
+                }
+
+            });
+            }
+        }
+    }
     try{
-                                                                
+                                                        
         let tabbarValue = $$("filterPopupTabbar").getValue();
         
         
         if (tabbarValue =="editFormPopupLib"){
-            webix.message({type:"debug",expire:3000, text:"Библиотека в разработке"});
 
             let radioValue = $$("filterEditLib").getOption($$("filterEditLib").getValue());
-            //"filter-template_"+nameTemplate
-            
+
             webix.ajax().get("/init/default/api/userprefs/", {
                 success:function(text, data, XmlHttpRequest){
                     data = data.json().content;
 
                     data.forEach(function(el,i){
-                        if (el.name == "filter-template_"+radioValue.value){
-                            let prefs = JSON.parse(el.prefs);
-                            console.log( $$("editFormPopupScroll"));
 
-                            $$("editFormPopupScroll").addView(prefs.collecton,1);
-                        }
+                    if (el.name == $$("tree").getSelectedId()+"_filter-template_"+radioValue.value){
+
+                        let prefs = JSON.parse(el.prefs);
+
+                        prefs.collection.content.forEach(function(el,i){
+                       
+                            if (el.condition == "parent"){
+
+                                let indexHtml = el.parentField.id.indexOf("_filter");
+                                let htmlClass = el.parentField.id.slice(0,indexHtml);
+
+                                let indexId = el.parentField.id.indexOf("_rows");
+                                let idEl = el.parentField.id.slice(0,indexId);
+                                showField($$(el.parentField.id),htmlClass,idEl);
+
+                                $$(el.parentValue.id).setValue(el.parentValue.value);
+
+                                $$(el.parentField.id)._cells.forEach(function(child,i){
+                                    if (child.config.id.includes("child")){
+                                        $$(el.parentField.id).removeView($$(child.config.id));
+                                    }
+                                });
+                            }
+                           
+                            let columnsData = $$("table").getColumns();
+
+                            columnsData.forEach(function(col,i){
+                                if (el.parentField.id.includes(col.id)){
+                                    if (el.condition == "and"){
+                                        createChildFields ("and",col);
+                                           $$(el.childValue.id).setValue(el.childValue.value); 
+                                    } else if (el.condition == "or"){
+                                        createChildFields ("or",col);
+                                           $$(el.childValue.id).setValue(el.childValue.value); 
+                                    }
+                                }
+                            });
+
+                        });
+                
+                        $$("filterTableForm").setValues(prefs.values);
+
+                    }
+
+                    if ($$("popupFilterEdit")){
+                        $$("popupFilterEdit").destructor();
+                    }
+
+                    if (!($$("btnFilterSubmit").isEnabled())){
+                        $$("btnFilterSubmit").enable();
+                    }
+
                     });
 
- 
-                    
+
                     if (data.err_type == "e"){
                         setLogValue("error",data.error);
+                    } else {
+                        setLogValue("success","Рабочая область фильтра обновлена");
                     }
-                    
+  
                 },
                 error:function(text, data, XmlHttpRequest){
                     ajaxErrorTemplate("004-001",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
@@ -98,109 +240,34 @@ function popupSubmitBtn (){
 
 
 
-        } else if (tabbarValue=="editFormScroll"){
+        } 
+        else if (tabbarValue=="editFormScroll"){
 
             if ($$("filterLibrarySaveBtn")&&!($$("filterLibrarySaveBtn").isEnabled())){
                 $$("filterLibrarySaveBtn").enable();
             }
             
             let values = $$("editFormPopup").getValues();
-            let btnClass;
             let elementClass;
             let index;
         
             Object.keys(values).forEach(function(el,i){
                 index = el.lastIndexOf("_");
                 elementClass = el.slice(0,index);
-            
-                btnClass = document.querySelectorAll(".webix_filter-inputs");
-                if (values[el]){
-                    
-                    if (!($$(el).isVisible())){
-            
-                        btnClass.forEach(function(elem,i){
-                            if (elem.classList.contains(elementClass)){
-                              
-                                if (!(elem.classList.contains("webix_show-content"))){
-                                    elem.classList.add("webix_show-content");
-                     
-                                }
-                                if (elem.classList.contains("webix_hide-content")){
-                                    elem.classList.remove("webix_hide-content");
-                                
-                                }
 
-                            } else {
-                                if (!(elem.classList.contains("webix_hide-content"))){
-                                    elem.classList.add("webix_hide-content");
-                                 
-                                }
-                            }
-                        });
-                        
-                    
-                    
-                        $$(el).show();
+                showField (values[el],elementClass,el);
 
-                        if($$(el+"_container-btns")&&!($$(el+"_container-btns").isVisible())){
-                            $$(el+"_container-btns").show();
-                        }
-                    }
-
-                    $$("resetFilterBtn").enable();
-
-                
-                    if ($$("filterEmptyTempalte").isVisible()){
-                        $$("filterEmptyTempalte").hide();
-                        $$("filterEmptyTempalte").refresh();
-                    }
-
-                } else{
-                    if ($$(el).isVisible()){
-                        btnClass.forEach(function(elem,i){
-                            if (elem.classList.contains(elementClass)){
-                                if (!(elem.classList.contains("webix_hide-content"))){
-                                    elem.classList.add("webix_hide-content");
-                                }
-                                if (elem.classList.contains("webix_show-content")){
-                                    elem.classList.remove("webix_show-content");
-                                }
-                            }
-                        });
-                        $$(el).hide();
-                    
-                    }
-                    
-                    if($$(el+"_container-btns")&&$$(el+"_container-btns").isVisible()){
-                    
-                        $$(el+"_container-btns").hide();
-                    }
-            
-                    if($$(el+"_rows")){
-
-                    let countChild = $$(el+"_rows").getChildViews();
-                    
-
-                    Object.values(countChild).forEach(function(elem,i){
-                        if (elem.config.id.includes("child")){
-                            $$(el+"_rows").removeView($$(elem.config.id));
-                        }
-
-                    });
-                    }
-                }
-                $$(el).refresh();
             });
 
             let visibleElements=0;
     
-        Object.values($$("filterTableForm").elements).forEach(function(el,i){
+            Object.values($$("filterTableForm").elements).forEach(function(el,i){
                 if (!(el.config.hidden)){
                     visibleElements++;
                 }
-            
-        });
-        if (!(visibleElements)){
+                
+            });
+            if (!(visibleElements)){
                 if (!($$("filterEmptyTempalte").isVisible())){
                     $$("filterEmptyTempalte").show();
                     if($$("btnFilterSubmit").isEnabled()){
@@ -210,10 +277,12 @@ function popupSubmitBtn (){
                         $$("filterLibrarySaveBtn").disable();
                     }
                 } 
-        }
+            }
 
             $$("popupFilterEdit").destructor();
             setLogValue("success","Рабочая область фильтра обновлена");
+
+         
         }
     }catch(e){
         $$("popupFilterEdit").destructor();
@@ -221,64 +290,58 @@ function popupSubmitBtn (){
     }
 }
 
-
-
-
+let filterTemplateValue;
 function editFiltersBtn (){
-
-    // let optionDataTemplate = new webix.DataCollection({url:{
-    //     $proxy:true,
-    //     load: function(){
-    //         return ( webix.ajax().get("/init/default/api/userprefs/").then(function (data) {   
-                    
-    //                 let dataSrc = data.json().content;
-                        
-    //                 let dataOptions=[];
-
-    //                 try{
-    //                     dataSrc.forEach(function(data, i) {
-    //                         if(data.name.includes("filter-template_")){
-    //                             let prefs = JSON.parse(data.prefs);
-    //                             dataOptions.push( 
-    //                                 {id:i+1, value:prefs.name},
-    //                             );
-    //                         }
-    //                     });
-
-    //                     return dataOptions;
-    //                 } catch (error){
-    //                     console.log(error);
-    //                     catchErrorTemplate("004-000", error);
-    //                 } 
-
-    //                 }).catch(error => {
-    //                     console.log(error);
-    //                     ajaxErrorTemplate("004-000",error.status,error.statusText,error.responseURL);
-
-    //                 })
-    //             );
-            
-        
-            
-    //     }
-    // }});
-
 
     webix.ajax().get("/init/default/api/userprefs/").then(function (data) {   
                     
         let dataSrc = data.json().content;
 
         try{
-            dataSrc.forEach(function(data, i) {
-                if(data.name.includes("filter-template_")){
-                    let prefs = JSON.parse(data.prefs);
-                    $$("filterEditLib").addOption( {id:i+1, value:prefs.name})
-                }
-            });
 
-            if ( $$("filterEditLib").data.options.length == 0 ){
-                $$("filterEditLib").addOption({"id":"radioNoneContent",disabled:true, "value":"Сохранённых шаблонов нет"})
+            let user = webix.storage.local.get("user");
+ 
+            if (!user){
+                webix.ajax("/init/default/api/whoami",{
+                    success:function(text, data, XmlHttpRequest){
+                        
+                        let userData = {};
+                        userData.id = data.json().content.id;
+                        userData.name = data.json().content.first_name;
+                        userData.username = data.json().content.username;
+                        
+                        setStorageData("user", JSON.stringify(userData));
+
+                        user = webix.storage.local.get("user");
+                    },
+                    error:function(text, data, XmlHttpRequest){
+                        ajaxErrorTemplate("008-011",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                    }
+                }).catch(error => {
+                    console.log(error);
+                    ajaxErrorTemplate("008-000",error.status,error.statusText,error.responseURL);
+                });
             }
+
+            if(user){
+                dataSrc.forEach(function(data, i) {
+             
+                    if(data.name.includes("filter-template_") && data.owner == user.id){
+                        let prefs = JSON.parse(data.prefs);
+                        if (prefs.table == $$("tree").getSelectedId()){
+                            $$("filterEditLib").addOption( {id:i+1, value:prefs.name})
+                        }
+                    }
+                   
+                });
+
+                if ( $$("filterEditLib").data.options.length == 0 ){
+                    $$("filterEditLib").addOption({"id":"radioNoneContent",disabled:true, "value":"Сохранённых шаблонов нет"})
+                }
+            }
+
+      
+          
         } catch (error){
             console.log(error);
             catchErrorTemplate("004-000", error);
@@ -359,9 +422,9 @@ function editFiltersBtn (){
                                         }
                           
                                     },
-
                                     {  
                                         view:"form", 
+                                        scroll:true ,
                                         id:"editFormPopupLib",
                                         css:"webix_multivew-cell",
                                         borderless:true,
@@ -373,6 +436,12 @@ function editFiltersBtn (){
                                                 on:{
                                                     onChange:function(){
                                                         if (this.getValue()){
+                                                            filterTemplateValue = this.getValue();
+
+                                                            if (!($$("editFormPopupLibRemoveBtn").isEnabled())){
+                                                                $$("editFormPopupLibRemoveBtn").enable();
+                                                            }
+                                                            
                                                             if(!($$("popupFilterSubmitBtn").isEnabled())){
                                                                 $$("popupFilterSubmitBtn").enable();
                                                             }
@@ -382,8 +451,6 @@ function editFiltersBtn (){
                                                             }
                                                         }
                                                     },
-                                                
-                                                
                                                 }
                                             }
                                         ],
@@ -392,22 +459,99 @@ function editFiltersBtn (){
                                 ]},
                           
                                 {height:20},
+                                {cols:[
+                                    {   view:"button",
+                                        id:"popupFilterSubmitBtn",
+                                        height:48,
+                                        minWidth:140,
+                                        disabled:true, 
+                                        css:"webix_primary",
+                                        hotkey: "Enter",
+                                        value:"Применить", 
+                                        on: {
+                                            onAfterRender: function () {
+                                                this.getInputNode().setAttribute("title","Выбранные фильтры будут добавлены в рабочее поле, остальные скрыты");
+                                            },
+                                        },
+                                        click:popupSubmitBtn
+                                    },
+
+                                    {   view:"button",
+                                        css:"webix_danger",
+                                        id:"editFormPopupLibRemoveBtn",
+                                        type:"icon",
+                                        icon: 'wxi-trash',
+                                        hidden:true,
+                                        disabled:true,
+                                        width: 50,
+                                        click:function(){
+
+                                            modalBox("Шаблон будет удалён", "Вы уверены, что хотите продолжить?", ["Отмена", "Удалить"])
+                                            .then(function(result){
+                                         
+                                                if (result == 0){
                             
-                                {   view:"button",
-                                    id:"popupFilterSubmitBtn",
-                                    height:48,
-                                    minWidth:140,
-                                    disabled:true, 
-                                    css:"webix_primary",
-                                    hotkey: "Enter",
-                                    value:"Применить", 
-                                    on: {
-                                        onAfterRender: function () {
-                                            this.getInputNode().setAttribute("title","Выбранные фильтры будут добавлены в рабочее поле, остальные скрыты");
+                                                } else if (result == 1){
+                                                    let radioValue = $$("filterEditLib").getOption($$("filterEditLib").getValue());
+                                           
+
+                                                    webix.ajax().get("/init/default/api/userprefs/", {
+                                                    
+                                                        success:function(text, data, XmlHttpRequest){
+                                                            data = data.json().content;
+                                                            
+                                                            data.forEach(function(el,i){
+                                                                if (el.name == $$("tree").getSelectedId()+"_filter-template_"+radioValue.value){
+
+                                                                    webix.ajax().del("/init/default/api/userprefs/"+el.id,el).then(function (data) {
+                                                                        if (data.json().err_type !== "e"&&data.json().err_type !== "x"){
+
+
+                                                                            setLogValue("success","Шаблон « "+radioValue.value+" » удален");
+                                                                            
+                                                                            $$("filterEditLib").config.options.forEach(function(el,i){
+                                                                                if (el.id == radioValue.id){
+                                                                                    el.value = radioValue.value + " (шаблон удалён)";
+                                                                                    $$("filterEditLib").refresh();
+                                                                                    $$("filterEditLib").disableOption($$("filterEditLib").getValue());
+                                                                                    $$("filterEditLib").setValue("");
+                                                                                }
+                                                                   
+                                                                            });
+                                                                            
+                                                                         
+                                                                        } else {
+                                                                            catchErrorTemplate("004-002", data.json().err, true);
+                                                                        }
+                                                                    }).fail(function(error){
+                                                                        console.log(error)
+                                                                        ajaxErrorTemplate("004-002",error.status,error.statusText,error.responseURL);
+                                            
+                                                                    });
+                                                                }
+                                                            });
+
+                                                            
+                                                        },
+                                                        error:function(text, data, XmlHttpRequest){
+                                                            catchErrorTemplate("004-000", data.json().err, true);
+                                                        },
+
+                                                    });
+                                                }
+                                            });
+
+                                     
+                    
+
+                                        },
+                                        on: {
+                                            onAfterRender: function () {
+                                                this.getInputNode().setAttribute("title","Выбранный шаблон будет удален");
+                                            },
                                         },
                                     },
-                                    click:popupSubmitBtn
-                                },
+                                ]},
                         ]},
                         {}
 
@@ -417,6 +561,9 @@ function editFiltersBtn (){
         }
     }).show();
 
+    if ($$("filterEditLib")){
+        $$("filterEditLib").setValue(filterTemplateValue);   
+    }
 
     if (window.innerWidth < 1200 ){
 
@@ -664,6 +811,7 @@ function filterSubmitBtn (){
     let query =[];
 
     function getOperationVal (value, filterEl,el,condition, position, parentIndex=false){
+       
         let itemTreeId = $$("tree").getSelectedItem().id;
         let operationValue = $$(el+"-btnFilterOperations").config.value;
         try {
@@ -866,24 +1014,59 @@ function filterLibraryBtn (){
                     if (data.err_type == "e"){
                         setLogValue("error",data.error);
                     }
-
-                    
+ 
                     let nameTemplate = result;
+
+                    let collection = {content:[]};
+             
+                    $$("inputsFilter")._collection.forEach(function(el,i){
+                       
+                        let indexId = el.id.lastIndexOf("_rows");
+                        let id = el.id.slice(0,indexId);
+                    
+                        if ($$(id).isVisible()){
+        
+
+                            $$(el.id).getChildViews().forEach(function(child,i){
+                           
+                                if (child.config.id.includes("child")){
+
+                                    let condition = $$(child.config.id)._collection[0].id;
+                                    let index = el.id.lastIndexOf("_rows");
+                                    let parentField = el.id.slice(0,index);
+                                    let idInput = $$(child.config.id).getChildViews()[1]._collection[0].id;
+                                    if (condition.includes("and")){
+                                        collection.content.push({condition:"and",parentField:$$(parentField).config, childValue: {id:idInput+"-btnFilterOperations",value:$$(idInput+"-btnFilterOperations").getValue()}});
+                                    } else if (condition.includes("or")){
+                                        collection.content.push({condition:"or",parentField:$$(parentField).config, childValue: {id:idInput+"-btnFilterOperations", value:$$(idInput+"-btnFilterOperations").getValue()}});
+                                    } 
+
+                                    
+                                } else {
+                                    collection.content.push({condition:"parent",parentField:$$(el.id).config, parentValue:{id:id+"-btnFilterOperations", value:$$(id+"-btnFilterOperations").getValue()}});
+                                }
+
+                            });
+                        }
+                    });
+             
                     let template = {
                         name:nameTemplate,
-                        collecton:{rows:$$("inputsFilter")._collection},
-                        values: $$("filterTableForm").getValues()
+                        collection:collection,
+                        values: $$("filterTableForm").getValues(),
+                        table: $$("tree").getSelectedId()
                     };
-
+           
                     let settingExists = false;
                     let sentObj = {
-                        name:"filter-template_"+nameTemplate,
+                        name:$$("tree").getSelectedId()+"_filter-template_"+nameTemplate,
                         prefs:template,
                     };
 
                     try{
                         data.forEach(function(el,i){
-                            if (el.name == "filter-template_"+nameTemplate){
+
+                            if (el.name == $$("tree").getSelectedId()+"_filter-template_"+nameTemplate){
                                 settingExists = true;
 
                                 modalBox("Шаблон с таким именем существует", "После сохранения предыдущие данные будут стёрты", ["Отмена", "Сохранить изменения"])
@@ -1023,18 +1206,6 @@ function filterForm (){
                         icon: 'wxi-close',
                         click:function(){
                             if($$("table-editForm")){
-                            
-                                
-
-                                    // if ( $$("inputsTable")){
-                                    //     $$("inputsTable").getParentView().removeView($$("inputsTable"))
-                                    // }
-
-                                    // $$("table").filter(false);
-                                
-                                    // $$("table-delBtnId").disable();
-                                    // $$("table-saveBtn").hide();
-                                    // $$("table-saveNewBtn").hide();
 
                                     if ($$("tableFilterPopup")){
                                         $$("tableFilterPopup").hide();
