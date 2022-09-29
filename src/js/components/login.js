@@ -31,17 +31,17 @@ function login () {
     function getLogin(){
        
         let userData = $$("formAuth").getValues();
-        let loginData = [];
+        let loginData = {};
 
         try {
            
             $$("formAuth").validate();
-            loginData.push("un"+"="+userData.username);
-            loginData.push("np"+"="+userData.password);
-        
-            webix.ajax("/init/default/login"+"?"+loginData.join("&"),{
+            loginData.un = userData.username;
+            loginData.np = userData.password;
+
+            webix.ajax().post("/init/default/login",loginData,{
                 success:function(text, data, XmlHttpRequest){
-                  
+                    console.log(data.json())
                     webix.ajax("/init/default/api/whoami",{
                         success:function(text, data, XmlHttpRequest){
                             try {
@@ -52,33 +52,7 @@ function login () {
                                 userData.username = data.json().content.username;
                                 
                                 setStorageData("user", JSON.stringify(userData));
-                                
-                                
-                                
-                                // let userLocation = webix.storage.local.get("userLocation");
-                                
-                                // let http = new XMLHttpRequest();
-                                // http.open('HEAD', userLocation.href, false);
-                                // http.send();
-                          
-                                // if (userLocation&&userLocation.href&&http.status==200){
-                            
-                        
-                                //     window.location.replace(userLocation.href);
-                                //     localStorage.removeItem("userLocation");
-                                //     if ( $$('formAuth')){
-                                //         $$('formAuth').clear();
-                                //     }
-                                // } else {
-                                    
-                                //     if ( $$('formAuth')){
-                                //         $$('formAuth').clear();
-                                //     }
-                        
-                       
-                                //     Backbone.history.navigate("content", { trigger:true});
-                                //     window.location.reload();
-                                // }
+
 
                                 if ( $$('formAuth')){
                                     $$('formAuth').clear();

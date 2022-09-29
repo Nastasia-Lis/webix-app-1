@@ -1,4 +1,4 @@
-import {saveItem,saveNewItem,clearItem,defaultStateForm} from "../blocks/editTableForm.js";
+import {saveItem,saveNewItem,defaultStateForm} from "../blocks/editTableForm.js";
 import {modalBox} from "../blocks/notifications.js";
 import {setLogValue} from '../blocks/logBlock.js';
 import {getInfoTable,getInfoDashboard,getInfoEditTree} from "../blocks/content.js";
@@ -37,7 +37,7 @@ function treeSidebar () {
                 let singleItemContent="";
                 try {
                     if($$("inputsTable")){
-                        $$("table-editForm").removeView($$("inputsTable"));
+                       // $$("table-editForm").removeView($$("inputsTable"));
                         $$("EditEmptyTempalte").show();
                     }
 
@@ -272,12 +272,26 @@ function treeSidebar () {
                 
             },
             onItemClick:function(id, e, node){
-                if($$("table-editForm").isDirty()){
+               
+                if($$("editTableFormProperty").config.dirty){
                     try{  
                         modalBox().then(function(result){
                             if (result == 1){
-                                clearItem();
+                                if ($$("table-saveNewBtn").isVisible()) {
+                                    $$("table-saveNewBtn").hide();
+                                } else if ($$("table-saveBtn").isVisible()){
+                                    $$("table-saveBtn").hide();
+                                }
+                                $$("table-delBtnId").disable();
+                            
+                                if ($$("editTableFormProperty") && $$("editTableFormProperty").isVisible()){
+                                    $$("editTableFormProperty").clear();
+                                    $$("editTableFormProperty").hide();
+                                }
                                 $$("tree").select(id);
+
+                                $$("editTableFormProperty").config.dirty = false;
+                                $$("editTableFormProperty").refresh();
                             
                             } else if (result == 2){
                                 if ($$("table-editForm").validate()){
@@ -287,6 +301,8 @@ function treeSidebar () {
                                         saveNewItem(); 
                                     }
                                     $$("tree").select(id);
+                                    $$("editTableFormProperty").config.dirty = false;
+                                    $$("editTableFormProperty").refresh();
                                 
                                 } else {
                                     setLogValue("error","Заполните пустые поля");
@@ -329,6 +345,17 @@ function treeSidebar () {
                     
                         }
                     }
+
+
+
+
+                    if ($$("propertyRefbtnsContainer")){
+                        $$("propertyRefbtns").removeView($$("propertyRefbtnsContainer"))
+                    }
+                    if ($$("editTableFormProperty") && $$("editTableFormProperty").isVisible()){
+                        $$("editTableFormProperty").hide();
+                    }
+                 
                 }
             },
 

@@ -1101,55 +1101,83 @@ let onFuncTable = {
             catchErrorTemplate("012-000", error);
         }
 
-        let values = $$("table").getItem(id); 
 
+
+        
+
+      
+
+
+        // $$("editTableFormProperty").config.dirty = true;
+        // $$("editTableFormProperty").refresh();
+       
+      
+
+  
+    },
+    onBeforeSelect:function(selection, preserve){
+        console.log(selection, preserve)
+        let values = $$("table").getItem(selection.id); 
         function toEditForm () {
             try {
-               // $$("table-editForm").setValues(values);
-                $$("editTableFormProperty").setValues(values)
-                console.log("kk")
+           
+                if ($$("editTableFormProperty") && !($$("editTableFormProperty").isVisible())){
+                    $$("editTableFormProperty").show();
+                }
+
+                $$("editTableFormProperty").clear();
+                $$("editTableFormProperty").setValues(values);
+              
                 $$("table-saveNewBtn").hide();
                 $$("table-saveBtn").show();
-              //  $$("table-editForm").clearValidation();
             } catch (error){
                 console.log(error);
                 catchErrorTemplate("012-000", error);
             }
         }
-        if($$("table-editForm").isDirty()){
-            try {
-                modalBox().then(function(result){
-                    if (result == 1){
-                        $$("table-editForm").clear();
-                        $$("table-delBtnId").enable();
-                        toEditForm();
+    
+        if ($$("editTableFormProperty").config.dirty){
+            
+            modalBox().then(function(result){
+                if (result == 1){
+
+                    $$("editTableFormProperty").config.dirty = false;
+                    $$("editTableFormProperty").refresh();
+
+                    $$("editTableFormProperty").clear();
+                    $$("table-delBtnId").enable();
+                    toEditForm();
+                   
+                
+                } 
+
+                // else if (result == 2){
+                //     if ($$("table-editForm").validate()){
+                //         if ($$("table-editForm").getValues().id){
+                //             saveItem();
+                //         } else {
+                //             saveNewItem(); 
+                //         }
+                //         $$("table-editForm").clear();
+                //         $$("table-delBtnId").enable();
+                //         toEditForm();
+                // $$("editTableFormProperty").config.dirty = false;
+                // $$("editTableFormProperty").refresh();
                     
-                    } else if (result == 2){
-                        if ($$("table-editForm").validate()){
-                            if ($$("table-editForm").getValues().id){
-                                saveItem();
-                            } else {
-                                saveNewItem(); 
-                            }
-                            $$("table-editForm").clear();
-                            $$("table-delBtnId").enable();
-                            toEditForm();
-                        
-                        } else {
-                            setLogValue("error","Заполните пустые поля");
-                            return false;
-                        }
-                        
-                    }
-                });
-            } catch (error){
-                console.log(error);
-                catchErrorTemplate("012-000", error);
-            }
+                //     } else {
+                //         setLogValue("error","Заполните пустые поля");
+                //         return false;
+                //     }
+                    
+                // }
+            });
+
+            return false;
         } else {
             createEditFields("table-editForm");
             toEditForm();
-        }   
+         
+        }
     },
     onAfterLoad:function(){
         try {

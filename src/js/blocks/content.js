@@ -105,7 +105,6 @@ function submitBtn (idElements, url, verb, rtype){
 }
 
 function getComboOptions (refTable){
-    console.log()
     return new webix.DataCollection({url:{
         $proxy:true,
         load: function(){
@@ -136,11 +135,7 @@ function getComboOptions (refTable){
                                 }
                                 dataArray.push({ "id":el.id, "value":el[keyArray]});
                             });
-
-                            
-                        console.log($$("editTableFormProperty").parse(dataArray))
-
-                             return dataArray;
+                            return dataArray;
                         } catch (error){
                             console.log(error);
                             catchErrorTemplate("018-000", error);
@@ -279,24 +274,23 @@ function getInfoTable (idCurrTable, idSearch, idsParam, idFindElem, single=false
 
                 data = dataContent[idsParam];
 
-                //data = data.json().content[idsParam];
-
                 let dataFields = data.fields;
                 let obj = Object.keys(data.fields);
                 let columnsData = [];
 
     // ---- Таблица - данные cols     
                 try {
-                   
+              
                     obj.forEach(function(data) {
                     
+                     
                         if (dataFields[data].type.includes("reference")){
                             let findTableId = dataFields[data].type.slice(10);
                             dataFields[data].editor = "combo";
                             dataFields[data].collection = getComboOptions (findTableId);
                             dataFields[data].template = function(obj, common, val, config){
-                            let item = config.collection.getItem(obj[config.id]);
-                            return item ? item.value : "";
+                                let item = config.collection.getItem(obj[config.id]);
+                                return item ? item.value : "";
                             };
                         } else if (dataFields[data].type == "datetime"){
                             dataFields[data].format = webix.i18n.fullDateFormatStr; 

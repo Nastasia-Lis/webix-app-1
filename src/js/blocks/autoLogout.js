@@ -1,6 +1,4 @@
-import {removeElements} from "../components/login.js";
 import {setLogValue,catchErrorTemplate,ajaxErrorTemplate} from "./logBlock.js";
-import {setUserLocation} from "./storageSetting.js";
 
 function resetTimer (){
 

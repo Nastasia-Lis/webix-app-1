@@ -23,26 +23,61 @@ function getCurrId (){
     }
 }
 
+function validateProfForm (){
+
+    let errors = {};
+
+    Object.keys($$("editTableFormProperty").getValues()).forEach(function(el,i){
+        let propElement = $$("editTableFormProperty").getItem(el);
+        let values = $$("editTableFormProperty").getValues();
+        errors[el] = {};
+ 
+        if (values[el].length >= propElement.length ){
+            errors[el].length = "Длина строки не должна превышать "+propElement.length+" симв.";
+        } else {
+            errors[el].length = null;
+        }
+
+
+        if (propElement.notnull==true && values[el].length == 0 ){
+            errors[el].notnull = "Поле не может быть пустым";
+        } else {
+            errors[el].notnull = null;
+        }
+
+        errors[el].unique = null;
+        if (propElement.unique==true){
+            let tableRows = Object.values($$("table").data.pull);
+            tableRows.forEach(function(row,i){
+                if (values[el].localeCompare(row[el]) == 0 && row.id !== $$("table").getSelectedId().id){
+                    errors[el].unique = "Поле должно быть уникальным";
+                }
+            });
+        }
+
+    });
+    console.log(errors)
+}
 
 //--- bns
 function saveItem(addBtnClick=false){    
     try{    
         getCurrId ();
-        let itemData = $$("table-editForm").getValues();   
-        if($$("table-editForm").validate() ){
+        let itemData = $$("editTableFormProperty").getValues();   
+       
+
+       // validateProfForm ()
+
+        if(Object.values( $$("editTableFormProperty").getValues()).length){
             if( itemData.id ) {
                 webix.ajax().put("/init/default/api/"+currId+"/"+itemData.id, itemData, {
                     success:function(text, data, XmlHttpRequest){
                         data = data.json();
                         $$( "table" ).updateItem(itemData.id, itemData);
-                        clearItem();
-                        defaultStateForm ();
+                        defaultStateForm();
                         $$("table").clearSelection();
-                        
+                        $$("editTableFormProperty").clear();
                         if (!(addBtnClick)){
-                            if ($$("inputsTable")){
-                                $$("inputsTable").hide();
-                            }
                             $$("table-newAddBtnId").enable();
                         if ($$("EditEmptyTempalte")&&!($$("EditEmptyTempalte").isVisible())){
                             $$("EditEmptyTempalte").show();
@@ -55,6 +90,9 @@ function saveItem(addBtnClick=false){
                             $$("table-saveBtn").hide();
                             $$("table-saveNewBtn").show();
                         }
+
+                        $$("editTableFormProperty").config.dirty = false;
+                        $$("editTableFormProperty").refresh();
  
 
                         if (data.err_type == "i"){
@@ -89,33 +127,42 @@ function saveItem(addBtnClick=false){
 
 function addItem () {
     try {
- 
-        if($$("table-editForm").isDirty()){
 
-            modalBox().then(function(result){
-                if (result == 1){
-                    $$("table").filter(false);
-                    createEditFields("table-editForm");
-                    $$("table-delBtnId").disable();
-                    $$("table-saveBtn").hide();
-                    $$("table-saveNewBtn").show();
-                
-                } else if (result == 2){
-                    if ($$("table-editForm").validate()){
-                        saveItem(true);
-                        
-                    } else {
-                        setLogValue("error","Заполните пустые поля");
-                        return false;
-                    }
-                    
+        let emptyProps = true;
+
+        $$("editTableFormProperty").config.dirty = true;
+        $$("editTableFormProperty").refresh();
+
+        Object.values($$("editTableFormProperty").getValues()).forEach(function(el,i){
+            if ( el.length){
+                if (emptyProps){
+                    emptyProps = false;
                 }
-            });
+                modalBox().then(function(result){
+                    if (result == 1){
+                        $$("table").filter(false);
+                        createEditFields("table-editForm");
+                        $$("table-delBtnId").disable();
+                        $$("table-saveBtn").hide();
+                        $$("table-saveNewBtn").show();
+                    
+                    } else if (result == 2){
+                        saveItem(true);
+    
+                    }
+                });
+            } 
+        });
 
-        } else {
+        if(emptyProps){
             if ($$("EditEmptyTempalte")&&$$("EditEmptyTempalte").isVisible()){
                 $$("EditEmptyTempalte").hide();
             }
+
+            if ($$("editTableFormProperty") && !($$("editTableFormProperty").isVisible())){
+                $$("editTableFormProperty").show();
+            }
+
             $$("table").clearSelection();
             $$("table").filter(false);
             $$("table").hideOverlay("Ничего не найдено");
@@ -136,49 +183,50 @@ function saveNewItem (){
     try{
         getCurrId ();
         
-        if($$( "table-editForm" ).validate() ) {
-            if($$("table-editForm").isDirty()){
-                let newValues = $$("table-editForm").getValues();
+        if(Object.values( $$("editTableFormProperty").getValues()).length) {
+            
+            let newValues = $$("editTableFormProperty").getValues();
 
-                newValues.id=webix.uid();
-                webix.ajax().post("/init/default/api/"+currId, newValues,{
-                    success:function(text, data, XmlHttpRequest){
-                        data = data.json();
-                        $$("table").add(newValues);
-                        clearItem();
-                        defaultStateForm ();
-                        if ($$("inputsTable")){
-                            $$("inputsTable").hide();
-                        }
-                        $$("table-newAddBtnId").enable();
-                        if ($$("EditEmptyTempalte")&&!($$("EditEmptyTempalte").isVisible())){
-                            $$("EditEmptyTempalte").show();
-                        }
+            webix.ajax().post("/init/default/api/"+currId, newValues,{
+                success:function(text, data, XmlHttpRequest){
+                    data = data.json();
+                 
+                    newValues.id = data.content.id;
 
-                        
-
-                        if (data.err_type == "i"){
-                            if (window.innerWidth < 1200 && $$("tableEditPopup")){
-                                $$("tableEditPopup").hide();
-                            }
-                            setLogValue("success","Данные успешно добавлены");
-                        } else if (data.err_type == "e"){
-                            setLogValue("error",data.error);
-                        }
-                        
-                    },
-                    error:function(text, data, XmlHttpRequest){
-                        ajaxErrorTemplate("003-001",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                    $$("table").add(newValues);
+                    $$("editTableFormProperty").clear();
+                    defaultStateForm ();
+                 
+   
+                    $$("table-newAddBtnId").enable();
+                    if ($$("EditEmptyTempalte")&&!($$("EditEmptyTempalte").isVisible())){
+                        $$("EditEmptyTempalte").show();
                     }
-                }).catch(error => {
-                    console.log(error);
-                    ajaxErrorTemplate("003-001",error.status,error.statusText,error.responseURL);
-                });
-            }else {
-                webix.message({type:"debug",expire:1000, text:"Форма пуста"});
-            }
+
+                    
+                    $$("editTableFormProperty").config.dirty = false;
+                    $$("editTableFormProperty").refresh();
+
+                    if (data.err_type == "i"){
+                        if (window.innerWidth < 1200 && $$("tableEditPopup")){
+                            $$("tableEditPopup").hide();
+                        }
+                        setLogValue("success","Данные успешно добавлены");
+                    } else if (data.err_type == "e"){
+                        setLogValue("error",data.error);
+                    }
+                    
+                },
+                error:function(text, data, XmlHttpRequest){
+                    ajaxErrorTemplate("003-001",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                }
+            }).catch(error => {
+                console.log(error);
+                ajaxErrorTemplate("003-001",error.status,error.statusText,error.responseURL);
+            });
+           
         } else {
-            setLogValue("error","Заполните пустые поля");
+            setLogValue("error","Форма пуста");
         }
     }catch (error){
         catchErrorTemplate("003-000", error);
@@ -192,19 +240,20 @@ function removeItem() {
         popupExec("Запись будет удалена").then(
             function(){
                
-                $$( "table" ).remove($$("table-editForm").getValues().id);
-                let formValues = $$("table-editForm").getValues();
-
+                $$( "table" ).remove($$( "table" ).getSelectedId().id);
+               
+                let formValues = $$("editTableFormProperty").getValues();
+                
                 webix.ajax().del("/init/default/api/"+currId+"/"+formValues.id+".json", formValues,{
                     success:function(text, data, XmlHttpRequest){
                         data = data.json();
-                        clearItem();
                         defaultStateForm ();
-                        $$("inputsTable").hide();
-
+                       
                         if (window.innerWidth < 1200 && $$("tableEditPopup")){
                             $$("tableEditPopup").hide();
                         }
+                        $$("editTableFormProperty").config.dirty = false;
+                        $$("editTableFormProperty").refresh();
                         
                         if (data.err_type == "i"){
                             if (window.innerWidth < 1200 && $$("tableEditPopup")){
@@ -239,147 +288,56 @@ function removeItem() {
 
 //--- components
 
-function createEditFields (parentElement, viewPosition=1) {
+function createEditFields (parentElement) {
+
+
     try {
         let columnsData = $$("table").getColumns();
-
+        
         if(Object.keys($$(parentElement).elements).length==0  ){
             let inputsArray = [];
-          
+  
             columnsData.forEach((el,i) => {
+         
+  
                 if (el.type == "datetime"){
-                    // inputsArray.push({   
-                    //     view: "datepicker",
-                    //     format:"%d.%m.%Y %H:%i:%s",
-                    //     id:el.id,
-                    //     name:el.id, 
-                    //     label:el.label, 
-                    //     placeholder:"дд.мм.гг", 
-                    //     timepicker: true,
-                    //     labelPosition:"top",
-                    //     on:{
-                    //         onItemClick:function(){
-                    //             $$(parentElement).clearValidation();
-                    //         }
-                    //     }
-                    // });
-
                     inputsArray.push({   
-                      //  format:"%d.%m.%Y %H:%i:%s",
                         id:el.id,
-                       // name:el.id, 
+                        format:webix.Date.dateToStr("%d.%m.%Y %H:%i:%s"),
                         label:el.label, 
                         type:"date",
+                        unique: el.unique,
+                        notnull: el.notnull,
+                        length:el.length,
+                        default:el.default,
                     });
-
                 } 
                 
 
             else if (el.type.includes("reference")) {
                 let findTableId = el.type.slice(10);
-                let refTableName;
-
-                tableNames.forEach(function(el,i){
-                    if (el.id == findTableId){
-                        refTableName= el.name;
-                    }
-                });
-        
-                // inputsArray.push(
-                //     {cols:[
-                //     {   view:"combo",
-                //         placeholder:"Выберите вариант",  
-                //         label:el.label, 
-                //         id:el.id,
-                //         name:el.id, 
-                //         labelPosition:"top",
-                //         options:{
-                //             data:getComboOptions(findTableId)
-                //         },
-
-                //         on:{
-                //             onItemClick:function(){
-                //                 $$(parentElement).clearValidation();
-                //             },
-                //             onChange:function(){
-                //                // console.log(this.getList())
-                //                 $$(el.id).setValue(this.getValue()); 
-                //                 $$(el.id).refresh()
-
-                //             },
-                //             onBindRequest:function(data){
-                //                // console.log(data)
-                //             }
-                //         },
-                //         ready:function(){
-                //             //console.log("rea")
-                //         }
-                //     },
-                //     {
-                //         view:"button",
-                //         css:{"vertical-align":"bottom!important","height":"38px!important"},
-                //         type:"icon",
-                //         icon: 'wxi-angle-right',
-                //         inputHeight:38,
-                //         width: 40,
-                //         on: {
-                //             onAfterRender: function () {
-                //                 this.getInputNode().setAttribute("title","Перейти в таблицу"+" "+"«"+refTableName+"»");
-                //             },
-                //         },
-                //         click:function(){
-                //             try {
-                //                 $$("tree").select(findTableId);
-
-                //                 if ($$("tableEditPopup") && $$("tableEditPopup").isVisible()){
-                //                     $$("tableEditPopup").hide();
-                //                 }
-                //             } catch (e){
-                //                 console.log(e);
-                //                 setLogValue("error","Таблица не найдена");
-
-                //                 if ($$("EditEmptyTempalte")&&$$("EditEmptyTempalte").isVisible()){
-                //                     $$("EditEmptyTempalte").hide();
-                //                 }
-                //             }
-                            
-                //         }
-                //     }
-                //     ]}
-
-                // );
-
 
                 inputsArray.push(
-                 
                     {   type:"combo",
                         label:el.label, 
+                        css:el.id+"_container",
                         id:el.id,
-                        options:{
-                            data:getComboOptions(findTableId)
+                        unique: el.unique,
+                        notnull: el.notnull,
+                        length:el.length,
+                        default:el.default,
+                        options: getComboOptions(findTableId),
+                        template:function(obj, common, val, config){
+                            let item = config.collection.getItem(obj.value);
+                            return item ? item.value : "";
                         },
-                        // options:[
-                        //     {id:1, value:"red"},
-                        //     {id:2, value:"blue"},
-                        //     {id:3, value:"green"},
-                        //     {id:4, value:"orange"},
-                        //     {id:5, value:"grey"},
-                        //     {id:6, value:"yellow"}
-                        // ]  
-               
-                    }
+                    },
 
-                    // {   type:"combo",
-                    //     label:el.label, 
-                    //     id:el.id,
-                    //     options:[
-                    //        {id:1, value:'ueueu'}
-                    //     ],
-                    // }
                 );
+
                 
             } else if (el.type.includes("boolean")) {
-
+               
                 // inputsArray.push(
                 //     {cols:[
                 //     {   view:"combo",
@@ -402,20 +360,21 @@ function createEditFields (parentElement, viewPosition=1) {
                 //     ]}
 
                 // );
-
+                
                 inputsArray.push(
-                    {cols:[
                     {   type:"select",
                         label:el.label, 
                         id:el.id,
+                        unique: el.unique,
+                        notnull: el.notnull,
+                        length:el.length,
+                        default:el.default,
                         options:[
                             {id:1, value: "Да"},
                             {id:2, value: "Нет"}
                         ],
 
                     },
-                    
-                    ]}
 
                 );
                 
@@ -445,52 +404,99 @@ function createEditFields (parentElement, viewPosition=1) {
                 // );
 
                 inputsArray.push(
-                    {cols:[
-                        {
-                            type:"text", 
-                            id:el.id, 
-                            label:el.label, 
+                    {
+                        type:"text", 
+                        id:el.id, 
+                        label:el.label,
+                        unique: el.unique,
+                        notnull: el.notnull,
+                        length:el.length,
+                        default:el.default,
+                      
+                        on:{
+                            onKeyPress:function(){
+                                $$(parentElement).clearValidation();
+                            }
                         },
-                    
-                    ]}
+                        validate:function(val){
+                            return !isNaN(val*1);
+                        }
+                    }
 
                 );
                 
             } else {
-                    // inputsArray.push(
-                    //     {
-                    //     view:"text", 
-                    //     name:el.id,
-                    //     id:el.id, 
-                    //     label:el.label, 
-                    //     labelPosition:"top",
-                    //     on:{
-                    //         onKeyPress:function(){
-                    //             $$(parentElement).clearValidation();
-                    //         }
-                    //     }
-                    //     }
-                    // );
-
-                //date and text = property
                     inputsArray.push(
                         {
                         id:el.id, 
                         label:el.label, 
                         type:"text",
+                        unique: el.unique,
+                        notnull: el.notnull,
+                        length:el.length,
+                        default:el.default,
                         }
                     );
                 }
+             
             });
-
-            let inpObj = {margin:8,id:"inputsTable", rows:inputsArray};
-
+      
             if(parentElement=="table-editForm"){
                 $$("table-delBtnId").enable();
             }   
             $$("editTableFormProperty").define("elements", inputsArray);
- 
+
+            let propertyElems = $$("editTableFormProperty").config.elements;
+
+            if (!($$("propertyRefbtns")._cells.length)){
+                if (!$$("propertyRefbtnsContainer")){
+                    $$("propertyRefbtns").addView({id:"propertyRefbtnsContainer",rows:[]})
+                }
+                propertyElems.forEach(function(el,i){
+                    if (el.type == "combo"){
+                        $$("propertyRefbtnsContainer").addView({ 
+                            view:"button", 
+                            value:"1187", 
+                            type:"icon",
+                            width:30,
+                            height:30,
+                            icon: 'wxi-angle-right',
+                            on: {
+                                onAfterRender: function () {
+                                // this.getInputNode().setAttribute("title","Перейти в таблицу"+" "+"«"+refTableName+"»");
+                                this.getInputNode().setAttribute("title","Перейти в родительскую таблицу");
+                                },
+                            },
+                            click:function (){
+                                $$("table").getColumns().forEach(function(col,i){
+                                
+                                    if (col.id == el.id){
+                                        let refTable =  col.type.slice(10);
+                                        try {
+                                            $$("tree").select(refTable);
             
+                                            if ($$("tableEditPopup") && $$("tableEditPopup").isVisible()){
+                                                $$("tableEditPopup").hide();
+                                            }
+                                        } catch (e){
+                                            console.log(e);
+                                            setLogValue("error","Таблица не найдена");
+            
+                                            if ($$("EditEmptyTempalte")&&$$("EditEmptyTempalte").isVisible()){
+                                                $$("EditEmptyTempalte").hide();
+                                            }
+                                        }
+                                    }
+
+                                });
+                            }
+                        })
+                    } else {
+                        $$("propertyRefbtnsContainer").addView({height:29,width:1})
+                    }
+                });
+            }
+
         } else {
             $$(parentElement).clear();
             $$(parentElement).clearValidation();
@@ -498,17 +504,10 @@ function createEditFields (parentElement, viewPosition=1) {
             if(parentElement=="table-editForm"){
                 $$("table-delBtnId").enable();
             }
-            $$("inputsTable").show();
         }
     } catch (error){
         catchErrorTemplate("003-000", error);
     }
-}
-
-function clearItem(){
-    $$("table-editForm").clear();
-    $$("table-editForm").clearValidation();
-    defaultStateForm ();
 }
 
 function defaultStateForm () {
@@ -518,6 +517,11 @@ function defaultStateForm () {
         $$("table-saveBtn").hide();
     }
     $$("table-delBtnId").disable();
+
+    if ($$("editTableFormProperty") && $$("editTableFormProperty").isVisible()){
+        $$("editTableFormProperty").hide();
+    }
+
 }
 
 //--- components
@@ -680,11 +684,30 @@ function editTableBar (){
                         ]
                     },
 
+                    { borderelss:true,cols:[
+
                     {   view:"property",  
                         id:"editTableFormProperty", 
-                        width:300,
-                        elements:[]
+                        css:"webix_edit-table-form-property",
+                        borderelss:true,
+                        dirty:false,
+                        elements:[],
+                        on:{
+                            onEditorChange:function(id, value){
+                                let item = $$("editTableFormProperty").getItem(id);
+                                item.value = value;
+                                $$("editTableFormProperty").updateItem(id);
+
+                                $$("editTableFormProperty").config.dirty = true;
+                                $$("editTableFormProperty").refresh();
+                            }
+                        }
+                    },
+                    {   id:"propertyRefbtns",  
+                        rows:[]
                     }
+
+                    ]}
             
                 ],
                 
@@ -717,7 +740,6 @@ export{
     editTableBar,
     createEditFields,
     defaultStateForm,
-    clearItem,
     saveItem,
     saveNewItem
 };
