@@ -3,6 +3,7 @@ import {headerContextId} from '../components/header.js';
 import {tableNames} from "./router.js";
 import {catchErrorTemplate,ajaxErrorTemplate,setLogValue} from "./logBlock.js";
 import {modalBox, popupExec} from "./notifications.js";
+import  {STORAGE,getData} from "./globalStorage.js";
 
 let currId;
 
@@ -24,6 +25,7 @@ function getCurrId (){
 }
 
 function validateProfForm (){
+    // нулевое поле, уникальное и длина
 
     let errors = {};
 
@@ -32,13 +34,14 @@ function validateProfForm (){
         let values = $$("editTableFormProperty").getValues();
         errors[el] = {};
  
-        if (values[el].length >= propElement.length ){
+        if (values[el].length <= propElement.length ){
             errors[el].length = "Длина строки не должна превышать "+propElement.length+" симв.";
         } else {
             errors[el].length = null;
         }
 
 
+       
         if (propElement.notnull==true && values[el].length == 0 ){
             errors[el].notnull = "Поле не может быть пустым";
         } else {
@@ -56,68 +59,114 @@ function validateProfForm (){
         }
 
     });
-    console.log(errors)
+
+    let messageErrors = [];
+    Object.values(errors).forEach(function(col,i){
+ 
+
+        Object.values(col).forEach(function(error,e){
+         
+            if (error !== null){
+                let nameCol = Object.keys(errors)[i];
+                let textError = error;
+                let typeError = Object.keys(col)[e];
+                messageErrors.push({nameCol,typeError,textError})
+            }
+            
+        });
+    });
+
+    return messageErrors;
 }
 
 //--- bns
-function saveItem(addBtnClick=false){    
+function saveItem(addBtnClick=false, modalSidebar=false, modalTable=false){    
     try{    
         getCurrId ();
         let itemData = $$("editTableFormProperty").getValues();   
-       
 
-       // validateProfForm ()
+        if (!(validateProfForm().length)){
+            if(Object.values( $$("editTableFormProperty").getValues()).length){
+                if( itemData.id ) {
+                    webix.ajax().put("/init/default/api/"+currId+"/"+itemData.id, itemData, {
+                        success:function(text, data, XmlHttpRequest){
+                            data = data.json();
 
-        if(Object.values( $$("editTableFormProperty").getValues()).length){
-            if( itemData.id ) {
-                webix.ajax().put("/init/default/api/"+currId+"/"+itemData.id, itemData, {
-                    success:function(text, data, XmlHttpRequest){
-                        data = data.json();
-                        $$( "table" ).updateItem(itemData.id, itemData);
-                        defaultStateForm();
-                        $$("table").clearSelection();
-                        $$("editTableFormProperty").clear();
-                        if (!(addBtnClick)){
-                            $$("table-newAddBtnId").enable();
-                        if ($$("EditEmptyTempalte")&&!($$("EditEmptyTempalte").isVisible())){
-                            $$("EditEmptyTempalte").show();
-                        }
-                            
-                        } else {
-                            $$("table").filter(false);
-                            createEditFields("table-editForm");
-                            $$("table-delBtnId").disable(); 
-                            $$("table-saveBtn").hide();
-                            $$("table-saveNewBtn").show();
-                        }
+                            if (!modalSidebar){
+                                $$( "table" ).updateItem(itemData.id, itemData);
+                                if(!modalTable){
+                                    $$("table").clearSelection();
+                                    $$("editTableFormProperty").clear();
+                                    defaultStateForm();
+                                    if (!addBtnClick ){
+                                        $$("table-newAddBtnId").enable();
+                                        if ($$("EditEmptyTempalte")&&!($$("EditEmptyTempalte").isVisible())){
+                                            $$("EditEmptyTempalte").show();
+                                        }
 
-                        $$("editTableFormProperty").config.dirty = false;
-                        $$("editTableFormProperty").refresh();
- 
+                                        $$("editTableFormProperty").config.dirty = false;
+                                        $$("editTableFormProperty").refresh();
+                                        
+                                    } else {
+                                        if (!($$("editTableFormProperty").isVisible())){
+                                            $$("editTableFormProperty").show();
+                                        }
 
-                        if (data.err_type == "i"){
-                            
-                            if (window.innerWidth < 1200 && $$("tableEditPopup")){
-                                $$("tableEditPopup").hide();
+                                        $$("table").filter(false);
+                                        createEditFields("table-editForm");
+                                        $$("table-delBtnId").disable(); 
+                                        $$("table-saveBtn").hide();
+                                        $$("table-saveNewBtn").show();
+
+                                    
+                                    }
+                                }
+                        
                             }
 
-                            setLogValue("success","Данные сохранены");
-                        } if (data.err_type == "e"){
-                            setLogValue("error",data.error);
+                            if (data.err_type == "i"){
+                                
+                                if (window.innerWidth < 1200 && $$("tableEditPopup")){
+                                    $$("tableEditPopup").hide();
+                                }
+
+                                setLogValue("success","Данные сохранены");
+            
+                                // if (modalBox){
+                                //     $$("tree").select(id);
+                                // }
+
+                            } if (data.err_type == "e"){
+                                setLogValue("error",data.error);
+                            }
+                        
+                        },
+                        error:function(text, data, XmlHttpRequest){
+                            ajaxErrorTemplate("003-011",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
                         }
-                    
-                    },
-                    error:function(text, data, XmlHttpRequest){
-                        ajaxErrorTemplate("003-011",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
-                    }
-                }).catch(error => {
-                    console.log(error);
-                    ajaxErrorTemplate("003-011",error.status,error.statusText,error.responseURL);
-                });
-            }    
-    
+                    }).catch(error => {
+                        console.log(error);
+                        ajaxErrorTemplate("003-011",error.status,error.statusText,error.responseURL);
+                    });
+                }    
+        
+            } else {
+                setLogValue("error","Заполните пустые поля");
+            }
         } else {
-            setLogValue("error","Заполните пустые поля");
+            validateProfForm ().forEach(function(el,i){
+
+                let nameEl;
+
+                $$("table").getColumns().forEach(function(col,i){
+                    if (col.id == el.nameCol){
+                        nameEl = col.label;
+                    }
+                });
+
+                setLogValue("error",el.textError+" (Поле: "+nameEl+")");
+            });
+           
         }
     }catch (error){
         catchErrorTemplate("003-000", error);
@@ -128,33 +177,27 @@ function saveItem(addBtnClick=false){
 function addItem () {
     try {
 
-        let emptyProps = true;
+        if ($$("editTableFormProperty").config.dirty == true){
+            modalBox().then(function(result){
+                if (result == 1){
+                    $$("table").filter(false);
+                    createEditFields("table-editForm");
+                    $$("table-delBtnId").disable();
+                    $$("table-saveBtn").hide();
+                    $$("table-saveNewBtn").show();
+                    $$("editTableFormProperty").config.dirty = false;
+                    $$("editTableFormProperty").refresh();
+                
+                } else if (result == 2){
+                    saveItem(true);
+                  
+                    $$("editTableFormProperty").config.dirty = false;
+                    $$("editTableFormProperty").refresh();
 
-        $$("editTableFormProperty").config.dirty = true;
-        $$("editTableFormProperty").refresh();
 
-        Object.values($$("editTableFormProperty").getValues()).forEach(function(el,i){
-            if ( el.length){
-                if (emptyProps){
-                    emptyProps = false;
                 }
-                modalBox().then(function(result){
-                    if (result == 1){
-                        $$("table").filter(false);
-                        createEditFields("table-editForm");
-                        $$("table-delBtnId").disable();
-                        $$("table-saveBtn").hide();
-                        $$("table-saveNewBtn").show();
-                    
-                    } else if (result == 2){
-                        saveItem(true);
-    
-                    }
-                });
-            } 
-        });
-
-        if(emptyProps){
+            });
+        } else {
             if ($$("EditEmptyTempalte")&&$$("EditEmptyTempalte").isVisible()){
                 $$("EditEmptyTempalte").hide();
             }
@@ -162,6 +205,8 @@ function addItem () {
             if ($$("editTableFormProperty") && !($$("editTableFormProperty").isVisible())){
                 $$("editTableFormProperty").show();
             }
+
+            $$("editTableFormProperty").clear();
 
             $$("table").clearSelection();
             $$("table").filter(false);
@@ -172,6 +217,7 @@ function addItem () {
             $$("table-saveNewBtn").show();
             $$("table-newAddBtnId").disable();
         }
+
     }catch (error){
         catchErrorTemplate("003-000", error);
     }
@@ -450,49 +496,104 @@ function createEditFields (parentElement) {
 
             if (!($$("propertyRefbtns")._cells.length)){
                 if (!$$("propertyRefbtnsContainer")){
-                    $$("propertyRefbtns").addView({id:"propertyRefbtnsContainer",rows:[]})
+                    $$("propertyRefbtns").addView({id:"propertyRefbtnsContainer",rows:[]}) 
                 }
                 propertyElems.forEach(function(el,i){
                     if (el.type == "combo"){
                         $$("propertyRefbtnsContainer").addView({ 
                             view:"button", 
-                            value:"1187", 
+                          //  value:"1187", 
                             type:"icon",
                             width:30,
-                            height:30,
+                            height:28,
                             icon: 'wxi-angle-right',
                             on: {
                                 onAfterRender: function () {
-                                // this.getInputNode().setAttribute("title","Перейти в таблицу"+" "+"«"+refTableName+"»");
                                 this.getInputNode().setAttribute("title","Перейти в родительскую таблицу");
                                 },
                             },
                             click:function (){
-                                $$("table").getColumns().forEach(function(col,i){
+
+                                function setRefTable (){
+
+                                    async function toRefTable (refTable){ 
+
+                                        if (!STORAGE.fields){
+                                            await getData("fields"); 
+                                        }
                                 
-                                    if (col.id == el.id){
-                                        let refTable =  col.type.slice(10);
-                                        try {
-                                            $$("tree").select(refTable);
-            
-                                            if ($$("tableEditPopup") && $$("tableEditPopup").isVisible()){
-                                                $$("tableEditPopup").hide();
+                                        if (STORAGE.fields){
+                                            if (refTable){
+                                                Backbone.history.navigate("tree/"+refTable, { trigger:true});
+                                                window.location.reload()
                                             }
-                                        } catch (e){
-                                            console.log(e);
-                                            setLogValue("error","Таблица не найдена");
-            
-                                            if ($$("EditEmptyTempalte")&&$$("EditEmptyTempalte").isVisible()){
-                                                $$("EditEmptyTempalte").hide();
-                                            }
+ 
                                         }
                                     }
+                                    $$("table").getColumns().forEach(function(col,i){
+                                    
+                                        if (col.id == el.id){
+                                            let refTable =  col.type.slice(10);
+                                            try {
 
-                                });
+                                                if ( $$("tree").getItem(refTable)){
+                                                    $$("tree").select(refTable);
+                                                } else {
+                                                     
+                                                    if (refTable){
+                                                        toRefTable (refTable)
+                                                      
+                                                    }
+                                                }
+                                               
+                
+                                                if ($$("tableEditPopup") && $$("tableEditPopup").isVisible()){
+                                                    $$("tableEditPopup").hide();
+                                                }
+                                            } catch (e){
+                                                console.log(e);
+                                                setLogValue("error","Таблица не найдена");
+                
+                                                if ($$("EditEmptyTempalte")&&$$("EditEmptyTempalte").isVisible()){
+                                                    $$("EditEmptyTempalte").hide();
+                                                }
+                                            }
+                                        }
+    
+                                    });
+                                }
+                               
+                                if ( $$("editTableFormProperty").config.dirty){
+                                    modalBox().then(function(result){
+                                        if (result !== 0){
+                                            if (result == 1){
+                                            } else if (result == 2){
+                                                if ($$("editTableFormProperty") && $$("editTableFormProperty").config.dirty){
+                                                    if ($$("editTableFormProperty").getValues().id){
+                                                        saveItem(false,true);
+                                                    } else {
+                                                        saveNewItem(); 
+                                                    }
+                                                
+                                                }
+                                                
+                                            }
+
+                                            $$("editTableFormProperty").config.dirty = false;
+                                            $$("editTableFormProperty").refresh();
+                                            setRefTable ();
+                                        
+                                        }
+                                    });
+
+                                } else {
+                                    setRefTable ();
+                                }
+                             
                             }
                         })
                     } else {
-                        $$("propertyRefbtnsContainer").addView({height:29,width:1})
+                        $$("propertyRefbtnsContainer").addView({height:28,width:1})
                     }
                 });
             }
@@ -605,7 +706,7 @@ function editTableBar (){
                 minWidth:210,
                 width: 320,
                 scroll:true,
-                borderless:true,
+                //borderless:true,
                 elements:[
                     {
                         minHeight:48,
@@ -684,7 +785,7 @@ function editTableBar (){
                         ]
                     },
 
-                    { borderelss:true,cols:[
+                    { borderelss:true,   cols:[
 
                     {   view:"property",  
                         id:"editTableFormProperty", 
@@ -700,11 +801,25 @@ function editTableBar (){
 
                                 $$("editTableFormProperty").config.dirty = true;
                                 $$("editTableFormProperty").refresh();
+                            },
+                            onAfterEditStop:function(state, editor, ignoreUpdate){
+    
+                                if (state.value !==state.old ){
+                                    let item = $$("editTableFormProperty").getItem(editor.id);
+                                    item.value = state.value;
+                                    $$("editTableFormProperty").updateItem(editor.id);
+
+                                    $$("editTableFormProperty").config.dirty = true;
+                                    $$("editTableFormProperty").refresh();
+                                }
                             }
                         }
                     },
+                    {width:8},
                     {   id:"propertyRefbtns",  
-                        rows:[]
+                        rows:[
+                         
+                        ]
                     }
 
                     ]}

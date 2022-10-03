@@ -1,6 +1,4 @@
-console.log("expa 1.0.30");
-// import {lib} from "./modules/expalib.js";
-// lib ();
+console.log("expa 1.0.31"); 
 
 import * as textInputClean from "./blocks/textInputSettings.js";
 import {login} from "./components/login.js";
@@ -13,8 +11,10 @@ import  {resetTimer} from  "./blocks/autoLogout.js";
 import {catchErrorTemplate} from "./blocks/logBlock.js";
 import {resizeAdaptive,adaptivePoints} from "./blocks/adaptive.js";
 
+import  {Storage,getData} from "./blocks/globalStorage.js";
+
 try{
-    
+
     webix.ready(function(){
         webix.protoUI({
             name:"edittree"

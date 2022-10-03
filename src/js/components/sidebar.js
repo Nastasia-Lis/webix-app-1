@@ -1,8 +1,10 @@
 import {saveItem,saveNewItem,defaultStateForm} from "../blocks/editTableForm.js";
 import {modalBox} from "../blocks/notifications.js";
-import {setLogValue} from '../blocks/logBlock.js';
 import {getInfoTable,getInfoDashboard,getInfoEditTree} from "../blocks/content.js";
 import {catchErrorTemplate} from "../blocks/logBlock.js";
+import {tableNames} from "../blocks/router.js";
+import  {STORAGE,getData} from "../blocks/globalStorage.js";
+
 
 let itemTreeId = "";
 
@@ -26,6 +28,7 @@ function treeSidebar () {
         data:[],
         on:{
             onSelectChange:function (ids) {
+     
                 itemTreeId = ids[0];
                 let treeItemId = $$("tree").getSelectedItem().id;
         
@@ -37,7 +40,7 @@ function treeSidebar () {
                 let singleItemContent="";
                 try {
                     if($$("inputsTable")){
-                       // $$("table-editForm").removeView($$("inputsTable"));
+
                         $$("EditEmptyTempalte").show();
                     }
 
@@ -94,6 +97,64 @@ function treeSidebar () {
                 }
                 
                 function visibleTreeItem(singleType, idsUndefined){
+                    
+                    function setTableName (id){
+
+                        if ($$("table-templateHeadline") ){
+                            
+                            STORAGE.tableNames.forEach(function(el,i){
+                                if (el.id == id){
+                                    $$("table-templateHeadline").setValues(el.name);
+                                }
+                                
+                            });
+                        } 
+                        
+                        if ($$("table-view-templateHeadline")){
+                            STORAGE.tableNames.forEach(function(el,i){
+                                if (el.id == id){
+                                    $$("table-view-templateHeadline").setValues(el.name);
+                                }
+                                
+                            });
+                        }
+                    }
+        
+
+                    async function findSingleEl () {
+                        let single;
+                        if (!STORAGE.fields){
+                            await getData("fields"); 
+                        }
+
+                        if (STORAGE.fields){
+                            let storageData = STORAGE.fields.content;
+                            single = false;
+                                if (storageData[idsUndefined]){
+                                    single = true;
+                                    if (storageData[idsUndefined].type == "dbtable"){
+                                        if ($$("tables")){
+                                            $$("tables").show();
+                                        }
+                                    } else if (storageData[idsUndefined].type == "tform"){
+                                        if ($$("forms")){
+                                            $$("forms").show();
+                                        }
+                                    } else if (storageData[idsUndefined].type == "dashboard"){
+                                        if ($$("dashboards")){
+                                            $$("dashboards").show();
+                                        }
+                                    }
+
+                                    setTableName (idsUndefined);
+                                }
+                       
+                        }
+
+                        return single;
+
+                    }
+
                     try{
                         if($$("webix__null-content")){
                             $$("container").removeView($$("webix__null-content"));
@@ -119,33 +180,41 @@ function treeSidebar () {
                                         $$(singleType).hide();
                                     }
                                 } else {
-
-                                    
-
+                          
                                     if (idsUndefined!=="treeTempl"){
-                                        if($$("webix__none-content").isVisible()){
-                                            $$("webix__none-content").hide();
-                                        }
 
-                                        if(!($$("webix__null-content"))){
-                                            $$("container").addView(
-                                            {
-                                                view:"align", 
-                                                align:"middle,center",
-                                                id:"webix__null-content",
-                                                body:{  
-                                                    borderless:true, 
-                                                    template:"Блок в процессе разработки", 
-                                                    height:50, 
-                                                    width:220,
-                                                    css:{"color":"#858585","font-size":"14px!important"}
-                                                }
-                                                
-                                            },
+                                        findSingleEl () .then(function(response) {
+                                            if (!response){
                                             
-                                            2);
-                                        } 
+                                                if($$("webix__none-content").isVisible()){
+                                                    $$("webix__none-content").hide();
+                                                }
+                                                    
+                                                if(!($$("webix__null-content"))){
+                                        
+                                                $$("container").addView(
+                                                {
+                                                    view:"align", 
+                                                    align:"middle,center",
+                                                    id:"webix__null-content",
+                                                    body:{  
+                                                        borderless:true, 
+                                                        template:"Блок в процессе разработки", 
+                                                        height:50, 
+                                                        width:220,
+                                                        css:{"color":"#858585","font-size":"14px!important"}
+                                                    }
+                                                    
+                                                },
+                                                
+                                                2);
+                                            } 
+                                            }
+                                        });
+
+                                       
                                     } else {
+                                   
                                         if(!($$("webix__none-content").isVisible())){
                                             $$("webix__none-content").show();
                                             $$("container").getChildViews().forEach(function(el,i){
@@ -176,6 +245,7 @@ function treeSidebar () {
                                         if ($$(el)){
                                             $$(el).show();
                                         } else {
+                                     
                                             if(!($$("webix__null-content"))){
                                                 $$("container").addView(
                                                 {
@@ -246,9 +316,9 @@ function treeSidebar () {
                             $$("inputsTable").hide();
                         }
                         if (singleItemContent == "dbtable"){
-                            getInfoTable ("table", "table-search", ids[0], "table-findElements", true);
+                            getInfoTable ("table", ids[0]);
                         }else {
-                            getInfoTable ("table", "table-search", ids[0], "table-findElements");
+                            getInfoTable ("table", ids[0]);
                         }
                         
 
@@ -258,9 +328,9 @@ function treeSidebar () {
                     } else if(singleItemContent == "dashboard") {
                         getInfoDashboard (ids[0],true);
                     }else if(getItemParent=="forms") {
-                        getInfoTable ("table-view", "table-view-search", ids[0], "table-view-findElements");
+                        getInfoTable ("table-view", ids[0]);
                     }else if(singleItemContent == "tform") {
-                        getInfoTable ("table-view", "table-view-search", ids[0], "table-view-findElements", true);
+                        getInfoTable ("table-view", ids[0]);
                     } else if (getItemParent=="treeTempl"){
                         getInfoEditTree() ;
                     }
@@ -269,13 +339,32 @@ function treeSidebar () {
                     catchErrorTemplate("009-000", error);
             
                 }
+
+
+                // headline у таблиц
+            
+                if ($$("table-templateHeadline") && $$("table-templateHeadline").isVisible()){
+                    STORAGE.tableNames.forEach(function(el,i){
+                        if (el.id == $$("tree").getSelectedId()){
+                            $$("table-templateHeadline").setValues(el.name);
+                        }
+                        
+                    });
+                } else if ($$("table-view-templateHeadline") && $$("table-view-templateHeadline").isVisible()){
+                    STORAGE.tableNames.forEach(function(el,i){
+                        if (el.id == $$("tree").getSelectedId()){
+                            $$("table-view-templateHeadline").setValues(el.name);
+                        }
+                        
+                    });
+                }
                 
             },
             onItemClick:function(id, e, node){
-               
                 if($$("editTableFormProperty").config.dirty){
                     try{  
                         modalBox().then(function(result){
+                           
                             if (result == 1){
                                 if ($$("table-saveNewBtn").isVisible()) {
                                     $$("table-saveNewBtn").hide();
@@ -288,29 +377,32 @@ function treeSidebar () {
                                     $$("editTableFormProperty").clear();
                                     $$("editTableFormProperty").hide();
                                 }
-                                $$("tree").select(id);
+                        
 
                                 $$("editTableFormProperty").config.dirty = false;
                                 $$("editTableFormProperty").refresh();
-                            
+                                $$("tree").select(id);
                             } else if (result == 2){
-                                if ($$("table-editForm").validate()){
-                                    if ($$("table-editForm").getValues().id){
-                                        saveItem();
-                                    } else {
-                                        saveNewItem(); 
-                                    }
+                                if ($$("editTableFormProperty").getValues().id){
+                                    saveItem(false,true);
                                     $$("tree").select(id);
-                                    $$("editTableFormProperty").config.dirty = false;
-                                    $$("editTableFormProperty").refresh();
-                                
                                 } else {
-                                    setLogValue("error","Заполните пустые поля");
-                                    return false;
+                                    saveNewItem();
+                                    $$("tree").select(id);
                                 }
+                                $$("editTableFormProperty").config.dirty = false;
+                                $$("editTableFormProperty").refresh();
                                 
+                            if (!($$("table-newAddBtnId").isEnabled())){
+                                $$("table-newAddBtnId").enable();
                             }
+                            }
+
+
+                        
                         });
+
+                        
                     } catch (error){
                         console.log(error);
                         catchErrorTemplate("009-000", error);
@@ -318,6 +410,7 @@ function treeSidebar () {
                     }
                     return false;
                 }
+
             },
 
             onBeforeSelect: function(data) {
@@ -357,9 +450,136 @@ function treeSidebar () {
                     }
                  
                 }
+
+
+                async function getSingleTreeItem() {
+
+                    if (!STORAGE.fields){
+                        await getData("fields"); 
+                    }
+                  
+                    let content = STORAGE.fields.content;
+                    let obj = Object.keys(content); 
+
+                
+                    function generateItem (){
+                        obj.forEach(function(el) {
+                       
+                            if (el == data){ // userprefs убрать, добавить меню в storage и сравнить
+                             
+                                if ($$("webix__none-content").isVisible()){
+                                    $$("webix__none-content").hide();
+                                }
+                          
+                                if($$("webix__null-content")){
+                                    $$("container").removeView($$("webix__null-content"));
+                                }
+                         
+                                if (content[el].type == "dbtable"){
+                                    if ($$("tables")){
+                                        $$("tables").show();
+                                    }
+                                    getInfoTable ("table", data);
+                                    
+                                } else if (content[el].type == "tform"){
+                                    if ($$("forms")){
+                                        $$("forms").show();
+                                    }
+                                    getInfoTable ("table-view", data);
+                                } else if (content[el].type == "dashboard"){
+                                    if ($$("dashboards")){
+                                        $$("dashboards").show();
+                                    }
+                                    getInfoDashboard(data);
+                                }
+                            
+            
+                            }
+                            
+                            
+                        });
+                    }
+
+                    generateItem ()
+                
+                    
+                }
+                getSingleTreeItem() 
+
+            
             },
 
-            onAfterSelect:function(){
+            onBeforeOpen:function (id){
+
+                const selectedItem = $$("tree").getItem(id);
+
+                if ($$("tree").getItem(id).$count===-1){
+
+                    async function getMenuChilds() {
+
+                        if (!STORAGE.fields){
+                            await getData("fields"); 
+                        }
+                        let content = STORAGE.fields.content;
+                        let obj = Object.keys(content); 
+    
+                        function findNotUniqueItem (data){
+                            let check = false;
+                            STORAGE.mmenu.mmenu.forEach(function(el,i){
+                                if (el.name == data){
+                                    check = true;
+                                    
+                                }
+                            });
+                            return check;
+                        }
+                        function generateMenuData (typeChild){
+                            obj.forEach(function(data) {
+                                if (content[data].type == typeChild && !findNotUniqueItem(data)){ // userprefs убрать, добавить меню в storage и сравнить
+                           
+                                    $$("tree").data.add({
+                                        id:data, 
+                                        value:(content[data].plural) ? content[data].plural : content[data].singular, 
+                                        "type":content[data].type
+                                    }, 0, id ); 
+                
+                                }
+                                
+                                
+                            });
+                        }
+
+                        if (selectedItem.action.includes("all_")){
+                            let index = selectedItem.action.indexOf("_");
+                            let type = selectedItem.action.slice(index+1);
+
+                            generateMenuData (type);
+                        }
+                    
+                        
+                    }
+                    getMenuChilds();
+
+
+                }
+      
+            },
+
+            onAfterSelect:function(id){
+              
+                async function getFields (){
+                    if (!STORAGE.mmenu){
+                        await getData("fields"); 
+                    }
+
+                    if (STORAGE.fields){
+                        Backbone.history.navigate("tree/"+id, { trigger:true });
+                    }
+                }
+
+                getFields ();
+            
+                
                 if (window.innerWidth < 850 ){
                     this.hide();
                 }

@@ -1,8 +1,7 @@
 
 
-import {tableNames} from "./router.js";
 import {setStorageData} from "./storageSetting.js";
-
+import  {STORAGE,getData} from "./globalStorage.js";
 function setLogValue (typeNotify,notifyText) {
     const date = new Date();
     let day = date.getDate();
@@ -13,6 +12,31 @@ function setLogValue (typeNotify,notifyText) {
     let seconds =String( date.getSeconds()).padStart(2, '0');
     let currentDate = `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
 
+        function addLogMsg (src){
+            $$("logBlock-list").add({
+                date:currentDate,
+                value:notifyText,
+                src:src
+            });
+        }
+        async function createLogMessage(srcTable,itemTreeId) {
+
+            if (!STORAGE.tableNames){
+                await getData("fields"); 
+            }
+
+            if (STORAGE.tableNames){
+                STORAGE.tableNames.forEach(function(el,i){
+                    if (el.id == itemTreeId){
+                        srcTable= el.name;
+                    }
+                });
+            }
+
+            addLogMsg (srcTable);
+        }
+        
+            
     try {
         let itemTreeId=null;
 
@@ -27,23 +51,14 @@ function setLogValue (typeNotify,notifyText) {
         if (itemTreeId){
         
             let srcTable;
-            tableNames.forEach(function(el,i){
-                if (el.id == itemTreeId){
-                    srcTable= el.name;
-                }
-            });
 
-            $$("logBlock-list").add({
-                date:currentDate,
-                value:notifyText,
-                src:srcTable
-            });
+            createLogMessage(srcTable,itemTreeId);
 
         } else {
             $$("logBlock-list").add({
                 date:currentDate,
                 value:notifyText,
-                src:"Expa v1.0.30"
+                src:"Expa v1.0.31"
             });
         }
         

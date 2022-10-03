@@ -520,7 +520,7 @@ label, button{
     }
     //------select
 
-    &_dash-title{
+    &_block-title{
         font-weight: 600!important;
         font-size: 16px!important;
         height: auto!important;
@@ -806,6 +806,6 @@ label, button{
 
 
 
-.webix_edit-table-form-property{
-    border:none!important;
+.webix_table-toolbar-container{
+   // height: 100%!important;
 }

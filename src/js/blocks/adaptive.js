@@ -157,7 +157,7 @@ function resizeAdaptive (){
                 }
 
             } else if (window.innerWidth > 830 && $$("contextActionsBtnAdaptive")||window.innerWidth > 830 && $$("contextActionsBtn")){
-
+              
                 if ($$("customInputsAdaptive")){
                     const  filterBar = $$("table-view-filterIdView").getParentView();
                     const collection = {id:"customInputs",cols:$$("customInputsAdaptive")._collection[0].rows}

@@ -795,11 +795,24 @@ function editBtnClick(idBtnEdit) {
 
 
 
-function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterElements, idTable,idFilter,visible=false) {
+function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterElements, idTable,idFilter,idHeadline,visible=false) {
 
+  
     return { 
         
         rows:[
+            {   view:"template",
+                id:idHeadline,
+                css:"webix_style-template-count webix_block-title",
+                height:34,
+                template:function(){
+                    if (Object.keys($$(idHeadline).getValues()).length !==0){
+                        return "<div style='display:inline-block;font-size:15px!important;font-weight:600'>"+$$(idHeadline).getValues()+"</div>"
+                    } else {
+                        return "<div style='display:inline-block;font-size:13px!important;font-weight:600'>Имя не указано</div>";
+                    }
+                },
+            },
 
             {//id:"filterBar", 
             css:"webix_filterBar",padding:17, height: 80,margin:5, 
@@ -1101,22 +1114,11 @@ let onFuncTable = {
             catchErrorTemplate("012-000", error);
         }
 
-
-
-        
-
-      
-
-
-        // $$("editTableFormProperty").config.dirty = true;
-        // $$("editTableFormProperty").refresh();
-       
-      
-
   
     },
     onBeforeSelect:function(selection, preserve){
-        console.log(selection, preserve)
+        
+
         let values = $$("table").getItem(selection.id); 
         function toEditForm () {
             try {
@@ -1125,11 +1127,14 @@ let onFuncTable = {
                     $$("editTableFormProperty").show();
                 }
 
-                $$("editTableFormProperty").clear();
+                $$("editTableFormProperty").config.dirty = false;
+                $$("editTableFormProperty").refresh();
+
                 $$("editTableFormProperty").setValues(values);
               
                 $$("table-saveNewBtn").hide();
                 $$("table-saveBtn").show();
+                $$("table-delBtnId").enable();
             } catch (error){
                 console.log(error);
                 catchErrorTemplate("012-000", error);
@@ -1140,37 +1145,27 @@ let onFuncTable = {
             
             modalBox().then(function(result){
                 if (result == 1){
-
-                    $$("editTableFormProperty").config.dirty = false;
-                    $$("editTableFormProperty").refresh();
-
-                    $$("editTableFormProperty").clear();
-                    $$("table-delBtnId").enable();
                     toEditForm();
-                   
-                
+                    $$("table").select(selection.id);
                 } 
 
-                // else if (result == 2){
-                //     if ($$("table-editForm").validate()){
-                //         if ($$("table-editForm").getValues().id){
-                //             saveItem();
-                //         } else {
-                //             saveNewItem(); 
-                //         }
-                //         $$("table-editForm").clear();
-                //         $$("table-delBtnId").enable();
-                //         toEditForm();
-                // $$("editTableFormProperty").config.dirty = false;
-                // $$("editTableFormProperty").refresh();
-                    
-                //     } else {
-                //         setLogValue("error","Заполните пустые поля");
-                //         return false;
-                //     }
-                    
-                // }
+                else if (result == 2){
+
+                    if ($$("editTableFormProperty").getValues().id){
+                       
+                        saveItem(false,false,true);
+                    } else {
+                        saveNewItem(); 
+                    }
+                    toEditForm();
+                    $$("table").select(selection.id);
+
+                }
             });
+
+            if (!($$("table-newAddBtnId").isEnabled())){
+                $$("table-newAddBtnId").enable();
+            }
 
             return false;
         } else {

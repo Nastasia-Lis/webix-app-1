@@ -814,7 +814,7 @@ button {
           box-shadow: inset 2px 0 var(--primary) !important;
 }
 
-.webix_dash-title {
+.webix_block-title {
   font-weight: 600 !important;
   font-size: 16px !important;
   height: auto !important;
@@ -1078,8 +1078,4 @@ button {
 
 .webix_cal_day_inner {
   border-radius: 8% !important;
-}
-
-.webix_edit-table-form-property {
-  border: none !important;
 }

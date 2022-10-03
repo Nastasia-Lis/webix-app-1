@@ -166,20 +166,52 @@ function header() {
                     data: [],
                     on:{
                         onItemClick:function(id, e, node){
+                            function modalBoxTable (navPath){
+                                try{
+                                    modalBox().then(function(result){
+                                        if (result == 1){
+                                            Backbone.history.navigate(navPath, { trigger:true});
+                                            
+                                            $$("editTableFormProperty").config.dirty = false;
+                                            $$("editTableFormProperty").refresh();
+                                        } else if (result == 2){
+                                            if ($$("editTableFormProperty") && $$("editTableFormProperty").config.dirty){
+                                                if ($$("editTableFormProperty").getValues().id){
+                                                    saveItem(false,false,true);
+                                                } else {
+                                                    saveNewItem(); 
+                                                }
+
+                                                $$("editTableFormProperty").config.dirty = false;
+                                                $$("editTableFormProperty").refresh();
+                                                Backbone.history.navigate(navPath, { trigger:true});
+                                            
+                                            }
+                                            
+                                        }
+                                    });
+                                } catch (error){
+                                    console.log(error);
+                                    catchErrorTemplate("005-000", error);
+                                }
+                               
+                            }
                             try {
                             
                                 if (id=="logout"){
-                                    if($$("table-editForm") && $$("table-editForm").isDirty() || $$("cp-form") && $$("cp-form").isDirty()){
+                                    if($$("editTableFormProperty") && $$("editTableFormProperty").config.dirty || $$("cp-form") && $$("cp-form").isDirty()){
                                        
                                         
                                         try{
                                             modalBox().then(function(result){
                                                 if (result == 1){
-                                                    //window.location.replace(logoutPath);
                                                     Backbone.history.navigate("logout", { trigger:true});
+                                                    
+                                                    $$("editTableFormProperty").config.dirty = false;
+                                                    $$("editTableFormProperty").refresh();
                                                 } else if (result == 2){
 
-                                                    if ($$("cp-form") || $$("table-editForm")){
+                                                    if ($$("cp-form") || $$("editTableFormProperty")){
                                                         if ($$("cp-form") && $$("cp-form").isDirty() && $$("cp-form").validate()){
                                                             let objPass = {op:"",np:""};
                                                             let passData = $$("cp-form").getValues();
@@ -199,16 +231,17 @@ function header() {
                                                                     ajaxErrorTemplate("011-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
                                                                 }
                                                             });
-                                                            //window.location.replace(logoutPath);
                                                             Backbone.history.navigate("logout", { trigger:true});
                                                         
-                                                        } else if ($$("table-editForm") && $$("table-editForm").isDirty() && $$("table-editForm").validate()){
-                                                            if ($$("table-editForm").getValues().id){
-                                                                saveItem();
+                                                        } else if ($$("editTableFormProperty") && $$("editTableFormProperty").config.dirty){
+                                                            if ($$("editTableFormProperty").getValues().id){
+                                                                saveItem(false,false,true);
                                                             } else {
                                                                 saveNewItem(); 
                                                             }
-                                                        //   window.location.replace(logoutPath);
+                                                            
+                                                            $$("editTableFormProperty").config.dirty = false;
+                                                            $$("editTableFormProperty").refresh();
                                                             Backbone.history.navigate("logout", { trigger:true});
                                                         
                                                         }else {
@@ -227,6 +260,18 @@ function header() {
                                     } else {
                                         Backbone.history.navigate("logout", { trigger:true});
                                        // window.location.replace(logoutPath);
+                                    }
+                                } else if (id == "cp"){
+                                    if ($$("editTableFormProperty") && $$("editTableFormProperty").config.dirty){
+                                    modalBoxTable ("cp");
+                                    } else {
+                                        Backbone.history.navigate("cp", { trigger:true});
+                                    }
+                                } else if (id == "userprefs"){
+                                    if ($$("editTableFormProperty") && $$("editTableFormProperty").config.dirty){
+                                    modalBoxTable ("userprefs");
+                                    } else {
+                                        Backbone.history.navigate("userprefs", { trigger:true});
                                     }
                                 }
                             } catch (error){

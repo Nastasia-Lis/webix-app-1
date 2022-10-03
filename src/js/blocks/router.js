@@ -8,17 +8,20 @@ import {authCpLayout} from "../components/authSettings.js";
 import {userprefsLayout} from "../components/userprefs.js";
  
 // other blocks
+
 import {editTableBar} from "./editTableForm.js";
 import {propertyTemplate} from "./viewPropertyTable.js";
 import {filterForm} from "./filterTableForm.js";
 import {editTreeLayout,contextMenu} from "../components/editTree.js";
 import {catchErrorTemplate,ajaxErrorTemplate,setLogValue} from "./logBlock.js";
-import {getInfoEditTree} from "./content.js";
+import {getInfoTable, getInfoEditTree,getInfoDashboard} from "./content.js";
 import {setStorageData} from "./storageSetting.js";
 
+import  {STORAGE,getData} from "../blocks/globalStorage.js";
 
-let userInfo=[];
-let tableNames = [];
+
+
+
 
 function createElements(specificElement){
    
@@ -39,7 +42,7 @@ function createElements(specificElement){
                                                     
                         {   id:"tableContainer",
                                 rows:[
-                                    tableToolbar ( "table-search", "table-exportBtn","table-editTableBtnId", "table-findElements","table-idFilterElements", "table","table-filterId"),
+                                    tableToolbar ( "table-search", "table-exportBtn","table-editTableBtnId", "table-findElements","table-idFilterElements", "table","table-filterId","table-templateHeadline"),
                                     { view:"resizer",class:"webix_resizers",},
                                     table ("table", onFuncTable,true)
                                 ]
@@ -64,7 +67,7 @@ function createElements(specificElement){
                     {view:"layout",id:"forms", css:"webix_tableView",hidden:true, 
                                                 
                         rows:[
-                            tableToolbar("table-view-search", "table-view-exportBtn","table-view-editTableBtnId", "table-view-findElements","table-view-idFilterElements", "table-view","table-view-filterIdView", true ),
+                            tableToolbar("table-view-search", "table-view-exportBtn","table-view-editTableBtnId", "table-view-findElements","table-view-idFilterElements", "table-view","table-view-filterIdView","table-view-templateHeadline", true ),
                             { view:"resizer",class:"webix_resizers",},
                             
                             {view:"scrollview", body:  
@@ -144,238 +147,199 @@ function removeElements(){
     }
 }
 
-function getDataFields (routes, menuItem){
-    return  webix.ajax("/init/default/api/whoami",{
-         success:function(text, data, XmlHttpRequest){
+
+function getWorkspace (){
+
+    async function getMenuTree() {
+
+        if (!STORAGE.mmenu){
+        
+            await getData("mmenu"); 
+            
+        }
+
+
+        function generateChildsTree  (el){
+            let childs = [];
+    
+            try {
+                el.childs.forEach(function(child,i){
+                    childs.push({
+                        id:child.name, 
+                        value:child.title,
+                        action:child.action
+                    });
+                });
+            } catch (err){
+                console.log(err);
+                setLogValue("error","generateChildsTree: "+err );
+            }
+            return childs;
+        }
+
+        function generateParentTree  (el){ 
+            let menuItem;
+            try {                  
+                menuItem = {
+                    id:el.name, 
+                    value:el.title,
+                    action:el.action,
+                };
+
+
+                if (!(el.title)){
+                    menuItem.value="Без названия";
+                }
+
+                if (el.action !== "dbtable"   && 
+                    el.action !== "tform"     && 
+                    el.action !== "dashboard" &&
+                    el.action !== "none"      ) {
+
+                    if (el.childs.length == 0){
+                        menuItem.webix_kids = true; 
+                    } else {
+                        menuItem.data = generateChildsTree (el);
+                    }         
+                } else {
+                    
+                }
+            } catch (err){
+                console.log(err);
+                setLogValue("error","generateParentTree: "+err );
+            }
+            return menuItem;
+        } 
+
+       
+
+        function generateHeaderMenu  (el){
+            let items = [];
+            
+            try{
+                items.push({id:"userprefs", value:"Настройки"});
+
+                el.childs.forEach(function(child,i){
+                    let item = {
+                        id:child.name,
+                        value:child.title
+                    };
+
+                    
+                    if (child.name !== "logout"){
+                        items.push(item);
+                    } 
+                });
+
+                items.push({id:"logout", value:"Выйти", css:"webix_logout"});
+            } catch (err){
+                console.log(err);
+                setLogValue("error","generateHeaderMenu: "+err );
+            }
+
+            return items;
+        }
+
+        function generateMenuTree (){ 
+            let menu,
+                menuTree = [],
+                menuHeader = []
+            ;
+
+            try {
+                menu = STORAGE.mmenu.mmenu;
+        
+                // menu.push ({
+                //     "id": 77,
+                //     "name": "sales",
+                //     "title": "Sales",
+                //     "mtype": 1,
+                //     "ltype": 1,
+                //     "action": "dashboard",
+                //     "childs": []
+                // });
+
+             
+                menu.forEach(function(el,i){
+                    menuTree.push  ( generateParentTree (el, menu, menuTree  ) );
+                    if (el.childs.length !==0){
+                        menuHeader = generateHeaderMenu (el, menu, menuHeader);
+                    }
+                });
+
+                $$("tree").clearAll();
+                $$("tree").parse(menuTree);
+
+                $$("button-context-menu").config.popup.data = menuHeader;
+                $$("button-context-menu").enable();
+            } catch (err){
+                console.log(err);
+                setLogValue("error","generateMenuTree: "+err );
+            }
+        }
+
+        generateMenuTree (); 
+    }
+
+    function createContent (){ 
+ 
+        function showMainContent(){
+            try {
                 $$("userAuth").hide();
                 $$("mainLayout").show();
-                userInfo.push(data.json().content.first_name, data.json().content.username)
-                
-             
-                let userStorageData = {};
-                userStorageData.id = data.json().content.id;
-                userStorageData.name = data.json().content.first_name;
-                userStorageData.username = data.json().content.username;
-            
-                setStorageData("user", JSON.stringify(userStorageData));
-
-                createElements();
-                webix.ajax().get("/init/default/api/fields.json",false).then(function (data) {
-                    let srcTree = data.json().content;
- 
-                    let obj = Object.keys(srcTree);
-    
-                    let dataChilds = {tables:[], forms:[], dashboards:[], treeConf:[]};
-                    
-                    try{
-                        $$("tree").unselectAll();
-    
-                        obj.forEach(function(data) {
-    
-                            if (srcTree[data].type == "treeConf" ){
-    
-                                dataChilds.treeConf.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type});
-                                tableNames.push({name:srcTree[data].plural , id:data}); 
-                                
-                            } 
-                
-                            if (srcTree[data].type == "dbtable"){
-                                if(srcTree[data].plural){
-                                    dataChilds.tables.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type});
-                                    tableNames.push({name:srcTree[data].plural , id:data});
-                                } else if (srcTree[data].singular) {
-                                    dataChilds.tables.push({"id":data, "value":srcTree[data].singular, "type":srcTree[data].type});
-                                    tableNames.push({name:srcTree[data].singular , id:data});
-                                }
-            
-                            } 
-                            
-                            if (srcTree[data].type == "tform" ){
-    
-                                if(srcTree[data].plural){
-                                    dataChilds.forms.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type});
-                                    tableNames.push({name:srcTree[data].plural , id:data}); 
-                                }else if (srcTree[data].singular) {
-                                    dataChilds.forms.push({"id":data, "value":srcTree[data].singular, "type":srcTree[data].type});
-                                    tableNames.push({name:srcTree[data].singular , id:data}); 
-            
-                                }
-                                
-                            } 
-    
-                            if (srcTree[data].type == "dashboard" ){
-                        
-                                if(srcTree[data].plural){
-                                    dataChilds.dashboards.push({"id":data, "value":srcTree[data].plural, "type":srcTree[data].type});
-                                    tableNames.push({name:srcTree[data].plural , id:data}); 
-                                }else if (srcTree[data].singular) {
-                                    dataChilds.dashboards.push({"id":data, "value":srcTree[data].singular, "type":srcTree[data].type});
-                                    tableNames.push({name:srcTree[data].singular , id:data}); 
-            
-                                }
-                            }   
-    
-                        });
-                    } catch (error){
-                        console.log(error);
-                        catchErrorTemplate("015-000", error);
-    
-                    }
-     
- 
-                 webix.ajax().get("/init/default/api/mmenu.json").then(function (data) {
-                     let menu = data.json().mmenu;
-                     let menuTree = [];
-                    
-                    //  menu.push ({
-                    //      "id": 7,
-                    //      "name": "sales",
-                    //      "title": "Salasll",
-                    //      "mtype": 2,
-                    //      "ltype": 1,
-                    //      "childs": [
-                            
-                    //      ]
-                    //  }) ;
-
-                     // single dashboard example
- 
-                     let dataAuth=[];
-                     let dataNotAuth=[];
-                     let pathPref;
- 
-              
-                     if (window.location.host.includes("localhost:3000")){
-                        pathPref = "/index.html/";
-                     } else {
-                        pathPref = "/init/default/spaw/";
-                     }
- 
-                     try {
-                        menu.forEach(function(el,i){
-                         
-                                if (el.name == "user_auth" || el.name=="userprefs" ){
-                                    if (el.childs.length > 0){
-                                        el.childs.forEach(function(child,i){
-                                                if(child.name == "login"){
-                                                    dataNotAuth.push({id:child.name,value:child.title, href:pathPref+child.name });
-                                                }else if (child.name !== "logout") {
-                                                    dataAuth.push({id:child.name,value:child.title, href:pathPref+child.name });
-                                                }
-                                                tableNames.push({name:child.title , id:child.name}); 
-                                        });
-                                        el.childs.forEach(function(child,i){
-                                            if (child.name == "logout") {
-                                            dataAuth.push({id:child.name,value:child.title, css:"webix_logout" });
-                                            }
-                                            tableNames.push({name:child.title , id:child.name}); 
-                                        });
-                                    } 
-                                    
-                                    if (el.childs.length <= 0){
-                                        dataAuth.push({id:el.name, value:el.title, href:pathPref+el.name });
-                                    }
- 
- 
-                                } 
-                                
-
-                                if (el.childs.length > 0){
-                                    dataChilds[el.name]=[];
-                                    el.childs.forEach(function(child,i){
-                                        dataChilds[el.name].push({id:child.name, value:child.title });
-                                        tableNames.push({name:child.title , id:child.name}); 
-                                    });
-                                }
-             
-                                if (el.name.includes("delim")){
-
-                                } else {
-                                    let singleItem;
-                                    obj.forEach(function(data) {
-                                        if (data==el.name){
-                                            singleItem = el.title;
-                                            menuTree.push({id:el.name+"-single", value:el.title, typeof:srcTree[data].type});
-                                        }
-                                    });
-                                    if (!singleItem){
-                                        if (el.title){
-                                            if (el.typeof){
-                                                menuTree.push({id:el.name, value:el.title,typeof:el.typeof, data:dataChilds[el.name]});
-                                            }else {
-                                                menuTree.push({id:el.name, value:el.title, data:dataChilds[el.name]});
-                                            }
-                                            
-                                        
-                                        } else {
-                                            menuTree.push({id:el.name, value:"Без названия", data:dataChilds[el.name]});
-                                        }
-                                    }
-                                }
-
-                         });
-                     
- 
-                         $$("tree").clearAll();
-                         $$("tree").parse(menuTree);
-                         $$("button-context-menu").config.popup.data = dataAuth;
-                         $$("button-context-menu").enable();
-
-                         
-                     } catch (error){
-                         console.log(error);
-                         catchErrorTemplate("015-000", error);
- 
-                     }
-                         
-                 }).catch(err => {
-                    console.log(err);
-                    ajaxErrorTemplate("015-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
- 
-                  });
- 
-                 
-                 $$("tree").attachEvent("onAfterSelect", function (id) {
-                     routes.navigate("tree/"+id, { trigger:true }); 
-                 });
-              
-                 
-                 if (menuItem == "userprefs"){
-                     $$("userprefsName").setValues(userInfo[0].toString());
-        
-                 }
-                 if(menuItem == "cp"){
-                     $$("authName").setValues(userInfo[0].toString());
-                 }
-  
-             }).catch(err => {
+            } catch (err){
                 console.log(err);
-                ajaxErrorTemplate("015-000",err.status,err.statusText,err.responseURL);
- 
-             });
-         },
-         error:function(text, data, XmlHttpRequest){
-             routes.navigate("", { trigger:true});
-             ajaxErrorTemplate("015-006",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
- 
-         }
-     });
+                window.alert("showMainContent: "+err+ " (Подробности: ошибка в отрисовке контента)");
+                setLogValue("error","showMainContent: "+err );
+            }
+        }
+
+        function setUserData(){
+            let userStorageData = {};
+            userStorageData.id = STORAGE.whoami.content.id;
+            userStorageData.name = STORAGE.whoami.content.first_name;
+            userStorageData.username = STORAGE.whoami.content.username;
+            setStorageData("user", JSON.stringify(userStorageData));
+        }
+
+            showMainContent();
+
+            setUserData(); //??
+
+            createElements();
+
+            getMenuTree();
+    }
+
+    async function getAuth () {
+
+        if (!STORAGE.whoami){
+            await getData("whoami"); 
+        }
+
+        if (STORAGE.whoami){
+            createContent (); 
+        }
+    }
+
+    getAuth ();
+
 }
 
 function hideAllElements (){
-     try {
-         $$("container").getChildViews().forEach(function(el,i){
-                 if(el.config.view=="scrollview"|| el.config.view=="layout"){
-                     if ($$(el.config.id).isVisible()){
-                         $$(el.config.id).hide();
-                     }
-                 }
-         });
-     } catch (error){
-         console.log(error);
-         catchErrorTemplate("015-000", error);
- 
-     }
+    try {
+        $$("container").getChildViews().forEach(function(el,i){
+            if(el.config.view=="scrollview"|| el.config.view=="layout"){
+                if ($$(el.config.id).isVisible()){
+                    $$(el.config.id).hide();
+                }
+            }
+        });
+    } catch (err){
+        console.log(err);
+        setLogValue("error","hideAllElements: "+err );
+
+    }
 }
 
 function router (){
@@ -393,113 +357,204 @@ function router (){
         
         content:function(){
             try {
-                getDataFields(routes).then(function (response){
-      
-            });
-            } catch (error){
-                console.log(error);
-                catchErrorTemplate("015-005", error);
+                getWorkspace();
+            } catch (err){
+                console.log(err);
+                setLogValue("error","router/content: "+err+ " (Подробности: ошибка роутера)" );
             }
     
         },
     
         index:function(){
-            webix.ajax("/init/default/api/whoami",{
-                success:function(text, data, XmlHttpRequest){
+            async function getAuth () {
+
+                if (!STORAGE.whoami){
+                    await getData("whoami"); 
+                }
+        
+                if (STORAGE.whoami){
+
                     try {
                         Backbone.history.navigate("content", { trigger:true});
-                    } catch (error){
-                        console.log(error);
-                        catchErrorTemplate("015-005", error);
-    
+                    } catch (err){
+                        console.log(err);
+                        setLogValue("error","router/index: "+err+ " (Подробности: ошибка роутера)" );
                     }
-                },
-                error:function(text, data, XmlHttpRequest){
-                    $$("mainLayout").hide();
-                    $$("userAuth").show();
-                    ajaxErrorTemplate("015-015",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+
+                } else {
+                    try{
+                        $$("mainLayout").hide();
+                        $$("userAuth").show();
+                    } catch (err){
+                        console.log(err);
+                        window.alert("getAuth: "+err+ " (Подробности: ошибка в отрисовке контента)");
+                        setLogValue("error","getAuth: "+err );
+                    }
                 }
-            }).catch(error => {
-                console.log(error);
-                ajaxErrorTemplate("015-000",error.status,error.statusText,error.responseURL);
-            });      
+            }
+
+            getAuth ();
+   
         }, 
         tree: function(id){
-            try {
-                if ($$("tree").data.order.length == 0){
-                    getDataFields (routes);
-                    let idTree = id;
-                   
-                    $$("tree").attachEvent("onAfterLoad", function (id) {
-                    
-                        id = idTree;
-                        let parentId;
-                     
-                        if ($$("tree").getItem(id)){
-                          
-                            parentId = $$("tree").getParentId(id);
-                            $$("tree").open(parentId);
-                            $$("tree").select(id);
-                           
-                        } else {
-                         
-                            setTimeout(function(){
-                                webix.ui({
-                                    view:"popup",
-                                    id:"popupNotFound",
-                                    css:"webix_popup-prev-href",
-                                    width:340,
-                                    height:125,
-                                    position:"center",
-                                    body:{
-                                        rows:[
-                                        {rows: [ 
-                                            { cols:[
-                                            {template:"Что-то пошло не так...", width:250,css:"webix_template-not-found", borderless:true, height:20 },
-                                            {},
-                                            {
-                                                view:"button",
-                                                id:"buttonClosePopup",
-                                                css:"webix_close-btn",
-                                                type:"icon",
-                                                width:35,
-                                               
-                                                icon: 'wxi-close',
-                                                click:function(){
-                                                    $$("popupNotFound").hide();
-                                                }
-                                            },
-                                            ]},
-                                            {   template:"Страница не найдена",
-                                                css:"webix_template-not-found-descr", 
-                                                borderless:true, 
-                                                height:35 },
-                                            {
-                                                view:"button",
-                                                css:"webix_btn-not-found-back",
-                                                height:46,
-                                                value:"Вернуться на главную",
-                                                click:function(){
-                                                    if ($$("popupNotFound")){
-                                                        $$("popupNotFound").destructor();
-                                                    }
-                                                    
-                                                    Backbone.history.navigate("content", { trigger:true});
-                                                    window.location.reload();
-                                                   
-                                                }
-                                            },
-                                            {height:20}
-                                        ]}]
-                                        
-                                    },
+         
 
-                                }).show();
-                            }, 1500);
-                        }
+            async function getTableData (){
 
+                function setTableName (){
+
+                    if ($$("table-templateHeadline") ){
                         
+                        STORAGE.tableNames.forEach(function(el,i){
+                            if (el.id == id){
+                                $$("table-templateHeadline").setValues(el.name);
+                            }
+                            
+                        });
+                    } 
+                    
+                    if ($$("table-view-templateHeadline")){
+                        STORAGE.tableNames.forEach(function(el,i){
+                            if (el.id == id){
+                                $$("table-view-templateHeadline").setValues(el.name);
+                            }
+                            
+                        });
+                    }
+                }
+        
+                if (!STORAGE.fields){
+                    await getData("fields"); 
+                }
+
+                if (STORAGE.fields){
+                    let fieldsData;
+                
+                    fieldsData = STORAGE.fields.content;
+                
+                
+                    Object.values(fieldsData).forEach(function(field,i){
+                        
+                        if (Object.keys(fieldsData)[i] == id){
+                            if (field.type == "dbtable" || 
+                                field.type == "tform"   || 
+                                field.type == "dashboard"){
+                                
+                                if ($$("webix__none-content").isVisible()){
+                                    $$("webix__none-content").hide();
+                                }
+                                if (field.type == "dbtable"){
+                                    if ($$("tables")){
+                                        $$("tables").show();
+                                    }
+                                    getInfoTable ("table", id);
+                                    
+                                } else if (field.type == "tform"){
+                                    if ($$("forms")){
+                                        $$("forms").show();
+                                    }
+                                    getInfoTable ("table-view", id);
+                                } else if (field.type == "dashboard"){
+                                    if ($$("dashboards")){
+                                        $$("dashboards").show();
+                                    }
+                                    getInfoDashboard(id);
+                                }
+                                
+                            } 
+                        }
                     });
+                    setTableName ();
+                }
+            }
+
+            async function createTable (){
+                await getWorkspace ();
+       
+                $$("tree").attachEvent("onAfterLoad", function () {
+                let parentId;
+
+                
+                
+                
+                
+              
+            
+                if ($$("tree").getItem(id)){
+                  
+                    parentId = $$("tree").getParentId(id);
+                    $$("tree").open(parentId);
+                    $$("tree").select(id);
+
+                } else if (!STORAGE.fields) {
+                    getTableData ();
+             
+                    //setTableName ();
+                } else {
+                 
+                    setTimeout(function(){
+                        webix.ui({
+                            view:"popup",
+                            id:"popupNotFound",
+                            css:"webix_popup-prev-href",
+                            width:340,
+                            height:125,
+                            position:"center",
+                            body:{
+                                rows:[
+                                {rows: [ 
+                                    { cols:[
+                                    {template:"Что-то пошло не так...", width:250,css:"webix_template-not-found", borderless:true, height:20 },
+                                    {},
+                                    {
+                                        view:"button",
+                                        id:"buttonClosePopup",
+                                        css:"webix_close-btn",
+                                        type:"icon",
+                                        width:35,
+                                       
+                                        icon: 'wxi-close',
+                                        click:function(){
+                                            $$("popupNotFound").hide();
+                                        }
+                                    },
+                                    ]},
+                                    {   template:"Страница не найдена",
+                                        css:"webix_template-not-found-descr", 
+                                        borderless:true, 
+                                        height:35 },
+                                    {
+                                        view:"button",
+                                        css:"webix_btn-not-found-back",
+                                        height:46,
+                                        value:"Вернуться на главную",
+                                        click:function(){
+                                            if ($$("popupNotFound")){
+                                                $$("popupNotFound").destructor();
+                                            }
+                                            
+                                            Backbone.history.navigate("content", { trigger:true});
+                                            window.location.reload();
+                                           
+                                        }
+                                    },
+                                    {height:20}
+                                ]}]
+                                
+                            },
+
+                        }).show();
+                    }, 1500);
+                }
+
+                
+                });
+            }
+
+            try {
+            
+                if ($$("tree").data.order.length == 0){
+                    createTable ();
                 }
 
                
@@ -524,7 +579,7 @@ function router (){
     
                 $$("webix__none-content").hide();
                 if ($$("tree").data.order.length == 0){
-                    getDataFields (routes,"cp");
+                    getWorkspace ();
                 }
     
                 if($$("user_auth")){
@@ -532,14 +587,15 @@ function router (){
                 }else {
                     createElements("cp");
                     $$("user_auth").show();
-    
-                    if (userInfo.length > 0){
-                        $$("authName").setValues(userInfo[0].toString());
-                    }
-                    
+
                 }
     
                 $$("tree").closeAll();
+
+                let user = webix.storage.local.get("user");
+                if (user){
+                    $$("authName").setValues(user.name.toString());
+                }
             } catch (error){
                 console.log(error);
                 catchErrorTemplate("015-005", error);
@@ -557,7 +613,7 @@ function router (){
     
                 $$("webix__none-content").hide();
                 if ($$("tree").data.order.length == 0){
-                    getDataFields (routes,"userprefs");
+                    getWorkspace ();
                 }
     
                 if ($$("userprefs")){
@@ -588,12 +644,17 @@ function router (){
 
 
                     $$("userprefs").show();
-                    if (userInfo.length > 0){
-                        $$("userprefsName").setValues(userInfo[0].toString());
-                    }
+
+                }
+
+                let user = webix.storage.local.get("user");
+                if (user){
+                    $$("userprefsName").setValues(user.name.toString());
                 }
     
                 $$("tree").closeAll();
+
+       
             } catch (error){
                 console.log(error);
                 catchErrorTemplate("016-005", error);
@@ -613,7 +674,7 @@ function router (){
 
 
                 if ($$("tree").data.order.length == 0){
-                    getDataFields (routes);
+                    getWorkspace ();
                 }
     
                 if($$("treeTempl")){
@@ -670,6 +731,5 @@ function router (){
 export {
     router,
     createElements,
-    removeElements,
-    tableNames
+    removeElements
 };

@@ -29,6 +29,10 @@ function tabbarClick (id){
     try{
         if (id =="editFormPopupLib"){
 
+            if($$("popupFilterClearBtn").isVisible()){
+                $$("popupFilterClearBtn").hide();
+            }
+
             if ($$("filterEditLib").getValue() !== "" ){
                 
                 btnSubmitState ("enable");
@@ -45,6 +49,10 @@ function tabbarClick (id){
         }
 
         if (id =="editFormScroll"){
+     
+            if(!($$("popupFilterClearBtn").isVisible())){
+                $$("popupFilterClearBtn").show();
+            }
             let checkboxes = $$("editFormPopup").getValues();
             let counter = 0;
             
@@ -267,6 +275,7 @@ function popupSubmitBtn (){
                 }
                 
             });
+
             if (!(visibleElements)){
                 if (!($$("filterEmptyTempalte").isVisible())){
                     $$("filterEmptyTempalte").show();
@@ -277,7 +286,7 @@ function popupSubmitBtn (){
                         $$("filterLibrarySaveBtn").disable();
                     }
                 } 
-            }
+            } 
 
             $$("popupFilterEdit").destructor();
             setLogValue("success","Рабочая область фильтра обновлена");
@@ -337,6 +346,26 @@ function editFiltersBtn (){
 
                 if ( $$("filterEditLib").data.options.length == 0 ){
                     $$("filterEditLib").addOption({"id":"radioNoneContent",disabled:true, "value":"Сохранённых шаблонов нет"})
+                }
+                let visibleElements=0;
+    
+                Object.values($$("filterTableForm").elements).forEach(function(el,i){
+                    if (!(el.config.hidden)){
+                        visibleElements++;
+                    }
+                    
+                });
+    
+                if (!(visibleElements)){
+                    if (!($$("filterEmptyTempalte").isVisible())){
+                        if($$("popupFilterClearBtn").isEnabled()){
+                            $$("popupFilterClearBtn").disable();
+                        }
+                    } 
+                } else {
+                    if(!($$("popupFilterClearBtn").isEnabled())){
+                        $$("popupFilterClearBtn").enable();
+                    }
                 }
             }
 
@@ -475,7 +504,21 @@ function editFiltersBtn (){
                                         },
                                         click:popupSubmitBtn
                                     },
-
+                                    {width:5},
+                                    {   view:"button",
+                                        id:"popupFilterClearBtn",
+                                        width:110,
+                                        height:48,
+                                        css:"webix_secondary",
+                                        disabled:true,
+                                        value:"Сбросить", 
+                                        on: {
+                                            onAfterRender: function () {
+                                                this.getInputNode().setAttribute("title","Все фильтры будут очищены и удалены");
+                                            },
+                                        },
+                                        click:clearPopupBtn
+                                    },
                                     {   view:"button",
                                         css:"webix_danger",
                                         id:"editFormPopupLibRemoveBtn",
@@ -595,6 +638,7 @@ function editFiltersBtn (){
                                         if(!($$("popupFilterSubmitBtn").isEnabled())){
                                             $$("popupFilterSubmitBtn").enable();
                                         }
+
                                     } else {
                                         if($$("popupFilterSubmitBtn").isEnabled()){
                                             $$("popupFilterSubmitBtn").disable();
@@ -706,7 +750,7 @@ function editFiltersBtn (){
                             value:1,
                             on:{
                                 onChange:function(){
-                                    checkboxOnChange (el); 
+                                    checkboxOnChange (el);
                                 }
                             } 
                         }
@@ -784,10 +828,41 @@ function resetFilterBtn (){
 
                 let filterCountRows = $$("table").count();
                 $$("table-idFilterElements").setValues(filterCountRows.toString());
-                setLogValue("success", "Фильтры очищены");
+              
                 if ($$("tableFilterPopup") && $$("tableFilterPopup").isVisible()){
                     $$("tableFilterPopup").hide();
                 }
+
+                let inputs = document.querySelectorAll(".webix_filter-inputs");
+    
+                inputs.forEach(function(elem,i){
+            
+                    if (!(elem.classList.contains("webix_hide-content"))){
+                        elem.classList.add("webix_hide-content");
+                    }
+                });
+            
+                $$("inputsFilter").getChildViews().forEach(function(el,i){
+                    let inputId = el._collection[0].cols[0].id;
+                    $$(inputId).hide();
+            
+                    if($$(inputId+"_container-btns") && $$(inputId+"_container-btns").isVisible()){
+                        $$(inputId+"_container-btns").hide();
+                    }
+            
+                });
+             
+                if ($$("filterLibrarySaveBtn").isEnabled()){
+                    $$("filterLibrarySaveBtn").disable();
+                }
+            
+                if (!($$("filterEmptyTempalte").isVisible())){
+                    $$("filterEmptyTempalte").show();
+                    $$("filterEmptyTempalte").refresh();
+                }
+
+                $$("resetFilterBtn").disable();
+                setLogValue("success", "Фильтры очищены");
             },
             error:function(text, data, XmlHttpRequest){
                 ajaxErrorTemplate("004-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
@@ -1188,6 +1263,13 @@ function filterLibraryBtn (){
     }
 }
 
+function clearPopupBtn (){
+
+    $$("popupFilterEdit").destructor();
+    resetFilterBtn ();
+
+}
+
 function filterForm (){
     return {id:"filterTableBarContainer", hidden:true, rows:[
             {id:"editFilterBarAdaptive", rows:[
@@ -1198,7 +1280,6 @@ function filterForm (){
                     },
                     {
                         view:"button",
-                    // id:"buttonClosePopupTableEdit",
                         css:"webix_close-btn",
                         type:"icon",
                         hotkey: "esc",
@@ -1330,120 +1411,13 @@ function filterForm (){
             ]}
     ]};
 }
-//let filterForm;
+
+
+
 try {
    
 
-    // filterForm =  {   
-    //     view:"form", 
-    //     hidden:true,
-    //     id:"filterTableForm",
-    //     minHeight:350,
-    //     minWidth:210,
-    //     width: 320,
-    //     scroll:true,
-    //     elements:[
-    //         {   id:"form-adaptive",
-    //             minHeight:48,
-    //             css:"webix_form-adaptive",
-    //             margin:5,
-    //             rows:[
-    //                 {   margin:5, 
-    //                     rows:[
-    //                     {   responsive:"form-adaptive",  
-    //                         margin:5, 
-    //                         cols:[
-    //                             {   view:"button",
-    //                                 value:"Редактор фильтров",
-    //                                 height:48,
-    //                                 minWidth:140, 
-    //                                 click:editFiltersBtn,
-    //                                 on: {
-    //                                     onAfterRender: function () {
-    //                                         this.getInputNode().setAttribute("title","Добавить/удалить фильтры");
-    //                                     },
-    //                                 },
-    //                             },
-    //                             {   view:"button",
-    //                                 id:"resetFilterBtn",
-    //                                 disabled:true,
-    //                                 height:48,
-    //                                 minWidth:50,
-    //                                 width:65,
-    //                                 hotkey: "shift+esc",
-    //                                 css:"webix_danger", 
-    //                                 type:"icon", 
-    //                                 icon:"wxi-trash", 
-    //                                 click:resetFilterBtn,
-    //                                 on: {
-    //                                     onAfterRender: function () {
-    //                                         this.getInputNode().setAttribute("title", "Сбросить фильтры");
-    //                                     }
-    //                                 } 
-    //                             },
-    //                         ],
-    //                     },
-    //                     ]
-    //                 },
-
-    //                 {   id:"btns-adaptive",
-    //                     css:{"margin-top":"5px!important"},
-                        
-    //                     rows:[
-    //                         {   responsive:"btns-adaptive", 
-    //                             margin:5, 
-    //                             cols:[
-    //                                 {   view:"button",
-    //                                     id:"btnFilterSubmit",
-    //                                     height:48,
-    //                                     minWidth:70, 
-    //                                     css:"webix_primary",
-    //                                     hotkey: "Enter",
-    //                                     disabled:true,
-    //                                     value:"Применить фильтры", 
-    //                                     click:filterSubmitBtn,
-                                    
-    //                                 },
-    //                                 {   view:"button",
-    //                                     id:"filterLibrarySaveBtn",
-    //                                     disabled:true,
-    //                                     height:48,
-    //                                     minWidth:50,
-    //                                     width:65,
-    //                                     hotkey: "shift+esc",
-    //                                     type:"icon", 
-    //                                     icon:"wxi-file", 
-    //                                     click:filterLibraryBtn,
-    //                                     on: {
-    //                                         onAfterRender: function () {
-    //                                             this.getInputNode().setAttribute("title", "Сохранить шаблон с полями в библиотеку");
-    //                                         }
-    //                                     } 
-    //                                 },
-                            
-    //                             ]
-    //                         },
-    //                         {height:10},
-
-    //                         {   id:"filterEmptyTempalte",
-    //                             template:"<div style='color:#858585;font-size:13px!important'>Добавьте фильтры из редактора</div>", 
-    //                             borderless:true
-    //                         }
-    //                     ]
-    //                 }
-    //             ]
-    //         },
-    //     ],
-    //     rules:{
-    //         $all:webix.rules.isNotEmpty
-    //     },
-
-
-    //     ready:function(){
-    //         this.validate();
-    //     },
-
-    // };
+   
 }catch(error){
     console.log(error);
     catchErrorTemplate("004-003", error);
