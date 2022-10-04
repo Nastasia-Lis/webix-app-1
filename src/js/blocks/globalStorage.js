@@ -12,7 +12,8 @@ function getTableNames (content){
 
 
 function checkNotAuth (err){
-    if (err.status === 401 && window.location.pathname !== "/index.html"){
+    console.log('kkk')
+    if (err.status === 401 && window.location.pathname !== "/index.html"  && window.location.pathname !== "/init/default/spaw/"){
         Backbone.history.navigate("/", { trigger:true});
     }
 }
@@ -37,7 +38,7 @@ function getData (fileName){
                     err.responseURL + 
                     " ( Подробности: " + err.responseText+ ") "
                 );
-
+              
                 checkNotAuth (err);
             }
         );
