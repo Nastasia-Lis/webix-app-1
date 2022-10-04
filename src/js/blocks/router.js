@@ -269,9 +269,10 @@ function getWorkspace (){
 
                 $$("tree").clearAll();
                 $$("tree").parse(menuTree);
-
-                $$("button-context-menu").config.popup.data = menuHeader;
-                $$("button-context-menu").enable();
+                if ($$("button-context-menu").config.popup.data !== undefined){
+                    $$("button-context-menu").config.popup.data = menuHeader;
+                    $$("button-context-menu").enable();
+                }
             } catch (err){
                 console.log(err);
                 setLogValue("error","generateMenuTree: "+err );
@@ -368,7 +369,7 @@ function router (){
         index:function(){
             async function getAuth () {
 
-                if (!STORAGE.whoami){
+                if (!STORAGE.whoami ){
                     await getData("whoami"); 
                 }
         
@@ -397,73 +398,136 @@ function router (){
    
         }, 
         tree: function(id){
-         
 
+            function notFoundPopup (){
+                setTimeout(function(){
+                    webix.ui({
+                        view:"popup",
+                        id:"popupNotFound",
+                        css:"webix_popup-prev-href",
+                        width:340,
+                        height:125,
+                        position:"center",
+                        body:{
+                            rows:[
+                            {rows: [ 
+                                { cols:[
+                                {template:"Что-то пошло не так...", width:250,css:"webix_template-not-found", borderless:true, height:20 },
+                                {},
+                                {
+                                    view:"button",
+                                    id:"buttonClosePopup",
+                                    css:"webix_close-btn",
+                                    type:"icon",
+                                    width:35,
+                                   
+                                    icon: 'wxi-close',
+                                    click:function(){
+                                        $$("popupNotFound").hide();
+                                    }
+                                },
+                                ]},
+                                {   template:"Страница не найдена",
+                                    css:"webix_template-not-found-descr", 
+                                    borderless:true, 
+                                    height:35 },
+                                {
+                                    view:"button",
+                                    css:"webix_btn-not-found-back",
+                                    height:46,
+                                    value:"Вернуться на главную",
+                                    click:function(){
+                                        if ($$("popupNotFound")){
+                                            $$("popupNotFound").destructor();
+                                        }
+                                        
+                                        Backbone.history.navigate("content", { trigger:true});
+                                        window.location.reload();
+                                       
+                                    }
+                                },
+                                {height:20}
+                            ]}]
+                            
+                        },
+
+                    }).show();
+                }, 1500);
+            }
+            function showTableData (){
+                let fieldsData;
+                let checkFound = false;
+                fieldsData = STORAGE.fields.content;
+            
+            
+                Object.values(fieldsData).forEach(function(field,i){
+                  
+                    if (Object.keys(fieldsData)[i] == id){
+                        checkFound=true;
+                        if (field.type == "dbtable" || 
+                            field.type == "tform"   || 
+                            field.type == "dashboard"){
+                            
+                            if ($$("webix__none-content").isVisible()){
+                                $$("webix__none-content").hide();
+                            }
+                            if (field.type == "dbtable"){
+                                if ($$("tables")){
+                                    $$("tables").show();
+                                }
+                                getInfoTable ("table", id);
+                                
+                            } else if (field.type == "tform"){
+                                if ($$("forms")){
+                                    $$("forms").show();
+                                }
+                                getInfoTable ("table-view", id);
+                            } else if (field.type == "dashboard"){
+                                if ($$("dashboards")){
+                                    $$("dashboards").show();
+                                }
+                                getInfoDashboard(id);
+                            }
+                            
+                        } 
+                    }
+                });
+
+                if (!checkFound){
+                    notFoundPopup ();
+                }
+            }
+            
+            function setTableName (){
+
+                if ($$("table-templateHeadline") ){
+                    
+                    STORAGE.tableNames.forEach(function(el,i){
+                        if (el.id == id){
+                            $$("table-templateHeadline").setValues(el.name);
+                        }
+                        
+                    });
+                } 
+                
+                if ($$("table-view-templateHeadline")){
+                    STORAGE.tableNames.forEach(function(el,i){
+                        if (el.id == id){
+                            $$("table-view-templateHeadline").setValues(el.name);
+                        }
+                        
+                    });
+                }
+            }
             async function getTableData (){
 
-                function setTableName (){
-
-                    if ($$("table-templateHeadline") ){
-                        
-                        STORAGE.tableNames.forEach(function(el,i){
-                            if (el.id == id){
-                                $$("table-templateHeadline").setValues(el.name);
-                            }
-                            
-                        });
-                    } 
-                    
-                    if ($$("table-view-templateHeadline")){
-                        STORAGE.tableNames.forEach(function(el,i){
-                            if (el.id == id){
-                                $$("table-view-templateHeadline").setValues(el.name);
-                            }
-                            
-                        });
-                    }
-                }
         
                 if (!STORAGE.fields){
                     await getData("fields"); 
                 }
-
+             
                 if (STORAGE.fields){
-                    let fieldsData;
-                
-                    fieldsData = STORAGE.fields.content;
-                
-                
-                    Object.values(fieldsData).forEach(function(field,i){
-                        
-                        if (Object.keys(fieldsData)[i] == id){
-                            if (field.type == "dbtable" || 
-                                field.type == "tform"   || 
-                                field.type == "dashboard"){
-                                
-                                if ($$("webix__none-content").isVisible()){
-                                    $$("webix__none-content").hide();
-                                }
-                                if (field.type == "dbtable"){
-                                    if ($$("tables")){
-                                        $$("tables").show();
-                                    }
-                                    getInfoTable ("table", id);
-                                    
-                                } else if (field.type == "tform"){
-                                    if ($$("forms")){
-                                        $$("forms").show();
-                                    }
-                                    getInfoTable ("table-view", id);
-                                } else if (field.type == "dashboard"){
-                                    if ($$("dashboards")){
-                                        $$("dashboards").show();
-                                    }
-                                    getInfoDashboard(id);
-                                }
-                                
-                            } 
-                        }
-                    });
+                    showTableData ();
                     setTableName ();
                 }
             }
@@ -474,79 +538,19 @@ function router (){
                 $$("tree").attachEvent("onAfterLoad", function () {
                 let parentId;
 
-                
-                
-                
-                
-              
-            
                 if ($$("tree").getItem(id)){
                   
                     parentId = $$("tree").getParentId(id);
                     $$("tree").open(parentId);
                     $$("tree").select(id);
-
+                 
                 } else if (!STORAGE.fields) {
                     getTableData ();
-             
-                    //setTableName ();
-                } else {
-                 
-                    setTimeout(function(){
-                        webix.ui({
-                            view:"popup",
-                            id:"popupNotFound",
-                            css:"webix_popup-prev-href",
-                            width:340,
-                            height:125,
-                            position:"center",
-                            body:{
-                                rows:[
-                                {rows: [ 
-                                    { cols:[
-                                    {template:"Что-то пошло не так...", width:250,css:"webix_template-not-found", borderless:true, height:20 },
-                                    {},
-                                    {
-                                        view:"button",
-                                        id:"buttonClosePopup",
-                                        css:"webix_close-btn",
-                                        type:"icon",
-                                        width:35,
-                                       
-                                        icon: 'wxi-close',
-                                        click:function(){
-                                            $$("popupNotFound").hide();
-                                        }
-                                    },
-                                    ]},
-                                    {   template:"Страница не найдена",
-                                        css:"webix_template-not-found-descr", 
-                                        borderless:true, 
-                                        height:35 },
-                                    {
-                                        view:"button",
-                                        css:"webix_btn-not-found-back",
-                                        height:46,
-                                        value:"Вернуться на главную",
-                                        click:function(){
-                                            if ($$("popupNotFound")){
-                                                $$("popupNotFound").destructor();
-                                            }
-                                            
-                                            Backbone.history.navigate("content", { trigger:true});
-                                            window.location.reload();
-                                           
-                                        }
-                                    },
-                                    {height:20}
-                                ]}]
-                                
-                            },
-
-                        }).show();
-                    }, 1500);
-                }
-
+            
+                } else if (STORAGE.fields){
+                    showTableData ();
+                    setTableName ();
+                } 
                 
                 });
             }

@@ -1,6 +1,5 @@
 import {getComboOptions} from './content.js';
 import {headerContextId} from '../components/header.js';
-import {tableNames} from "./router.js";
 import {catchErrorTemplate,ajaxErrorTemplate,setLogValue} from "./logBlock.js";
 import {modalBox, popupExec} from "./notifications.js";
 import  {STORAGE,getData} from "./globalStorage.js";
@@ -10,17 +9,17 @@ let currId;
 //let editTableBar;
 
 function getCurrId (){
-    let itemTreeId = $$("tree").getSelectedItem().id;
-    if ( itemTreeId.length == 0){
-        currId=headerContextId;
-    } else {
-        if (itemTreeId.includes("-single")){
-            let singleIndex = itemTreeId.search("-single");
-            itemTreeId = itemTreeId.slice(0,singleIndex)
+    if ($$("tree").getSelectedItem() !== undefined){
+        let itemTreeId = $$("tree").getSelectedItem().id;
+        if ( itemTreeId.length == 0){
+            currId=headerContextId;
+        } else {
+            currId=itemTreeId;
         }
-        
-        currId=itemTreeId;
-        
+    } else {
+        let href = window.location.pathname;
+        let index = href.lastIndexOf('/');
+        currId = href.slice(index+1);
     }
 }
 
@@ -34,14 +33,12 @@ function validateProfForm (){
         let values = $$("editTableFormProperty").getValues();
         errors[el] = {};
  
-        if (values[el].length <= propElement.length ){
+        if (values[el].length > propElement.length ){
             errors[el].length = "Длина строки не должна превышать "+propElement.length+" симв.";
         } else {
             errors[el].length = null;
         }
 
-
-       
         if (propElement.notnull==true && values[el].length == 0 ){
             errors[el].notnull = "Поле не может быть пустым";
         } else {
@@ -81,14 +78,16 @@ function validateProfForm (){
 
 //--- bns
 function saveItem(addBtnClick=false, modalSidebar=false, modalTable=false){    
+
     try{    
         getCurrId ();
         let itemData = $$("editTableFormProperty").getValues();   
-
+         
         if (!(validateProfForm().length)){
-            if(Object.values( $$("editTableFormProperty").getValues()).length){
+
+            //if(Object.values( $$("editTableFormProperty").getValues()).length){
                 if( itemData.id ) {
-                    webix.ajax().put("/init/default/api/"+currId+"/"+itemData.id, itemData, {
+                    webix.ajax().put("/init/default/api/"+currId+"/"+itemData.id, notNullData (itemData), {
                         success:function(text, data, XmlHttpRequest){
                             data = data.json();
 
@@ -131,10 +130,6 @@ function saveItem(addBtnClick=false, modalSidebar=false, modalTable=false){
                                 }
 
                                 setLogValue("success","Данные сохранены");
-            
-                                // if (modalBox){
-                                //     $$("tree").select(id);
-                                // }
 
                             } if (data.err_type == "e"){
                                 setLogValue("error",data.error);
@@ -150,9 +145,9 @@ function saveItem(addBtnClick=false, modalSidebar=false, modalTable=false){
                     });
                 }    
         
-            } else {
-                setLogValue("error","Заполните пустые поля");
-            }
+            // } else {
+            //     setLogValue("error","Заполните пустые поля");
+            // }
         } else {
             validateProfForm ().forEach(function(el,i){
 
@@ -225,41 +220,48 @@ function addItem () {
 
 }
 
-function saveNewItem (){
+function saveNewItem (modalTable=false){
     try{
         getCurrId ();
-        
-        if(Object.values( $$("editTableFormProperty").getValues()).length) {
+     
+        if (!(validateProfForm().length)){
             
             let newValues = $$("editTableFormProperty").getValues();
 
             webix.ajax().post("/init/default/api/"+currId, newValues,{
                 success:function(text, data, XmlHttpRequest){
                     data = data.json();
-                 
-                    newValues.id = data.content.id;
+                    if (data.content.id !== null){
+                        newValues.id = data.content.id;
 
-                    $$("table").add(newValues);
-                    $$("editTableFormProperty").clear();
-                    defaultStateForm ();
-                 
-   
-                    $$("table-newAddBtnId").enable();
-                    if ($$("EditEmptyTempalte")&&!($$("EditEmptyTempalte").isVisible())){
-                        $$("EditEmptyTempalte").show();
-                    }
-
-                    
-                    $$("editTableFormProperty").config.dirty = false;
-                    $$("editTableFormProperty").refresh();
-
-                    if (data.err_type == "i"){
-                        if (window.innerWidth < 1200 && $$("tableEditPopup")){
-                            $$("tableEditPopup").hide();
+                        $$("table").add(newValues);
+                        if (!modalTable){
+                            $$("editTableFormProperty").clear();
+                            defaultStateForm ();
+                        
+                        
+                            $$("table-newAddBtnId").enable();
+                            
+                            $$("editTableFormProperty").config.dirty = false;
+                            $$("editTableFormProperty").refresh();
                         }
-                        setLogValue("success","Данные успешно добавлены");
-                    } else if (data.err_type == "e"){
-                        setLogValue("error",data.error);
+                        if (data.err_type == "i"){
+                            if (window.innerWidth < 1200 && $$("tableEditPopup")){
+                                $$("tableEditPopup").hide();
+                            }
+                            setLogValue("success","Данные успешно добавлены");
+                        } else if (data.err_type == "e"){
+                            setLogValue("error",data.error);
+                        }
+                    } else {
+
+                        let errs = data.content.errors;
+                        let msg = "";
+                        Object.values(errs).forEach(function(err,i){
+                            msg +=err+" (Поле: "+Object.keys(errs)[i] +"); ";
+                        });
+
+                        setLogValue("error",msg);
                     }
                     
                 },
@@ -270,10 +272,23 @@ function saveNewItem (){
                 console.log(error);
                 ajaxErrorTemplate("003-001",error.status,error.statusText,error.responseURL);
             });
-           
+
         } else {
-            setLogValue("error","Форма пуста");
+            validateProfForm ().forEach(function(el,i){
+
+                let nameEl;
+
+                $$("table").getColumns().forEach(function(col,i){
+                    if (col.id == el.nameCol){
+                        nameEl = col.label;
+                    }
+                });
+
+                setLogValue("error",el.textError+" (Поле: "+nameEl+")");
+            });
+           
         }
+
     }catch (error){
         catchErrorTemplate("003-000", error);
     }
@@ -281,6 +296,7 @@ function saveNewItem (){
 }
 
 function removeItem() {
+ 
     try{
         getCurrId ();
         popupExec("Запись будет удалена").then(
@@ -289,7 +305,6 @@ function removeItem() {
                 $$( "table" ).remove($$( "table" ).getSelectedId().id);
                
                 let formValues = $$("editTableFormProperty").getValues();
-                
                 webix.ajax().del("/init/default/api/"+currId+"/"+formValues.id+".json", formValues,{
                     success:function(text, data, XmlHttpRequest){
                         data = data.json();
@@ -300,6 +315,7 @@ function removeItem() {
                         }
                         $$("editTableFormProperty").config.dirty = false;
                         $$("editTableFormProperty").refresh();
+                        
                         
                         if (data.err_type == "i"){
                             if (window.innerWidth < 1200 && $$("tableEditPopup")){
@@ -312,16 +328,16 @@ function removeItem() {
                        
                     },
                     error:function(text, data, XmlHttpRequest){
-                        ajaxErrorTemplate("003-002",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                        ajaxErrorTemplate("Ошибка удаления записи: ",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
                     }
                 }).catch(error => {
                     console.log(error);
-                    ajaxErrorTemplate("003-002",error.status,error.statusText,error.responseURL);
+                    ajaxErrorTemplate("Ошибка удаления записи: ",error.status,error.statusText,error.responseURL);
                 });
                 
         });
     }catch (error){
-        catchErrorTemplate("003-000", error);
+        catchErrorTemplate("Ошибка удаления записи: ", error);
     }
     
 }
@@ -334,6 +350,16 @@ function removeItem() {
 
 //--- components
 
+function notNullData (itemData){
+    let validateData = {};
+    Object.values(itemData).forEach(function(el,i){
+        if (el.length !== 0){
+            validateData[Object.keys(itemData)[i]] = el;
+        }
+    });
+    return validateData;
+}
+
 function createEditFields (parentElement) {
 
 
@@ -344,8 +370,42 @@ function createEditFields (parentElement) {
             let inputsArray = [];
   
             columnsData.forEach((el,i) => {
+
+                function defValue (){
+
+                    function createGuid() {  
+                        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {  
+                            var r = Math.random()*16|0, v = c === 'x' ? r : (r&0x3|0x8);
+                            return v.toString(16);  
+                        });  
+                    }
+
+                    function dateFormatting (){
+                        return new Date(el.default);
+                    }
+
+                    let formatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
+
+                    let defVal;
+
+                    if (el.default === "now"){
+                        defVal = new Date();
+                    } else if (Date.parse(new Date(el.default)) && el.default.length > 10 ){
+                        defVal = formatData(dateFormatting ());
+                    } else if (el.default.includes("make_guid")) {
+                        defVal = createGuid();
+                    }  else if (el.default == "False"){
+                        defVal = 2;
+                    } else if (el.default == "True"){
+                        defVal = 1;
+                    } else if (el.default !== "None"){
+                        defVal = el.default;
+                    }
+
+                    return defVal;
+                }
          
-  
+             
                 if (el.type == "datetime"){
                     inputsArray.push({   
                         id:el.id,
@@ -355,7 +415,7 @@ function createEditFields (parentElement) {
                         unique: el.unique,
                         notnull: el.notnull,
                         length:el.length,
-                        default:el.default,
+                        value: defValue ()
                     });
                 } 
                 
@@ -371,7 +431,7 @@ function createEditFields (parentElement) {
                         unique: el.unique,
                         notnull: el.notnull,
                         length:el.length,
-                        default:el.default,
+                        value: defValue (),
                         options: getComboOptions(findTableId),
                         template:function(obj, common, val, config){
                             let item = config.collection.getItem(obj.value);
@@ -383,30 +443,7 @@ function createEditFields (parentElement) {
 
                 
             } else if (el.type.includes("boolean")) {
-               
-                // inputsArray.push(
-                //     {cols:[
-                //     {   view:"combo",
-                //         placeholder:"Выберите вариант",  
-                //         label:el.label, 
-                //         id:el.id,
-                //         name:el.id, 
-                //         labelPosition:"top",
-                //         options:[
-                //             {id:1, value: "Да"},
-                //             {id:2, value: "Нет"}
-                //         ],
-                //         on:{
-                //             onItemClick:function(){
-                //                 $$(parentElement).clearValidation();
-                //             },
-                //         }
-                //     },
-                    
-                //     ]}
 
-                // );
-                
                 inputsArray.push(
                     {   type:"select",
                         label:el.label, 
@@ -414,7 +451,7 @@ function createEditFields (parentElement) {
                         unique: el.unique,
                         notnull: el.notnull,
                         length:el.length,
-                        default:el.default,
+                        value: defValue (),
                         options:[
                             {id:1, value: "Да"},
                             {id:2, value: "Нет"}
@@ -425,30 +462,6 @@ function createEditFields (parentElement) {
                 );
                 
             } else if (el.type.includes("integer")) {
-
-                // inputsArray.push(
-                //     {cols:[
-                //         {
-                //             view:"text", 
-                //             name:el.id,
-                //             id:el.id, 
-                //             label:el.label, 
-                //             labelPosition:"top",
-                //             invalidMessage:"Поле поддерживает только числовой формат",
-                //             on:{
-                //                 onKeyPress:function(){
-                //                     $$(parentElement).clearValidation();
-                //                 }
-                //             },
-                //             validate:function(val){
-                //                 return !isNaN(val*1);
-                //             }
-                //         },
-                    
-                //     ]}
-
-                // );
-
                 inputsArray.push(
                     {
                         type:"text", 
@@ -457,8 +470,8 @@ function createEditFields (parentElement) {
                         unique: el.unique,
                         notnull: el.notnull,
                         length:el.length,
-                        default:el.default,
-                      
+                        customType:"integer",
+                        value: defValue (),
                         on:{
                             onKeyPress:function(){
                                 $$(parentElement).clearValidation();
@@ -480,7 +493,7 @@ function createEditFields (parentElement) {
                         unique: el.unique,
                         notnull: el.notnull,
                         length:el.length,
-                        default:el.default,
+                        value: defValue (),
                         }
                     );
                 }
@@ -502,7 +515,6 @@ function createEditFields (parentElement) {
                     if (el.type == "combo"){
                         $$("propertyRefbtnsContainer").addView({ 
                             view:"button", 
-                          //  value:"1187", 
                             type:"icon",
                             width:30,
                             height:28,
@@ -623,6 +635,13 @@ function defaultStateForm () {
         $$("editTableFormProperty").hide();
     }
 
+    if ($$("EditEmptyTempalte")&&!($$("EditEmptyTempalte").isVisible())){
+        $$("EditEmptyTempalte").show();
+    }
+
+    if ($$("propertyRefbtnsContainer")){
+        $$("propertyRefbtns").removeView($$("propertyRefbtnsContainer")) 
+    }
 }
 
 //--- components
@@ -647,53 +666,58 @@ function editTableBar (){
                     width:25,
                     icon: 'wxi-close',
                     click:function(){
-                        if($$("table-editForm")){
-                            if($$("table-editForm").isDirty()){
+                        function setDirtyProperty (){
+                            $$("editTableFormProperty").config.dirty = false;
+                            $$("editTableFormProperty").refresh();
+                        }
+
+                        function stateForm (){
+                            $$("table-saveNewBtn").hide();
+                            $$("table-newAddBtnId").enable();
+                            $$("editTableFormProperty").hide();
+                            $$("EditEmptyTempalte").show();
+                            $$("table-delBtnId").disable();
+                            $$("table-saveBtn").hide();
+                        }
+
+
+                        function statePopup (){
+                            $$("editTableFormProperty").clear();
+                            if ($$("tableEditPopup")){
+                                $$("tableEditPopup").hide();
+                            }
+                        }
+                       
+
+                        if($$("editTableFormProperty") && $$("editTableFormProperty").config.dirty){ 
                                 modalBox().then(function(result){
-                                    if (result == 1){
-                                        $$("table-editForm").clear();
-                                        if ($$("tableEditPopup")){
-                                            $$("tableEditPopup").hide();
-                                        }
+                                    if (result == 0){
+                                        setDirtyProperty ();
+                                    } else if (result == 1){
+                                        statePopup ();
+                                        stateForm ();
                                     } else if (result == 2){
-                                        if ($$("table-editForm").validate()){
-                                            if ($$("table-editForm").getValues().id){
-                                                saveItem();
-                                            } else {
-                                                saveNewItem(); 
-                                            }
-                                            $$("table-editForm").clear();
-                                            $$("table-delBtnId").enable();
-                                            if ($$("tableEditPopup")){
-                                                $$("tableEditPopup").hide();
-                                            }
-                                        
+                                 
+                                        if ($$("editTableFormProperty").getValues().id){
+                                            saveItem();
                                         } else {
-                                            setLogValue("error","Заполните пустые поля");
-                                            return false;
+                                            saveNewItem(); 
                                         }
                                         
+                                        statePopup ();
+                                        stateForm ();
                                     }
                                 });
 
-                               
-                            } else {
 
-                                if ( $$("inputsTable")){
-                                    $$("inputsTable").getParentView().removeView($$("inputsTable"))
-                                }
+                        } else {
 
-                                $$("table").filter(false);
-                            
-                                $$("table-delBtnId").disable();
-                                $$("table-saveBtn").hide();
-                                $$("table-saveNewBtn").hide();
+                            $$("table").filter(false);
 
-                                if ($$("tableEditPopup")){
-                                    $$("tableEditPopup").hide();
-                                }
-                                
-                            }
+                            setDirtyProperty ();
+
+                            statePopup ();
+                            stateForm ();
                         }
                     }
                 }
@@ -705,6 +729,7 @@ function editTableBar (){
                 minHeight:350,
                 minWidth:210,
                 width: 320,
+                borderless:true,
                 scroll:true,
                 //borderless:true,
                 elements:[
@@ -773,7 +798,9 @@ function editTableBar (){
                                         height:48,
                                         hotkey: "enter" ,
                                         css:"webix_primary", 
-                                        click:saveNewItem,
+                                        click:function (){
+                                            saveNewItem()
+                                        },
                                     },
                                     {   id:"EditEmptyTempalte",
                                         template:"<div style='color:#858585;font-size:13px!important'>Добавьте новую запись или выберите существующую из таблицы</div>", 
@@ -785,13 +812,15 @@ function editTableBar (){
                         ]
                     },
 
-                    { borderelss:true,   cols:[
+                    {scroll:"y",  cols:[
 
                     {   view:"property",  
                         id:"editTableFormProperty", 
                         css:"webix_edit-table-form-property",
-                        borderelss:true,
                         dirty:false,
+                        tooltip:"Имя: #label#<br> Значение: #value#",
+                        hidden:true,
+                       // scroll:"y",
                         elements:[],
                         on:{
                             onEditorChange:function(id, value){
@@ -801,6 +830,13 @@ function editTableBar (){
 
                                 $$("editTableFormProperty").config.dirty = true;
                                 $$("editTableFormProperty").refresh();
+                            },
+                            onBeforeRender:function (){
+                                let size = this.config.elements.length*28;
+                                if (size && this.$height < size){
+                                    this.define("height", size);
+                                    this.resize();
+                                }
                             },
                             onAfterEditStop:function(state, editor, ignoreUpdate){
     
@@ -822,7 +858,7 @@ function editTableBar (){
                         ]
                     }
 
-                    ]}
+                    ]},
             
                 ],
                 
@@ -856,5 +892,6 @@ export{
     createEditFields,
     defaultStateForm,
     saveItem,
-    saveNewItem
+    saveNewItem,
+    validateProfForm
 };

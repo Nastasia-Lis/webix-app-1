@@ -1,12 +1,8 @@
 import {setLogValue} from './logBlock.js';
 import {catchErrorTemplate,ajaxErrorTemplate} from "./logBlock.js";
-import {setStorageData, setUserLocation} from "./storageSetting.js";
-import {modalBox,popupExec} from "./notifications.js";
+import {setStorageData} from "./storageSetting.js";
+import {modalBox} from "./notifications.js";
 import {createChildFields} from "../components/table.js";
-import { dashboardLayout } from '../components/dashboard.js';
-
-
-
 
 
 function tabbarClick (id){
@@ -344,7 +340,7 @@ function editFiltersBtn (){
                    
                 });
 
-                if ( $$("filterEditLib").data.options.length == 0 ){
+                if ($$("filterEditLib") &&  $$("filterEditLib").data.options.length == 0 ){
                     $$("filterEditLib").addOption({"id":"radioNoneContent",disabled:true, "value":"Сохранённых шаблонов нет"})
                 }
                 let visibleElements=0;
@@ -811,7 +807,15 @@ function editFiltersBtn (){
 function resetFilterBtn (){
     try {
 
-        let itemTreeId = $$("tree").getSelectedItem().id;
+        let itemTreeId;
+
+        if ($$("tree").getSelectedItem()){
+            itemTreeId = $$("tree").getSelectedItem().id;
+        } else {
+            let href = window.location.pathname;
+            let index = href.lastIndexOf("/");
+            itemTreeId = href.slice(index+1);
+        }
 
         webix.ajax("/init/default/api/smarts?query="+itemTreeId+".id >= 0"+"&sorts="+itemTreeId+".id&offset=0",{
             success:function(text, data, XmlHttpRequest){
@@ -841,17 +845,27 @@ function resetFilterBtn (){
                         elem.classList.add("webix_hide-content");
                     }
                 });
-            
+                let childs = [];
                 $$("inputsFilter").getChildViews().forEach(function(el,i){
                     let inputId = el._collection[0].cols[0].id;
                     $$(inputId).hide();
+                    
+                    $$(el.config.id).getChildViews().forEach(function(child,i){
+                        if (child.config.id.includes("child")){
+                            childs.push (child.config.id)
+                        }
+                    });
             
                     if($$(inputId+"_container-btns") && $$(inputId+"_container-btns").isVisible()){
                         $$(inputId+"_container-btns").hide();
                     }
             
                 });
-             
+
+                childs.forEach(function(idChild,i){
+                    $$(idChild).getParentView().removeView($$(idChild));
+                });
+
                 if ($$("filterLibrarySaveBtn").isEnabled()){
                     $$("filterLibrarySaveBtn").disable();
                 }
@@ -884,18 +898,27 @@ function filterSubmitBtn (){
     let values = $$("filterTableForm").getValues();
                              
     let query =[];
+    let counter = 0;
+    
 
     function getOperationVal (value, filterEl,el,condition, position, parentIndex=false){
        
-        let itemTreeId = $$("tree").getSelectedItem().id;
+        let itemTreeId ;
+
+        if ($$("tree").getSelectedItem()){
+            itemTreeId = $$("tree").getSelectedItem().id;
+        } else {
+            let href = window.location.pathname;
+            let index = href.lastIndexOf("/");
+            itemTreeId = href.slice(index+1);
+        }
+
         let operationValue = $$(el+"-btnFilterOperations").config.value;
         try {
             if (position == "parent"){
                 if(parentIndex){
-
                     if (operationValue == "="){
-                        query.push("+and+"+itemTreeId+"."+filterEl+"+=+"+value);
-
+                       query.push("+and+"+itemTreeId+"."+filterEl+"+=+"+value);
                     } else if (operationValue == "!="){
                         query.push("+and+"+itemTreeId+"."+filterEl+"+!=+"+value);
 
@@ -978,7 +1001,9 @@ function filterSubmitBtn (){
         let filterEl;
         let postFormatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
         let value;
+        let firstItem = 0;
         try{
+
             Object.keys(values).sort().forEach(function(el,i){
                 filterEl = el;
             
@@ -998,13 +1023,22 @@ function filterSubmitBtn (){
                         filterEl = el.slice(0,filterEl)
                     }
 
-                    if(!(el.includes("condition"))&&values[el]!==""&&el!=="selectAll"&&!(el.includes("child"))){
-
-                        if (i > 0){
+                    if(
+                        !(el.includes("condition")) &&
+                        !(el.includes("child"    )) &&
+                        values[el]!== ""            &&
+                        el        !== "selectAll"   &&
+                        $$(el).isVisible()
+                    ){
+                        
+                        
+                        if (firstItem > 0){
                             getOperationVal (value,filterEl,el,"and","parent",true);
                         }else {
                             getOperationVal (value,filterEl,el,"and","parent");
                         }
+
+                        firstItem++;
                         
                     } else if (el.includes("child")){
                         if (el.includes("operAnd")){
@@ -1013,7 +1047,6 @@ function filterSubmitBtn (){
                         } else if (el.includes("operOr")){
                             getOperationVal (value,filterEl,el,"or","child");
                         }
-                    
                     }
                 }
 
@@ -1022,7 +1055,6 @@ function filterSubmitBtn (){
             console.log(error);
             catchErrorTemplate("004-000", error);
         }
- 
 
         webix.ajax("/init/default/api/smarts?query="+query.join(""),{
             success:function(text, data, XmlHttpRequest){

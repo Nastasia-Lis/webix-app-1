@@ -1,4 +1,4 @@
-import {defaultStateForm,createEditFields,saveItem,saveNewItem} from "../blocks/editTableForm.js";
+import {defaultStateForm,createEditFields,saveItem,saveNewItem,validateProfForm} from "../blocks/editTableForm.js";
 import {catchErrorTemplate,ajaxErrorTemplate} from "../blocks/logBlock.js";
 import {modalBox,popupExec} from "../blocks/notifications.js";
 import {setLogValue} from '../blocks/logBlock.js';
@@ -743,8 +743,7 @@ function editBtnClick(idBtnEdit) {
                     $$("editTableBarHeadline").show();
                 }
 
-                let size = window.innerWidth - 500;
-
+                let size = window.innerWidth*0.7;
                 if( $$("editTableBarAdaptive").$width > 200){
                     $$("editTableBarAdaptive").config.width = size;
                     $$("editTableBarAdaptive").resize();
@@ -754,8 +753,9 @@ function editBtnClick(idBtnEdit) {
                
             } else {
                 $$("tableEditPopup").show();
-                let size = window.innerWidth - 500;
 
+                let size = window.innerWidth*0.7;
+          
                 if( $$("editTableBarAdaptive").$width > 200){
                     $$("editTableBarAdaptive").config.width = size;
                     $$("editTableBarAdaptive").resize();
@@ -918,7 +918,18 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
     };
 }
 
+function getItemId (){
+    let id;
+    if ($$("tree").getSelectedItem()){
+        id = $$("tree").getSelectedItem().id;
+    } else {
+        let href = window.location.pathname;
+        let index = href.lastIndexOf("/");
+        id = href.slice(index+1);
 
+    }
+    return id;
+}
 
 function table (idTable, onFunc, editableParam=false) {
     return {
@@ -944,7 +955,8 @@ function table (idTable, onFunc, editableParam=false) {
                     popupExec("Запись будет удалена").then(
                         function(){
                             let formValues = $$(idTable).getItem(id);
-                            let itemTreeId = $$("tree").getSelectedItem().id;
+                            let itemTreeId = getItemId () ;
+
                             webix.ajax().del("/init/default/api/"+itemTreeId+"/"+formValues.id+".json", formValues,{
                                 success:function(){
                                     $$(idTable).remove($$(idTable).getSelectedId());
@@ -1025,18 +1037,29 @@ function table (idTable, onFunc, editableParam=false) {
     };
 }
 
-
+function setCounterVal (){
+    $$("table-findElements").setValues($$("table").count().toString());
+}
 
 //----- table edit parameters
 let onFuncTable = {
     onBeforeLoad:function(){
         this.showOverlay("Загрузка...");
     },
+ 
+    // onLoadError:function (){
+    //     $$("table").showOverlay("Ошибка при загрузке данных");
+    // },
     
-    onAfterEditStop:function(state, editor, ignoreUpdate){
+    onBeforeEditStop:function(state, editor, ignoreUpdate){
         try {
             if(state.value != state.old){
-                $$(editor.column).setValue(state.value);
+                let idRow = editor.row;
+                let col = editor.column;
+                let val =  state.value ;
+                
+                $$("table").updateItem(idRow, {[col]:val});
+                $$("editTableFormProperty").setValues($$("table").getSelectedItem());
                 saveItem();
             }
         } catch (error){
@@ -1046,137 +1069,291 @@ let onFuncTable = {
     },
 
     onAfterSelect(id){
-        try {
+        function adaptiveEditTableBtn (){
             if ($$("table-editTableBtnId").isVisible() && window.innerWidth > 1200){
                 $$("table-editTableBtnId").hide();
             }
+        }
 
-            if ($$("table-newAddBtnId")){
-                $$("table-newAddBtnId").enable();
-            }
-           
-            if ($$("EditEmptyTempalte")){
-                $$("EditEmptyTempalte").hide();
-            }
-
-            if(!($$("table-editForm").isVisible())){
-                $$("table-editForm").show();
-                $$("filterTableForm").hide();
+        function filterTableHide (){
+            try{
+                if ($$("filterTableBarContainer") && $$("filterTableBarContainer").isVisible()){
+                    $$("filterTableBarContainer").hide();
+                }
+                if ($$("filterTableForm") && $$("filterTableForm").isVisible()){
+                    $$("filterTableForm").hide();
+                }
                 let btnClass = document.querySelector(".webix_btn-filter");
                 btnClass.classList.add("webix_secondary");
                 btnClass.classList.remove("webix_primary");
-                
+            } catch (err){
+                setLogValue("error","table filterTableHide: "+err);
             }
+        }
 
-            if ($$("filterTableBarContainer") && $$("filterTableBarContainer").isVisible()){
-                $$("filterTableBarContainer").hide();
+        function hideEmptyTemplate (){
+            if ($$("EditEmptyTempalte") && $$("EditEmptyTempalte").isVisible()){
+                $$("EditEmptyTempalte").hide();
             }
+        }
 
-            if ($$("editTableBarContainer") && !($$("editTableBarContainer").isVisible())){
-                $$("editTableBarContainer").show();
+        function statePutEditForm (){
+            try{
+                if ($$("editTableBarContainer") && !($$("editTableBarContainer").isVisible())){
+                    $$("editTableBarContainer").show();
+                }
+
+                if ($$("table-newAddBtnId")){
+                    $$("table-newAddBtnId").enable();
+                }
+
+                hideEmptyTemplate ();
+
+                if(!($$("table-editForm").isVisible())){
+                    $$("table-editForm").show();
+                    filterTableHide ();
+                }
+            } catch (err){
+                setLogValue("error","table statePutEditForm: "+err);
             }
-            if (window.innerWidth < 1200){
+        }
 
-                if (!($$("tableEditPopup"))){
-                    webix.ui({
-                        view:"popup",
-                        css:"webix_popup-table-container webix_popup-config",
-                        modal:true,
-                        id:"tableEditPopup",
-                        escHide:true,
-                        position:"center",
-                        body:{
-                            id:"tableEditPopupContainer",rows:[
+        function createEditPopup (){
+            webix.ui({
+                view:"popup",
+                css:"webix_popup-table-container webix_popup-config",
+                modal:true,
+                id:"tableEditPopup",
+                escHide:true,
+                position:"center",
+                body:{
+                    id:"tableEditPopupContainer",rows:[
 
-                            ]
-                        }
-                    }).show();
-                    $$("tableEditPopupContainer").addView($$("editTableBarAdaptive"))
+                    ]
+                }
+            }).show();
+        }
 
-                    if($$("editTableBarHeadline") && !($$("editTableBarHeadline").isVisible())){
-                        $$("editTableBarHeadline").show();
-                    }
+        function initPopup (){
+            try {
               
-                } else {
-                    $$("tableEditPopup").show();
-                   
+                $$("tableEditPopupContainer").addView($$("editTableBarAdaptive"));
+                if($$("editTableBarHeadline") && !($$("editTableBarHeadline").isVisible())){
+                    $$("editTableBarHeadline").show();
                 }
-
-                if ($$("EditEmptyTempalte") && $$("EditEmptyTempalte").isVisible()){
-                    $$("EditEmptyTempalte").hide();
-                }
-
+            } catch (err){
+                setLogValue("error","table initPopup: "+err);
             }
-            
+        }
+
+        function adaptiveEditFormPopup (){
+            try {
+                if (window.innerWidth < 1200){
+
+                    if (!($$("tableEditPopup"))){
+                        
+                        createEditPopup ();
+                        initPopup ();
+
+                    } else {
+                        $$("tableEditPopup").show();
+       
+                        if (!($$("tableEditPopupContainer").getChildViews().length)){
+                            initPopup ();
+                        }
+             
+                    }
+
+                
+                    hideEmptyTemplate ();
+                }
+            } catch (err){
+                setLogValue("error","table adaptiveEditFormPopup: "+err);
+            }
+        }
+        try {
+            adaptiveEditTableBtn ();
+            statePutEditForm ();
+            adaptiveEditFormPopup ();
         
         } catch (error){
             console.log(error);
-            catchErrorTemplate("012-000", error);
+            setLogValue("error","table onAfterSelect: "+error);
         }
 
   
     },
     onBeforeSelect:function(selection, preserve){
         
-
-        let values = $$("table").getItem(selection.id); 
+        let valuesProp = $$("editTableFormProperty").getValues();
+        let currId = getItemId ();
+      
         function toEditForm () {
+            let valuesTable = $$("table").getItem(selection.id); 
             try {
            
                 if ($$("editTableFormProperty") && !($$("editTableFormProperty").isVisible())){
                     $$("editTableFormProperty").show();
                 }
 
+                if (!($$("table-newAddBtnId").isEnabled())){
+                    $$("table-newAddBtnId").enable();
+                }
+
                 $$("editTableFormProperty").config.dirty = false;
                 $$("editTableFormProperty").refresh();
 
-                $$("editTableFormProperty").setValues(values);
+                $$("editTableFormProperty").setValues(valuesTable);
               
                 $$("table-saveNewBtn").hide();
                 $$("table-saveBtn").show();
                 $$("table-delBtnId").enable();
             } catch (error){
                 console.log(error);
-                catchErrorTemplate("012-000", error);
+                setLogValue("error","toEditForm: "+error);
             }
         }
-    
-        if ($$("editTableFormProperty").config.dirty){
-            
-            modalBox().then(function(result){
-                if (result == 1){
-                    toEditForm();
-                    $$("table").select(selection.id);
-                } 
 
-                else if (result == 2){
+        function removePrefBtns (){
+            if ($$("propertyRefbtnsContainer")){
+                $$("propertyRefbtns").removeView($$("propertyRefbtnsContainer")) 
+            }
+        }
 
-                    if ($$("editTableFormProperty").getValues().id){
-                       
-                        saveItem(false,false,true);
-                    } else {
-                        saveNewItem(); 
+        function validateError (){
+            validateProfForm ().forEach(function(el,i){
+
+                let nameEl;
+
+                $$("table").getColumns().forEach(function(col,i){
+                    if (col.id == el.nameCol){
+                        nameEl = col.label;
                     }
-                    toEditForm();
-                    $$("table").select(selection.id);
+                });
 
+                setLogValue("error",el.textError+" (Поле: "+nameEl+")");
+            });
+        }
+
+        function notNullData (itemData){
+            let validateData = {};
+            Object.values(itemData).forEach(function(el,i){
+                if (el.length !== 0){
+                    validateData[Object.keys(itemData)[i]] = el;
                 }
             });
-
-            if (!($$("table-newAddBtnId").isEnabled())){
-                $$("table-newAddBtnId").enable();
-            }
-
-            return false;
-        } else {
-            createEditFields("table-editForm");
-            toEditForm();
-         
+            return validateData;
         }
+
+        function postNewData (){
+            if (!(validateProfForm().length)){
+                
+                webix.ajax().post("/init/default/api/"+currId, valuesProp,{
+                    success:function(text, data, XmlHttpRequest){
+                        data = data.json();
+                        if (data.content.id !== null){
+                            valuesProp.id = data.content.id;
+                            $$("table").add(valuesProp);
+                            toEditForm();
+                            $$("table").select(selection.id);
+                            removePrefBtns ();
+                            setLogValue("success","Данные успешно добавлены");
+                        } else {
+
+                            let errs = data.content.errors;
+                            let msg = "";
+                            Object.values(errs).forEach(function(err,i){
+                                msg +=err+" (Поле: "+Object.keys(errs)[i] +"); ";
+                            });
+
+                            setLogValue("error",msg);
+                        }
+                        
+                    },
+                    error:function(text, data, XmlHttpRequest){
+                        setLogValue("error","table modalBox (post new data): "+XmlHttpRequest.status+" "+XmlHttpRequest.statusText+" "+XmlHttpRequest.responseURL);
+                    }
+                });
+
+
+            } else {
+                validateError ();
+            }
+        }
+
+        function putData (){
+        
+            if (!(validateProfForm().length)){
+
+                if (valuesProp.id){
+                
+                    webix.ajax().put("/init/default/api/"+currId+"/"+valuesProp.id, notNullData (valuesProp), {
+                        success:function(text, data, XmlHttpRequest){
+                            data = data.json();
+                            $$( "table" ).updateItem(valuesProp.id, valuesProp);
+                            toEditForm();
+                            $$("table").select(selection.id);
+                            removePrefBtns ();
+                            if (data.err_type == "i"){
+                                setLogValue("success","Данные сохранены");
+
+                            } if (data.err_type == "e"){
+                                setLogValue("error",data.error);
+                            }
+                        
+                        },
+                        error:function(text, data, XmlHttpRequest){
+                            setLogValue("error","table function putData: "+XmlHttpRequest.status+" "+XmlHttpRequest.statusText+" "+XmlHttpRequest.responseURL);
+                        }
+                    }).catch(error => {
+                        console.log(error);
+                        setLogValue("error","table function putData ajax: "+error.status+" "+error.statusText+" "+error.responseURL);
+                    });
+                }
+
+            } else {
+                validateError ();
+            }
+        }
+       
+        function modalBoxTable (){
+            if ($$("editTableFormProperty").config.dirty){
+                
+                modalBox().then(function(result){
+                    if (result == 1){
+                        toEditForm();
+                        $$("table").select(selection.id);
+                        removePrefBtns ();
+                    } 
+
+                    else if (result == 2){
+                    
+                        if ($$("editTableFormProperty").getValues().id){
+                            putData ();
+                        } else {
+                            postNewData ();
+                        }
+                    }
+
+                });
+
+                return false;
+            } else {
+                createEditFields("table-editForm");
+                toEditForm();
+            }
+        }
+
+        modalBoxTable ();
     },
     onAfterLoad:function(){
         try {
             this.hideOverlay();
+
+            if (!this.count()){
+                this.showOverlay("Ничего не найдено");
+            }
+
             defaultStateForm ();
         } catch (error){
             console.log(error);
@@ -1184,33 +1361,52 @@ let onFuncTable = {
         }
     },  
     onAfterDelete: function() {
+        function overlay (){
+            let tableId;
+            if ($$("table").isVisible()){
+                tableId = "table";
+            } else if ($$("table-view").isVisible()){
+                tableId = "table-view";
+            }
+
+            if (!$$(tableId).count()){
+                $$(tableId).showOverlay("Ничего не найдено");
+            }
+            if ($$(tableId).count()){
+                $$(tableId).hideOverlay();
+            }
+        }
         try {
-            $$("table-findElements").setValues($$("table").count().toString());
-            if (!this.count())
-                this.showOverlay("Ничего не найдено");
-            if (this.count())
-                this.hideOverlay();
+            setCounterVal ();
+            overlay ();
+
         } catch (error){
             console.log(error);
-            catchErrorTemplate("012-000", error);
+            setLogValue("error","table onAfterDelete: "+error);
         }
     },
     onAfterAdd: function() {
         try {
-            $$("table-findElements").setValues($$("table").count().toString());
+            setCounterVal ();
             this.hideOverlay();
         } catch (error){
             console.log(error);
-            catchErrorTemplate("012-000", error);
+            setLogValue("error","table onAfterAdd: "+error);
         }
     },
     onAfterRender:function(){
-        if (window.innerWidth < 1200 ){
-            if ($$("table-editTableBtnId") && !($$("table-editTableBtnId").isVisible())){
-               $$("table-editTableBtnId").show(); 
+        function adaptiveBtnEditTable (){
+            try{
+                if (window.innerWidth < 1200 ){
+                    if ($$("table-editTableBtnId") && !($$("table-editTableBtnId").isVisible())){
+                    $$("table-editTableBtnId").show(); 
+                    }
+                }
+            } catch (err){
+                setLogValue("error","table adaptiveBtnEditTable: "+err);
             }
-            
         }
+        adaptiveBtnEditTable ();
     }
 
     

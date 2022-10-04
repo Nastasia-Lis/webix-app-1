@@ -13,6 +13,9 @@ function setLogValue (typeNotify,notifyText) {
     let currentDate = `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
 
         function addLogMsg (src){
+            if (!src){
+                src = "expa";
+            }
             $$("logBlock-list").add({
                 date:currentDate,
                 value:notifyText,
@@ -40,12 +43,12 @@ function setLogValue (typeNotify,notifyText) {
     try {
         let itemTreeId=null;
 
-        if ($$("tree").getSelectedItem() !== undefined){
+        if ($$("tree").getSelectedItem()){
             itemTreeId = $$("tree").getSelectedItem().id;
-            if (itemTreeId.includes("single")){
-                let singleSearch = itemTreeId.search("-single");
-                itemTreeId = itemTreeId.slice(0,singleSearch); 
-            }
+        } else {
+            let href = window.location.pathname;
+            let index = href.lastIndexOf("/");
+            itemTreeId = href.slice(index+1);
         }
 
         if (itemTreeId){
@@ -58,7 +61,7 @@ function setLogValue (typeNotify,notifyText) {
             $$("logBlock-list").add({
                 date:currentDate,
                 value:notifyText,
-                src:"Expa v1.0.31"
+                src:"Expa v1.0.32"
             });
         }
         

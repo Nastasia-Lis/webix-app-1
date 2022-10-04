@@ -47,15 +47,24 @@ function treeSidebar () {
                     if ($$("filterEmptyTempalte")){
                         $$("filterEmptyTempalte").show();
                     }
+
+               
+                    if ($$("table-editTableBtnId").isVisible() ){
+                        $$("table-editTableBtnId").hide();
+                    }
                     
                     if ($$("filterTableBarContainer") && $$("filterTableBarContainer").isVisible()){
                         $$("filterTableBarContainer").hide();
                     }
     
+                
                     if ($$("editTableBarContainer") && !($$("editTableBarContainer").isVisible())){
                         $$("editTableBarContainer").show();
                     }
-
+                    if ($$("table-editForm") && !($$("table-editForm").isVisible())){
+                        $$("table-editForm").show();
+                    }
+        
                     if ($$("btnFilterSubmit").isEnabled()){
                         $$("btnFilterSubmit").disable();
                     }
@@ -64,6 +73,11 @@ function treeSidebar () {
                     }
                     if ($$("resetFilterBtn").isEnabled()){
                         $$("resetFilterBtn").disable();
+                    }
+
+                    if ($$("table-editForm") && $$("table-editForm").config.width < 320){
+                        $$("table-editForm").config.width = 320;
+                        $$("table-editForm").refresh();
                     }
 
                     let btnClass = document.querySelector(".webix_btn-filter");
@@ -398,6 +412,12 @@ function treeSidebar () {
                             }
                             }
 
+                            if (result !== 0){
+                                if ($$("propertyRefbtnsContainer")){
+                                    $$("propertyRefbtns").removeView($$("propertyRefbtnsContainer")) 
+                                }
+                            }
+
 
                         
                         });
@@ -438,8 +458,6 @@ function treeSidebar () {
                     
                         }
                     }
-
-
 
 
                     if ($$("propertyRefbtnsContainer")){

@@ -41,7 +41,7 @@ function login () {
 
             webix.ajax().post("/init/default/login",loginData,{
                 success:function(text, data, XmlHttpRequest){
-                    console.log(data.json())
+ 
                     webix.ajax("/init/default/api/whoami",{
                         success:function(text, data, XmlHttpRequest){
                             try {
@@ -71,7 +71,8 @@ function login () {
                         },
                         error:function(text, data, XmlHttpRequest){
                             if ($$("formAuth")&&$$("formAuth").isDirty()){
-                                webix.message({type:"error",expire:3000, text:"Неверный логин или пароль"});
+                                $$("formAuth").markInvalid("username", "");
+                                $$("formAuth").markInvalid("password", "Неверный логин или пароль");
                             }
 
                             ajaxErrorTemplate("007-006",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
@@ -119,15 +120,38 @@ function login () {
         width:250,
         borderless:true,
         elements: [
-            {view:"text", label:"Логин", name:"username",invalidMessage:"Поле должно быть заполнено"  },
-            {view:"text", label:"Пароль", name:"password",invalidMessage:"Поле должно быть заполнено",
-            type:"password"},
-            {view:"button", value: "Войти", css:"webix_primary",
-            hotkey: "enter", align:"center", click:getLogin}, 
+            {   view:"text", 
+                label:"Логин", 
+                name:"username",
+                invalidMessage:"Поле должно быть заполнено",
+                on:{
+                    onItemClick:function(){
+                        $$('formAuth').clearValidation();
+                    }
+                }  
+            },
+                {view:"text", 
+                label:"Пароль", 
+                name:"password",
+                invalidMessage:"Поле должно быть заполнено",
+                type:"password",
+                on:{
+                    onItemClick:function(){
+                        $$('formAuth').clearValidation();
+                    }
+                } 
+            },
+            {   view:"button", 
+                value: "Войти", 
+                css:"webix_primary",
+                hotkey: "enter", 
+                align:"center", 
+                click:getLogin
+            }, 
         ],
-    
+
         rules:{
-    
+            
             "username":webix.rules.isNotEmpty,
             "password":webix.rules.isNotEmpty,
     
@@ -141,6 +165,12 @@ function login () {
     };
 
 }
+// $$("formAuth").getChildViews().forEach(function(el,i){
+//     if (el.config.view == "text"){
+//         $$(el.config.id).define("css",'webix_invalid')
+//         $$(el.config.id).refresh();
+//     }
+// });
 
 export {
     login,

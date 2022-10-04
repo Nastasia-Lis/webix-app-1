@@ -10,26 +10,38 @@ function getTableNames (content){
     return tableNames;
 }
 
-function getData (fileName){
-    return webix.ajax().get(`/init/default/api/${fileName}.json`)
-        .then(function (data) {
-            STORAGE[fileName] = data.json();
-            if (fileName == "fields" && STORAGE[fileName]){
-                STORAGE.tableNames = getTableNames (STORAGE[fileName].content);
-            }
-            return STORAGE[fileName];
-        }).catch(err => {
-            console.log(err);
 
-            setLogValue("error", 
-                "Загрузка данных: " + 
-                err.statusText + " " + 
-                err.status + " " + 
-                err.responseURL + 
-                " ( Подробности: " + err.responseText+ ") "
-            );
-        }
-    );
+function checkNotAuth (err){
+    if (err.status === 401 && window.location.pathname !== "/index.html"){
+        Backbone.history.navigate("/", { trigger:true});
+    }
+}
+
+function getData (fileName){
+    if (    window.location.pathname !== "/index.html"          &&  
+            window.location.pathname !== '/init/default/spaw'
+        ){
+        return webix.ajax().get(`/init/default/api/${fileName}.json`)
+            .then(function (data) {
+                STORAGE[fileName] = data.json();
+                if (fileName == "fields" && STORAGE[fileName]){
+                    STORAGE.tableNames = getTableNames (STORAGE[fileName].content);
+                }
+                return STORAGE[fileName];
+            }).catch(err => {
+                console.log(err);
+                setLogValue("error", 
+                    "Загрузка данных: " + 
+                    err.statusText + " " + 
+                    err.status + " " + 
+                    err.responseURL + 
+                    " ( Подробности: " + err.responseText+ ") "
+                );
+
+                checkNotAuth (err);
+            }
+        );
+    }
     
 }
 

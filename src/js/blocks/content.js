@@ -378,11 +378,13 @@ function getInfoTable (idCurrTable,idsParam) {
                             function datePrefs (){
                                 let dateFormat;
                                 data.forEach(function(el,i){
-
                                     function dateFormatting (elType){
-                                        dateFormat = new Date(el[elType]);
-                                        el[elType] = dateFormat;
+                                        if (el[elType]){
+                                            dateFormat = new Date(el[elType]);
+                                            el[elType] = dateFormat;
+                                        }
                                     }
+                                    
 
                                     dateFormatting ("cdt");
                                     dateFormatting ("edt");
@@ -444,6 +446,7 @@ function getInfoTable (idCurrTable,idsParam) {
                                     if($$("table-exportBtn")){
                                         $$("table-exportBtn").disable();
                                     }
+                              
                                 } catch (error){
                                     console.log(error);
                                     //catchErrorTemplate("018-000", error);
@@ -456,6 +459,7 @@ function getInfoTable (idCurrTable,idsParam) {
                 }).catch(error => {
                     console.log(error);
                     ajaxErrorTemplate("018-000",error.status,error.statusText,error.responseURL);
+           
                 });
                 }
             });

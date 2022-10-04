@@ -577,13 +577,16 @@ function adaptivePoints (){
                     $$("editTableBarContainer").hide();
                 }
             });
+ 
+
+            if ($$("editTableBarContainer") && $$("editTableBarContainer").isVisible()){
+                $$("editTableBarContainer").hide();
+            }
+    
         }
         
     
-        if ($$("editTableBarContainer") && $$("editTableBarContainer").isVisible()){
-            $$("editTableBarContainer").hide();
-        }
-
+        
 
        // table filter popup
         if(!$$("tableFilterPopup")){
