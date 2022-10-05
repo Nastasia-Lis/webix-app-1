@@ -1,8 +1,7 @@
-import {saveItem,saveNewItem,defaultStateForm} from "../blocks/editTableForm.js";
+import {saveItem,saveNewItem,defaultStateForm,validateProfForm} from "../blocks/editTableForm.js";
 import {modalBox} from "../blocks/notifications.js";
 import {getInfoTable,getInfoDashboard,getInfoEditTree} from "../blocks/content.js";
-import {catchErrorTemplate} from "../blocks/logBlock.js";
-import {tableNames} from "../blocks/router.js";
+import {catchErrorTemplate,setLogValue} from "../blocks/logBlock.js";
 import  {STORAGE,getData} from "../blocks/globalStorage.js";
 
 
@@ -375,54 +374,188 @@ function treeSidebar () {
                 
             },
             onItemClick:function(id, e, node){
+
+                function getItemId (){
+                    let idTable;
+                    if ($$("tree").getSelectedItem()){
+                        idTable = $$("tree").getSelectedItem().id;
+                    } else {
+                        let href = window.location.pathname;
+                        let index = href.lastIndexOf("/");
+                        idTable = href.slice(index+1);
+
+                    }
+                    return idTable;
+                }
+
+                let valuesProp = $$("editTableFormProperty").getValues();
+                let currId = getItemId ();
+
+                function setDirtyProperty (){
+                    $$("editTableFormProperty").config.dirty = false;
+                    $$("editTableFormProperty").refresh();
+                }
+
+                function removePrefBtns (){
+                    if ($$("propertyRefbtnsContainer")){
+                        $$("propertyRefbtns").removeView($$("propertyRefbtnsContainer")) 
+                    }
+                }
+              
+                function setDefaultStateProperty (){
+                    if ($$("editTableFormProperty") && $$("editTableFormProperty").isVisible()){
+                        $$("editTableFormProperty").clear();
+                        $$("editTableFormProperty").hide();
+                    }
+                }
+
+                function setDefaultStateBtns (){
+                    if ($$("table-saveNewBtn").isVisible()) {
+                        $$("table-saveNewBtn").hide();
+                    } else if ($$("table-saveBtn").isVisible()){
+                        $$("table-saveBtn").hide();
+                    }
+                    $$("table-delBtnId").disable();
+                }
+
+                function validateError (){
+                    validateProfForm ().forEach(function(el,i){
+        
+                        let nameEl;
+        
+                        $$("table").getColumns().forEach(function(col,i){
+                            if (col.id == el.nameCol){
+                                nameEl = col.label;
+                            }
+                        });
+        
+                        setLogValue("error",el.textError+" (Поле: "+nameEl+")");
+                    });
+                }
+
+                function uniqueData (itemData){
+                    let validateData = {};
+                    Object.values(itemData).forEach(function(el,i){
+                        let oldValues = $$("table").getItem(itemData.id)
+                        let oldValueKeys = Object.keys(oldValues);
+      
+                        function compareVals (){
+                            let newValKey = Object.keys(itemData)[i];
+                            
+                            oldValueKeys.forEach(function(oldValKey){
+                                
+                                if (oldValKey == newValKey){
+                                    
+                                    if (oldValues[oldValKey] !== Object.values(itemData)[i]){
+                                        validateData[Object.keys(itemData)[i]] = Object.values(itemData)[i];
+                                    } 
+                                    
+                                }
+                            }); 
+                        }
+                        compareVals ();
+                    });
+
+                    return validateData;
+                }
+        
+
+                function postNewData (){
+                    if (!(validateProfForm().length)){
+                        webix.ajax().post("/init/default/api/"+currId, valuesProp,{
+                            success:function(text, data, XmlHttpRequest){
+                                data = data.json();
+                                if (data.content.id !== null){
+                                    setDirtyProperty ();
+                                    removePrefBtns ();
+                                    $$("tree").select(id);
+                                    setLogValue("success","Данные успешно добавлены",currId);
+                                } else {
+        
+                                    let errs = data.content.errors;
+                                    let msg = "";
+                                    Object.values(errs).forEach(function(err,i){
+                                        msg +=err+" (Поле: "+Object.keys(errs)[i] +"); ";
+                                    });
+        
+                                    setLogValue("error",msg);
+                                }
+                                
+                            },
+                            error:function(text, data, XmlHttpRequest){
+                                setLogValue("error","table modalBox (post new data): "+XmlHttpRequest.status+" "+XmlHttpRequest.statusText+" "+XmlHttpRequest.responseURL);
+                            }
+                        });
+        
+                    } else {
+                        validateError ();
+                    }
+                }
+
+                function putData (){
+                    if (!(validateProfForm().length)){
+
+                        if (valuesProp.id){
+                         
+                            webix.ajax().put("/init/default/api/"+currId+"/"+valuesProp.id, uniqueData (valuesProp), {
+                                success:function(text, data, XmlHttpRequest){
+                                    data = data.json()
+                                    if (data.err_type == "i"){
+                                        setDirtyProperty ();
+                                        
+                                        removePrefBtns ();
+                                        $$("tree").select(id);
+                                        setLogValue("success","Данные успешно добавлены",currId);
+                                
+                                    } if (data.err_type == "e"){
+                                        setLogValue("error",data.error);
+                                    }
+                                
+                                },
+                                error:function(text, data, XmlHttpRequest){
+                                    setLogValue("error","table function putData: "+XmlHttpRequest.status+" "+XmlHttpRequest.statusText+" "+XmlHttpRequest.responseURL);
+                                }
+                            }).catch(error => {
+                                console.log(error);
+                                setLogValue("error","table function putData ajax: "+error.status+" "+error.statusText+" "+error.responseURL);
+                            });
+                        }
+        
+                    } else {
+                        validateError ();
+                    }
+                }
+            
+
+                function modalBoxTree (){
+                    modalBox().then(function(result){
+                    
+                        if (result == 1){
+
+                            setDefaultStateBtns ();
+                            setDefaultStateProperty ();
+                            setDirtyProperty ();
+
+                            $$("tree").select(id);
+                        } else if (result == 2){
+                            if ($$("editTableFormProperty").getValues().id){
+                                putData ();
+                          
+                            } else {
+                                postNewData ();  
+                            }
+                            setDirtyProperty ();
+                        }
+
+                        if (result !== 0){
+                            removePrefBtns ();
+                        }
+
+                    });
+                }
                 if($$("editTableFormProperty").config.dirty){
                     try{  
-                        modalBox().then(function(result){
-                           
-                            if (result == 1){
-                                if ($$("table-saveNewBtn").isVisible()) {
-                                    $$("table-saveNewBtn").hide();
-                                } else if ($$("table-saveBtn").isVisible()){
-                                    $$("table-saveBtn").hide();
-                                }
-                                $$("table-delBtnId").disable();
-                            
-                                if ($$("editTableFormProperty") && $$("editTableFormProperty").isVisible()){
-                                    $$("editTableFormProperty").clear();
-                                    $$("editTableFormProperty").hide();
-                                }
-                        
-
-                                $$("editTableFormProperty").config.dirty = false;
-                                $$("editTableFormProperty").refresh();
-                                $$("tree").select(id);
-                            } else if (result == 2){
-                                if ($$("editTableFormProperty").getValues().id){
-                                    saveItem(false,true);
-                                    $$("tree").select(id);
-                                } else {
-                                    saveNewItem();
-                                    $$("tree").select(id);
-                                }
-                                $$("editTableFormProperty").config.dirty = false;
-                                $$("editTableFormProperty").refresh();
-                                
-                            if (!($$("table-newAddBtnId").isEnabled())){
-                                $$("table-newAddBtnId").enable();
-                            }
-                            }
-
-                            if (result !== 0){
-                                if ($$("propertyRefbtnsContainer")){
-                                    $$("propertyRefbtns").removeView($$("propertyRefbtnsContainer")) 
-                                }
-                            }
-
-
-                        
-                        });
-
-                        
+                        modalBoxTree ();
                     } catch (error){
                         console.log(error);
                         catchErrorTemplate("009-000", error);

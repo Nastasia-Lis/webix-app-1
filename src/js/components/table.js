@@ -1,4 +1,4 @@
-import {defaultStateForm,createEditFields,saveItem,saveNewItem,validateProfForm} from "../blocks/editTableForm.js";
+import {defaultStateForm,createEditFields,validateProfForm} from "../blocks/editTableForm.js";
 import {catchErrorTemplate,ajaxErrorTemplate} from "../blocks/logBlock.js";
 import {modalBox,popupExec} from "../blocks/notifications.js";
 import {setLogValue} from '../blocks/logBlock.js';
@@ -1041,6 +1041,128 @@ function setCounterVal (){
     $$("table-findElements").setValues($$("table").count().toString());
 }
 
+function setDirtyProperty (){
+    $$("editTableFormProperty").config.dirty = false;
+    $$("editTableFormProperty").refresh();
+}
+
+function toEditForm (nextItem) {
+    let valuesTable = $$("table").getItem(nextItem); 
+    try {
+   
+        if ($$("editTableFormProperty") && !($$("editTableFormProperty").isVisible())){
+            $$("editTableFormProperty").show();
+        }
+
+        if (!($$("table-newAddBtnId").isEnabled())){
+            $$("table-newAddBtnId").enable();
+        }
+
+        setDirtyProperty ();
+
+        $$("editTableFormProperty").setValues(valuesTable);
+      
+        $$("table-saveNewBtn").hide();
+        $$("table-saveBtn").show();
+        $$("table-delBtnId").enable();
+    } catch (error){
+        console.log(error);
+        setLogValue("error","toEditForm: "+error);
+    }
+}
+
+function removePrefBtns (){
+    if ($$("propertyRefbtnsContainer")){
+        $$("propertyRefbtns").removeView($$("propertyRefbtnsContainer")) 
+    }
+}
+
+function validateError (){
+    validateProfForm ().forEach(function(el,i){
+
+        let nameEl;
+
+        $$("table").getColumns().forEach(function(col,i){
+            if (col.id == el.nameCol){
+                nameEl = col.label;
+            }
+        });
+
+        setLogValue("error",el.textError+" (Поле: "+nameEl+")");
+    });
+}
+
+function uniqueData (itemData){
+    let validateData = {};
+    Object.values(itemData).forEach(function(el,i){
+        let oldValues = $$("table").getItem(itemData.id)
+        let oldValueKeys = Object.keys(oldValues);
+
+        function compareVals (){
+            let newValKey = Object.keys(itemData)[i];
+            
+            oldValueKeys.forEach(function(oldValKey){
+                
+                if (oldValKey == newValKey){
+                    
+                    if (oldValues[oldValKey] !== Object.values(itemData)[i]){
+                        validateData[Object.keys(itemData)[i]] = Object.values(itemData)[i];
+                    } 
+                    
+                }
+            }); 
+        }
+        compareVals ();
+    });
+
+    return validateData;
+}
+
+function putData (nextItem, valuesProp, currId, editInForm=false){
+   
+    if (!(validateProfForm().length)){
+
+        if (valuesProp.id){
+
+            let sentValues;
+            if (editInForm){
+                sentValues = uniqueData (valuesProp);
+            } else {
+                sentValues = valuesProp;
+            }
+        
+            webix.ajax().put("/init/default/api/"+currId+"/"+valuesProp.id, sentValues, {
+                success:function(text, data, XmlHttpRequest){
+                    data = data.json();
+                    if (data.err_type == "i"){
+                        setLogValue("success","Данные сохранены");
+                        $$( "table" ).updateItem(valuesProp.id, valuesProp);
+                        removePrefBtns ();
+
+                        if (editInForm){
+                            toEditForm(nextItem);
+                            $$("table").select(nextItem);
+                        }
+                    } if (data.err_type == "e"){
+                        setLogValue("error",data.error);
+                    }
+                
+                },
+                error:function(text, data, XmlHttpRequest){
+                    setLogValue("error","table function putData: "+XmlHttpRequest.status+" "+XmlHttpRequest.statusText+" "+XmlHttpRequest.responseURL);
+                }
+            }).catch(error => {
+                console.log(error);
+                setLogValue("error","table function putData ajax: "+error.status+" "+error.statusText+" "+error.responseURL);
+            });
+        }
+
+    } else {
+        validateError ();
+    }
+}
+
+
 //----- table edit parameters
 let onFuncTable = {
     onBeforeLoad:function(){
@@ -1052,6 +1174,8 @@ let onFuncTable = {
     // },
     
     onBeforeEditStop:function(state, editor, ignoreUpdate){
+        let valuesProp = $$("table").getSelectedItem();
+        let currId = getItemId ();
         try {
             if(state.value != state.old){
                 let idRow = editor.row;
@@ -1060,7 +1184,8 @@ let onFuncTable = {
                 
                 $$("table").updateItem(idRow, {[col]:val});
                 $$("editTableFormProperty").setValues($$("table").getSelectedItem());
-                saveItem();
+                putData ("", valuesProp, currId);
+
             }
         } catch (error){
             console.log(error);
@@ -1187,76 +1312,25 @@ let onFuncTable = {
         
         let valuesProp = $$("editTableFormProperty").getValues();
         let currId = getItemId ();
-      
-        function toEditForm () {
-            let valuesTable = $$("table").getItem(selection.id); 
-            try {
-           
-                if ($$("editTableFormProperty") && !($$("editTableFormProperty").isVisible())){
-                    $$("editTableFormProperty").show();
-                }
 
-                if (!($$("table-newAddBtnId").isEnabled())){
-                    $$("table-newAddBtnId").enable();
-                }
+        let nextItem = selection.id;
 
-                $$("editTableFormProperty").config.dirty = false;
-                $$("editTableFormProperty").refresh();
-
-                $$("editTableFormProperty").setValues(valuesTable);
-              
-                $$("table-saveNewBtn").hide();
-                $$("table-saveBtn").show();
-                $$("table-delBtnId").enable();
-            } catch (error){
-                console.log(error);
-                setLogValue("error","toEditForm: "+error);
-            }
-        }
-
-        function removePrefBtns (){
-            if ($$("propertyRefbtnsContainer")){
-                $$("propertyRefbtns").removeView($$("propertyRefbtnsContainer")) 
-            }
-        }
-
-        function validateError (){
-            validateProfForm ().forEach(function(el,i){
-
-                let nameEl;
-
-                $$("table").getColumns().forEach(function(col,i){
-                    if (col.id == el.nameCol){
-                        nameEl = col.label;
-                    }
-                });
-
-                setLogValue("error",el.textError+" (Поле: "+nameEl+")");
-            });
-        }
-
-        function notNullData (itemData){
-            let validateData = {};
-            Object.values(itemData).forEach(function(el,i){
-                if (el.length !== 0){
-                    validateData[Object.keys(itemData)[i]] = el;
-                }
-            });
-            return validateData;
-        }
-
-        function postNewData (){
+        function postNewData (nextItem,currId,valuesProp){
             if (!(validateProfForm().length)){
                 
                 webix.ajax().post("/init/default/api/"+currId, valuesProp,{
                     success:function(text, data, XmlHttpRequest){
                         data = data.json();
-                        if (data.content.id !== null){
+                        function tableUpdate (){
                             valuesProp.id = data.content.id;
                             $$("table").add(valuesProp);
-                            toEditForm();
-                            $$("table").select(selection.id);
+                        }
+                    
+                        if (data.content.id !== null){
+                            tableUpdate ();
+                            toEditForm(nextItem);
                             removePrefBtns ();
+                            $$("table").select(nextItem);
                             setLogValue("success","Данные успешно добавлены");
                         } else {
 
@@ -1275,53 +1349,17 @@ let onFuncTable = {
                     }
                 });
 
-
             } else {
                 validateError ();
             }
         }
 
-        function putData (){
-        
-            if (!(validateProfForm().length)){
-
-                if (valuesProp.id){
-                
-                    webix.ajax().put("/init/default/api/"+currId+"/"+valuesProp.id, notNullData (valuesProp), {
-                        success:function(text, data, XmlHttpRequest){
-                            data = data.json();
-                            $$( "table" ).updateItem(valuesProp.id, valuesProp);
-                            toEditForm();
-                            $$("table").select(selection.id);
-                            removePrefBtns ();
-                            if (data.err_type == "i"){
-                                setLogValue("success","Данные сохранены");
-
-                            } if (data.err_type == "e"){
-                                setLogValue("error",data.error);
-                            }
-                        
-                        },
-                        error:function(text, data, XmlHttpRequest){
-                            setLogValue("error","table function putData: "+XmlHttpRequest.status+" "+XmlHttpRequest.statusText+" "+XmlHttpRequest.responseURL);
-                        }
-                    }).catch(error => {
-                        console.log(error);
-                        setLogValue("error","table function putData ajax: "+error.status+" "+error.statusText+" "+error.responseURL);
-                    });
-                }
-
-            } else {
-                validateError ();
-            }
-        }
-       
         function modalBoxTable (){
             if ($$("editTableFormProperty").config.dirty){
                 
                 modalBox().then(function(result){
                     if (result == 1){
-                        toEditForm();
+                        toEditForm(nextItem);
                         $$("table").select(selection.id);
                         removePrefBtns ();
                     } 
@@ -1329,9 +1367,9 @@ let onFuncTable = {
                     else if (result == 2){
                     
                         if ($$("editTableFormProperty").getValues().id){
-                            putData ();
+                            putData (nextItem,valuesProp,currId, true);
                         } else {
-                            postNewData ();
+                            postNewData (nextItem,currId,valuesProp);
                         }
                     }
 
@@ -1340,7 +1378,7 @@ let onFuncTable = {
                 return false;
             } else {
                 createEditFields("table-editForm");
-                toEditForm();
+                toEditForm(nextItem);
             }
         }
 

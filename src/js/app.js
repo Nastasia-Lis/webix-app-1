@@ -1,4 +1,4 @@
-console.log("expa 1.0.32"); 
+console.log("expa 1.0.33"); 
 
 import * as textInputClean from "./blocks/textInputSettings.js";
 import {login} from "./components/login.js";
@@ -134,7 +134,7 @@ try{
         webix.i18n.setLocale("ru-RU");   
         webix.i18n.parseFormat = "%d.%m.%Y %H:%i:%s";
         webix.i18n.setLocale();
-        
+        webix.Date.startOnMonday = true;
     });
 
 } catch(error){

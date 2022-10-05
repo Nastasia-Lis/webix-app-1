@@ -2,7 +2,9 @@
 
 import {setStorageData} from "./storageSetting.js";
 import  {STORAGE,getData} from "./globalStorage.js";
-function setLogValue (typeNotify,notifyText) {
+
+//setLogValue ("success","notifyText")
+function setLogValue (typeNotify,notifyText,specificSrc) {
     const date = new Date();
     let day = date.getDate();
     let month = String(date.getMonth() + 1).padStart(2, '0');
@@ -23,20 +25,22 @@ function setLogValue (typeNotify,notifyText) {
             });
         }
         async function createLogMessage(srcTable,itemTreeId) {
-
+            let name;
             if (!STORAGE.tableNames){
                 await getData("fields"); 
             }
 
             if (STORAGE.tableNames){
                 STORAGE.tableNames.forEach(function(el,i){
-                    if (el.id == itemTreeId){
-                        srcTable= el.name;
+                    if (srcTable == "version"){
+                        name = 'Expa v1.0.33';
+                    } else if (el.id == srcTable){
+                        name = el.name;
                     }
                 });
             }
 
-            addLogMsg (srcTable);
+            addLogMsg (name);
         }
         
             
@@ -50,20 +54,13 @@ function setLogValue (typeNotify,notifyText) {
             let index = href.lastIndexOf("/");
             itemTreeId = href.slice(index+1);
         }
+      
+        if (specificSrc){
+            createLogMessage(specificSrc);
+        } else if (itemTreeId){
+            createLogMessage(itemTreeId);
+        } 
 
-        if (itemTreeId){
-        
-            let srcTable;
-
-            createLogMessage(srcTable,itemTreeId);
-
-        } else {
-            $$("logBlock-list").add({
-                date:currentDate,
-                value:notifyText,
-                src:"Expa v1.0.32"
-            });
-        }
         
         let itemListIndex;
         
@@ -107,7 +104,7 @@ const logBlock = {
     on: {
         onAfterLoad:function(){
             try {
-                setLogValue ("success","Интерфейс загружен");
+                setLogValue ("success","Интерфейс загружен","version");
             } catch (error){
                 console.log(error);
                 catchErrorTemplate("006-000", error);

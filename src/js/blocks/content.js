@@ -311,8 +311,10 @@ function getInfoTable (idCurrTable,idsParam) {
 
             } else if (fieldType == "datetime"){
 
-                dataFields[data].format = webix.i18n.fullDateFormatStr; 
+               // dataFields[data].format = webix.i18n.fullDateFormatStr; 
+               dataFields[data].format = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s:%S");
                 dataFields[data].editor = "date";
+
 
             } else if (fieldType == "string" || fieldType == "text" ){
 
@@ -377,19 +379,38 @@ function getInfoTable (idCurrTable,idsParam) {
 
                             function datePrefs (){
                                 let dateFormat;
+        
+                                let columns = $$(table).getColumns();
+                                let dateCols = [];
+
+                                function searchDateCols (){
+                                    columns.forEach(function(col,i){
+    
+                                        if (col.type == "datetime"){
+                                            dateCols.push(col.id);
+                                        }
+                                    });
+                                }
+                                searchDateCols ();
+                            
                                 data.forEach(function(el,i){
+
                                     function dateFormatting (elType){
+                                      
                                         if (el[elType]){
                                             dateFormat = new Date(el[elType]);
                                             el[elType] = dateFormat;
+                                            
                                         }
                                     }
-                                    
 
-                                    dateFormatting ("cdt");
-                                    dateFormatting ("edt");
-                                    dateFormatting ("sdt");
-                                    dateFormatting ("time_stamp");
+                                    function setDateFormatting (){
+                                        dateCols.forEach(function(el,i){
+                                            dateFormatting (el);
+                                        });
+                                    }
+                                    setDateFormatting ();
+                                 
 
                                 });
                             }
@@ -477,7 +498,8 @@ function getInfoTable (idCurrTable,idsParam) {
             if (data.autorefresh){
     
                 let userprefsOther = webix.storage.local.get("userprefsOtherForm");
-                if (userprefsOther.autorefCounterOpt !== undefined){
+
+                if (userprefsOther && userprefsOther.autorefCounterOpt !== undefined){
                     if (userprefsOther.autorefCounterOpt >= 15000){
     
                         setInterval(function(){
