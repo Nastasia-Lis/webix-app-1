@@ -3,8 +3,6 @@ import {catchErrorTemplate,ajaxErrorTemplate} from "./logBlock.js";
 import  {STORAGE,getData} from "./globalStorage.js";
 
 let prevCountRows ;
-//let checkAction = false;
-//let urlFieldAction;
 
 function submitBtn (idElements, url, verb, rtype){
    
@@ -24,9 +22,10 @@ function submitBtn (idElements, url, verb, rtype){
                         valuesArray.push(el.name+"="+$$(el.id).getValue());
                     }    
                 });
-
-                webix.ajax(url+"?"+valuesArray.join("&"),{
-                    success:function(text, data, XmlHttpRequest){
+    
+                const getData = webix.ajax(url+"?"+valuesArray.join("&"));
+                getData.then(function(data){
+                    if (data.json().err_type == "i"){
                         try {
                             $$("table-view").clearAll();
                             data = data.json().content;
@@ -40,22 +39,18 @@ function submitBtn (idElements, url, verb, rtype){
                             $$("table-view-findElements").setValues(prevCountRows.toString());
                         } catch (error){
                             console.log(error);
-                            catchErrorTemplate("018-000", error);
-            
+                            setLogValue("error","content function submitBtn: "+error);
                         }  
-                    },
-                    error:function(text, data, XmlHttpRequest){
-                        ajaxErrorTemplate("018-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
-
-                        if($$("table-newAddBtnId")&&!($$("table-newAddBtnId").isEnabled())){
-                            $$("table-newAddBtnId").enable();
-                        }
+                    } else {
+                        setLogValue("error","content function submitBtn: "+data.err);
                     }
-                }).catch(error => {
-                    console.log(error);
-                    ajaxErrorTemplate("018-000",error.status,error.statusText,error.responseURL);
                 });
-                
+                getData.fail(function(err){
+                    console.log(err);
+                    setLogValue("error","content function submitBtn ajax: "+err.status+" "+err.statusText+" "+err.responseURL);
+                });
+
+          
                 
                 //;
             } catch (error){
@@ -142,7 +137,8 @@ function getComboOptions (refTable){
                         } 
                     }).catch(error => {
                         console.log(error);
-                        ajaxErrorTemplate("018-000",error.status,error.statusText,error.responseURL);
+                        setLogValue("error", "content function getComboOptions: "+error.status+" "+error.statusText+" "+error.responseURL+" ("+error.responseText+") ");
+                  
                     })
             );
             
@@ -362,7 +358,7 @@ function getInfoTable (idCurrTable,idsParam) {
                     return webix.ajax().get("/init/default/api/"+itemTreeId,{
                         success:function(text, data, XmlHttpRequest){
                             data = data.json().content;
-
+                            $$(table).config.idTable = itemTreeId;
                             function setTableState(){
                                 if (table == "table"){
                                     if(!($$("table-newAddBtnId").isEnabled())){
@@ -446,6 +442,7 @@ function getInfoTable (idCurrTable,idsParam) {
                             
                             } catch (error){
                                 console.log(error);
+                                setLogValue("error", "content createRow: "+error);
                             //  catchErrorTemplate("018-000", error);
                             } 
                     
@@ -479,8 +476,8 @@ function getInfoTable (idCurrTable,idsParam) {
             
                 }).catch(error => {
                     console.log(error);
-                    ajaxErrorTemplate("018-000",error.status,error.statusText,error.responseURL);
-           
+                    
+                    setLogValue("error", "content createRow: "+error.status+" "+error.statusText+" "+error.responseURL);
                 });
                 }
             });
@@ -623,10 +620,11 @@ function getInfoTable (idCurrTable,idsParam) {
                                 } catch (error){
                                     console.log(error);
                                     catchErrorTemplate("018-000", error);
+                                    
                                 } 
                                 }).catch(error => {
                                     console.log(error);
-                                    ajaxErrorTemplate("018-000",error.status,error.statusText,error.responseURL);
+                                    setLogValue("error", "content function getOptionData: "+error.status+" "+error.statusText+" "+error.responseURL);
     
                                 })
                             );

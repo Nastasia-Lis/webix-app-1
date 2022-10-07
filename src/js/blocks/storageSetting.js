@@ -1,4 +1,5 @@
 import {ajaxErrorTemplate, catchErrorTemplate} from "./logBlock.js";
+import {setAjaxError,setFunctionError} from "./errors.js";
 
 function setStorageData (name, value){
     if (typeof(Storage) !== 'undefined') {
@@ -8,29 +9,40 @@ function setStorageData (name, value){
 
 
 function setUserLocation (tableNames,userLocation,autoLogoutVal=false){
+    userLocation = window.location.href;
+    let tableIdHref = userLocation.slice(userLocation.lastIndexOf('/')+1); 
+    let nameRecoverEl;
+   
+    function setTableName(){
+        try{
+            if (tableNames){
+                tableNames.forEach(function(el,i){
+                    if (el.id == tableIdHref){
+                        nameRecoverEl= el.name;
+                    }
+                });
+            } 
+        } catch (err){
+            setFunctionError(err,"storageSettings","setTableName");
+
+        }
+    }
+
     try {
-        userLocation = window.location.href;
-        let tableIdHref = userLocation.slice(userLocation.lastIndexOf('/')+1); 
-        let nameRecoverEl;
-        let storageData;
 
-        if (tableNames){
-            tableNames.forEach(function(el,i){
-                if (el.id == tableIdHref){
-                    nameRecoverEl= el.name;
-                }
-            });
-        } 
+        setTableName();
 
-        storageData= {tableName:nameRecoverEl,tableId:tableIdHref,href:userLocation,autoLogout:autoLogoutVal};
-
+        let storageData = { 
+            tableName:nameRecoverEl,
+            tableId:tableIdHref,
+            href:userLocation,
+            autoLogout:autoLogoutVal
+        };
 
         setStorageData ("userLocation", JSON.stringify(storageData));
 
-    } catch (error){
-        console.log(error);
-        catchErrorTemplate("010-000", error);
-
+    } catch (err){
+        setFunctionError(err,"storageSettings","setUserLocation");
     }
 }
 
@@ -53,14 +65,20 @@ function setUserPrefs (){
                         let userprefsWorkspace = webix.storage.local.get("userprefsWorkspaceForm");
                         let userLocation = webix.storage.local.get("userLocationHref");
 
-                            const url = new URL(userLocation.href);
+                        const url = new URL(userLocation.href);
 
-                        if (userprefsWorkspace && userprefsWorkspace.LoginActionOpt && url.origin == window.location.origin ){
-                            if (userprefsWorkspace.LoginActionOpt == 2){
-                                if (userLocation && userLocation.href && userLocation.href !== window.location.href ){
-                                    //Backbone.history.navigate(window.location.pathname, { trigger:true});
-                                    window.location.replace(userLocation.href);
-                                }
+                        if (userprefsWorkspace                    && 
+                            userprefsWorkspace.LoginActionOpt     && 
+                            url.origin == window.location.origin  &&
+                            !(url.pathname.includes("logout")     )){
+                            
+                                if (userprefsWorkspace.LoginActionOpt == 2){
+                                    if (userLocation       && 
+                                        userLocation.href  && 
+                                        userLocation.href !== window.location.href ){
+                                        //Backbone.history.navigate(window.location.pathname, { trigger:true});
+                                        window.location.replace(userLocation.href);
+                                    }
                             }
                         }
                     }

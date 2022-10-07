@@ -1,24 +1,20 @@
 import {getComboOptions} from './content.js';
-import {headerContextId} from '../components/header.js';
-import {catchErrorTemplate,ajaxErrorTemplate,setLogValue} from "./logBlock.js";
+import {setLogValue} from "./logBlock.js";
 import {modalBox, popupExec} from "./notifications.js";
 import  {STORAGE,getData} from "./globalStorage.js";
+
+import {setAjaxError,setFunctionError} from "./errors.js";
 
 let currId;
 
 function getCurrId (){
-    if ($$("tree").getSelectedItem() !== undefined){
-        let itemTreeId = $$("tree").getSelectedItem().id;
-        if ( itemTreeId.length == 0){
-            currId=headerContextId;
-        } else {
-            currId=itemTreeId;
-        }
-    } else {
-        let href = window.location.pathname;
-        let index = href.lastIndexOf('/');
-        currId = href.slice(index+1);
+    
+    if ($$("tables").isVisible()){
+        currId = $$("table").config.idTable;
+    } else if ($$("forms").isVisible()){
+        currId = $$("table-view").config.idTable;
     }
+
 }
 
 function validateProfForm (){
@@ -34,22 +30,35 @@ function validateProfForm (){
             
             errors[el] = {};
 
-            function valLength (){ 
-                if (values[el].length > propElement.length ){
-                    errors[el].length = "Длина строки не должна превышать "+propElement.length+" симв.";
-                } else {
-                    errors[el].length = null;
+            function valLength(){ 
+                try{
+                    console.log(values[el])
+                    if(values[el]){
+                        
+                        if (values[el].length > propElement.length && propElement.length !==0){
+                            errors[el].length = "Длина строки не должна превышать "+propElement.length+" симв.";
+                        } else {
+                            errors[el].length = null;
+                        }
+                    }
+                } catch (err){
+                    setFunctionError(err,"editTableForm","valLength");
                 }
             }
             function valNotNull (){
-                if (propElement.notnull==true && values[el].length == 0 ){
-                    errors[el].notnull = "Поле не может быть пустым";
-                } else {
-                    errors[el].notnull = null;
+                try{
+                    if (propElement.notnull==true && values[el].length == 0 ){
+                        errors[el].notnull = "Поле не может быть пустым";
+                    } else {
+                        errors[el].notnull = null;
+                    }
+                } catch (err){
+                    setFunctionError(err,"editTableForm","valNotNull");
                 }
             }
 
             function valUnique (){
+                try{
                 errors[el].unique = null;
                 if (propElement.unique==true){
                     let tableRows = Object.values($$("table").data.pull);
@@ -59,15 +68,15 @@ function validateProfForm (){
                         }
                     });
                 }
+                } catch (err){
+                    setFunctionError(err,"editTableForm","valUnique");
+                }
             }
 
-            try {
-                valLength ();
-                valNotNull ();
-                valUnique ();
-            } catch (err){
-                setLogValue("error", "editTableForm function checkConditions: "+err);
-            }
+
+            valLength ();
+            valNotNull ();
+            valUnique ();
 
         });
     }
@@ -103,7 +112,7 @@ function validateProfForm (){
         checkConditions ();
         createErrorMessage ();
     } catch (err){
-        setLogValue("error","editTableForm function validateProfForm: "+err);
+        setFunctionError(err,"editTableForm","validateProfForm");
     }
     return messageErrors;
 }
@@ -125,7 +134,7 @@ function setLogError (){
         });
 
     } catch (err){
-        setLogValue("error","editTableForm function setLogError: "+err);
+        setFunctionError(err,"editTableForm","setLogError");
     }
 }
 
@@ -137,7 +146,7 @@ function setDirtyProperty (type=false){
             $$("editTableFormProperty").refresh();
         }
     } catch (err){
-        setLogValue("error","editTableForm setDirtyProperty: "+err);
+        setFunctionError(err,"editTableForm","setDirtyProperty");
     } 
 }
 
@@ -150,7 +159,7 @@ function hideEditPopup(){
             $$("tableEditPopup").hide();
         }
     } catch (err){
-        setLogValue("error","editTableForm hideEditPopup: "+err);
+        setFunctionError(err,"editTableForm","hideEditPopup");
     } 
 }
 
@@ -162,7 +171,7 @@ function hideEmptyTempalte (){
         }
         
     } catch (err){
-        setLogValue("error","editTableForm showEmptyTempalte: "+err);
+        setFunctionError(err,"editTableForm","showEmptyTempalte");
     } 
 }
 
@@ -177,85 +186,81 @@ function saveItem(addBtnClick=false, refBtnClick=false){
         if (!(validateProfForm().length)){
 
             if( itemData.id ) {
-                webix.ajax().put("/init/default/api/"+currId+"/"+itemData.id, uniqueData (itemData), {
-                    success:function(text, data, XmlHttpRequest){
-                        data = data.json();
+                const link = "/init/default/api/"+currId+"/"+itemData.id;
+                const putData = webix.ajax().put(link, uniqueData (itemData));
+                
+                putData.then(function(data){
+                    data = data.json();
 
-                        function updateWorkspace (){
-                            try{
-                                $$( "table" ).updateItem(itemData.id, itemData);
-                                $$("table").clearSelection();
-                                defaultStateForm();
-                            } catch (err){
-                                setLogValue("error","editTableForm function saveItem => updateWorkspace: "+err);
-                            }  
-                            
-                        }
-
-                        function setDirtyProp (){
-                            try{
-                                $$("editTableFormProperty").config.dirty = false;
-                                $$("editTableFormProperty").refresh();
-                            } catch (err){
-                                setLogValue("error","editTableForm function saveItem => setDirtyProp: "+err);
-                            } 
-                        }
-
-                        function showFormProperty (){
-                            try{
-                                if (!($$("editTableFormProperty").isVisible())){
-                                    $$("editTableFormProperty").show();
-                                }
-                            } catch (err){
-                                setLogValue("error","editTableForm function saveItem => showFormProperty: "+err);
-                            } 
-                        }
-
-                        function addNewStateSpace(){
-                            try{
-                                $$("table").filter(false);
-                                createEditFields("table-editForm");
-                                $$("table-delBtnId").disable(); 
-                                $$("table-saveBtn").hide();
-                                $$("table-saveNewBtn").show();
-                            } catch (err){
-                                setLogValue("error","editTableForm function saveItem => addNewStateSpace: "+err);
-                            }
-                        }
-
-                        if (data.err_type == "i"){
-
-                            if (!refBtnClick){
-                                updateWorkspace ();
-                            }
-
-                            if (!addBtnClick ){
-                                $$("table-newAddBtnId").enable();
-                                setDirtyProp();
-                               
-                            } else {
-                                showFormProperty();
-                                addNewStateSpace();
-                                hideEmptyTempalte();
-                            }
-
-                            if (window.innerWidth < 1200 && $$("tableEditPopup")){
-                                hideEditPopup ();
-                            }
-                           // console.log(currId)
-                            setLogValue("success","Данные сохранены",currId);
-
-                        } if (data.err_type == "e"){
-                            setLogValue("error","editTableForm function saveItem: "+data.error);
-                        }
-                    
-                    },
-                    error:function(text, data, XmlHttpRequest){
-                        setLogValue("error","editTableForm function saveItem: "+XmlHttpRequest.status+" "+XmlHttpRequest.statusText+" "+XmlHttpRequest.responseURL);
+                    function updateWorkspace (){
+                        try{
+                            $$( "table" ).updateItem(itemData.id, itemData);
+                            $$("table").clearSelection();
+                            defaultStateForm();
+                        } catch (err){
+                            setFunctionError(err,"editTableForm","saveItem => updateWorkspace");
+                        }  
+                        
                     }
-                }).catch(error => {
-                    console.log(error);
-                    setLogValue("error","editTableForm function saveItem: "+error.status+" "+error.statusText+" "+error.responseURL);
+
+                    function setDirtyProp (){
+                        try{
+                            $$("editTableFormProperty").config.dirty = false;
+                            $$("editTableFormProperty").refresh();
+                        } catch (err){
+                            setFunctionError(err,"editTableForm","saveItem => setDirtyProp");
+                        } 
+                    }
+
+                    function showFormProperty (){
+                        try{
+                            if (!($$("editTableFormProperty").isVisible())){
+                                $$("editTableFormProperty").show();
+                            }
+                        } catch (err){
+                            setFunctionError(err,"editTableForm","saveItem => showFormProperty");
+                        } 
+                    }
+
+                    function addNewStateSpace(){
+                        try{
+                            $$("table").filter(false);
+                            createEditFields("table-editForm");
+                            $$("table-delBtnId").disable(); 
+                            $$("table-saveBtn").hide();
+                            $$("table-saveNewBtn").show();
+                        } catch (err){
+                            setFunctionError(err,"editTableForm","saveItem => addNewStateSpace");
+                        }
+                    }
+
+                    if (data.err_type == "i"){
+
+                        if (!refBtnClick){
+                            updateWorkspace ();
+                        }
+
+                        if (!addBtnClick ){
+                            $$("table-newAddBtnId").enable();
+                            setDirtyProp();
+                           
+                        } else {
+                            showFormProperty();
+                            addNewStateSpace();
+                            hideEmptyTempalte();
+                        }
+
+                        if (window.innerWidth < 1200 && $$("tableEditPopup")){
+                            hideEditPopup ();
+                        }
+                        setLogValue("success","Данные сохранены",currId);
+
+                    } else {
+                        setLogValue("error","editTableForm function saveItem: "+data.err);
+                    }
+                });
+                putData.fail(function(err){
+                    setAjaxError(err, "editTableForm","saveItem");
                 });
             }    
 
@@ -263,10 +268,9 @@ function saveItem(addBtnClick=false, refBtnClick=false){
             validateProfForm ().forEach(function(el,i){
                 setLogError ();
             });
-           
         }
-    }catch (error){
-        setLogValue("error","editTableForm function saveItem: "+error);
+    } catch (err){
+        setFunctionError(err,"editTableForm","saveItem");
     }
 
 }
@@ -292,7 +296,7 @@ function addItem () {
             createEditFields("table-editForm");
             hideEmptyTempalte();
         } catch (err){
-            setLogValue("error","editTableForm function addItem => setWorkspaceState: "+err);
+            setFunctionError(err,"editTableForm","addItem => setWorkspaceState");
         }
     
     }
@@ -301,7 +305,7 @@ function addItem () {
             $$("editTableFormProperty").config.dirty = false;
             $$("editTableFormProperty").refresh();
         } catch (err){
-            setLogValue("error","editTableForm function addItem => setDirtyProp: "+err);
+            setFunctionError(err,"editTableForm","addItem => setDirtyProp");
         }
     }
     
@@ -341,88 +345,81 @@ function addItem () {
 
         }
 
-    }catch (error){
-        setLogValue("error","editTableForm function addItem: "+error);
+    }catch (err){
+        setFunctionError(err,"editTableForm","addItem");
     }
 
 
 }
 
 function saveNewItem (){
-    try{
-        getCurrId ();
 
-        if (!(validateProfForm().length)){
-            
-            let newValues = $$("editTableFormProperty").getValues();
+    getCurrId ();
 
-            webix.ajax().post("/init/default/api/"+currId, newValues,{
-                success:function(text, data, XmlHttpRequest){
-                    data = data.json();
+    if (!(validateProfForm().length)){
+    
+        let newValues = $$("editTableFormProperty").getValues();
+        const postData =  webix.ajax().post("/init/default/api/"+currId, newValues);
 
-                    function setDirtyProp(){
-                        try{
-                            $$("editTableFormProperty").config.dirty = false;
-                            $$("editTableFormProperty").refresh();
-                        } catch (err){
-                            setLogValue("error","editTableForm function saveNewItem => setDirtyProp: "+err);
-                        }
-                    }
+        postData.then(function(data){
+            data = data.json();
 
-                    function tableUpdate(){
-                        newValues.id = data.content.id;
-                        $$("table").add(newValues); 
-                    }
-
-                    if (data.content.id !== null){
-
-                        if (data.err_type == "i"){
-                            try{
-                                tableUpdate();
-                                defaultStateForm ();
-                                setDirtyProp();
-                                $$("table-newAddBtnId").enable();
-
-                                if (window.innerWidth < 1200 && $$("tableEditPopup")){
-                                    hideEditPopup();
-                                }
-                            } catch (err){
-                                setLogValue("error","editTableForm function saveNewItem: "+err);
-                            }
-                            setLogValue("success","Данные успешно добавлены",currId);
-                        } else if (data.err_type == "e"){
-                            setLogValue("error","editTableForm function saveNewItem: "+data.error);
-                        }
-                    } else {
-
-                        let errs = data.content.errors;
-                        let msg = "";
-                        Object.values(errs).forEach(function(err,i){
-                            msg +=err+" (Поле: "+Object.keys(errs)[i] +"); ";
-                        });
-
-                        setLogValue("error","editTableForm function saveNewItem: "+msg);
-                    }
-                    
-                },
-                error:function(text, data, XmlHttpRequest){
-                    setLogValue("error","editTableForm function saveNewItem: "+XmlHttpRequest.status+" "+XmlHttpRequest.statusText+" "+XmlHttpRequest.responseURL);
+            function setDirtyProp(){
+                try{
+                    $$("editTableFormProperty").config.dirty = false;
+                    $$("editTableFormProperty").refresh();
+                } catch (err){
+                    setFunctionError(err,"editTableForm","saveNewItem => setDirtyProp");
                 }
-            }).catch(error => {
-                console.log(error);
-                setLogValue("error","editTableForm function saveNewItem: "+error.status+" "+error.statusText+" "+error.responseURL);
-            });
+            }
 
-        } else {
-            setLogError ();
-           
-        }
+            function tableUpdate(){
+                newValues.id = data.content.id;
+                $$("table").add(newValues); 
+            }
 
-    }catch (error){
-        setLogValue("error","editTableForm function saveNewItem: "+error);
+            if (data.content.id !== null){
+
+                if (data.err_type == "i"){
+                    try{
+                        tableUpdate();
+                        defaultStateForm ();
+                        setDirtyProp();
+                        $$("table-newAddBtnId").enable();
+
+                        if (window.innerWidth < 1200 && $$("tableEditPopup")){
+                            hideEditPopup();
+                        }
+                    } catch (err){
+                        setFunctionError(err,"editTableForm","saveNewItem");
+                    }
+                    setLogValue("success","Данные успешно добавлены",currId);
+                } else {
+                    console.log(data)
+                    setLogValue("error","editTableForm function saveNewItem: "+data.err);
+                }
+            } else {
+
+                let errs = data.content.errors;
+                let msg = "";
+                Object.values(errs).forEach(function(err,i){
+                    msg +=err+" (Поле: "+Object.keys(errs)[i] +"); ";
+                });
+
+                setLogValue("error","editTableForm function saveNewItem: "+msg);
+            }
+        });
+        postData.fail(function(err){
+            setAjaxError(err, "editTableForm","saveNewItem");
+        });
+    
+
+    } else {
+        setLogError ();
     }
-   
+ 
 }
+
 
 function removeItem() {
  
@@ -440,39 +437,32 @@ function removeItem() {
                 }
 
                 removeRow();
-               
-               
-                webix.ajax().del("/init/default/api/"+currId+"/"+formValues.id+".json", formValues,{
-                    success:function(text, data, XmlHttpRequest){
-                        data = data.json();
+                const link ="/init/default/api/"+currId+"/"+formValues.id+".json";
+                const removeData = webix.ajax().del(link, formValues);
 
-                       
+                removeData.then(function(data){
+                    data = data.json();
 
-                        if (data.err_type == "i"){
-                            
-                            defaultStateForm();
-                            setDirtyProperty();
+                    if (data.err_type == "i"){
+                        
+                        defaultStateForm();
+                        setDirtyProperty();
 
-                            if (window.innerWidth < 1200 && $$("tableEditPopup")){
-                                hideEditPopup();
-                            }
-                            setLogValue("success","Данные успешно удалены");
-                        } if (data.err_type == "e"){
-                            setLogValue("error","editTableForm function removeItem: "+data.error);
+                        if (window.innerWidth < 1200 && $$("tableEditPopup")){
+                            hideEditPopup();
                         }
-                       
-                    },
-                    error:function(text, data, XmlHttpRequest){
-                        setLogValue("error","editTableForm function removeItem: "+XmlHttpRequest.status+" "+XmlHttpRequest.statusText+" "+XmlHttpRequest.responseURL);
+                        setLogValue("success","Данные успешно удалены");
+                    } else {
+                        setLogValue("error","editTableForm function removeItem: "+data.err);
                     }
-                }).catch(error => {
-                    console.log(error);
-                    setLogValue("error","editTableForm function removeItem ajax: "+error.status+" "+error.statusText+" "+error.responseURL);
                 });
-                
+                removeData.fail(function(err){
+                    setAjaxError(err, "editTableForm","removeItem");
+                });
+     
         });
-    }catch (error){
-        setLogValue("error","editTableForm function removeItem all: "+error);
+    } catch (err){
+        setFunctionError(err,"editTableForm","removeItem");
     }
     
 }
@@ -509,7 +499,7 @@ function uniqueData (itemData){
             compareVals ();
         });
     } catch (err){
-        setLogValue("error","editTableForm function uniqueData: "+err);
+        setFunctionError(err,"editTableForm","uniqueData");
     }
 
     return validateData;
@@ -533,6 +523,7 @@ function createEditFields (parentElement) {
 
     function addEditInputs(inputsArray){
         $$("editTableFormProperty").define("elements", inputsArray);
+        $$("editTableFormProperty").refresh();
     }
 
     function propertyRefBtns(){
@@ -562,70 +553,71 @@ function createEditFields (parentElement) {
         }
 
         function setRefTable (srcTable){
+            try {
+                $$("table").getColumns().forEach(function(col,i){
 
-            $$("table").getColumns().forEach(function(col,i){
-
-                if (col.id == srcTable){
-                  
-                    let refTable =  col.type.slice(10);
-
-                    try {
-
-                        if ( $$("tree").getItem(refTable)){
-                            $$("tree").select(refTable);
-                        } else {
-                             
-                            if (refTable){
-                                toRefTable (refTable);
+                    if (col.id == srcTable){
+                    
+                        let refTable =  col.type.slice(10);
+                            if ( $$("tree").getItem(refTable)){
+                                $$("tree").select(refTable);
+                            } else {
+                                
+                                if (refTable){
+                                    toRefTable (refTable);
+                                }
                             }
-                        }
-                       
-                        hideEditPopup();
-                       
-                    } catch (e){
-                        console.log(e);
-                        setLogValue("error","Таблица не найдена");
-
-                        hideEmptyTempalte();
+                        
+                            hideEditPopup();
                     }
-                }
 
-            });
+                });
+            } catch (err){
+                setFunctionError(err,"editTableForm","setRefTable");
+                hideEmptyTempalte();
+            }
         }
 
 
         function createRefBtn(selectBtn){
-
-            
             
             function btnClick (idBtn){
                 const srcTable = $$(idBtn).config.srcTable;
 
-                if ( $$("editTableFormProperty").config.dirty){
-                    modalBox().then(function(result){
-                  
-                        if (result == 1 || result == 2){
-                            if (result == 1){
-                            
-                            } else if (result == 2){
-                                if ($$("editTableFormProperty").getValues().id){
-                                    saveItem(false,true);
-                                } else {
-                                    saveNewItem(); 
+                function createModalBox (){
+                    try{
+                        modalBox().then(function(result){
+                    
+                            if (result == 1 || result == 2){
+                                if (result == 1){
+                                
+                                } else if (result == 2){
+                                    if ($$("editTableFormProperty").getValues().id){
+                                        saveItem(false,true);
+                                    } else {
+                                        saveNewItem(); 
+                                    }
+                                    
                                 }
-                                  
+
+                                setDirtyProperty ();
+                                setRefTable (srcTable);
+                            
                             }
+                        });
+                          
+                    } catch (err){
+                        setFunctionError(err,"editTableForm","createModalBox");
+                    }
+                }
 
-                            setDirtyProperty ();
-                            setRefTable (srcTable);
-                        
-                        }
-                    });
-
+                if ( $$("editTableFormProperty").config.dirty){
+                    createModalBox ();
                 } else {
                     setRefTable (srcTable);
                 }
             }
+            
             $$("propertyRefbtnsContainer").addView({ 
                 view:"button", 
                 type:"icon",
@@ -660,7 +652,22 @@ function createEditFields (parentElement) {
             });
         }
     }
-   
+
+    const popupTextArea = webix.ui({
+        view:"popup",
+        body:{
+            view:"textarea", 
+            width:300, 
+            height:100 ,
+            // on:{
+             
+            //     onTimedKeyPress:function(newv){
+            //         console.log(this.getValue());
+            //     }
+               
+            // }
+        },
+    });
 
     try {
         let columnsData = $$("table").getColumns();
@@ -683,13 +690,13 @@ function createEditFields (parentElement) {
                         return new Date(el.default);
                     }
 
-                    let formatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
+                    let formatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s:%S");
 
                     let defVal;
-
-                    if (el.default === "now"){
+            
+                    if (el.default === "now" && el.type == "datetime"){
                         defVal = new Date();
-                    } else if (Date.parse(new Date(el.default)) && el.default.length > 10 ){
+                    } else if (Date.parse(new Date(el.default)) && el.type == "datetime" ){
                         defVal = formatData(dateFormatting ());
                     } else if (el.default.includes("make_guid")) {
                         defVal = createGuid();
@@ -697,8 +704,10 @@ function createEditFields (parentElement) {
                         defVal = 2;
                     } else if (el.default == "True"){
                         defVal = 1;
-                    } else if (el.default !== "None"){
+                    } else if (el.default !== "None" && el.default !== "null"){
                         defVal = el.default;
+                    } else if(el.default == "None" || el.default == "null"){
+                        defVal = "";
                     }
 
                     return defVal;
@@ -715,10 +724,11 @@ function createEditFields (parentElement) {
                 };
 
                 function createDateTimeInput(){
-                    template.format = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
+                    template.format = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s:%S");
                     template.type = "date";
                 }
 
+              
                 function createReferenceInput(){
                     let findTableId = el.type.slice(10);
                     template.type = "combo";
@@ -739,7 +749,14 @@ function createEditFields (parentElement) {
                 }
 
                 function createTextInput(){
-                    template.type = "text";
+                    if (el.length==0 || el.length > 512){
+                   
+                        template.type="popup";
+                        template.popup = popupTextArea;
+              
+                    } else {
+                        template.type = "text";
+                    }
                 }
 
                 function addIntegerType(){
@@ -768,9 +785,10 @@ function createEditFields (parentElement) {
              
             });
 
+       
+
             createDateEditor();
             addEditInputs(inputsArray);
-          
             propertyRefBtns();
             
             
@@ -783,8 +801,8 @@ function createEditFields (parentElement) {
                 $$("table-delBtnId").enable();
             }
         }
-    } catch (error){
-        catchErrorTemplate("003-000", error);
+    } catch (err){
+        setFunctionError(err,"editTableForm","createEditFields");
     }
 }
 
@@ -824,8 +842,8 @@ function defaultStateForm () {
         formPropertyState();
         showEditTemplate();
         removeRefBtns();
-    }catch (error){
-        setLogValue("error","editTableForm function defaultStateForm: "+error);
+    }catch (err){
+        setFunctionError(err,"editTableForm","defaultStateForm");
     }
 
 }
@@ -1013,22 +1031,42 @@ function editingEnd (editor,value){
     setDirtyProperty (true);
 }
 //----- form
+
 const propertyEditForm = {   
     view:"property",  
     id:"editTableFormProperty", 
     css:"webix_edit-table-form-property",
     dirty:false,
+    nameWidth:150,
     editable:true,
-    tooltip:"Имя: #label#<br> Значение: #value#",
+    tooltip:function(obj){
+        let value;
+        let label = obj.label;
+        if (obj.type == "date"){
+            let formatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s:%S");
+            value = formatData(obj.value);
+        } else{
+            value = obj.value;
+        }
+        return"Название: "+label+" <br> Значение: " + value;
+    },
     hidden:true,
     elements:[],
     on:{
         onEditorChange:function(id, value){
+            function setStateSaveBtn(){
+                if ($$("table-saveBtn")                && 
+                    $$("table-saveBtn").isVisible()    &&
+                  !($$("table-saveBtn").isEnabled()) ){ 
+                        $$("table-saveBtn").enable();
+                }
+            }
             editingEnd (id,value);
+            setStateSaveBtn();
         },
         onBeforeRender:function (){
             let size = this.config.elements.length*28;
-            if (size && this.$height < size){
+            if (size && this.$height !== size){
                 this.define("height", size);
                 this.resize();
             }
@@ -1054,7 +1092,7 @@ const editForm = {
     css:"webix_form-edit",
     minHeight:350,
     minWidth:210,
-    width: 320,
+    width: 360,
     borderless:true,
     scroll:true,
     elements:[

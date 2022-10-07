@@ -33,7 +33,7 @@ function setLogValue (typeNotify,notifyText,specificSrc) {
             if (STORAGE.tableNames){
                 STORAGE.tableNames.forEach(function(el,i){
                     if (srcTable == "version"){
-                        name = 'Expa v1.0.33';
+                        name = 'Expa v1.0.34';
                     } else if (el.id == srcTable){
                         name = el.name;
                     }

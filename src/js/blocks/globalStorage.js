@@ -12,15 +12,19 @@ function getTableNames (content){
 
 
 function checkNotAuth (err){
-    console.log('kkk')
-    if (err.status === 401 && window.location.pathname !== "/index.html"  && window.location.pathname !== "/init/default/spaw/"){
+    if (err.status               === 401                  && 
+        window.location.pathname !== "/index.html"        && 
+        window.location.pathname !== "/init/default/spaw/"){
         Backbone.history.navigate("/", { trigger:true});
     }
 }
 
 function getData (fileName){
+ 
+ 
     if (    window.location.pathname !== "/index.html"          &&  
-            window.location.pathname !== '/init/default/spaw'
+            window.location.pathname !== '/init/default/spaw'   ||
+            fileName == "whoami"
         ){
         return webix.ajax().get(`/init/default/api/${fileName}.json`)
             .then(function (data) {
@@ -39,7 +43,7 @@ function getData (fileName){
                     " ( Подробности: " + err.responseText+ ") "
                 );
               
-                checkNotAuth (err);
+               checkNotAuth (err);
             }
         );
     }

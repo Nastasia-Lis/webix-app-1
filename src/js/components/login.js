@@ -81,7 +81,7 @@ function login () {
                     }).then(function(data){
                         webix.ajax().get("/init/default/api/userprefs/", {
                             success:function(text, data, XmlHttpRequest){
-                                console.log('oeoe')
+
 
                             
                             },

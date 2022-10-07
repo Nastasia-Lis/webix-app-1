@@ -920,13 +920,11 @@ function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterEle
 
 function getItemId (){
     let id;
-    if ($$("tree").getSelectedItem()){
-        id = $$("tree").getSelectedItem().id;
-    } else {
-        let href = window.location.pathname;
-        let index = href.lastIndexOf("/");
-        id = href.slice(index+1);
 
+    if ($$("tables").isVisible()){
+        id = $$("table").config.idTable;
+    } else if ($$("forms").isVisible()){
+        id = $$("table-view").config.idTable;
     }
     return id;
 }
@@ -1064,6 +1062,7 @@ function toEditForm (nextItem) {
       
         $$("table-saveNewBtn").hide();
         $$("table-saveBtn").show();
+        $$("table-saveBtn").disable();
         $$("table-delBtnId").enable();
     } catch (error){
         console.log(error);

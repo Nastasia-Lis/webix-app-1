@@ -149,7 +149,7 @@ function removeElements(){
 
 
 function getWorkspace (){
-
+  
     async function getMenuTree() {
 
         if (!STORAGE.mmenu){
@@ -157,7 +157,7 @@ function getWorkspace (){
             await getData("mmenu"); 
             
         }
-
+        
 
         function generateChildsTree  (el){
             let childs = [];
@@ -358,7 +358,8 @@ function router (){
         
         content:function(){
             try {
-                getWorkspace();
+              getWorkspace();
+              //console.log
             } catch (err){
                 console.log(err);
                 setLogValue("error","router/content: "+err+ " (Подробности: ошибка роутера)" );
@@ -371,10 +372,11 @@ function router (){
 
                 if (!STORAGE.whoami ){
                     await getData("whoami"); 
+                    console.log(STORAGE.whoami)
                 }
-        
+         
                 if (STORAGE.whoami){
-
+                
                     try {
                         Backbone.history.navigate("content", { trigger:true});
                     } catch (err){
