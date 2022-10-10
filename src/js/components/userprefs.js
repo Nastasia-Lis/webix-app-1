@@ -237,6 +237,39 @@ const userprefsOther = {
                     }
                 }
             },
+            {height:5},
+            {
+                view:"radio",
+                labelPosition:"top", 
+                label:"ID в таблицах", 
+                value:1,
+                name:"visibleIdOpt", 
+                options:[
+                    {"id":1, "value":"Показывать"},
+                    {"id":2, "value":"Не показывать"}
+                ],
+                // on:{
+                //     onChange:function(newValue, oldValue,config){
+                //         try{
+
+            
+                //             if (newValue == 1 ){
+                                
+                //             }
+
+                //             if (newValue == 2){
+                               
+                //             }
+                        
+
+                //         } catch (error){
+                //             console.log(error);
+                //            // catchErrorTemplate("015-000", error);
+                //         }
+                     
+                //     }
+                // }
+            },
             {}
         ],
         on:{

@@ -13,139 +13,212 @@ import {editTableBar} from "./editTableForm.js";
 import {propertyTemplate} from "./viewPropertyTable.js";
 import {filterForm} from "./filterTableForm.js";
 import {editTreeLayout,contextMenu} from "../components/editTree.js";
-import {catchErrorTemplate,ajaxErrorTemplate,setLogValue} from "./logBlock.js";
+import {setLogValue} from "./logBlock.js";
 import {getInfoTable, getInfoEditTree,getInfoDashboard} from "./content.js";
 import {setStorageData} from "./storageSetting.js";
 
 import  {STORAGE,getData} from "../blocks/globalStorage.js";
 
 
+import {setAjaxError,setFunctionError} from "./errors.js";
+
+
 
 
 
 function createElements(specificElement){
-   
-    try {
-        if(!specificElement){
+
+    function createDashboards(){
+        try{
             if (!$$("dashboards")){
                 $$("container").addView(
-                    {view:"layout",id:"dashboards", hidden:true, scroll:"auto",
+                    {   view:"layout",
+                        id:"dashboards", 
+                        hidden:true, 
+                        scroll:"auto",
                         rows: dashboardLayout()
                     },
                 3);
             }
+        } catch (err){
+            setFunctionError(err,"router","createDashboards");
+        }
+    }
 
+    function createTables(){
+        try{
             if (!$$("tables")){
 
                 $$("container").addView(
-                    {id:"tables", hidden:true, view:"scrollview", body: { view:"flexlayout", cols:[
-                                                    
-                        {   id:"tableContainer",
-                                rows:[
-                                    tableToolbar ( "table-search", "table-exportBtn","table-editTableBtnId", "table-findElements","table-idFilterElements", "table","table-filterId","table-templateHeadline"),
-                                    { view:"resizer",class:"webix_resizers",},
-                                    table ("table", onFuncTable,true)
-                                ]
-                            },
-                        
-                            {  view:"resizer",class:"webix_resizers",},
+                    {   id:"tables", 
+                        hidden:true, 
+                        view:"scrollview", 
+                        body: { 
+                            view:"flexlayout", 
+                            cols:[
+                                                        
+                                {   id:"tableContainer",
+                                    rows:[
+                                        tableToolbar ("table"),
+                                        { view:"resizer",class:"webix_resizers",},
+                                        table ("table", onFuncTable,true)
+                                    ]
+                                },
                             
-                            editTableBar(),filterForm(),
-                            
-                            
-                        ]
+                                {  view:"resizer",class:"webix_resizers"},
+                                
+                                editTableBar(),filterForm(),
+                                
+                                
+                            ]
                         }
                     
                     },
 
-                 
+                
                 5);
             }
+        } catch (err){
+            setFunctionError(err,"router","createTables")
+        }
+    }
 
+    function createForms(){
+        try{
             if (!$$("forms")){
                 $$("container").addView(
-                    {view:"layout",id:"forms", css:"webix_tableView",hidden:true, 
-                                                
+                    {   view:"layout",
+                        id:"forms", 
+                        css:"webix_tableView",
+                        hidden:true,                       
                         rows:[
-                            tableToolbar("table-view-search", "table-view-exportBtn","table-view-editTableBtnId", "table-view-findElements","table-view-idFilterElements", "table-view","table-view-filterIdView","table-view-templateHeadline", true ),
+                            tableToolbar("table-view", true ),
                             { view:"resizer",class:"webix_resizers",},
                             
-                            {view:"scrollview", body:  
-                            
-                            {view:"flexlayout",cols:[
-                                table ("table-view"),
-                                { view:"resizer",class:"webix_resizers", id:"propResize", hidden:true},
-                                propertyTemplate("propTableView")
-                            ]}}, 
+                            {   view:"scrollview", 
+                                body: {
+                                    view:"flexlayout",
+                                    cols:[
+                                        table ("table-view"),
+                                        {   view:"resizer",
+                                            class:"webix_resizers", 
+                                            id:"propResize", 
+                                            hidden:true
+                                        },
+                                        propertyTemplate("propTableView")
+                                    ]
+                                }
+                            }, 
                         ],
 
                         
                     },
                 6);
             }
+        } catch (err){
+            setFunctionError(err,"router","createForms")
         }
-
-
-        if (specificElement == "treeTempl"){
-            if (!$$("treeTempl")){
-                $$("container").addView(
-                    {view:"layout",id:"treeTempl", hidden:true, scroll:"auto",
-                        rows: editTreeLayout()
-                    },
-                4);
-                webix.ui(contextMenu());
-            }
-        }
-
-        if (specificElement == "cp"){
-            $$("container").addView(
-                {view:"layout",id:"user_auth", css:"webix_auth",hidden:true, 
-                    rows:[
-                        authCpLayout,
-                        {}
-                    ],
-                }, 
-            7);
-        }
-
-        if (specificElement == "userprefs"){
-
-            $$("container").addView(
-                {view:"layout",id:"userprefs", css:"webix_auth",hidden:true, 
-                    rows:[
-                        userprefsLayout,
-                        //{}
-                    ],
-                }, 
-            8);
-        }
-    } catch (error){
-        console.log(error);
-        catchErrorTemplate("015-004", error);
     }
-    
+
+    function createDefaultWorkspace(){
+        if(!specificElement){
+            createDashboards();
+            createTables();
+            createForms();
+        }
+    }
+
+    function createTreeTempl(){
+        try{
+            if (specificElement == "treeTempl"){
+                if (!$$("treeTempl")){
+                    $$("container").addView(
+                        {   view:"layout",
+                            id:"treeTempl", 
+                            hidden:true, 
+                            scroll:"auto",
+                            rows: editTreeLayout()
+                        },
+                    4);
+                    webix.ui(contextMenu());
+                }
+            }
+        } catch (err){
+            setFunctionError(err,"router","createTreeTempl")
+        }
+    }
+
+    function createCp(){
+        try{
+            if (specificElement == "cp"){
+                $$("container").addView(
+                    {   view:"layout",
+                        id:"user_auth", 
+                        css:"webix_auth",
+                        hidden:true, 
+                        rows:[
+                            authCpLayout,
+                            {}
+                        ],
+                    }, 
+                7);
+            }
+        } catch (err){
+            setFunctionError(err,"router","createCp")
+        }
+    }
+
+    function createUserprefs(){
+        try{
+            if (specificElement == "userprefs"){
+
+                $$("container").addView(
+                    {   view:"layout",
+                        id:"userprefs", 
+                        css:"webix_auth",
+                        hidden:true, 
+                        rows:[
+                            userprefsLayout,
+                        ],
+                    }, 
+                8);
+            }
+        } catch (err){
+            setFunctionError(err,"router","createUserprefs")
+        }
+    }
+
+    function createSpecificWorkspace (){
+        createTreeTempl();
+        createCp();
+        createUserprefs();
+    }
+   
+
+    createDefaultWorkspace();
+    createSpecificWorkspace ();
 
 }
+
 
 function removeElements(){
-    try {
-        if ($$("tables")){
-            $$("container").removeView($$("tables"));
+
+    function removeElement(idElement){
+        try {
+            if ($$(idElement)){
+                $$("container").removeView($$(idElement));
+            }
+        } catch (err){
+            setFunctionError(err,"router","removeElement (element: "+idElement+")")
         }
-        if ($$("dashboards")){
-            $$("container").removeView($$("dashboards"));
-        }
-        if ($$("forms")){
-            $$("container").removeView($$("forms"));
-        }
-        if ($$("user_auth")){
-            $$("container").removeView($$("user_auth"));
-        }
-    } catch (error){
-        console.log(error);
-        catchErrorTemplate("015-004", error);
     }
+    removeElement ("tables");
+    removeElement ("dashboards");
+    removeElement ("forms");
+    removeElement ("user_auth");
 }
+
+
 
 
 function getWorkspace (){
@@ -171,8 +244,7 @@ function getWorkspace (){
                     });
                 });
             } catch (err){
-                console.log(err);
-                setLogValue("error","generateChildsTree: "+err );
+                setFunctionError(err,"router","generateChildsTree");
             }
             return childs;
         }
@@ -205,8 +277,7 @@ function getWorkspace (){
                     
                 }
             } catch (err){
-                console.log(err);
-                setLogValue("error","generateParentTree: "+err );
+                setFunctionError(err,"router","generateParentTree");
             }
             return menuItem;
         } 
@@ -233,8 +304,7 @@ function getWorkspace (){
 
                 items.push({id:"logout", value:"Выйти", css:"webix_logout"});
             } catch (err){
-                console.log(err);
-                setLogValue("error","generateHeaderMenu: "+err );
+                setFunctionError(err,"router","generateHeaderMenu");
             }
 
             return items;
@@ -274,8 +344,7 @@ function getWorkspace (){
                     $$("button-context-menu").enable();
                 }
             } catch (err){
-                console.log(err);
-                setLogValue("error","generateMenuTree: "+err );
+                setFunctionError(err,"router","generateMenuTree");
             }
         }
 
@@ -289,9 +358,8 @@ function getWorkspace (){
                 $$("userAuth").hide();
                 $$("mainLayout").show();
             } catch (err){
-                console.log(err);
                 window.alert("showMainContent: "+err+ " (Подробности: ошибка в отрисовке контента)");
-                setLogValue("error","showMainContent: "+err );
+                setFunctionError(err,"router","showMainContent");
             }
         }
 
@@ -300,16 +368,17 @@ function getWorkspace (){
             userStorageData.id = STORAGE.whoami.content.id;
             userStorageData.name = STORAGE.whoami.content.first_name;
             userStorageData.username = STORAGE.whoami.content.username;
+            
             setStorageData("user", JSON.stringify(userStorageData));
         }
 
-            showMainContent();
+        showMainContent();
 
-            setUserData(); //??
+        setUserData();
 
-            createElements();
+        createElements();
 
-            getMenuTree();
+        getMenuTree();
     }
 
     async function getAuth () {
@@ -337,10 +406,49 @@ function hideAllElements (){
             }
         });
     } catch (err){
-        console.log(err);
-        setLogValue("error","hideAllElements: "+err );
-
+        setFunctionError(err,"router","hideAllElements");
     }
+}
+
+function removeNullContent(){
+    try{
+        if($$("webix__null-content")){
+            $$("container").removeView($$("webix__null-content"));
+        }
+    } catch (err){
+        setFunctionError(err,"router","router function removeNullContent");
+    }
+}
+
+function hideNoneContent(){
+    try{
+        if ( $$("webix__none-content")){
+            $$("webix__none-content").hide();
+        }
+    } catch (err){
+        setFunctionError(err,"router","router function hideNoneContent");
+    }
+}
+
+function checkTreeOrder(){
+    try{
+        if ($$("tree").data.order.length == 0){
+            getWorkspace ();
+        }
+    } catch (err){
+        setFunctionError(err,"router","router function checkTreeOrder");
+    }
+}
+
+function closeTree(){
+    try{
+        if($$("tree")){
+            $$("tree").closeAll();
+        }
+    } catch (err){
+        setFunctionError(err,"router","closeTree");
+    }
+    
 }
 
 function router (){
@@ -359,168 +467,248 @@ function router (){
         content:function(){
             try {
               getWorkspace();
-              //console.log
             } catch (err){
-                console.log(err);
-                setLogValue("error","router/content: "+err+ " (Подробности: ошибка роутера)" );
+                setFunctionError(err,"router","router:content");
             }
     
         },
     
         index:function(){
+
+            function goToContentPage(){
+
+                try {
+                    Backbone.history.navigate("content", { trigger:true});
+                } catch (err){
+                    setFunctionError(err,"router","router:index function goToContentPage");
+                }
+            }
+
+            function showWorkspace(){
+                try{
+                    if($$("mainLayout")){
+                        $$("mainLayout").hide();
+                    }
+
+                    if(  $$("userAuth")){
+                        $$("userAuth").show();
+                    }
+                     
+                } catch (err){
+                    window.alert("getAuth: "+err+ " (Подробности: ошибка в отрисовке контента, router:index function showWorkspace)");
+                    setFunctionError(err,"router","router:index function showWorkspace");
+                }
+            }
+
             async function getAuth () {
 
                 if (!STORAGE.whoami ){
                     await getData("whoami"); 
-                    console.log(STORAGE.whoami)
                 }
          
                 if (STORAGE.whoami){
-                
-                    try {
-                        Backbone.history.navigate("content", { trigger:true});
-                    } catch (err){
-                        console.log(err);
-                        setLogValue("error","router/index: "+err+ " (Подробности: ошибка роутера)" );
-                    }
+                    goToContentPage();
 
                 } else {
-                    try{
-                        $$("mainLayout").hide();
-                        $$("userAuth").show();
-                    } catch (err){
-                        console.log(err);
-                        window.alert("getAuth: "+err+ " (Подробности: ошибка в отрисовке контента)");
-                        setLogValue("error","getAuth: "+err );
-                    }
+                    showWorkspace();
                 }
             }
-
             getAuth ();
    
         }, 
+
         tree: function(id){
+        
+            function notFoundPopup(){
 
-            function notFoundPopup (){
-                setTimeout(function(){
-                    webix.ui({
-                        view:"popup",
-                        id:"popupNotFound",
-                        css:"webix_popup-prev-href",
-                        width:340,
-                        height:125,
-                        position:"center",
-                        body:{
-                            rows:[
-                            {rows: [ 
-                                { cols:[
-                                {template:"Что-то пошло не так...", width:250,css:"webix_template-not-found", borderless:true, height:20 },
+                const popupHeadline = {   
+                    template:"Что-то пошло не так...", 
+                    width:250,
+                    css:"webix_template-not-found", 
+                    borderless:true, 
+                    height:20 
+                };
+                const btnClosePopup = {
+                    view:"button",
+                    id:"buttonClosePopup",
+                    css:"webix_close-btn",
+                    type:"icon",
+                    width:35,
+                   
+                    icon: 'wxi-close',
+                    click:function(){
+                        try{
+                            if ($$("popupNotFound")){
+                                $$("popupNotFound").hide();
+                            }
+                        } catch (err){
+                            setFunctionError(err,"router","router:tree, btnClosePopup click");
+                        }
+                    
+                    }
+                };
+
+                const popupSubtitle = {   
+                    template:"Страница не найдена",
+                    css:"webix_template-not-found-descr", 
+                    borderless:true, 
+                    height:35 
+                };
+
+                const mainBtnPopup = {
+                    view:"button",
+                    css:"webix_btn-not-found-back",
+                    height:46,
+                    value:"Вернуться на главную",
+                    click:function(){
+                        function destructPopup(){
+                            try{
+                                if ($$("popupNotFound")){
+                                    $$("popupNotFound").destructor();
+                                }
+                            } catch (err){
+                                setFunctionError(err,"router","router:tree, mainBtnPopup click destructPopup");
+                            }
+                        }
+                        function navigate(){
+                            try{
+                                Backbone.history.navigate("content", { trigger:true});
+                                window.location.reload();
+                            } catch (err){
+                                setFunctionError(err,"router","router:tree, mainBtnPopup click navigate");
+                            }
+                        }
+                        destructPopup();
+                        navigate();
+                     
+                   
+                    }
+                };
+
+                webix.ui({
+                    view:"popup",
+                    id:"popupNotFound",
+                    css:"webix_popup-prev-href",
+                    width:340,
+                    height:125,
+                    position:"center",
+                    body:{
+                        rows:[
+                        {rows: [ 
+                            { cols:[
+                                popupHeadline,
                                 {},
-                                {
-                                    view:"button",
-                                    id:"buttonClosePopup",
-                                    css:"webix_close-btn",
-                                    type:"icon",
-                                    width:35,
-                                   
-                                    icon: 'wxi-close',
-                                    click:function(){
-                                        $$("popupNotFound").hide();
-                                    }
-                                },
-                                ]},
-                                {   template:"Страница не найдена",
-                                    css:"webix_template-not-found-descr", 
-                                    borderless:true, 
-                                    height:35 },
-                                {
-                                    view:"button",
-                                    css:"webix_btn-not-found-back",
-                                    height:46,
-                                    value:"Вернуться на главную",
-                                    click:function(){
-                                        if ($$("popupNotFound")){
-                                            $$("popupNotFound").destructor();
-                                        }
-                                        
-                                        Backbone.history.navigate("content", { trigger:true});
-                                        window.location.reload();
-                                       
-                                    }
-                                },
-                                {height:20}
-                            ]}]
-                            
-                        },
+                                btnClosePopup,
+                            ]},
+                            popupSubtitle,
+                            mainBtnPopup,
+                            {height:20}
+                        ]}]
+                        
+                    },
 
-                    }).show();
-                }, 1500);
+                }).show();
             }
+            function showNotFoundPopup (){
+                try{
+                    setTimeout(function(){
+                        notFoundPopup();
+                    }, 1500);
+                } catch (err){
+                    setFunctionError(err,"router","router:tree function showNotFoundPopup");
+                }
+            }
+
             function showTableData (){
                 let fieldsData;
                 let checkFound = false;
                 fieldsData = STORAGE.fields.content;
             
-            
-                Object.values(fieldsData).forEach(function(field,i){
-                  
-                    if (Object.keys(fieldsData)[i] == id){
-                        checkFound=true;
-                        if (field.type == "dbtable" || 
-                            field.type == "tform"   || 
-                            field.type == "dashboard"){
-                            
-                            if ($$("webix__none-content").isVisible()){
-                                $$("webix__none-content").hide();
-                            }
-                            if (field.type == "dbtable"){
-                                if ($$("tables")){
-                                    $$("tables").show();
-                                }
-                                getInfoTable ("table", id);
-                                
-                            } else if (field.type == "tform"){
-                                if ($$("forms")){
-                                    $$("forms").show();
-                                }
-                                getInfoTable ("table-view", id);
-                            } else if (field.type == "dashboard"){
-                                if ($$("dashboards")){
-                                    $$("dashboards").show();
-                                }
-                                getInfoDashboard(id);
-                            }
-                            
-                        } 
+                function showElem(idElem){
+                    try{
+                        if ($$(idElem)){
+                            $$(idElem).show();
+                        }
+                    } catch (err){
+                        setFunctionError(err,"router","router:tree function showTableData (element: "+idElem+")");
                     }
-                });
+                }
+
+            
+                function createElem(){
+                    try{
+                        Object.values(fieldsData).forEach(function(field,i){
+                        
+                            if (Object.keys(fieldsData)[i] == id){
+                                checkFound=true;
+                                
+                                if (field.type == "dbtable" || 
+                                    field.type == "tform"   || 
+                                    field.type == "dashboard"){
+                                    
+                                    hideNoneContent();
+
+                                    if (field.type == "dbtable"){
+                                        showElem("tables");
+                                        getInfoTable ("table", id);
+                                        
+                                    } else if (field.type == "tform"){
+                                        showElem("forms");
+                                        getInfoTable ("table-view", id);
+
+                                    } else if (field.type == "dashboard"){
+                                        showElem("dashboards");
+                                        getInfoDashboard(id);
+                                    }
+                                    
+                                } 
+                            }
+                        });
+                    } catch (err){
+                        setFunctionError(err,"router","router:tree function createElem");
+                    }
+                }
+                createElem();
 
                 if (!checkFound){
-                    notFoundPopup ();
+                    showNotFoundPopup ();
                 }
             }
             
             function setTableName (){
 
                 if ($$("table-templateHeadline") ){
-                    
-                    STORAGE.tableNames.forEach(function(el,i){
-                        if (el.id == id){
-                            $$("table-templateHeadline").setValues(el.name);
-                        }
-                        
-                    });
+                    try{
+                        STORAGE.tableNames.forEach(function(el,i){
+                            if (el.id == id){
+                                if($$("table-templateHeadline")){
+                                    $$("table-templateHeadline").setValues(el.name);
+                                }
+                            }
+                            
+                        });
+                    } catch (err){
+                        setFunctionError(err,"router","router:tree function setTableName element table-templateHeadline");
+                    }
                 } 
                 
                 if ($$("table-view-templateHeadline")){
-                    STORAGE.tableNames.forEach(function(el,i){
-                        if (el.id == id){
-                            $$("table-view-templateHeadline").setValues(el.name);
-                        }
-                        
-                    });
+                    try{
+                        STORAGE.tableNames.forEach(function(el,i){
+                            if (el.id == id){
+                                if($$("table-view-templateHeadline")){
+                                    $$("table-view-templateHeadline").setValues(el.name);
+                                }
+                            
+                            }
+                            
+                        });
+                    } catch (err){
+                        setFunctionError(err,"router","router:tree function setTableName element table-view-templateHeadline");
+                    }
                 }
             }
+
             async function getTableData (){
 
         
@@ -536,197 +724,247 @@ function router (){
 
             async function createTable (){
                 await getWorkspace ();
+
+                try{
        
-                $$("tree").attachEvent("onAfterLoad", function () {
-                let parentId;
+                    $$("tree").attachEvent("onAfterLoad", function () {
+                        let parentId;
 
-                if ($$("tree").getItem(id)){
-                  
-                    parentId = $$("tree").getParentId(id);
-                    $$("tree").open(parentId);
-                    $$("tree").select(id);
-                 
-                } else if (!STORAGE.fields) {
-                    getTableData ();
-            
-                } else if (STORAGE.fields){
-                    showTableData ();
-                    setTableName ();
-                } 
-                
-                });
-            }
+                        function treeselectItem(){
+                            parentId = $$("tree").getParentId(id);
+                            $$("tree").open(parentId);
+                            $$("tree").select(id);
+                        }
 
-            try {
-            
-                if ($$("tree").data.order.length == 0){
-                    createTable ();
+                        if ($$("tree").getItem(id)){
+                        
+                            treeselectItem();
+                        
+                        } else if (!STORAGE.fields) {
+                            getTableData ();
+                    
+                        } else if (STORAGE.fields){
+                            showTableData ();
+                            setTableName ();
+                        } 
+                    
+                    });
+                } catch (err){
+                    setFunctionError(err,"router","router:tree function createTable");
                 }
-
-               
-                
-            } catch (error){
-                console.log(error);
-                catchErrorTemplate("015-005", error);
-    
             }
+
+            function checkTable(){
+                try {
+                    if ($$("tree").data.order.length == 0){
+                        createTable ();
+                    }
+                } catch (err){
+                    setFunctionError(err,"router","router:tree function checkTable");
         
+                }
+            }
+
+            checkTable();
     
         },
         
         cp: function(){
-            try {
-                if($$("webix__null-content")){
-                    $$("container").removeView($$("webix__null-content"));
+            function showUserAuth(){
+                try{
+                    if ($$("user_auth")){
+                        $$("user_auth").show();
+                    }
+                } catch (err){
+                    setFunctionError(err,"router","router:cp function showUserAuth");
                 }
-    
-                hideAllElements ();
-    
-    
-                $$("webix__none-content").hide();
-                if ($$("tree").data.order.length == 0){
-                    getWorkspace ();
-                }
-    
-                if($$("user_auth")){
-                    $$("user_auth").show();
-                }else {
-                    createElements("cp");
-                    $$("user_auth").show();
-
-                }
-    
-                $$("tree").closeAll();
-
-                let user = webix.storage.local.get("user");
-                if (user){
-                    $$("authName").setValues(user.name.toString());
-                }
-            } catch (error){
-                console.log(error);
-                catchErrorTemplate("015-005", error);
             }
+               
+            function setUserValues(){
+                let user = webix.storage.local.get("user");
+                try{
+                    if (user){
+                        $$("authName").setValues(user.name.toString());
+                    }
+                } catch (err){
+                    setFunctionError(err,"router","router:cp function setUserValues");
+                }
+            }
+
+           
+
+            removeNullContent();
+            hideAllElements ();
+            hideNoneContent();
+            checkTreeOrder();
+
+
+            if($$("user_auth")){
+                showUserAuth();
+            } else {
+                createElements("cp");
+                showUserAuth();
+            }
+
+            closeTree();
+            setUserValues();
+
         
         },
     
         userprefs: function(){
-            try {
-                if($$("webix__null-content")){
-                    $$("container").removeView($$("webix__null-content"));
-                }
-            
-                hideAllElements ();
-    
-                $$("webix__none-content").hide();
-                if ($$("tree").data.order.length == 0){
-                    getWorkspace ();
-                }
-    
-                if ($$("userprefs")){
+       
+            function showUserprefs(){
+                try{
                     $$("userprefs").show();
-                } else {
-                    createElements("userprefs");
+                } catch (err){
+                  
+                    setFunctionError(err,"router","router:userprefs function showUserprefs");
+                }
+            }
 
-                    webix.ajax().get("/init/default/api/userprefs/", {
-                        success:function(text, data, XmlHttpRequest){
-                            data = data.json().content;
-                            if (data.err_type == "e"){
-                                setLogValue("error",data.error);
-                            }
+            function setUserprefsNameValue (){
+                let user = webix.storage.local.get("user");
+                try{
+                    if (user){
+                        $$("userprefsName").setValues(user.name.toString());
+                    }
+                } catch (err){
+                  
+                    setFunctionError(err,"router","router:userprefs function setUserprefsNameValue");
+                }
+    
+            }
 
+        
+    
+            removeNullContent();
+            hideAllElements ();
+            hideNoneContent();
+
+            checkTreeOrder();
+
+            if ($$("userprefs")){
+                showUserprefs();
+            } else {
+                createElements("userprefs");
+
+                const userprefsData = webix.ajax().get("/init/default/api/userprefs/");
+
+                userprefsData.then(function(data){
+
+                    data = data.json().content;
+
+                    function setTemplateValue(){
+                        try{
                             data.forEach(function(el,i){
                                 if (el.name.includes("userprefs")){
                                     $$(el.name).setValues(JSON.parse(el.prefs));
                                 }
                             });
-                        },
-                        error:function(text, data, XmlHttpRequest){
-                            ajaxErrorTemplate("016-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                        } catch (err){
+                            setFunctionError(err,"router","router:cp function setUserValues");
                         }
-                    }).catch(error => {
-                        console.log(error);
-                        ajaxErrorTemplate("016-000",error.status,error.statusText,error.responseURL);
-                    });
+                    }
 
+                    setTemplateValue();
+                    
+                });
 
-                    $$("userprefs").show();
+                userprefsData.fail(function(err){
+                    setAjaxError(err, "router","router:userprefs userprefsData");
+                });
 
-                }
+                showUserprefs();
 
-                let user = webix.storage.local.get("user");
-                if (user){
-                    $$("userprefsName").setValues(user.name.toString());
-                }
-    
-                $$("tree").closeAll();
-
-       
-            } catch (error){
-                console.log(error);
-                catchErrorTemplate("016-005", error);
             }
+
+            setUserprefsNameValue ();
+            closeTree();
         
         },
 
         experimental: function (){
-            try {
-                if($$("webix__null-content")){
-                    $$("container").removeView($$("webix__null-content"));
-                }
-            
-                hideAllElements ();
-    
-                $$("webix__none-content").hide();
-
-
-                if ($$("tree").data.order.length == 0){
-                    getWorkspace ();
-                }
-    
-                if($$("treeTempl")){
+            function showTreeTempl(){
+                try{
                     $$("treeTempl").show();
-                    getInfoEditTree();
-                }else {
-                    createElements("treeTempl");
-                    getInfoEditTree();
-                    $$("treeTempl").show();
+                } catch (err){
+                    setFunctionError(err,"router","router:experimental function showTreeTempl");
                 }
-    
-                $$("tree").closeAll();
-            } catch (error){
-                console.log(error);
-                catchErrorTemplate("015-005", error);
             }
+        
+            removeNullContent();
+        
+            hideAllElements ();
+
+            hideNoneContent();
+
+
+            checkTreeOrder();
+
+
+            if($$("treeTempl")){
+                showTreeTempl ();
+                getInfoEditTree();
+            }else {
+                createElements("treeTempl");
+                getInfoEditTree();
+                showTreeTempl();
+            }
+
+            closeTree();
+
         },
     
         logout: function (){
-            webix.ajax().post("/init/default/logout/",{
-                success:function(text, data, XmlHttpRequest){
-                    try {
-                        history.back();
-                        removeElements();
-                        $$("webix__none-content").show();
-                        $$("tree").clearAll();
-                        webix.storage.local.clear();
-                    } catch (error){
-                        console.log(error);
-                        setLogValue("error","Не удалось выполнить выход");
-                        webix.message({type:"error",expire:3000, text:"Не удалось выполнить выход"});
-                        catchErrorTemplate("015-000", error);
+            const logoutData = webix.ajax().post("/init/default/logout/");
+
+            logoutData.then(function(data){
+                function showNoneContent(){
+                    try{
+                        if($$("webix__none-content")){
+                            $$("webix__none-content").show();
+                        }
+                    } catch (err){
+                        setFunctionError(err,"router","router:logout function showNoneContent");
                     }
-                    
-                },
-                error:function(text, data, XmlHttpRequest){
-                    setLogValue("error","Не удалось выполнить выход");
-                    webix.message({type:"error",expire:3000, text:"Не удалось выполнить выход"});
-                    ajaxErrorTemplate("015-006",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
-    
                 }
-            }).catch(error => {
-                console.log(error);
-                ajaxErrorTemplate("015-006",error.status,error.statusText,error.responseURL);
+                function clearTree (){
+                    try{
+                        if( $$("tree")){
+                            $$("tree").clearAll();
+                        }
+                    } catch (err){
+                        setFunctionError(err,"router","router:logout function clearTree");
+                    }
+                }
+
+                function clearStorage(){
+                    try{
+                        webix.storage.local.clear();
+                    } catch (err){
+                        setFunctionError(err,"router","router:logout function clearStorage");
+                    }
+                }
+
+                function backPage(){
+                    try{
+                        history.back();
+                    } catch (err){
+                        setFunctionError(err,"router","router:logout function backPage");
+                    }
+                }
+
+                backPage();
+                showNoneContent();
+                clearTree ();
+                clearStorage();
+               
             });
-            
+
+            logoutData.fail(function(err){
+                setAjaxError(err, "router","router:logout logoutData");
+            });  
         }
     
     }));

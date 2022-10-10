@@ -2,10 +2,12 @@ import {setLogValue} from './logBlock.js';
 import {catchErrorTemplate,ajaxErrorTemplate} from "./logBlock.js";
 import  {STORAGE,getData} from "./globalStorage.js";
 
+import {setAjaxError,setFunctionError} from "./errors.js";
+
 let prevCountRows ;
 
 function submitBtn (idElements, url, verb, rtype){
-   
+  //  console.log(idElements, url, verb, rtype)
     let valuesArray = [];
 
     if (verb=="get"){ 
@@ -25,6 +27,7 @@ function submitBtn (idElements, url, verb, rtype){
     
                 const getData = webix.ajax(url+"?"+valuesArray.join("&"));
                 getData.then(function(data){
+          
                     if (data.json().err_type == "i"){
                         try {
                             $$("table-view").clearAll();
@@ -77,18 +80,24 @@ function submitBtn (idElements, url, verb, rtype){
         try{
             idElements.forEach((el,i) => {
                 if (el.id.includes("customUploader")){
-                    $$(el.id).send(function(data){
-                        if (data.err_type == "e"){
-                            $$("table-view").parse($$(el.id).getValue())
-                            setLogValue("error",data.err);
-                        } else if (data.err_type == "i"){
-                            setLogValue("success",data.err);
-                            $$("table-view").refresh();
-                        } else if (data.err_type == "x"){
-                            setLogValue("debug",data.err);
+                
+                   let value = Object.values($$(el.id).files.data.pull)[0];
+                   let link = $$(el.id).config.upload;
+          
+
+                    const postData = webix.ajax().post(link,value);
+                    postData.then(function(data){
+                        data = data.json();
+                        console.log(data)
+                        if (data.err_type !== "i"){
+                            setFunctionError(data.err,"content","submitBtn post upload")
                         }
-                    
                     });
+                    postData.fail(function(err){
+                        setAjaxError(err, "content","submitBtn post upload");
+
+                    });
+
                 }
             });
         } catch (error){
@@ -105,6 +114,7 @@ function getComboOptions (refTable){
         load: function(){
             return ( webix.ajax().get("/init/default/api/"+refTable).then(function (data) {
                         try{
+                     
                             data = data.json().content;
                             let dataArray=[];
                             let keyArray;
@@ -166,7 +176,7 @@ function getInfoTable (idCurrTable,idsParam) {
         if (idCurrTable.includes("view")){
             idSearch = "table-view-search";
             idFindElem = "table-view-findElements";
-            filterBar = $$("table-view-filterIdView").getParentView();
+            filterBar = $$("table-view-filterId").getParentView();
         } else {
             idSearch = "table-search";
             idFindElem = "table-findElements";
@@ -283,6 +293,7 @@ function getInfoTable (idCurrTable,idsParam) {
     }
 
     function createTableCols (){
+  
         let dataContent = STORAGE.fields.content;
         let data = dataContent[idsParam];
         let fieldType;
@@ -335,9 +346,19 @@ function getInfoTable (idCurrTable,idsParam) {
             dataFields[data].fillspace = true;
             dataFields[data].header= dataFields[data]["label"];
 
+        
+            function userPrefsId(){
+                let setting = webix.storage.local.get("userprefsOtherForm");
+                if(setting && setting.visibleIdOpt=="2"){
+                    dataFields[data].hidden = true;
+                }
+            }   
             if(dataFields[data].id == "id"){
-                dataFields[data].hidden = true;
-            } 
+                userPrefsId();
+            }
+            // if(dataFields[data].id == "id"){
+            //     dataFields[data].hidden = true;
+            // } 
 
             columnsData.push(dataFields[data]);
         });
@@ -476,6 +497,107 @@ function getInfoTable (idCurrTable,idsParam) {
             
                 }).catch(error => {
                     console.log(error);
+
+                    console.log(error.status)
+
+                    function notAuthPopup(){
+
+                        const popupHeadline = {   
+                            template:"Вы не авторизованы", 
+                            width:250,
+                            css:"webix_template-not-found", 
+                            borderless:true, 
+                            height:20 
+                        };
+                        const btnClosePopup = {
+                            view:"button",
+                            id:"buttonClosePopup",
+                            css:"webix_close-btn",
+                            type:"icon",
+                            width:35,
+                           
+                            icon: 'wxi-close',
+                            click:function(){
+                                try{
+                                    if ($$("popupNotAuth")){
+                                        $$("popupNotAuth").destructor();
+                                    }
+                                } catch (err){
+                                   // setFunctionError(err,"router","router:tree, btnClosePopup click");
+                                }
+                            
+                            }
+                        };
+        
+                        const popupSubtitle = {   
+                            template:"Войдите в систему, чтобы продолжить.",
+                            css:"webix_template-not-found-descr", 
+                            borderless:true, 
+                            height:35 
+                        };
+        
+                        const mainBtnPopup = {
+                            view:"button",
+                            css:"webix_btn-go-login",
+                            height:46,
+                            value:"Войти",
+                            click:function(){
+                                function destructPopup(){
+                                    try{
+                                        if ($$("popupNotAuth")){
+                                            $$("popupNotAuth").destructor();
+                                        }
+                                    } catch (err){
+                                       // setFunctionError(err,"router","router:tree, mainBtnPopup click destructPopup");
+                                    }
+                                }
+                                function navigate(){
+                                    try{
+                                        Backbone.history.navigate("/", { trigger:true});
+                                        window.location.reload();
+                                    } catch (err){
+                                        //setFunctionError(err,"router","router:tree, mainBtnPopup click navigate");
+                                    }
+                                }
+                                destructPopup();
+                                navigate();
+                             
+                           
+                            }
+                        };
+        
+                        webix.ui({
+                            view:"popup",
+                            id:"popupNotAuth",
+                            css:"webix_popup-prev-href",
+                            width:340,
+                            height:125,
+                            modal:true,
+                            position:"center",
+                            body:{
+                                rows:[
+                                {rows: [ 
+                                    { cols:[
+                                        popupHeadline,
+                                        {},
+                                        btnClosePopup,
+                                    ]},
+                                    popupSubtitle,
+                                    mainBtnPopup,
+                                    {height:20}
+                                ]}]
+                                
+                            },
+        
+                        }).show();
+                    }
+                    if (error.status == 401){
+                
+                        if (!($$("popupNotAuth"))){
+                            notAuthPopup();
+                        }
+                  
+                    }
                     
                     setLogValue("error", "content createRow: "+error.status+" "+error.statusText+" "+error.responseURL);
                 });
@@ -753,9 +875,11 @@ function getInfoTable (idCurrTable,idsParam) {
                     view: "uploader", 
                     value: "Upload file", 
                     id:"customUploader"+i,
+                    name:"customUploader"+i,
                     height:48,
                     autosend:false,
                     upload: data.actions.submit.url,
+                   // upload:"/init/default/api/reports",
                     label:dataInputsArray[el].label, 
                     labelPosition:"top",
                     click:function(){
@@ -767,6 +891,9 @@ function getInfoTable (idCurrTable,idsParam) {
                         onAfterRender: function () {
                             this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
                         },
+                        onAfterFileAdd:function(file){
+
+                        }
                     }
                 }
             }
@@ -907,7 +1034,7 @@ function getInfoTable (idCurrTable,idsParam) {
 
                 });
                 let inpObj = {id:"customInputs",css:"webix_custom-inp", cols:customInputs};
-                let filterBar = $$("table-view-filterIdView").getParentView();
+                let filterBar = $$("table-view-filterId").getParentView();
            
                 $$(filterBar.config.id).addView( 
                     {id:"customInputsMain",cols:[
@@ -922,7 +1049,13 @@ function getInfoTable (idCurrTable,idsParam) {
                     el.bottomPadding = 10;
                 });
                 customInputs.push({});
-                let inpObj = {id:"customInputsAdaptive",rows:[{id:"customInputs",css:"webix_custom-inp", rows:customInputs}]} ;
+                let inpObj = {id:"customInputsAdaptive",rows:[{
+                    id:"customInputs",
+                    css:"webix_custom-inp", 
+                    rows:
+                        customInputs
+                    }
+                ]} ;
                 $$(filterBar.config.id).addView({
                     view:"button", 
                     id:"contextActionsBtnAdaptive",
@@ -1054,10 +1187,11 @@ function getInfoTable (idCurrTable,idsParam) {
 
 function getInfoDashboard (idsParam,single=false){
     let itemTreeId;
-    if ($$("tree").getSelectedItem()){
-        itemTreeId = $$("tree").getSelectedItem().id;
-    } else if (idsParam){
+
+    if (idsParam){
         itemTreeId = idsParam;
+    } else if ($$("tree").getSelectedItem()){
+        itemTreeId = $$("tree").getSelectedItem().id;
     }
   
     function getAjax(url,inputsArray, action=false) {
@@ -1403,7 +1537,6 @@ function getInfoDashboard (idsParam,single=false){
             let actionType ;
             let findAction;
             let singleItemContent;
-          //  let data = STORAGE.fields.content;
             let fields = STORAGE.fields.content;
             let inputsArray= [];
          
@@ -1670,12 +1803,12 @@ function getInfoDashboard (idsParam,single=false){
                 
                 }
             }
-          
+            console.log( itemTreeId )
             Object.values(fields).forEach(function(el,i){
-
+            
                 if (el.type == "dashboard" && Object.keys(fields)[i] == itemTreeId) {
                     let inputs = el.inputs;
-               
+                
                     getAjax(el.actions.submit.url, createFilterElems (inputs,el));
                     autorefresh (el);  
                 }
@@ -1683,7 +1816,7 @@ function getInfoDashboard (idsParam,single=false){
         }
 
         if (STORAGE.fields){
-    
+        
             createDashSpace ();
         }
 

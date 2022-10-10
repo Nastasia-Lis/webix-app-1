@@ -27,7 +27,7 @@ function treeSidebar () {
         data:[],
         on:{
             onSelectChange:function (ids) {
-     
+
                 itemTreeId = ids[0];
                 let treeItemId = $$("tree").getSelectedItem().id;
         
@@ -336,7 +336,7 @@ function treeSidebar () {
                         
 
                     } else if(getItemParent=="dashboards") {
-                    getInfoDashboard ();
+                        getInfoDashboard ();
 
                     } else if(singleItemContent == "dashboard") {
                         getInfoDashboard (ids[0],true);

@@ -653,21 +653,40 @@ function createEditFields (parentElement) {
         }
     }
 
-    const popupTextArea = webix.ui({
-        view:"popup",
-        body:{
-            view:"textarea", 
-            width:300, 
-            height:100 ,
-            // on:{
-             
-            //     onTimedKeyPress:function(newv){
-            //         console.log(this.getValue());
-            //     }
-               
-            // }
-        },
-    });
+
+    function popupTextArea (elId){
+        function setStateSaveBtn(){
+            if ($$("table-saveBtn")                && 
+                $$("table-saveBtn").isVisible()    &&
+              !($$("table-saveBtn").isEnabled()) ){ 
+                    $$("table-saveBtn").enable();
+            }
+        }
+        return webix.ui({
+            view:"popup",
+            css:"edit-popup",
+            body:{
+                view:"textarea", 
+                id:elId+"_popup",
+                width:300, 
+                height:100 ,
+                on:{
+                 
+                    onChange:function(){
+                      
+                        setStateSaveBtn();
+                    },
+                  
+                   
+                }
+            },
+            on:{
+                onBlur:function(){
+                  //  console.log(888)
+                }
+            }
+        })
+    }
 
     try {
         let columnsData = $$("table").getColumns();
@@ -730,6 +749,7 @@ function createEditFields (parentElement) {
 
               
                 function createReferenceInput(){
+               
                     let findTableId = el.type.slice(10);
                     template.type = "combo";
                     template.css = el.id+"_container";
@@ -748,12 +768,18 @@ function createEditFields (parentElement) {
                     ];
                 }
 
+                function destructPopup(){
+                    if ($$(el.id+"_popup")){
+                        $$(el.id+"_popup").destructor();
+                    }
+                }
+
                 function createTextInput(){
                     if (el.length==0 || el.length > 512){
-                   
+                        destructPopup();
                         template.type="popup";
-                        template.popup = popupTextArea;
-              
+                        template.popup = popupTextArea (el.id);
+
                     } else {
                         template.type = "text";
                     }
@@ -863,45 +889,55 @@ function closeEditPopup(){
         $$("table-saveBtn").hide();
     }
 
+    function removeRefBtns(){
+        if ($$("propertyRefbtnsContainer")){
+            $$("propertyRefbtns").removeView($$("propertyRefbtnsContainer")) 
+        }
+    }
 
+    
     function statePopup (){
         $$("editTableFormProperty").clear();
         if ($$("tableEditPopup")){
             $$("tableEditPopup").hide();
         }
     }
+
    
-
     if($$("editTableFormProperty") && $$("editTableFormProperty").config.dirty){ 
-            modalBox().then(function(result){
-                if (result == 0){
-                    setDirtyProperty ();
-                } else if (result == 1){
-                    statePopup ();
-                    stateForm ();
-                } else if (result == 2){
-             
-                    if ($$("editTableFormProperty").getValues().id){
-                        saveItem();
-                    } else {
-                        saveNewItem(); 
-                    }
-                    
-                    statePopup ();
-                    stateForm ();
+        modalBox().then(function(result){
+            if (result == 0){
+            } else if (result == 1){
+                statePopup ();
+                stateForm ();
+                setDirtyProperty();
+            } else if (result == 2){
+            
+                if ($$("editTableFormProperty").getValues().id){
+                    saveItem();
+                } else {
+                    saveNewItem(); 
                 }
-            });
+                statePopup ();
+                stateForm ();
 
+                if($$("editTableFormProperty").config.dirty){
+                    setDirtyProperty();
+                }
+            }
+        });
 
     } else {
 
         $$("table").filter(false);
 
         setDirtyProperty ();
-
         statePopup ();
         stateForm ();
     }
+
+    removeRefBtns();
+   // setDirtyProperty();
 }
 
 const newAddBtn = {   
@@ -1076,8 +1112,8 @@ const propertyEditForm = {
             if (state.value !==state.old ){
                 editingEnd (editor.id,state.value);
             }
-
         },
+
     }
 };
 

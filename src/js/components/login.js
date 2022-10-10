@@ -1,29 +1,7 @@
 import {router,createElements,removeElements} from "../blocks/router.js";
 import {catchErrorTemplate,ajaxErrorTemplate} from "../blocks/logBlock.js";
-import {setStorageData, setUserLocation} from "../blocks/storageSetting.js";
+import {setStorageData} from "../blocks/storageSetting.js";
 
- 
-if ( window.location.pathname !== "/index.html" && window.location.pathname !=="/" && window.location.pathname !=="/init/default/spaw/"){
-    setUserLocation ("",window.location.href);
-} 
-
-
-// function getUserSettings (){
-
-//     webix.ajax("/init/default/api/userprefs/",{
-//         success:function(text, data, XmlHttpRequest){
-//             console.log("io")
-//         },
-//         error:function(text, data, XmlHttpRequest){
-//             webix.message({type:"error",expire:3000, text:"Не удалось выполнить выход"});
-//             ajaxErrorTemplate("007-006",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
-//         }
-//     }).catch(error => {
-//         console.log(error);
-//         ajaxErrorTemplate("007-006",error.status,error.statusText,error.responseURL);
-//     });
-
-// }
 
 function login () {
     router();

@@ -795,9 +795,16 @@ function editBtnClick(idBtnEdit) {
 
 
 
-function tableToolbar (idSearch, idExport,idBtnEdit, idFindElements, idFilterElements, idTable,idFilter,idHeadline,visible=false) {
+function tableToolbar (idTable,visible=false) {
 
-  
+    let idExport         = idTable+"-exportBtn",
+        idBtnEdit        = idTable+"-editTableBtnId",
+        idFindElements   = idTable+"-findElements",
+        idFilterElements = idTable+"-idFilterElements",
+        idFilter         = idTable+"-filterId",
+        idHeadline       = idTable+"-templateHeadline"
+    ;
+
     return { 
         
         rows:[
@@ -1308,7 +1315,14 @@ let onFuncTable = {
   
     },
     onBeforeSelect:function(selection, preserve){
-        
+        const editPopup = document.querySelector(".edit-popup");
+
+        if (editPopup){
+            const idPopup = editPopup.getAttribute("view_id");
+            console.log($$(idPopup))
+            $$(idPopup).hide();
+            console.log($$(idPopup))
+        }
         let valuesProp = $$("editTableFormProperty").getValues();
         let currId = getItemId ();
 

@@ -1,9 +1,9 @@
-
-
 import {setStorageData} from "./storageSetting.js";
 import  {STORAGE,getData} from "./globalStorage.js";
 
-//setLogValue ("success","notifyText")
+import {setFunctionError} from "./errors.js";
+
+
 function setLogValue (typeNotify,notifyText,specificSrc) {
     const date = new Date();
     let day = date.getDate();
@@ -14,83 +14,122 @@ function setLogValue (typeNotify,notifyText,specificSrc) {
     let seconds =String( date.getSeconds()).padStart(2, '0');
     let currentDate = `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
 
-        function addLogMsg (src){
-            if (!src){
-                src = "expa";
-            }
-            $$("logBlock-list").add({
-                date:currentDate,
-                value:notifyText,
-                src:src
-            });
+    function addLogMsg (src){
+        if (!src){
+            src = "expa";
         }
-        async function createLogMessage(srcTable,itemTreeId) {
-            let name;
-            if (!STORAGE.tableNames){
-                await getData("fields"); 
-            }
+      
+        $$("logBlock-list").add({
+            date:currentDate,
+            value:notifyText,
+            src:src
+        });
+    }
+    async function createLogMessage(srcTable,itemTreeId) {
+        let name;
 
-            if (STORAGE.tableNames){
+        function findTableName(){
+            try{
                 STORAGE.tableNames.forEach(function(el,i){
                     if (srcTable == "version"){
-                        name = 'Expa v1.0.34';
+                        name = 'Expa v1.0.35';
                     } else if (el.id == srcTable){
                         name = el.name;
                     }
                 });
-            }
-
-            addLogMsg (name);
-        }
-        
-            
-    try {
-        let itemTreeId=null;
-
-        if ($$("tree").getSelectedItem()){
-            itemTreeId = $$("tree").getSelectedItem().id;
-        } else {
-            let href = window.location.pathname;
-            let index = href.lastIndexOf("/");
-            itemTreeId = href.slice(index+1);
-        }
-      
-        if (specificSrc){
-            createLogMessage(specificSrc);
-        } else if (itemTreeId){
-            createLogMessage(itemTreeId);
-        } 
-
-        
-        let itemListIndex;
-        
-        let blockContainer = document.querySelector(".webix_log-block");
-        if (blockContainer){
-            blockContainer.querySelectorAll(".webix_list_item").forEach(function(el,i){
-                itemListIndex = i;
-            });
-        }
-        
-        let item = document.querySelectorAll(".webix_list_item")[itemListIndex];
-        if (typeNotify == "error"){
-
-            if (item!==undefined){
-                item.style.setProperty('color', 'red', 'important');
-            }
-            
-            if ($$("webix_log-btn").config.icon =="wxi-eye"){
-                $$("logLayout").config.height = 90;
-                $$("logLayout").resize();
-                $$("webix_log-btn").setValue(2);
-                $$("webix_log-btn").config.icon ="wxi-eye-slash";
-                $$("webix_log-btn").refresh();
-                setStorageData("LogVisible", JSON.stringify("show"));
+            } catch (err){
+                setFunctionError(err,"logBlock","findTableName");
             }
         }
-    } catch (error){
-        console.log(error);
-        catchErrorTemplate("006-000", error);
+
+        if (!STORAGE.tableNames){
+            await getData("fields"); 
+        }
+
+        if (STORAGE.tableNames){
+            findTableName();
+        }
+
+        addLogMsg (name);
     }
+       
+    function initLogMsg(){
+        try{
+            let itemTreeId=null;
+
+            if ($$("tree").getSelectedItem()){
+                itemTreeId = $$("tree").getSelectedItem().id;
+            } else {
+                let href = window.location.pathname;
+                let index = href.lastIndexOf("/");
+                itemTreeId = href.slice(index+1);
+            }
+        
+            if (specificSrc){
+                createLogMessage(specificSrc);
+            } else if (itemTreeId){
+                createLogMessage(itemTreeId);
+            } 
+        } catch (err){
+            setFunctionError(err,"logBlock","initLogMsg");
+        }
+    }
+
+    function getItemIndex(){
+        let blockContainer = document.querySelector(".webix_log-block");
+        let index;
+        try{
+            if (blockContainer){
+                blockContainer.querySelectorAll(".webix_list_item").forEach(function(el,i){
+                    index = i;
+                });
+            }
+        } catch (err){
+            setFunctionError(err,"logBlock","getItemIndex");
+        }
+        return index;
+    }
+
+    function setErrTypeMsg(){
+        let itemListIndex = getItemIndex();
+
+        let item = document.querySelectorAll(".webix_list_item")[itemListIndex];
+
+        function setStyle(){
+            try{
+                if (item!==undefined){
+                    item.style.setProperty('color', 'red', 'important');
+                }
+            } catch (err){
+                setFunctionError(err,"logBlock","setStyle");
+            }
+        }
+        function openLog(){
+            try{
+                if ($$("webix_log-btn").config.icon =="wxi-eye"){
+                    $$("logLayout").config.height = 90;
+                    $$("logLayout").resize();
+                    $$("webix_log-btn").setValue(2);
+
+                    $$("webix_log-btn").config.icon ="wxi-eye-slash";
+                    $$("webix_log-btn").refresh();
+
+                    setStorageData("LogVisible", JSON.stringify("show"));
+                }
+            } catch (err){
+                setFunctionError(err,"logBlock","openLog");
+            }
+        }
+        
+        if (typeNotify == "error"){
+            setStyle();
+            openLog();
+        }
+    }   
+       
+    initLogMsg();
+    setErrTypeMsg();
+
     
 }
 
@@ -105,15 +144,14 @@ const logBlock = {
         onAfterLoad:function(){
             try {
                 setLogValue ("success","Интерфейс загружен","version");
-            } catch (error){
-                console.log(error);
-                catchErrorTemplate("006-000", error);
+            } catch (err){
+                setFunctionError(err,"logBlock","logBlock onAfterLoad");
             }
             
         },
         onAfterAdd:function(id, index){
-            try{
-                if ($$("webix_log-btn").config.icon =="wxi-eye"){
+            function addNotify(){
+                try{
                     if ($$("webix_log-btn").config.badge==""){
                         notifyCounter=0;
                     }
@@ -121,30 +159,49 @@ const logBlock = {
                     $$("webix_log-btn").config.badge = notifyCounter;
                     $$("webix_log-btn").setValue(1);
                     $$("webix_log-btn").refresh();
-                } else if ($$("webix_log-btn").config.icon =="wxi-eye-slash"){
+                } catch (err){
+                    setFunctionError(err,"logBlock","logBlock onAfterAdd function addNotify");
+                }
+            }
+
+            function clearNotify(){
+                try{
                     notifyCounter = 0;
                     $$("webix_log-btn").config.badge = "";
                     $$("webix_log-btn").setValue(2);
                     $$("webix_log-btn").refresh();
+                } catch (err){
+                    setFunctionError(err,"logBlock","logBlock onAfterAdd function clearNotify");
                 }
-            } catch (error){
-                console.log(error);
-                catchErrorTemplate("006-000", error);
             }
+    
+            if ($$("webix_log-btn").config.icon =="wxi-eye"){
+                addNotify();
+            } else if ($$("webix_log-btn").config.icon =="wxi-eye-slash"){
+                clearNotify();
+            }
+            
           
         }
     }
 };
 
 const logLayout = {
-    id:"logLayout",height:80,rows:[
-        {template:"<div class='webix_log-headline'>Системные сообщения</div>", height:30},
+    id:"logLayout",
+    height:80,
+    rows:[
+        {   template:"<div class='webix_log-headline'>Системные сообщения</div>", 
+            height:30
+        },
         logBlock
     ]
 };
 
 
+
+
 function catchErrorTemplate (code,error,otherType=false) {
+
     try{
         $$("webix_log-btn").setValue(2);
         notifyCounter = 0;
@@ -162,12 +219,14 @@ function catchErrorTemplate (code,error,otherType=false) {
 
 function ajaxErrorTemplate (code, status,statusText,responseURL){
     $$("webix_log-btn").setValue(2);
-    
+   
     notifyCounter = 0;
     let errorMsg = "СТАТУС: "+status+" "+statusText+"."+" ПОДРОБНОСТИ: "+responseURL;
     return setLogValue("error","ОШИБКА "+code+": "+errorMsg,);
 
 }
+
+
 
 export {
     logBlock,
