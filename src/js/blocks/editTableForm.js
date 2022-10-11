@@ -32,7 +32,7 @@ function validateProfForm (){
 
             function valLength(){ 
                 try{
-                    console.log(values[el])
+               
                     if(values[el]){
                         
                         if (values[el].length > propElement.length && propElement.length !==0){

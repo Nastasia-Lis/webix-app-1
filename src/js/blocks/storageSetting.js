@@ -6,46 +6,6 @@ function setStorageData (name, value){
     } 
 }
 
-
-// function setUserLocation (tableNames,userLocation,autoLogoutVal=false){
-//     userLocation = window.location.href;
-//     let tableIdHref = userLocation.slice(userLocation.lastIndexOf('/')+1); 
-//     let nameRecoverEl;
-   
-//     function setTableName(){
-//         try{
-//             if (tableNames){
-//                 tableNames.forEach(function(el,i){
-//                     if (el.id == tableIdHref){
-//                         nameRecoverEl= el.name;
-//                     }
-//                 });
-//             } 
-//         } catch (err){
-//             setFunctionError(err,"storageSettings","setTableName");
-
-//         }
-//     }
-
-//     try {
-
-//         setTableName();
-
-//         let storageData = { 
-//             tableName:nameRecoverEl,
-//             tableId:tableIdHref,
-//             href:userLocation,
-//             autoLogout:autoLogoutVal
-//         };
-
-//         setStorageData ("userLocation", JSON.stringify(storageData));
-
-//     } catch (err){
-//         setFunctionError(err,"storageSettings","setUserLocation");
-//     }
-// }
-
-
 function setUserPrefs (){
     
     const userprefsData = webix.ajax("/init/default/api/userprefs/");

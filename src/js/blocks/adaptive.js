@@ -1,7 +1,15 @@
 import {setFunctionError} from "./errors.js";
 import  {STORAGE,getData} from "./globalStorage.js";
 
-
+function hideElem(elem){
+    try{
+        if (elem && elem.isVisible()){
+            elem.hide();
+        }
+    } catch (err){
+        setFunctionError(err,"adaptive","hideElem");
+    }
+}
 function resizeAdaptive (){
 
     function autoResizePopup (popupId,k=1.3){
@@ -52,27 +60,7 @@ function resizeAdaptive (){
   
     function resizeSidebar(){
 
-    function hideTree(){
-        try{
-            if ( $$("tree") && $$("tree").isVisible()){
-                $$("tree").hide();
-            }
-        } catch (err){
-            setFunctionError(err,"adaptive","resizeSidebar => hideTree");
-        }
-    }
-
-
-    function hideTreeResizer(){
-        try{
-            if($$("sideMenuResizer")){
-                $$("sideMenuResizer").hide(); 
-            }
-        } catch (err){
-            setFunctionError(err,"adaptive","resizeSidebar => hideTreeResizer");
-        }
-    }
-
+    
     function resizeTree(){
         try{
             if ($$("tree")){
@@ -86,12 +74,12 @@ function resizeAdaptive (){
 
     
     if (window.innerWidth < 850){
-        hideTree();
+        hideElem($$("tree"));
     }
 
     if (!$$("tree").isVisible()  && 
         window.innerWidth <= 800 ){
-        hideTreeResizer();
+        hideElem($$("sideMenuResizer"));
     }
 
     if (window.innerWidth > 850 && $$("tree")){
@@ -169,13 +157,7 @@ function resizeAdaptive (){
                 width:25,
                 icon: 'wxi-close',
                 click:function(){
-                    try{
-                        if ($$("contextActionsPopup")){
-                            $$("contextActionsPopup").hide();
-                        }
-                    } catch (err){
-                        setFunctionError(err,"adaptive","resizeForms => formPopupCloseBtn");
-                    }
+                    hideElem($$("contextActionsPopup"));
                 
                 }
             };
@@ -329,16 +311,7 @@ function resizeAdaptive (){
 
         function createDashAdaptive(){
             let tools;
-            function hideDashTool(){
-                try{
-                    if($$("dashboard-tool-main")){
-                        $$("dashboard-tool-main").hide();
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeDashboards => hideDashTool");
-                }
-            }
-
+           
             function getTools(){
                 let tools;
                 if ($$("dashboard-tool-main")){
@@ -440,8 +413,7 @@ function resizeAdaptive (){
 
             if ($$("dashboard-tool-main") && $$("dashboard-tool-main").isVisible()){
                     
-                hideDashTool();
-
+                hideElem($$("dashboard-tool-main"));
                 if (!($$("dashFilterBtn"))){ //id:"dashboard-tool-adaptive"
            
                     addDashAdaptive();
@@ -512,24 +484,12 @@ function resizeAdaptive (){
                     
             }
 
-            function hideBtnClosePopup(){
-                try{ 
-                    if( $$("buttonClosePopupDashFilter")){
-                        $$("buttonClosePopupDashFilter").hide();
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeDashboards => hideBtnClosePopup");
-                }
-            }
-
-
-          //  if($$("dashboard-tool-adaptive")){
             if($$("dashFilterBtn")){
                 removeDashAdaptiveTools();
                 destructDashPopup();
                 removeDashAdaptiveBtn();
                 addMainTool();
-                hideBtnClosePopup();
+                hideElem($$("buttonClosePopupDashFilter"));
             }
         }
         
@@ -561,15 +521,6 @@ function resizeAdaptive (){
                 }
             }
 
-            function hideEditFormContainer(){
-                try{
-                    if ($$("editTableBarContainer") && $$("editTableBarContainer").isVisible()){
-                        $$("editTableBarContainer").hide();
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableEditForm => hideEditFormContainer");
-                }   
-            }
 
             function createTablePopup(){
                 return webix.ui({
@@ -669,7 +620,7 @@ function resizeAdaptive (){
 
             showEditTableBtn();
 
-            hideEditFormContainer();
+            hideElem($$("editTableBarContainer"));
            
 
             if ($$("table-editForm") && $$("table-editForm").isDirty()){
@@ -697,15 +648,8 @@ function resizeAdaptive (){
         }
 
         function tableMainView(){
-            function hidePopup(){
-                try{
-                    if ($$("tableEditPopup")){
-                        $$("tableEditPopup").hide();
-                    } 
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableEditForm => hidePopup");
-                }
-            }
+           
+         
 
             function showContainer(){
                 try{
@@ -716,16 +660,7 @@ function resizeAdaptive (){
                     setFunctionError(err,"adaptive","resizeTableEditForm => showContainer");
                 }
             }
-
-            function hideFilterForm(){
-                try{
-                    if ($$("filterTableForm")){
-                        $$("filterTableForm").hide();
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableEditForm => hideFilterForm");
-                }
-            }
+       
 
             function showEditForm(){
                 try{
@@ -757,16 +692,7 @@ function resizeAdaptive (){
                 }
             }
 
-            function hideEditFormBtn(){
-                try{
-                    if( $$("table-editTableBtnId") && $$("table-editTableBtnId").isVisible()){
-                        $$("table-editTableBtnId").hide();
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableEditForm => hideEditFormBtn");
-                }
-            }
-
+           
             function setEditBarWidth(){
                 try{
                     if ( $$("editTableBarAdaptive")){
@@ -777,33 +703,23 @@ function resizeAdaptive (){
                     setFunctionError(err,"adaptive","resizeTableEditForm => setEditBarWidth");
                 }
             }
-
-            function hideEditheadline () {
-                try{
-                    if($$("editTableBarHeadline") && $$("editTableBarHeadline").isVisible()){
-                        $$("editTableBarHeadline").hide();
-                    } 
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableEditForm => hideEditheadline");
-                }
-            }
-      
-            hidePopup();
+     
+  
+            hideElem($$("tableEditPopup"));
 
             if (!($$("editTableBarContainer")   &&  $$("editTableBarContainer").isVisible  ()  || 
                   $$("filterTableBarContainer") &&  $$("filterTableBarContainer").isVisible()) ){
 
                 showContainer();
-                hideFilterForm();
+                hideElem($$("filterTableForm"));
                 showEditForm();
             }
         
             addEditElements();
-
             showEditBar();
-            hideEditFormBtn();
+            hideElem($$("table-editTableBtnId"));
             setEditBarWidth();
-            hideEditheadline ();
+            hideElem($$("editTableBarHeadline"));
 
         }
 
@@ -836,26 +752,6 @@ function resizeAdaptive (){
                 }
             }
 
-            function hideFilterContainer(){
-                try{
-                    if ($$("filterTableBarContainer") && $$("filterTableBarContainer").isVisible()){
-                        $$("filterTableBarContainer").hide();
-        
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableFilterForm => hideFilterContainer");
-                }
-            }
-
-            function hideEditContainer (){
-                try{
-                    if ($$("editTableBarContainer") && $$("editTableBarContainer").isVisible()){
-                        $$("editTableBarContainer").hide();
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableFilterForm => hideEditContainer");
-                }
-            }
 
             function showFilterPopup(){
                 try{
@@ -935,12 +831,12 @@ function resizeAdaptive (){
             }
 
             setBtnState();
-            hideFilterContainer();
+            hideElem($$("filterTableBarContainer"));
 
            
 
             if ($$("filterTableForm") && $$("filterTableForm").isDirty()){
-                hideEditContainer ();
+                hideElem($$("editTableBarContainer"));
                 showFilterPopup();
                 showFilterAdaptiveContainer();
                 addAdaptiveElements();
@@ -953,15 +849,7 @@ function resizeAdaptive (){
         }
 
         function filterMain(){
-            function hideFilterPopup(){
-                try{
-                    if( $$("tableFilterPopup")){
-                        $$("tableFilterPopup").hide();
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableFilterForm => hideFilterPopup");
-                }
-            }
+
 
             function getFormValues(){
                 let filterFormValues;
@@ -986,15 +874,6 @@ function resizeAdaptive (){
                 }
             }
 
-            function hideFilterHeadline(){
-                try{
-                    if($$("editFilterBarHeadline")){
-                        $$("editFilterBarHeadline").hide();
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableFilterForm => hideFilterHeadline");
-                }
-            }
 
             function setSizeFilterContainer(){
                 try{
@@ -1027,17 +906,6 @@ function resizeAdaptive (){
                 }
             }
 
-            function hideEditForm(){
-                try{
-                    if($$("table-editForm")){
-                        $$("table-editForm").hide();
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableFilterForm => setBtnState");
-                }
-
-            }
-
             function setFilterValues(filterFormValues){
                 try{
                     if (filterFormValues && $$("filterTableForm")){
@@ -1046,16 +914,6 @@ function resizeAdaptive (){
                     }
                 } catch (err){
                     setFunctionError(err,"adaptive","resizeTableFilterForm => setFilterValues");
-                }
-            }
-
-            function hideEditContainer(){
-                try{
-                    if ($$("editTableBarContainer") && $$("editTableBarContainer").isVisible()){
-                        $$("editTableBarContainer").hide();
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableFilterForm => hideEditContainer");
                 }
             }
 
@@ -1071,22 +929,22 @@ function resizeAdaptive (){
 
         
             if ($$("tableFilterPopup").isVisible()){
-                hideFilterPopup();
+                hideElem($$("tableFilterPopup"));
 
                 let filterFormValues = getFormValues();
                 
                 addFilterElements();
-                hideFilterHeadline();
+                hideElem($$("editFilterBarHeadline"));
                 setSizeFilterContainer();
 
                 if ($$("filterTableBarContainer") && !($$("filterTableBarContainer").isVisible())){
 
                     showFilterContainer();
-                    hideEditForm();
+                    hideElem($$("table-editForm"));
                     setFilterValues(filterFormValues);
                     setBtnState();
 
-                    hideEditContainer();
+                    hideElem($$("editTableBarContainer"));
                     showFilter();
                 }
                 
@@ -1151,9 +1009,7 @@ function adaptivePoints (){
 
     function hideTree(){
         if (window.innerWidth < 850 && $$("tree") && $$("tree").isVisible()){
-            if( $$("tree")){
-                $$("tree").hide();
-            }
+            hideElem($$("tree"));
         }
     }
 
@@ -1162,15 +1018,11 @@ function adaptivePoints (){
          
 
             $$("tree").attachEvent("onAfterLoad", function(){
-                if ($$("editTableBarContainer") && $$("editTableBarContainer").isVisible()){
-                    $$("editTableBarContainer").hide();
-                }
+                hideElem($$("editTableBarContainer"));
             });
  
+            hideElem($$("editTableBarContainer"));
 
-            if ($$("editTableBarContainer") && $$("editTableBarContainer").isVisible()){
-                $$("editTableBarContainer").hide();
-            }
     
         }
     }

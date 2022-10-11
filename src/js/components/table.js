@@ -1069,7 +1069,6 @@ function toEditForm (nextItem) {
       
         $$("table-saveNewBtn").hide();
         $$("table-saveBtn").show();
-        $$("table-saveBtn").disable();
         $$("table-delBtnId").enable();
     } catch (error){
         console.log(error);
@@ -1371,6 +1370,7 @@ let onFuncTable = {
             if ($$("editTableFormProperty").config.dirty){
                 
                 modalBox().then(function(result){
+                    const saveBtn  = $$("table-saveBtn");
                     if (result == 1){
                         toEditForm(nextItem);
                         $$("table").select(selection.id);
@@ -1379,7 +1379,7 @@ let onFuncTable = {
 
                     else if (result == 2){
                     
-                        if ($$("editTableFormProperty").getValues().id){
+                        if (saveBtn.isVisible()){
                             putData (nextItem,valuesProp,currId, true);
                         } else {
                             postNewData (nextItem,currId,valuesProp);

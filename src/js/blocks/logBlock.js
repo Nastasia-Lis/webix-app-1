@@ -31,9 +31,7 @@ function setLogValue (typeNotify,notifyText,specificSrc) {
         function findTableName(){
             try{
                 STORAGE.tableNames.forEach(function(el,i){
-                    if (srcTable == "version"){
-                        name = 'Expa v1.0.35';
-                    } else if (el.id == srcTable){
+                    if (el.id == srcTable){
                         name = el.name;
                     }
                 });
@@ -42,13 +40,20 @@ function setLogValue (typeNotify,notifyText,specificSrc) {
             }
         }
 
-        if (!STORAGE.tableNames){
-            await getData("fields"); 
+        if (srcTable == "version"){
+            name = 'Expa v1.0.36';
+        } else {
+            if (!STORAGE.tableNames){
+                await getData("fields"); 
+            }
+    
+            if (STORAGE.tableNames){
+                findTableName();
+            }
         }
-
-        if (STORAGE.tableNames){
-            findTableName();
-        }
+        
+        
+        
 
         addLogMsg (name);
     }

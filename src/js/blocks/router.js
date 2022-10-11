@@ -13,7 +13,6 @@ import {editTableBar} from "./editTableForm.js";
 import {propertyTemplate} from "./viewPropertyTable.js";
 import {filterForm} from "./filterTableForm.js";
 import {editTreeLayout,contextMenu} from "../components/editTree.js";
-import {setLogValue} from "./logBlock.js";
 import {getInfoTable, getInfoEditTree,getInfoDashboard} from "./content.js";
 import {setStorageData} from "./storageSetting.js";
 
@@ -329,7 +328,7 @@ function getWorkspace (){
                 //     "childs": []
                 // });
 
-             
+        
                 menu.forEach(function(el,i){
                     menuTree.push  ( generateParentTree (el, menu, menuTree  ) );
                     if (el.childs.length !==0){

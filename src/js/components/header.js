@@ -169,6 +169,7 @@ function header() {
                             function modalBoxTable (navPath){
                                 try{
                                     modalBox().then(function(result){
+                                        const saveBtn    = $$("table-saveBtn");
                                         if (result == 1){
                                             Backbone.history.navigate(navPath, { trigger:true});
                                             
@@ -176,7 +177,7 @@ function header() {
                                             $$("editTableFormProperty").refresh();
                                         } else if (result == 2){
                                             if ($$("editTableFormProperty") && $$("editTableFormProperty").config.dirty){
-                                                if ($$("editTableFormProperty").getValues().id){
+                                                if (saveBtn.isVisible()){
                                                     saveItem(false,false,true);
                                                 } else {
                                                     saveNewItem(); 
