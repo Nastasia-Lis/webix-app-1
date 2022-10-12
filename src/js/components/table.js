@@ -4,7 +4,9 @@ import {modalBox,popupExec} from "../blocks/notifications.js";
 import {setLogValue} from '../blocks/logBlock.js';
 import {getComboOptions} from '../blocks/content.js';
 
+import {setHeadlineBlock} from '../blocks/blockHeadline.js';
 
+import {setAjaxError,setFunctionError} from "../blocks/errors.js";
 
 function field (operation,countChild,typeField,el){
 
@@ -393,16 +395,6 @@ function createChildFields (id,el) {
 }
 
 
-function exportToExcel(idTable){
-    webix.toExcel(idTable, {
-      filename:"Table",
-      filterHTML:true,
-      styles:true
-    });
-    setLogValue("success","Таблица сохранена");
-}
-
-
 function createFilterElements (parentElement, viewPosition=1) {
     try {
         let columnsData = $$("table").getColumns();
@@ -602,9 +594,11 @@ function filterBtnClick (idTable,idBtnEdit){
             $$("editFilterBarAdaptive").resize();
 
             $$(idTable).clearSelection();
+
+
             let btnClass = document.querySelector(".webix_btn-filter");
 
-            if(!(btnClass.classList.contains("webix_primary"))){
+            if(!(btnClass.classList.contains("webix-transparent-btn--primary"))){
                 $$("filterTableForm").show();
                 $$("table-editForm").hide();
             
@@ -616,9 +610,9 @@ function filterBtnClick (idTable,idBtnEdit){
                     $$("filterTableForm").setValues(filterFormValues);
                     filterFormValues = null;
                 }
-
-                btnClass.classList.add("webix_primary");
-                btnClass.classList.remove("webix_secondary");
+          
+                btnClass.classList.add("webix-transparent-btn--primary");
+                btnClass.classList.remove("webix-transparent-btn");
                 $$(idBtnEdit).show();
 
                 if ($$("editTableBarContainer") && $$("editTableBarContainer").isVisible()){
@@ -632,8 +626,8 @@ function filterBtnClick (idTable,idBtnEdit){
             } else {
                 $$("filterTableForm").hide();
                 $$("table-editForm").show();
-                btnClass.classList.add("webix_secondary");
-                btnClass.classList.remove("webix_primary");
+                btnClass.classList.add("webix-transparent-btn");
+                btnClass.classList.remove("webix-transparent-btn--primary");
                 $$(idBtnEdit).hide();
                 
                 if ($$("filterTableBarContainer") && $$("filterTableBarContainer").isVisible()){
@@ -709,8 +703,8 @@ function editBtnClick(idBtnEdit) {
             let btnClass = document.querySelector(".webix_btn-filter");
             $$("filterTableForm").hide();
             $$("table-editForm").show();
-            btnClass.classList.add("webix_secondary");
-            btnClass.classList.remove("webix_primary");
+            btnClass.classList.add("webix-transparent-btn");
+            btnClass.classList.remove("webix-transparent-btn--primary");
             $$(idBtnEdit).hide();
             if ($$("editTableBarContainer") ){
                 $$("editTableBarContainer").show();
@@ -793,6 +787,14 @@ function editBtnClick(idBtnEdit) {
     }
 }
 
+function exportToExcel(idTable){
+    webix.toExcel(idTable, {
+      filename:"Table",
+      filterHTML:true,
+      styles:true
+    });
+    setLogValue("success","Таблица сохранена");
+}
 
 
 function tableToolbar (idTable,visible=false) {
@@ -808,21 +810,16 @@ function tableToolbar (idTable,visible=false) {
     return { 
         
         rows:[
-            {   view:"template",
-                id:idHeadline,
-                css:"webix_style-template-count webix_block-title",
-                height:34,
-                template:function(){
-                    if (Object.keys($$(idHeadline).getValues()).length !==0){
-                        return "<div style='display:inline-block;font-size:15px!important;font-weight:600'>"+$$(idHeadline).getValues()+"</div>"
-                    } else {
-                        return "<div style='display:inline-block;font-size:13px!important;font-weight:600'>Имя не указано</div>";
-                    }
-                },
-            },
+            setHeadlineBlock(idHeadline),
 
             {//id:"filterBar", 
-            css:"webix_filterBar",padding:17, height: 80,margin:5, 
+            css:"webix_filterBar",
+            padding:{
+                bottom:4,
+               // right:10
+            }, 
+            height: 40,
+          //  margin:5, 
                 
                 cols: [
                 {   view:"button",
@@ -830,11 +827,11 @@ function tableToolbar (idTable,visible=false) {
                     type:"icon",
                     id:idFilter,
                     hidden:visible,
-                    icon:"wxi-filter",
-                    css:"webix_btn-filter",
+                    icon:"fas fa-filter",
+                    css:"webix_btn-filter webix-transparent-btn ",
                     disabled:true,
                     title:"текст",
-                    height:50,
+                    height:42,
                     click:function(){
                         filterBtnClick(idTable,idBtnEdit);
                     },
@@ -846,12 +843,12 @@ function tableToolbar (idTable,visible=false) {
                 },
                 {   view:"button",
                     maxWidth:200, 
-                    value:"<span class='webix_icon wxi-pencil'></span><span style='padding-left: 4px'>Редактор таблицы</span>",
+                    value:"<span class='webix_icon fas fa-pen'></span><span style='padding-left: 5px'>Редактор таблицы</span>",
                     id:idBtnEdit,
                     hidden:true,
                     css:"webix_btn-edit",
                     title:"текст",
-                    height:50,
+                    height:42,
                     click:function(){
                         editBtnClick(idBtnEdit);
                     },
@@ -871,10 +868,10 @@ function tableToolbar (idTable,visible=false) {
                     type:"icon",
                     id:idExport,
                     hidden:visible,
-                    icon:"wxi-download",
-                    css:"webix_btn-download",
+                    icon:"fas fa-circle-down",
+                    css:"webix_btn-download webix-transparent-btn",
                     title:"текст",
-                    height:50,
+                    height:42,
                     click:function(){
                         exportToExcel(idTable)
                     },
@@ -896,7 +893,9 @@ function tableToolbar (idTable,visible=false) {
                     height:30,
                     template:function () {
                         if (Object.keys($$(idFindElements).getValues()).length !==0){
-                            return "<div style='color:#999898;'> Общее количество записей:"+" "+$$(idFindElements).getValues()+" </div>";
+                            return "<div style='color:#999898;'> Общее количество записей:"+
+                                    " "+$$(idFindElements).getValues()+
+                                    " </div>";
                         } else {
                             return "";
                         }
@@ -911,7 +910,9 @@ function tableToolbar (idTable,visible=false) {
                     template:function () {
                         if (Object.keys($$(idFilterElements).getValues()).length !==0){
                             
-                            return "<div style='color:#999898;'>Видимое количество записей:"+" "+$$(idFilterElements).getValues()+" </div>";
+                            return "<div style='color:#999898;'>Видимое количество записей:"+
+                                    " "+$$(idFilterElements).getValues()+
+                                    " </div>";
                         } else {
                             return "";
                         }
@@ -1214,8 +1215,8 @@ let onFuncTable = {
                     $$("filterTableForm").hide();
                 }
                 let btnClass = document.querySelector(".webix_btn-filter");
-                btnClass.classList.add("webix_secondary");
-                btnClass.classList.remove("webix_primary");
+                btnClass.classList.add("webix-transparent-btn");
+                btnClass.classList.remove("webix-transparent-btn--primary");
             } catch (err){
                 setLogValue("error","table filterTableHide: "+err);
             }

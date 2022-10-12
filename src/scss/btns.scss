@@ -178,7 +178,12 @@
 }
 .webix_collapse .webix_button{
     padding-left:15px;
+    padding-top:2px;
 }
+
+
+
+
 .webix_collapse .webix_button,
 .webix_collapse .webix_button:hover,
 .webix_collapse .webix_button:active{
@@ -189,21 +194,6 @@
 .webix_collapse .webix_button:hover .webix_icon_btn{
     color: var(--dark)!important;
 }
-
-
-
-.webix_close-btn .webix_button:hover .webix_icon_btn{
-    color: var(--primary-light)!important;
-}
-
-.webix_close-btn .webix_button:active .webix_icon_btn{
-    color: var(--primary-dark)!important;
-}
-
-.webix_close-btn .webix_icon_btn{
-    font-size: 23px!important;
-}
-
 
 
 .webix_inp_counter_prev,

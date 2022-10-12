@@ -961,7 +961,7 @@ const delBtn = {
     hotkey: "shift+esc",
     css:"webix_danger", 
     type:"icon", 
-    icon:"wxi-trash", 
+    icon:"fas fa-trash", 
     click:removeItem,
     on: {
         onAfterRender: function () {
@@ -998,7 +998,8 @@ const saveNewBtn = {
 
 const emptyTmplate = {   
     id:"EditEmptyTempalte",
-    template:"<div style='color:#858585;font-size:13px!important'>Добавьте новую запись или выберите существующую из таблицы</div>", 
+    css:"webix_empty-template",
+    template:"Добавьте новую запись или выберите существующую из таблицы", 
     borderless:true
 };
 
@@ -1040,7 +1041,7 @@ const headlineTemplate = {
 const btnClosePopup = {
     view:"button",
     id:"buttonClosePopupTableEdit",
-    css:"webix_close-btn",
+    css:"popup_close-btn",
     type:"icon",
     hotkey: "esc",
     width:25,

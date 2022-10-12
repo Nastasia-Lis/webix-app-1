@@ -583,7 +583,7 @@ function editFiltersBtn (){
     const buttonClosePopup =  {
         view:"button",
         id:"buttonClosePopup",
-        css:"webix_close-btn",
+        css:"popup_close-btn",
         type:"icon",
         hotkey: "esc",
         width:25,
@@ -597,6 +597,7 @@ function editFiltersBtn (){
     };
 
     const filterPrompt = {
+        css:"webix_empty-template",
         template:"Выберите нужные поля или шаблон из библиотеки", 
         borderless:true, 
         height:47
@@ -727,7 +728,7 @@ function editFiltersBtn (){
         css:"webix_danger",
         id:"editFormPopupLibRemoveBtn",
         type:"icon",
-        icon: 'wxi-trash',
+        icon: 'fas fa-trash',
         hidden:true,
         disabled:true,
         width: 50,
@@ -1262,7 +1263,6 @@ function resetFilterBtn (){
 
         const itemTreeId = getItemId ();
 
-        //const queryData = webix.ajax("/init/default/api/smarts?query="+itemTreeId+".id >= 0"+"&sorts="+itemTreeId+".id&offset=1");
         const queryData = webix.ajax("/init/default/api/smarts?query="+itemTreeId+".id >= 0");
         queryData.then(function(data){
             let dataErr =  data.json();
@@ -1889,13 +1889,13 @@ function clearPopupBtn (){
 
 const formHeadline =  {  
     template:"Редактор записей",height:30, 
-    css:"table-filter-headline",
+    css:"popup_headline",
     borderless:true,
 };
 
 const formCloseBtn = {
     view:"button",
-    css:"webix_close-btn",
+    css:"popup_close-btn",
     type:"icon",
     hotkey: "esc",
     width:25,
@@ -1931,7 +1931,7 @@ const formResetBtn = {
     hotkey: "shift+esc",
     css:"webix_danger", 
     type:"icon", 
-    icon:"wxi-trash", 
+    icon:"fas fa-trash", 
     click:resetFilterBtn,
     on: {
         onAfterRender: function () {
@@ -1961,7 +1961,7 @@ const formLibrarySaveBtn = {
     width:65,
     hotkey: "shift+esc",
     type:"icon", 
-    icon:"wxi-file", 
+    icon:"fas fa-file", 
     click:filterLibraryBtn,
     on: {
         onAfterRender: function () {
@@ -1972,7 +1972,8 @@ const formLibrarySaveBtn = {
 
 const formEmptyTemplate = {   
     id:"filterEmptyTempalte",
-    template:"<div style='color:#858585;font-size:13px!important'>Добавьте фильтры из редактора</div>", 
+    css:"webix_empty-template",
+    template:"Добавьте фильтры из редактора",
     borderless:true
 };
 

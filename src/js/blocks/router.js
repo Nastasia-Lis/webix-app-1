@@ -286,22 +286,24 @@ function getWorkspace (){
         function generateHeaderMenu  (el){
             let items = [];
             
-            try{
-                items.push({id:"userprefs", value:"Настройки"});
-
-                el.childs.forEach(function(child,i){
-                    let item = {
-                        id:child.name,
-                        value:child.title
-                    };
+            try{ 
+                items.push({id:"favs", value:"Избранное", icon: "fas fa-star"});
+                items.push({id:"userprefs", value:"Настройки", icon: "fas fa-gear"});
+                items.push({id:"cp", value:"Смена пароля", icon: "fas fa-lock"});
+                items.push({id:"logout", value:"Выйти", css:"webix_logout", icon: "fas fa-right-from-bracket"});
+                // el.childs.forEach(function(child,i){
+                //     let item = {
+                //         id:child.name,
+                //         value:child.title
+                //     };
 
                     
-                    if (child.name !== "logout"){
-                        items.push(item);
-                    } 
-                });
+                //     if (child.name !== "logout"){
+                //         items.push(item);
+                //     } 
+                // });
 
-                items.push({id:"logout", value:"Выйти", css:"webix_logout"});
+              
             } catch (err){
                 setFunctionError(err,"router","generateHeaderMenu");
             }
@@ -523,14 +525,14 @@ function router (){
                 const popupHeadline = {   
                     template:"Что-то пошло не так...", 
                     width:250,
-                    css:"webix_template-not-found", 
+                    css:"popup-headline", 
                     borderless:true, 
                     height:20 
                 };
                 const btnClosePopup = {
                     view:"button",
                     id:"buttonClosePopup",
-                    css:"webix_close-btn",
+                    css:"popup_close-btn",
                     type:"icon",
                     width:35,
                    

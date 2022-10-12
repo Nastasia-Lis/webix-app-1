@@ -10,6 +10,31 @@ function hideElem(elem){
         setFunctionError(err,"adaptive","hideElem");
     }
 }
+
+function showElem (elem){
+    try{
+        if (elem && !(elem.isVisible())){
+            elem.show();
+        }
+    } catch (err){
+        setFunctionError(err,"adaptive","showElem");
+    }
+}
+
+function removeElem (elem){
+    try{
+    
+        if (elem){
+            const parent = elem.getParentView();
+            parent.removeView(elem);
+        }
+    } catch (err){
+        setFunctionError(err,"adaptive","removeElem");
+    }
+}
+
+
+
 function resizeAdaptive (){
 
     function autoResizePopup (popupId,k=1.3){
@@ -119,16 +144,6 @@ function resizeAdaptive (){
                 }
             }
 
-            function removeInputs(){
-                try{
-                    if($$("customInputsMain")){
-                        inputsContainer.removeView($$("customInputsMain"));
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeForms => removeInputs");
-                }
-            }
-
             customInputsCollection = {
                 id:"customInputsAdaptive",
                 rows:[
@@ -139,7 +154,7 @@ function resizeAdaptive (){
             }; 
             
             setInputParameters();
-            removeInputs();
+            removeElem ($$("customInputsMain"));
 
             const formPopupHeadline ={
                 template:"Доступные действия", 
@@ -151,7 +166,7 @@ function resizeAdaptive (){
             const formPopupCloseBtn = {
                 view:"button",
                 id:"buttonClosePopupActions",
-                css:"webix_close-btn",
+                css:"popup_close-btn",
                 type:"icon",
                 hotkey: "esc",
                 width:25,
@@ -240,18 +255,6 @@ function resizeAdaptive (){
                 cols:inputs
             };
 
-            const adaptiveBtnContainer = $$("contextActionsBtnAdaptive").getParentView();
-
-            function removeAdaptiveBtn(){
-                try{
-                    if($$("contextActionsBtnAdaptive")){
-                        adaptiveBtnContainer.removeView($$("contextActionsBtnAdaptive"));
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeForms => removeAdaptiveBtn");
-                }
-            }
-
             function destructPopupForms(){
                 try{
                     if ($$("contextActionsPopup")){
@@ -275,8 +278,7 @@ function resizeAdaptive (){
                     setFunctionError(err,"adaptive","resizeForms => addAdaptiveInputs");
                 }
             }
-
-            removeAdaptiveBtn();
+            removeElem ($$("contextActionsBtnAdaptive"));
             destructPopupForms();
 
             if (!($$("customInputs"))){
@@ -341,33 +343,8 @@ function resizeAdaptive (){
                         }
                     }),
                     click:function(){
-                    
-                        function showDashPopup(){
-                            try{
-                                if($$("contextDashFilterPopup")){
-                                    $$("contextDashFilterPopup").show();
-                                }
-                            } catch (err){
-                                setFunctionError(err,"adaptive","resizeDashboards => dashFilterBtn click showDashPopup");
-                            }
-                        
-                        }
-    
-                        function showDashCloseBtn(){
-                            try{
-                                if ($$("buttonClosePopupDashFilter")                && 
-                                    !($$("buttonClosePopupDashFilter").isVisible()) ){
-                                    $$("buttonClosePopupDashFilter").show();
-                                }
-                            } catch (err){
-                                setFunctionError(err,"adaptive","resizeDashboards => dashFilterBtn click showDashCloseBtn");
-                            }
-                        }
-    
-    
-                        showDashPopup();
-                        showDashCloseBtn();
-    
+                        showElem ($$("contextDashFilterPopup"));
+                        showElem ($$("buttonClosePopupDashFilter"));
                     }
                 };
             }
@@ -386,17 +363,10 @@ function resizeAdaptive (){
                     setFunctionError(err,"adaptive","resizeDashboards => addDashAdaptive");
                 }
             }
-
+          
             function removeDashTool(){
                 tools = getTools();
-                const toolContainer = $$("dashboard-tool-main").getParentView();
-                try{
-                    if($$("dashboard-tool-main")){
-                        toolContainer.removeView( $$("dashboard-tool-main")); 
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeDashboards => removeDashTool");
-                }
+                removeElem ($$("dashboard-tool-main"));
             }
 
             function addAdaptiveInputs(tools){
@@ -435,27 +405,8 @@ function resizeAdaptive (){
             function removeDashAdaptiveTools(){
 
                 tools = $$("dashToolInputsAdaptive")._collection;
-                const toolParent = $$("dashboard-tool-adaptive").getParentView();
-                try{
-                    if($$("dashboard-tool-adaptive")){
-                        toolParent.removeView($$("dashboard-tool-adaptive"));
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeDashboards => removeDashAdaptiveTools");
-                }
+                removeElem ($$("dashboard-tool-adaptive"));
             }
-
-            function removeDashAdaptiveBtn(){
-                try{
-                    if($$("dashFilterBtn")){
-                        let btnParent =  $$("dashFilterBtn").getParentView();
-                        btnParent.removeView($$("dashFilterBtn"));
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeDashboards => removeDashAdaptiveBtn");
-                }
-            }
-
             
             function destructDashPopup(){
       
@@ -487,7 +438,7 @@ function resizeAdaptive (){
             if($$("dashFilterBtn")){
                 removeDashAdaptiveTools();
                 destructDashPopup();
-                removeDashAdaptiveBtn();
+                removeElem ($$("dashFilterBtn"));
                 addMainTool();
                 hideElem($$("buttonClosePopupDashFilter"));
             }
@@ -510,16 +461,7 @@ function resizeAdaptive (){
     function resizeTableEditForm(){
         
         function tableAdaptiveView(){
-
-            function showEditTableBtn(){
-                try{
-                    if( $$("table-editTableBtnId") && !( $$("table-editTableBtnId").isVisible())){
-                        $$("table-editTableBtnId").show();
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableEditForm => showEditTableBtn");
-                }
-            }
+      
 
 
             function createTablePopup(){
@@ -536,7 +478,7 @@ function resizeAdaptive (){
                     }
                 }).show();
             }
-
+      
             function addPopupElements(){
                 try{
                     if($$("tableEditPopupContainer")){
@@ -547,25 +489,6 @@ function resizeAdaptive (){
                 }
             }
 
-            function showTablePopupheadline(){
-                try{
-                    if($$("editTableBarHeadline") && !($$("editTableBarHeadline").isVisible())){
-                        $$("editTableBarHeadline").show();
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableEditForm => showTablePopupheadline");
-                }
-            }
-
-            function showTablePopup(){
-                try{
-                    if($$("tableEditPopup")){
-                        $$("tableEditPopup").show();
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableEditForm => showTablePopup");
-                }
-            }
 
             function enableNewAddBtn(){
                 try{
@@ -574,16 +497,6 @@ function resizeAdaptive (){
                     }
                 } catch (err){
                     setFunctionError(err,"adaptive","resizeTableEditForm => enableNewAddBtn");
-                }
-            }
-
-            function showContainer(){
-                try{
-                    if ($$("editTableBarContainer") ){
-                        $$("editTableBarContainer").show();
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableEditForm => showContainer");
                 }
             }
 
@@ -596,16 +509,7 @@ function resizeAdaptive (){
                     setFunctionError(err,"adaptive","resizeTableEditForm => addEditElements");
                 }
             }
-            function showEditHeadline(){
-                try{
-                    if($$("editTableBarHeadline") && !($$("editTableBarHeadline").isVisible())){
-                        $$("editTableBarHeadline").show();
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableEditForm => showEditHeadline");
-                }
-            }
-
+      
             function setBtnState(){
                 try{
                     if($$("table-saveNewBtn").isEnabled() && $$("table-newAddBtnId").isEnabled()){
@@ -617,9 +521,7 @@ function resizeAdaptive (){
                     setFunctionError(err,"adaptive","resizeTableEditForm => setBtnState");
                 }
             }
-
-            showEditTableBtn();
-
+            showElem ($$("table-editTableBtnId"));
             hideElem($$("editTableBarContainer"));
            
 
@@ -627,18 +529,18 @@ function resizeAdaptive (){
                if (!($$("tableEditPopup"))){
                 createTablePopup();
                 addPopupElements();
-                showTablePopupheadline();
+                showElem ($$("editTableBarHeadline"));
 
                 } else {
-                    showTablePopup();
+                    showElem ($$("tableEditPopup"));
 
                     if ($$("tableEditPopupContainer").getChildViews().length){
                         enableNewAddBtn();
-                        showContainer();
+                        showElem ($$("editTableBarContainer"));
 
                     } else {
                         addEditElements();
-                        showEditHeadline();
+                        showElem ($$("editTableBarHeadline"));
                     }
                 }
                 setBtnState();
@@ -648,29 +550,8 @@ function resizeAdaptive (){
         }
 
         function tableMainView(){
-           
-         
 
-            function showContainer(){
-                try{
-                    if ($$("editTableBarContainer") && !($$("editTableBarContainer").isVisible())){
-                        $$("editTableBarContainer").show();
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableEditForm => showContainer");
-                }
-            }
-       
 
-            function showEditForm(){
-                try{
-                    if ($$("table-editForm")){
-                        $$("table-editForm").show();
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableEditForm => showEditForm");
-                }
-            }
 
             function addEditElements(){
                 try{
@@ -682,17 +563,6 @@ function resizeAdaptive (){
                 }
             }
 
-            function showEditBar(){
-                try{
-                    if ( $$("editTableBarAdaptive") && !( $$("editTableBarAdaptive").isVisible())){
-                        $$("editTableBarAdaptive").show();
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableEditForm => showEditBar");
-                }
-            }
-
-           
             function setEditBarWidth(){
                 try{
                     if ( $$("editTableBarAdaptive")){
@@ -709,14 +579,14 @@ function resizeAdaptive (){
 
             if (!($$("editTableBarContainer")   &&  $$("editTableBarContainer").isVisible  ()  || 
                   $$("filterTableBarContainer") &&  $$("filterTableBarContainer").isVisible()) ){
-
-                showContainer();
+                
+                showElem ($$("editTableBarContainer"));
                 hideElem($$("filterTableForm"));
-                showEditForm();
+                showElem ($$("table-editForm"));
             }
         
             addEditElements();
-            showEditBar();
+            showElem ($$("editTableBarAdaptive"));
             hideElem($$("table-editTableBtnId"));
             setEditBarWidth();
             hideElem($$("editTableBarHeadline"));
@@ -743,35 +613,15 @@ function resizeAdaptive (){
             function setBtnState(){
                 let btnClass = document.querySelector(".webix_btn-filter");
                 try{
-                    if(btnClass && btnClass.classList.contains("webix_primary")){
-                        btnClass.classList.add("webix_secondary");
-                        btnClass.classList.remove("webix_primary");
+                    if(btnClass && btnClass.classList.contains(".webix-transparent-btn--primary")){
+                        btnClass.classList.add(".webix-transparent-btn");
+                        btnClass.classList.remove(".webix-transparent-btn--primary");
                     }
                 } catch (err){
                     setFunctionError(err,"adaptive","resizeTableFilterForm => setBtnState");
                 }
             }
 
-
-            function showFilterPopup(){
-                try{
-                    if ($$("tableFilterPopup")){
-                        $$("tableFilterPopup").show();
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableFilterForm => showFilterPopup");
-                }
-            }
-
-            function showFilterAdaptiveContainer(){
-                try{
-                    if ($$("tableFilterPopupContainer") && !($$("tableFilterPopupContainer").isVisible())){
-                        $$("tableFilterPopupContainer").show();
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableFilterForm => showFilterPopup");
-                }
-            }
 
             function getFilterValues(){
                 let filterFormValues;
@@ -795,27 +645,7 @@ function resizeAdaptive (){
                     setFunctionError(err,"adaptive","resizeTableFilterForm => addAdaptiveElements");
                 }
             }
-            
 
-            function showFilterHeadline(){
-                try{
-                    if($$("editFilterBarHeadline") && !($$("editFilterBarHeadline").isVisible())){
-                        $$("editFilterBarHeadline").show();
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableFilterForm => showFilterHeadline");
-                }
-            }
-
-            function showFilterElements(){
-                try{
-                    if($$("filterTableForm")){
-                        $$("filterTableForm").show();
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableFilterForm => showFilterElements");
-                }
-            }
 
             function setFilterValues(){
                 let filterFormValues =getFilterValues();
@@ -837,11 +667,11 @@ function resizeAdaptive (){
 
             if ($$("filterTableForm") && $$("filterTableForm").isDirty()){
                 hideElem($$("editTableBarContainer"));
-                showFilterPopup();
-                showFilterAdaptiveContainer();
+                showElem ($$("tableFilterPopup"));
+                showElem ($$("tableFilterPopupContainer"));
                 addAdaptiveElements();
-                showFilterHeadline();
-                showFilterElements();
+                showElem ($$("editFilterBarHeadline"));
+                showElem ($$("filterTableForm"));
                 setFilterValues();
             }
 
@@ -889,18 +719,8 @@ function resizeAdaptive (){
             function setBtnState(){
                 let btnClass = document.querySelector(".webix_btn-filter");
                 try{
-                    btnClass.classList.add("webix_primary");
-                    btnClass.classList.remove("webix_secondary");
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableFilterForm => setBtnState");
-                }
-            }
-
-            function showFilterContainer(){
-                try{
-                    if( $$("filterTableForm")){
-                        $$("filterTableForm").show();
-                    }
+                    btnClass.classList.add(".webix-transparent-btn--primary");
+                    btnClass.classList.remove(".webix-transparent-btn");
                 } catch (err){
                     setFunctionError(err,"adaptive","resizeTableFilterForm => setBtnState");
                 }
@@ -917,16 +737,6 @@ function resizeAdaptive (){
                 }
             }
 
-            function showFilter(){
-                try{
-                    if ($$("filterTableBarContainer") && !($$("filterTableBarContainer").isVisible())){
-                        $$("filterTableBarContainer").show();
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableFilterForm => showFilter");
-                }
-            }
-
         
             if ($$("tableFilterPopup").isVisible()){
                 hideElem($$("tableFilterPopup"));
@@ -938,14 +748,13 @@ function resizeAdaptive (){
                 setSizeFilterContainer();
 
                 if ($$("filterTableBarContainer") && !($$("filterTableBarContainer").isVisible())){
-
-                    showFilterContainer();
+                    showElem ($$("filterTableForm"));
                     hideElem($$("table-editForm"));
                     setFilterValues(filterFormValues);
-                    setBtnState();
+                   setBtnState();
 
                     hideElem($$("editTableBarContainer"));
-                    showFilter();
+                    showElem ($$("filterTableBarContainer"));
                 }
                 
             }

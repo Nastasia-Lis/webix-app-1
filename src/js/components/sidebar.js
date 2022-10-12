@@ -55,9 +55,9 @@ function disableElements(element){
 function setStateFilterBtn(){
     try{
         let btnClass = document.querySelector(".webix_btn-filter");
-        if (btnClass && btnClass.classList.contains("webix_primary")){
-            btnClass.classList.add("webix_secondary");
-            btnClass.classList.remove("webix_primary");
+        if (btnClass && btnClass.classList.contains("webix-transparent-btn--primary")){
+            btnClass.classList.add("webix-transparent-btn");
+            btnClass.classList.remove("webix-transparent-btn--primary");
         }
     } catch (err){
         setFunctionError(err,"sidebar","setStateFilterBtn");
@@ -601,7 +601,7 @@ function treeSidebar () {
                             filterForm.hide();
 
                             removeElements ($$("inputsFilter"));
-                            setStateFilterBtn();
+                           setStateFilterBtn();
 
                             hideElements ($$("table-editTableBtnId"));
                             showElements ($$("table-editForm"));

@@ -76,13 +76,13 @@ function setUserPrefs (){
                     if (userprefsWorkspace.logBlockOpt=="2"){
                         $$("logLayout").config.height = 5;
                         $$("logLayout").resize();
-                        $$("webix_log-btn").config.icon ="wxi-eye";
+                        $$("webix_log-btn").config.icon ="fas fa-eye";
                         $$("webix_log-btn").refresh();
     
                     } else if(userprefsWorkspace.logBlockOpt=="1"){
                         $$("logLayout").config.height = 90;
                         $$("logLayout").resize();
-                        $$("webix_log-btn").config.icon ="wxi-eye-slash";
+                        $$("webix_log-btn").config.icon ="fas fa-eye-slash";
                         $$("webix_log-btn").refresh();
                     }
                 }

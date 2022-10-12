@@ -1,5 +1,6 @@
-import {catchErrorTemplate,ajaxErrorTemplate} from "../blocks/logBlock.js";
 import {setLogValue} from '../blocks/logBlock.js';
+
+import {setAjaxError,setFunctionError} from "../blocks/errors.js";
 
 function contextMenu (){
 
@@ -18,54 +19,67 @@ function contextMenu (){
         master: $$("treeEdit"),
         on:{
             onMenuItemClick:function(id){
-            let context = this.getContext();
+                let context = this.getContext();
 
-            let tree = $$("treeEdit");
+                let tree = $$("treeEdit");
 
-            let titem = tree.getItem(context.id); 
+                let titem = tree.getItem(context.id); 
 
-            let menu = this.getMenu(id);
-            let cmd = menu.getItem(id).value;
+                let menu = this.getMenu(id);
+                let cmd = menu.getItem(id).value;
 
-            let url = "/init/default/api/trees/";
-           
-            let postObj = {
-                name : "",
-                pid : "",
-                owner : null,
-                descr : "",
-                ttype : 1,
-                value : "",
-                cdt : null,
-            };
+                let url = "/init/default/api/trees/";
+            
+                let postObj = {
+                    name : "",
+                    pid : "",
+                    owner : null,
+                    descr : "",
+                    ttype : 1,
+                    value : "",
+                    cdt : null,
+                };
 
-            try {
+          
                 switch (cmd) {
                     case "Добавить": {
                     
                         let text = prompt("Имя нового подэлемента '"+titem.value+"'", "");
                     
                         if (text != null) {
-                            console.log(titem.id)
                             postObj.name = text;
-                            postObj.pid = titem.id
+                            postObj.pid = titem.id;
 
-                            webix.ajax().post(url, postObj).then(function (data) {
-                                if (data.json().err_type !== "e"&&data.json().err_type !== "x"){
-                                    let idNewItem = data.json().content.id;
-                                  
-                                    tree.data.add({id:idNewItem, value:text, pid:titem.id}, 0, titem.id);
-                                    tree.open(titem.id);
-                                
-                                    setLogValue("success","Данные сохранены");
-                                } else {
-                                    catchErrorTemplate("013-001", data.json().err, true);
+                            const postData = webix.ajax().post(url, postObj);
+
+                            postData.then(function(data){
+                                try{
+                                    data = data.json();
+                                    if (data.err_type == "i"){
+                                        
+                                        let idNewItem = data.content.id;
+                                    
+                                        tree.data.add({
+                                            id:idNewItem,
+                                            value:text, 
+                                            pid:titem.id
+                                        }, 0, titem.id);
+                                        
+                                        tree.open(titem.id);
+                                    
+                                        setLogValue("success","Данные сохранены");
+                                    } else {
+                                        setFunctionError( data.err,"editTree","case add post msg");
+                                    }
+                                } catch (err){
+                                    setFunctionError( err,"editTree","case add");
                                 }
-                            }).fail(function(error){
-                                console.log(error)
-                                ajaxErrorTemplate("013-001",error.status,error.statusText,error.responseURL);
-
                             });
+
+                            postData.fail(function(err){
+                                setAjaxError(err, "editTree","case add");
+                            });
+
 
                         }
                         break;
@@ -78,37 +92,50 @@ function contextMenu (){
                             postObj.name = text;
                             postObj.id = titem.id;
                             postObj.pid = titem.pid;
-              
-                            webix.ajax().put(url+titem.id, postObj).then(function (data) {
-                                if (data.json().err_type !== "e"&&data.json().err_type !== "x"){
-                                    titem.value = text;
-                                    tree.updateItem(titem.id, titem);
-                                    setLogValue("success","Данные изменены");
-                                } else {
-                                    catchErrorTemplate("013-011", data.json().err, true);
+
+                            const putData =  webix.ajax().put(url + titem.id, postObj);
+
+                            putData.then(function(data){
+                                try{
+                                    data = data.json();
+                                    if (data.err_type == "i"){
+                                        titem.value = text;
+                                        tree.updateItem(titem.id, titem);
+                                        setLogValue("success","Данные изменены");
+                                    } else {
+                                        setFunctionError( data.err,"editTree","case rename put msg");
+                                    }
+                                } catch (err){
+                                    setFunctionError( err,"editTree","case rename");
                                 }
-                                
-                            }).fail(function(error){
-                                console.log(error);
-                                ajaxErrorTemplate("013-011",error.status,error.statusText,error.responseURL);
+                            });
+
+                            putData.fail(function(err){
+                                setAjaxError(err, "editTree","case rename");
                             });
                         }
                         break;
                     }
                     case "Удалить": {
-                        console.log(url+titem.id+".json")
-                        console.log(titem)
-                        webix.ajax().del(url+titem.id,titem).then(function (data) {
-                            if (data.json().err_type !== "e"&&data.json().err_type !== "x"){
-                                tree.remove(titem.id);
-                                setLogValue("success","Данные удалены");
-                            } else {
-                                catchErrorTemplate("013-002", data.json().err, true);
-                            }
-                        }).fail(function(error){
-                            console.log(error)
-                            ajaxErrorTemplate("013-002",error.status,error.statusText,error.responseURL);
 
+                        const delData =  webix.ajax().del(url+titem.id,titem);
+
+                        delData.then(function(data){
+                            try{
+                                data = data.json();
+                                if (data.err_type == "i"){
+                                    tree.remove(titem.id);
+                                    setLogValue("success","Данные удалены");
+                                } else {
+                                    setFunctionError( data.err,"editTree","case delete del msg");
+                                }
+                            } catch (err){
+                                setFunctionError( err,"editTree","case delete");
+                            }
+                        });
+
+                        delData.fail(function(err){
+                            setAjaxError(err, "editTree","case delete");
                         });
 
                         break;
@@ -121,9 +148,8 @@ function contextMenu (){
                                 tree.open(obj.id);
                             });
 
-                        } catch (error){
-                            console.log(error);
-                            catchErrorTemplate("013-000", error);
+                        } catch (err){
+                            setFunctionError( err,"editTree","case open all");
                         }
                         break;
                     }
@@ -133,19 +159,15 @@ function contextMenu (){
                             tree.data.eachSubItem(titem.id, function(obj){ 
                                 tree.close(obj.id);
                             });
-                        } catch (error){
-                            console.log(error);
-                            catchErrorTemplate("013-000", error);
+                        } catch (err){
+                            setFunctionError( err,"editTree","case close all");
                         }
                         
                         break;
                     }
                     
                 }
-            } catch(error){
-                console.log(error);
-                catchErrorTemplate("013-000", error);
-            }
+         
             }
     }
     };
@@ -153,64 +175,72 @@ function contextMenu (){
 
 
 function editTreeLayout () {
-   
+    const tree = {
+        view:"edittree",
+        id:"treeEdit",
+        editable:true,
+        editor:"text",
+        editValue:"value",
+        css:"webix_tree-edit",
+        editaction:"dblclick",
+        data:[
+        ],
+        on:{
+            onAfterEditStop:function(state, editor, ignoreUpdate){
+            try {
+                let url = "/init/default/api/trees/";
+                
+                if(state.value != state.old){
+                    let pid = $$("treeEdit").getParentId(editor.id);
+                    
+                    let postObj = {
+                        name : state.value,
+                        pid : pid,
+                        id:editor.id,
+                        owner : null,
+                        descr : "",
+                        ttype : 1,
+                        value : "",
+                        cdt : null,
+                    };
+
+                    const postData = webix.ajax().put(url+editor.id, postObj);
+
+                    postData.then(function(data){
+                        data = data.json();
+                        if (data.err_type == "i"){
+                            setLogValue("success","Данные изменены");
+                        } else {
+                            setFunctionError(data.err,"editTree","tree onAfterEditStop postData msg");
+                        }
+                    });
+
+                    postData.fail(function(err){
+                        setAjaxError(err, "editTree","tree onAfterEditStop postData");
+                    });
+
+
+                }
+            } catch (err){
+                setAjaxError(err, "editTree","tree onAfterEditStop");
+            }
+        },
+        }
+    
+    };
+
+
     return [
 
-        {id:"treeEditContainer", cols:[
-            {rows: [
-                {
-                    view:"edittree",
-                    id:"treeEdit",
-                    editable:true,
-                    editor:"text",
-                    editValue:"value",
-                    css:"webix_tree-edit",
-                    editaction:"dblclick",
-                    data:[
+        {id:"treeEditContainer", 
+            cols:[
+                {rows: [
+                        tree,
                     ],
-                    on:{
-                         onAfterEditStop:function(state, editor, ignoreUpdate){
-                        try {
-                            let url = "/init/default/api/trees/";
-                            if(state.value != state.old){
-                                let pid = $$("treeEdit").getParentId(editor.id);
-                                
-                                let postObj = {
-                                    name : state.value,
-                                    pid : pid,
-                                    id:editor.id,
-                                    owner : null,
-                                    descr : "",
-                                    ttype : 1,
-                                    value : "",
-                                    cdt : null,
-                                };
-
-                            webix.ajax().put(url+editor.id, postObj).then(function (data) {
-                                if (data.json().err_type !== "e"&&data.json().err_type !== "x"){
-                                    setLogValue("success","Данные изменены");
-                                } else {
-                                    catchErrorTemplate("013-011", data.json().err, true);
-                                }
-                            
-                            }).fail(function(error){
-                                console.log(error)
-                                ajaxErrorTemplate("013-011",error.status,error.statusText,error.responseURL);
-
-                            });
-
-                        }
-                        } catch (error){
-                            console.log(error);
-                            catchErrorTemplate("012-011", error);
-                        }
-                    },
-                    }
-                   
                 },
-            ],},
-            {}
-        ]}
+                {}
+            ]
+        }
 
         
     ];

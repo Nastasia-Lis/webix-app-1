@@ -1,9 +1,9 @@
 import {setLogValue} from './logBlock.js';
-import {catchErrorTemplate,ajaxErrorTemplate} from "./logBlock.js";
 import  {STORAGE,getData} from "./globalStorage.js";
 
 import {setAjaxError,setFunctionError} from "./errors.js";
 
+import {setHeadlineBlock} from './blockHeadline.js';
 
 
 function submitBtn (idElements, url, verb, rtype){
@@ -634,7 +634,7 @@ function getInfoTable (idCurrTable,idsParam) {
                                 const btnClosePopup = {
                                     view:"button",
                                     id:"buttonClosePopup",
-                                    css:"webix_close-btn",
+                                    css:"popup_close-btn",
                                     type:"icon",
                                     width:35,
                                    
@@ -961,9 +961,10 @@ function getInfoTable (idCurrTable,idsParam) {
                     css:"webix_danger", 
                     type:"icon", 
                     disabled:true,
-                    icon:"wxi-trash", 
-                    inputHeight:48,
-                    height:48,
+                    icon:"fas fa-trash",
+                    inputWidth:55,
+                    inputHeight:35,
+                  ///  height:35,
                     value:dataInputsArray[el].label,
                     click:function (id) {
                         let idElements = getInputsId (this);
@@ -982,8 +983,7 @@ function getInfoTable (idCurrTable,idsParam) {
                     view:"button", 
                     css:"webix_primary", 
                     id:"customBtn"+i,
-                    inputHeight:46,
-                    height:46, 
+                    inputHeight:35,
                     value:dataInputsArray[el].label,
                     click:function (id) {
                         let idElements = getInputsId (this);
@@ -1227,7 +1227,7 @@ function getInfoTable (idCurrTable,idsParam) {
                 const poupCloseBtn = {
                     view:"button",
                     id:"buttonClosePopupActions",
-                    css:"webix_close-btn",
+                    css:"popup_close-btn",
                     type:"icon",
                     hotkey: "esc",
                     width:25,
@@ -1548,7 +1548,7 @@ function getInfoDashboard (idsParam,single=false){
                         const btnClose = {
                             view:"button",
                             id:"buttonClosePopupDashFilter",
-                            css:"webix_close-btn",
+                            css:"popup_close-btn",
                             type:"icon",
                             hotkey: "esc",
                             width:25,
@@ -1622,7 +1622,7 @@ function getInfoDashboard (idsParam,single=false){
                         const btnclose = {
                             view:"button",
                             id:"buttonClosePopupDashFilter",
-                            css:"webix_close-btn",
+                            css:"popup_close-btn",
                             type:"icon",
                             hotkey: "esc",
                             hidden:true,
@@ -1668,20 +1668,8 @@ function getInfoDashboard (idsParam,single=false){
                     }
 
                     function createDashInfo(){
-                        const template = { 
-                            id:"dash-template",
-                            template:function(){
-                                if (Object.keys($$("dash-template").getValues()).length !==0){
-                                    return "<div style='display:inline-block;font-size:16px!important;font-weight:600' >"+$$("dash-template").getValues()+"<div>";
-                                } else {
-                                    return " <div style='display:inline-block;font-size:16px!important;font-weight:600'>не указано</div>";
-                                }
-                            },
-                            css:"webix_style-template-count webix_block-title",
-                            borderless:false,
-                            height:75,
-        
-                        };
+                        const template = setHeadlineBlock("dash-template");
+                 
 
                         const dashCharts = {
                             id:"dashboard-charts",
@@ -1774,7 +1762,7 @@ function getInfoDashboard (idsParam,single=false){
 
             function setScrollHeight(){
                 try{
-                    if ($$("webix_log-btn").config.icon =="wxi-eye"){
+                    if ($$("webix_log-btn").config.icon =="fas fa-eye"){
                         $$("logLayout").config.height = 90;
                         $$("logLayout").resize();
                         $$("logLayout").config.height = 5;
@@ -2169,21 +2157,27 @@ function getInfoDashboard (idsParam,single=false){
 
 
 function getInfoEditTree() {
-    $$("treeEdit").clearAll();
-    let url = "/init/default/api/"+"trees";
-    webix.ajax().get(url, {
-        success:function(text, data, XmlHttpRequest){
-            try {
+    const treeEdit = $$("treeEdit");
+    
+    treeEdit.clearAll();
 
-                data = data.json().content;
-                data[0].pid = 0;
-                
+    const url = "/init/default/api/"+"trees";
+    
+    const getData = webix.ajax().get(url);
+    
+    getData.then(function(data){
 
-                let map = {}, 
-                    treeStruct = [],
-                    treeData = []
-                ;
+        data = data.json().content;
+        data[0].pid = 0;
+        
 
+        let map = {}, 
+            treeStruct = [],
+            treeData = []
+        ;
+
+        function pushTreeData(){
+            try{
                 data.forEach(function(el,i){
                     if (el.pid == 0){
                         treeData.push({id:el.id, open:true, value:el.name, pid:el.pid, data:[]});
@@ -2191,7 +2185,13 @@ function getInfoEditTree() {
                         treeData.push({id:el.id, value:el.name, pid:el.pid, data:[]});
                     }
                 });
-               
+            } catch (err) {
+                setFunctionError(err,"content","pushTreeData")
+            }
+        }
+
+        function createStruct(){
+            try{
                 treeData.forEach(function(el,i){
 
                     map[el.id] = i; 
@@ -2202,23 +2202,22 @@ function getInfoEditTree() {
                         treeStruct.push(el);
                     }
                 });
-
-                $$("treeEdit").parse(treeStruct);
-
-            } catch (error){
-                console.log(error);
-                catchErrorTemplate("018-004", error);
-            } 
-            
-        },
-        error:function(text, data, XmlHttpRequest){
-            ajaxErrorTemplate("018-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
-
+            } catch (err) {
+                setFunctionError(err,"content","createStruct")
+            }
         }
-    }).catch(error => {
-        console.log(error);
-        ajaxErrorTemplate("018-000",error.status,error.statusText,error.responseURL);
-    }); 
+
+        pushTreeData();
+        createStruct();
+
+        treeEdit.parse(treeStruct);
+
+    });
+
+    getData.fail(function(err){
+        setAjaxError(err, "content","getInfoEditTree");
+    });
+
   
 }
 
@@ -2229,5 +2228,4 @@ export {
     getInfoTable,
     getInfoDashboard,
     getInfoEditTree,
-   // urlFieldAction
 };

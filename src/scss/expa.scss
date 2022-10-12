@@ -5,6 +5,14 @@
 @import "src/scss/btns";
 
 
+// icons
+@import "src/scss/font_aws/fontawesome";
+
+@import "src/scss/font_aws/solid";
+@import "src/scss/font_aws/brands";
+@import "src/scss/font_aws/regular";
+
+
 html, body {
     scrollbar-width: 9px!important;  
    // scrollbar-color: #b3b3b3 #ffffff!important;    
@@ -131,7 +139,17 @@ margin-left: 0px!important;
     @include primary-btn--active;
 }
 
+.webix_list_item .webix_icon{
+    font-size: 13px!important;
+    margin-right: 8px!important;
+}
 
+.webix_list_item.menu{
+    font-size: 13px!important;
+}
+.fa-right-from-bracket{
+    color:var(--danger-dark)!important;
+}
 
 .webix_badge{
     background-color: var(--danger)!important;
@@ -280,6 +298,7 @@ label, button{
 .webix_contextmenu a:last-child:hover{
     color:  var(--dark)!important;
 }
+
 
 
 .webix{
@@ -596,10 +615,12 @@ label, button{
 }
 
 .webix_icon_btn{
-    font-size: 18px!important; 
-    margin: 0px 0px 0px -1px !important;
+    font-size: 14px!important; 
 }
 
+.webix_img_btn > .webix_icon_btn{
+    margin: 2.5px !important;
+}
 
 
 
@@ -769,16 +790,6 @@ label, button{
     right: 0!important;
 }
 
-.webix_template-not-found .webix_template{
-    font-weight: 600;
-    font-size: 17px;
-    padding: 8px 0px 0px 8px!important;
-}
-
-.webix_template-not-found-descr > .webix_template{
-    //padding: 2px  12px 0px!important;
-    padding: 0px 0px 0px 8px!important;
-}
 
 .webix_btn-not-found-back  button {
     padding: 0px!important;
@@ -788,9 +799,6 @@ label, button{
     padding: 0px 9px!important;
 }
 
-.webix_close-btn{
-    width: 27px!important;
-}
 
 
 .webix_filter-headline-wrapper{
@@ -806,6 +814,94 @@ label, button{
 
 
 
-.webix_table-toolbar-container{
-   // height: 100%!important;
+/// ----- popups
+
+.webix_template-not-found .webix_template,
+.popup_headline .webix_template {
+    font-weight: 600;
+    font-size: 16px;
+    padding: 9px 0px 0px 9px!important;
 }
+
+
+
+.webix_template-not-found-descr > .webix_template{
+    //padding: 2px  12px 0px!important;
+    padding: 0px 0px 0px 8px!important;
+}
+
+
+.popup_close-btn .webix_button.webix_img_btn{
+    background-color: transparent!important;
+    width: 27px!important;
+}
+
+
+.popup_close-btn .webix_button:hover .webix_icon_btn{
+    color: var(--primary-light)!important;
+}
+
+.popup_close-btn .webix_button:active .webix_icon_btn{
+    color: var(--primary-dark)!important;
+}
+
+.popup_close-btn .webix_icon_btn{
+    font-size: 23px!important;
+}
+
+.popup_subtitle{
+    height: auto!important;
+}
+
+.popup_padding-container{
+    padding: 10px!important;
+}
+
+
+
+// общее
+.webix_empty-template {
+    color:#858585!important;
+    font-size:13px!important;
+}
+
+.webix_block-headline{
+    display:inline-block!important;
+    font-size:15px!important;
+    font-weight:600!important;
+    background:var(--bg)!important;
+}
+
+
+
+///---- favs
+.webix-transparent-btn  .webix_button.webix_img_btn{
+    background:transparent!important;
+}
+
+.webix-transparent-btn  .webix_button.webix_img_btn:hover{
+    background:var(--gray-light)!important;
+   // color:var(--gray)!important;
+}
+
+.webix-transparent-btn  .webix_button.webix_img_btn:active{
+    background:var(--gray)!important;
+   // color:var(--gray)!important;
+}
+.webix-transparent-btn .webix_button .webix_icon_btn{
+    padding-top: 4px!important;
+}
+.webix-transparent-btn .webix_button:hover .webix_icon_btn{
+    color:var(--primary-dark)!important;
+}
+
+
+.webix-transparent-btn--primary{
+    background-color:transparent!important;
+    color:var(--primary-dark)!important;
+}
+
+// /// btns
+// .webix_btns-transparent .webix_button.webix_img_btn{
+// background : transparent!important;
+// }

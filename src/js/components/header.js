@@ -1,10 +1,13 @@
 
 import {modalBox} from "../blocks/notifications.js";
 import {setLogValue} from '../blocks/logBlock.js';
-import {tableNames} from "../blocks/router.js";
 import {setStorageData,setUserLocation} from "../blocks/storageSetting.js";
 import {catchErrorTemplate,ajaxErrorTemplate} from "../blocks/logBlock.js";
 import {saveItem, saveNewItem} from "../blocks/editTableForm.js";
+import {setAjaxError,setFunctionError} from "../blocks/errors.js";
+
+import {favsPopup} from "../blocks/favsLink.js";
+
 
 let userLocation;
 let headerContextId;
@@ -15,7 +18,7 @@ function header() {
 
             if (window.innerWidth > 850 ){
                 if ($$("tree").isVisible()){
-                    this.config.icon ="wxi-angle-double-right";
+                  // this.config.icon ="wxi-angle-double-right";
                     this.refresh();
                     $$("tree").hide();
                     if($$("sideMenuResizer")){
@@ -24,7 +27,7 @@ function header() {
 
                 } else {
                     $$("tree").show();
-                    this.config.icon ="wxi-angle-double-left";
+                  //  this.config.icon ="wxi-angle-double-left";
                     this.refresh();
                     if(window.innerWidth >= 800){
                         if($$("sideMenuResizer")){
@@ -78,10 +81,10 @@ function header() {
                     view:"button",
                     type:"icon",
                     id:"collapseBtn",
-                    icon:"wxi-angle-double-left",
+                    icon:"fas fa-bars",
                     css:"webix_collapse",
                     title:"текст",
-                    height:45,
+                    height:42, 
                     width:40,
                     click:collapseClick,
                     on: {
@@ -93,24 +96,25 @@ function header() {
                 {
                     view:"label",
                     label:"<img src='/init/static/images/expalogo.png' style='height:30px; margin: 10px;'>", 
-                    height:30
+                    height:25
                }
             ]},
             
             {},
             {view:"search", 
                 placeholder:"Поиск", 
-                css:"searchTable", 
+                css:"searchTable",
+                height:42, 
                 maxWidth:250, 
                 minWidth:40, 
             },
             {   view:"button",  
                 id:"webix_log-btn",
                 type:"icon", 
-                icon:"wxi-eye-slash",
-                height:48,
+                icon:"fas fa-eye-slash",
+                height:42, 
                 badge:0,
-                width: 60,
+                width: 50,
                 css:"webix_log-btn",
                 click:function (){
                     if (this.getValue() == 1){
@@ -133,13 +137,13 @@ function header() {
                             $$("logLayout").config.height = 90;
                         
                             $$("logLayout").resize();
-                            this.config.icon ="wxi-eye-slash";
+                            this.config.icon ="fas fa-eye-slash";
                             this.refresh();
                            // setStorageData("LogVisible", JSON.stringify("show"));
                         } else {
                             $$("logLayout").config.height = 5;
                             $$("logLayout").resize();
-                            this.config.icon ="wxi-eye";
+                            this.config.icon ="fas fa-eye";
                             this.refresh();
                             //setStorageData("LogVisible", JSON.stringify("hide"));
             
@@ -156,9 +160,9 @@ function header() {
                 id:"button-context-menu",
                 type:"icon",
                 disabled:true,
-                icon: 'wxi-user',
-                height:48,
-                width: 60,
+                icon: 'fas fa-user',
+                height:38, 
+                width: 50,
                 popup: {
                     view: 'contextmenu',
                     id:"contextmenu",
@@ -274,6 +278,9 @@ function header() {
                                     } else {
                                         Backbone.history.navigate("userprefs", { trigger:true});
                                     }
+                                } else if (id == "favs"){
+                                   
+                                    favsPopup();
                                 }
                             } catch (error){
                                 console.log(error);
