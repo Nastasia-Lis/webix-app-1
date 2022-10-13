@@ -48,7 +48,6 @@ function header() {
 
                 } else {
                     $$("tree").show();
-                    console.log(window.innerHeight )
                    $$("tree").config.width = window.innerWidth;
                     $$("tree").resize()
                     

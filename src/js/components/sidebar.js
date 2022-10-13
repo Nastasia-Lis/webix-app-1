@@ -7,6 +7,7 @@ import  {STORAGE,getData} from "../blocks/globalStorage.js";
 import {setAjaxError,setFunctionError} from "../blocks/errors.js";
 
 
+
 let inpObj={};
 let customInputs = [];
 
@@ -162,7 +163,8 @@ function treeSidebar () {
                     }
                 }
               
-
+              
+            //    removeElements ($$("inputsFilter"))
                 hideElements ($$("table-editTableBtnId"));
                 hideElements ($$("filterTableBarContainer"));
 
@@ -593,19 +595,26 @@ function treeSidebar () {
                
                 const getItemParent = $$("tree").getParentId(data);
                 const filterForm = $$("filterTableForm");
+                const inputs = $$("inputsFilter");
+
+                
+                if (data.includes("q-none_data-tree_") || data.includes("q-load_data-tree_")){
+                    return false;
+                }
                 
                 function setFilterDefaultState(){
                     try{
                         if (filterForm && filterForm.isVisible()){
 
                             filterForm.hide();
-
-                            removeElements ($$("inputsFilter"));
-                           setStateFilterBtn();
-
+                            setStateFilterBtn();
                             hideElements ($$("table-editTableBtnId"));
                             showElements ($$("table-editForm"));
                         
+                        }
+
+                        if (inputs){
+                            removeElements (inputs);
                         }
                     } catch (err){
                         setFunctionError(err,"sidebar","onBeforeSelect => setFilterDefaultState");
@@ -669,14 +678,24 @@ function treeSidebar () {
             },
 
             onBeforeOpen:function (id){
-
-                const selectedItem = $$("tree").getItem(id);
-                const idLoadElement = "load_data-tree_"+ webix.uid();
+                const tree          = $$("tree");
+                const selectedItem  = $$("tree").getItem(id);
+                const idLoadElement = "q-load_data-tree_"+ webix.uid();
+                const idNoneElement = "q-none_data-tree_"+ webix.uid();
 
                 function createLoadEl(){
-                    $$("tree").data.add({
+                    tree.data.add({
                         id:idLoadElement,
+                        disabled:true,
                         value:"Загрузка ..."
+                    }, 0, id );  
+                }
+
+                function createNoneEl(){
+                    tree.data.add({
+                        id:idNoneElement,
+                        disabled:true,
+                        value:"Раздел пуст"
                     }, 0, id );  
                 }
 
@@ -703,33 +722,53 @@ function treeSidebar () {
                         return check;
                     }
 
-                    function removeTreeLoadEl(){
+                    function removeTreeEls(noneEl=false){
                         try{
-                            if($$("tree").exists(idLoadElement)){
-                                $$("tree").remove(idLoadElement);
+                            if( tree.exists(idLoadElement)){
+                                tree.remove(idLoadElement);
+                            }
+                            if( tree.exists(idNoneElement) && noneEl){
+                                tree.remove(idNoneElement);
                             }
                         } catch (err){
-                            setFunctionError(err,"sidebar","onBeforeOpen => removeTreeLoadEl");
+                            setFunctionError(err,"sidebar","onBeforeOpen => removeTreeEls");
                         }
                     }
 
                     function generateMenuData (typeChild){
+                        let itemsExists = false;
                         try{
+                         
                             obj.forEach(function(data) {
+                               
                                 if (content[data].type == typeChild && !findNotUniqueItem(data)){ 
-
-                                    $$("tree").data.add({
+                         
+                                    tree.data.add({
                                             id:data, 
                                             value:(content[data].plural) ? 
                                             content[data].plural         : 
                                             content[data].singular       , 
                                             "type":content[data].type
                                     }, 0, id ); 
-                                    
-                                    removeTreeLoadEl();
+
+                                    if (!itemsExists){
+                                        itemsExists = true;
+                                    }
+                                   
+                                    removeTreeEls(true);
                             
-                                }
+                                } 
+
+
                             });
+
+                            if (!itemsExists){
+                                removeTreeEls();
+                                if(!(tree.exists(idNoneElement))){
+                                    createNoneEl();
+                                    tree.addCss(idNoneElement, "tree_none-items");
+                                }
+                            }
                         } catch (err){
                             setFunctionError(err,"sidebar","onBeforeOpen => generateMenuData");
                         }

@@ -17,7 +17,7 @@ function setUserPrefs (){
         function setDataToStorage(){
             try{
                 data.forEach(function(el,i){
-                    if (el.owner == user.id){
+                    if (el.owner == user.id && !(el.name.includes("fav-link_"))){
                         setStorageData (el.name, el.prefs);
                     }
                 });

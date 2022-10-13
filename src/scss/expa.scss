@@ -905,3 +905,25 @@ label, button{
 // .webix_btns-transparent .webix_button.webix_img_btn{
 // background : transparent!important;
 // }
+
+
+
+
+/// tree
+.tree_none-items{
+    color: var(--gray)!important;
+}
+.tree_none-items:hover{
+    background-color: transparent!important;
+}
+
+.tree_none-items .webix_tree_file{
+    color: var(--gray-light) !important;
+}
+
+.tree_none-items:hover .webix_tree_file{
+    color: var(--gray-light) !important;
+}
+.tree_none-items:active .webix_tree_file{
+    color: var(--gray-light) !important;
+}

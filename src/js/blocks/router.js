@@ -3,12 +3,12 @@ import {lib} from "../expalib.js";
 lib ();
 // tree elements
 import  {dashboardLayout} from "../components/dashboard.js";
-import  {tableToolbar,table, onFuncTable} from "../components/table.js";
+import  {table, onFuncTable} from "../components/table.js";
 import {authCpLayout} from "../components/authSettings.js";
 import {userprefsLayout} from "../components/userprefs.js";
  
 // other blocks
-
+import {tableToolbar} from "./toolbarTable.js";
 import {editTableBar} from "./editTableForm.js";
 import {propertyTemplate} from "./viewPropertyTable.js";
 import {filterForm} from "./filterTableForm.js";

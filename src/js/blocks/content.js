@@ -398,7 +398,7 @@ function getInfoTable (idCurrTable,idsParam) {
                         dataFields[data].editor = "text";
                         dataFields[data].numberFormat="1 111";
                     }catch (err){
-                        setFunctionError(err,"content","createTableCols => createIntegerCol")
+                        setFunctionError(err,"content","createTableCols => createIntegerCol");
                     }
                 }
                 function createBoolCol      (){
@@ -409,7 +409,7 @@ function getInfoTable (idCurrTable,idsParam) {
                             {id:2, value: "Нет"}
                         ];
                     }catch (err){
-                        setFunctionError(err,"content","createTableCols => createBoolCol")
+                        setFunctionError(err,"content","createTableCols => createBoolCol");
                     }
                 }
 
@@ -417,14 +417,13 @@ function getInfoTable (idCurrTable,idsParam) {
                 if (fieldType.includes("reference")){
                     createReferenceCol();
                 } else if ( fieldType == "datetime"){
-                    createDatetimeCol();
-                } else if ( fieldType == "string" || 
-                            fieldType == "text" ){
-                    createTextCol();
-                } else if ( fieldType == "integer"){
-                    createIntegerCol();
+                    createDatetimeCol ();
                 } else if ( fieldType == "boolean"){
-                    createBoolCol();
+                    createBoolCol     ();
+                } else if ( fieldType == "integer"){
+                    createIntegerCol  ();
+                } else {
+                    createTextCol     ();
                 }
 
 
@@ -463,7 +462,7 @@ function getInfoTable (idCurrTable,idsParam) {
                 if(dataFields[data].id == "id"){
                     userPrefsId();
                 }
-            
+               
                 pushColsData();
         
             });

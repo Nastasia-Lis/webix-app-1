@@ -11661,6 +11661,26 @@ button {
   color: var(--primary-dark) !important;
 }
 
+.tree_none-items {
+  color: var(--gray) !important;
+}
+
+.tree_none-items:hover {
+  background-color: transparent !important;
+}
+
+.tree_none-items .webix_tree_file {
+  color: var(--gray-light) !important;
+}
+
+.tree_none-items:hover .webix_tree_file {
+  color: var(--gray-light) !important;
+}
+
+.tree_none-items:active .webix_tree_file {
+  color: var(--gray-light) !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .fa-beat,
   .fa-bounce,
