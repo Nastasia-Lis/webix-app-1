@@ -258,23 +258,19 @@ function getWorkspace (){
                 };
 
 
-                if (!(el.title)){
+                if ( !(el.title) ){
                     menuItem.value="Без названия";
                 }
 
-                if (el.action !== "dbtable"   && 
-                    el.action !== "tform"     && 
-                    el.action !== "dashboard" &&
-                    el.action !== "none"      ) {
+                if ( el.mtype == 2 ) {
 
-                    if (el.childs.length == 0){
+                    if ( el.childs.length == 0 ){
                         menuItem.webix_kids = true; 
                     } else {
                         menuItem.data = generateChildsTree (el);
                     }         
-                } else {
-                    
                 }
+
             } catch (err){
                 setFunctionError(err,"router","generateParentTree");
             }
@@ -332,10 +328,14 @@ function getWorkspace (){
 
         
                 menu.forEach(function(el,i){
-                    menuTree.push  ( generateParentTree (el, menu, menuTree  ) );
-                    if (el.childs.length !==0){
-                        menuHeader = generateHeaderMenu (el, menu, menuHeader);
-                    }
+                    //console.log(el,'rrrr')
+                   // if (el.name !== "dashboards" && el.name !== "tables"){
+                        menuTree.push  ( generateParentTree (el, menu, menuTree  ) );
+                        if (el.childs.length !==0){
+                            menuHeader = generateHeaderMenu (el, menu, menuHeader);
+                        }
+                   // }
+                   
                 });
 
                 $$("tree").clearAll();
@@ -652,6 +652,7 @@ function router (){
                                     if (field.type == "dbtable"){
                                         showElem("tables");
                                         getInfoTable ("table", id);
+                                
                                         
                                     } else if (field.type == "tform"){
                                         showElem("forms");
@@ -782,10 +783,11 @@ function router (){
             }
                
             function setUserValues(){
-                let user = webix.storage.local.get("user");
+                const user = webix.storage.local.get("user");
+                const authName =  $$("authName");
                 try{
                     if (user){
-                        $$("authName").setValues(user.name.toString());
+                        authName.setValues(user.name.toString());
                     }
                 } catch (err){
                     setFunctionError(err,"router","router:cp function setUserValues");
@@ -855,11 +857,13 @@ function router (){
                 userprefsData.then(function(data){
 
                     data = data.json().content;
-
+                  
                     function setTemplateValue(){
                         try{
                             data.forEach(function(el,i){
-                                if (el.name.includes("userprefs")){
+                       
+                                if (el.name.includes("userprefs") && 
+                                    el.name.lastIndexOf("userprefs") == 0){
                                     $$(el.name).setValues(JSON.parse(el.prefs));
                                 }
                             });

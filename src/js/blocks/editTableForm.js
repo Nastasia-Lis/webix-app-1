@@ -163,6 +163,12 @@ function hideEditPopup(){
     } 
 }
 
+function hideEditForm(){
+    if ($$("table-editForm")){
+        $$("table-editForm").hide();
+    }
+}
+
 function hideEmptyTempalte (){
     try{
     
@@ -191,6 +197,8 @@ function saveItem(addBtnClick=false, refBtnClick=false){
                 
                 putData.then(function(data){
                     data = data.json();
+
+                
 
                     function updateWorkspace (){
                         try{
@@ -238,6 +246,7 @@ function saveItem(addBtnClick=false, refBtnClick=false){
 
                         if (!refBtnClick){
                             updateWorkspace ();
+                            hideEditForm();
                         }
 
                         if (!addBtnClick ){
@@ -250,9 +259,15 @@ function saveItem(addBtnClick=false, refBtnClick=false){
                             hideEmptyTempalte();
                         }
 
-                        if (window.innerWidth < 1200 && $$("tableEditPopup")){
-                            hideEditPopup ();
+                        if ($$("tableContainer") && !($$("tableContainer").isVisible())){
+                            $$("tableContainer").show();
                         }
+
+                        if(window.innerWidth < 850){
+                            $$("table-editForm").hide();
+                        }
+
+                        
                         setLogValue("success","Данные сохранены",currId);
 
                     } else {
@@ -386,10 +401,17 @@ function saveNewItem (){
                         defaultStateForm ();
                         setDirtyProp();
                         $$("table-newAddBtnId").enable();
+                        hideEditForm();
 
-                        if (window.innerWidth < 1200 && $$("tableEditPopup")){
-                            hideEditPopup();
+                        if ($$("tableContainer") && !($$("tableContainer").isVisible())){
+                            $$("tableContainer").show();
                         }
+                        
+                        if(window.innerWidth < 850){
+                            $$("table-editForm").hide();
+                        }
+
+              
                     } catch (err){
                         setFunctionError(err,"editTableForm","saveNewItem");
                     }
@@ -448,9 +470,14 @@ function removeItem() {
                         defaultStateForm();
                         setDirtyProperty();
 
-                        if (window.innerWidth < 1200 && $$("tableEditPopup")){
-                            hideEditPopup();
+                        if ($$("tableContainer") && !($$("tableContainer").isVisible())){
+                            $$("tableContainer").show();
                         }
+                        
+                        if(window.innerWidth < 850){
+                            $$("table-editForm").hide();
+                        }
+
                         setLogValue("success","Данные успешно удалены");
                     } else {
                         setLogValue("error","editTableForm function removeItem: "+data.err);
@@ -465,6 +492,20 @@ function removeItem() {
         setFunctionError(err,"editTableForm","removeItem");
     }
     
+}
+
+function backTableBtnClick() {
+    const form           = $$("table-editForm");
+    const tableContainer = $$("tableContainer");
+ 
+    if ( form && form.isVisible() ){
+        form.hide();
+    }
+
+    if ( tableContainer && !(tableContainer.isVisible()) ){
+        tableContainer.show();
+    }
+
 }
 
 
@@ -980,7 +1021,6 @@ const saveBtn = {
     click:function(){
         saveItem();
     },
-    hotkey: "enter" 
 };
 
 const saveNewBtn = { 
@@ -989,11 +1029,32 @@ const saveNewBtn = {
     value:"Сохранить новую запись",
     hidden:true,  
     height:48,
-    hotkey: "enter" ,
     css:"webix_primary", 
     click:function(){
         saveNewItem();
     },
+};
+
+const backTableBtn = { 
+    view:"button", 
+    id:"table-backTableBtn",
+    type:"icon",
+    icon:"fas fa-left-long",
+    value:"Вернуться к таблице",
+    hidden:true,  
+    height:48,
+    minWidth:60,
+    width:90,
+   
+    click:function(){
+        backTableBtnClick();
+    },
+
+    on: {
+        onAfterRender: function () {
+            this.getInputNode().setAttribute("title","Вернуться к таблице");
+        }
+    } 
 };
 
 const emptyTmplate = {   
@@ -1008,10 +1069,12 @@ const editFormBtns = {
     css:"webix_form-adaptive", 
     margin:5, 
     rows:[
+   
         {
             margin:5,rows:[
                 {
                     margin:5,cols:[
+                        backTableBtn,
                         newAddBtn,  
                         delBtn
                     ]
@@ -1126,13 +1189,15 @@ const propertyRefBtns = {
 const editForm = {
     view:"form", 
     id:"table-editForm",
+    hidden:true,
     css:"webix_form-edit",
     minHeight:350,
     minWidth:210,
-    width: 360,
+    width: 350,
     borderless:true,
     scroll:true,
     elements:[
+   
         editFormBtns,
         {scroll:"y",  cols:[
             {width:5},

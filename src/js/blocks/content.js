@@ -195,7 +195,7 @@ function getComboOptions (refTable){
 
 
 function getInfoTable (idCurrTable,idsParam) {
-
+   
     let idSearch,
         idFindElem,
         filterBar,
@@ -349,6 +349,8 @@ function getInfoTable (idCurrTable,idsParam) {
         let dataFields = data.fields;
 
         let colsName = Object.keys(data.fields);
+
+
         let columnsData = [];
 
 
@@ -360,7 +362,6 @@ function getInfoTable (idCurrTable,idsParam) {
 
         try{
             colsName.forEach(function(data) {
-
                 fieldType = dataFields[data].type;
             
                 function createReferenceCol (){
@@ -447,11 +448,15 @@ function getInfoTable (idCurrTable,idsParam) {
                 }  
 
                 function pushColsData(){ 
+               
                     try{        
                         columnsData.push(dataFields[data]);
+                       // console.log(columnsData,'ccc')
+                       // console.log(dataFields[data],'dddd')
                     } catch (err){
-                        setFunctionError(err,"content","createTableCols => pushColsData")
+                        setFunctionError(err,"content","createTableCols => pushColsData");
                     }
+             
                 }
 
             
@@ -467,309 +472,16 @@ function getInfoTable (idCurrTable,idsParam) {
         
             });
             refreshCols(columnsData);
+ 
         } catch (err){
-            setFunctionError(err,"content","createTableCols")
+            setFunctionError(err,"content","createTableCols");
         }
 
 
         return columnsData;
     }
 
-    function createTableRows (){
-        let dataContent = STORAGE.fields.content;
-        let data = dataContent[idsParam];
-        
-        function getItemData (table){
-
-            function setTableState(){
-                try{
-                    if (table == "table"){
-                        if(!($$("table-newAddBtnId").isEnabled())){
-                            $$("table-newAddBtnId").enable();
-                        }
-                        if(!($$("table-filterId").isEnabled())){
-                            $$("table-filterId").enable();
-                        }
-                        if(!($$("table-exportBtn").isEnabled())){
-                            $$("table-exportBtn").enable();
-                        }
-                    }
-                } catch (err){
-                    setFunctionError(err,"content","createTableRows => setTableState")
-                }
-            }
-
-            function datePrefs (data){
-                let dateFormat;
-
-                let columns = $$(table).getColumns();
-                let dateCols = [];
-
-                function searchDateCols (){
-                    try{
-                        columns.forEach(function(col,i){
-
-                            if (col.type == "datetime"){
-                                dateCols.push(col.id);
-                            }
-                        });
-                    } catch (err){
-                        setFunctionError(err,"content","createTableRows => searchDateCols")
-                    }
-                }
-                searchDateCols ();
-            
-                data.forEach(function(el,i){
-
-                    function dateFormatting (elType){
-                      
-                        if (el[elType]){
-                            dateFormat = new Date(el[elType]);
-                            el[elType] = dateFormat;
-                            
-                        }
-                    }
-
-                    function setDateFormatting (){
-                        dateCols.forEach(function(el,i){
-                            dateFormatting (el);
-                        });
-                    }
-
-                    setDateFormatting ();
-                 
-                });
-            }
-
-            function parseRowData (data){
-                try{
-                    if (data.length !== 0){
-                    
-                        $$(idCurrTable).hideOverlay("Ничего не найдено");
-                
-                        $$(idCurrTable).parse(data);
-                
-                    
-                    } else {
-                        $$(idCurrTable).showOverlay("Ничего не найдено");
-                        $$(idCurrTable).clearAll();
-                    }
-                } catch (err){
-                    setFunctionError(err,"content","createTableRows => parseRowData");
-                }
-            }
-
-
-            function setCounterVal (){
-                let prevCountRows ;
-                try{
-                    prevCountRows = $$(idCurrTable).count();
-                    $$(idFindElem).setValues(prevCountRows.toString());
-                    if(idCurrTable == "table"){
-                        $$("table-findElements").setValues(prevCountRows.toString());
-                    }
-                } catch (err){
-                    setFunctionError(err,"content","createTableRows => setCounterVal");
-                }
-            }
-
-            function clearTable(){
-                $$(table).clearAll();
-            }
-
-            $$(table).load({
-                $proxy:true,
-                load:function(view, params){
-                    return webix.ajax().get("/init/default/api/"+itemTreeId,{
-                        success:function(text, data, XmlHttpRequest){
-                            data = data.json().content;
-                            $$(table).config.idTable = itemTreeId;
-
-
-                            try {
-                                clearTable    ();
-                                setTableState ();
-                                datePrefs     (data);
-                                parseRowData  (data);
-                                setCounterVal ();
-                            
-                            } catch (err){
-                                setFunctionError(err,"content","getItemData => table load");
-                            } 
-                    
-                        },
-                        error:function(text, data, XmlHttpRequest){    
-                            function tableErrorState (){
-                                let prevCountRows = "-";
-                                try {
-                                    $$(idFindElem).setValues(prevCountRows.toString());
-                                    $$("table-findElements").setValues(prevCountRows.toString());
-                                    if($$("table-newAddBtnId").isEnabled()){
-                                        $$("table-newAddBtnId").disable();
-                                    }
-                                    if($$("table-filterId")){
-                                        $$("table-filterId").disable();
-                                    }
-
-                                    if($$("table-exportBtn")){
-                                        $$("table-exportBtn").disable();
-                                    }
-                              
-                                } catch (err){
-                                    setFunctionError(err,"content","tableErrorState")
-
-                                }
-                            }
-
-                            function notAuthPopup(){
-
-                                const popupHeadline = {   
-                                    template:"Вы не авторизованы", 
-                                    width:250,
-                                    css:"webix_template-not-found", 
-                                    borderless:true, 
-                                    height:20 
-                                };
-                                const btnClosePopup = {
-                                    view:"button",
-                                    id:"buttonClosePopup",
-                                    css:"popup_close-btn",
-                                    type:"icon",
-                                    width:35,
-                                   
-                                    icon: 'wxi-close',
-                                    click:function(){
-                                        try{
-                                            if ($$("popupNotAuth")){
-                                                $$("popupNotAuth").destructor();
-                                            }
-                                        } catch (err){
-                                            setFunctionError(err,"content","notAuthPopup btnClosePopup click");
-                                        }
-                                    
-                                    }
-                                };
-                
-                                const popupSubtitle = {   
-                                    template:"Войдите в систему, чтобы продолжить.",
-                                    css:"webix_template-not-found-descr", 
-                                    borderless:true, 
-                                    height:35 
-                                };
-                
-                                const mainBtnPopup = {
-                                    view:"button",
-                                    css:"webix_btn-go-login",
-                                    height:46,
-                                    value:"Войти",
-                                    click:function(){
-                                        function destructPopup(){
-                                            try{
-                                                if ($$("popupNotAuth")){
-                                                    $$("popupNotAuth").destructor();
-                                                }
-                                            } catch (err){
-                                                setFunctionError(err,"content","notAuthPopup destructPopup");
-                                            }
-                                        }
-                                        function navigate(){
-                                            try{
-                                                Backbone.history.navigate("/", { trigger:true});
-                                                window.location.reload();
-                                            } catch (err){
-                                                setFunctionError(err,"content","notAuthPopup navigate");
-                                            }
-                                        }
-                                        destructPopup();
-                                        navigate();
-                                     
-                                   
-                                    }
-                                };
-                
-                                webix.ui({
-                                    view:"popup",
-                                    id:"popupNotAuth",
-                                    css:"webix_popup-prev-href",
-                                    width:340,
-                                    height:125,
-                                    modal:true,
-                                    position:"center",
-                                    body:{
-                                        rows:[
-                                        {rows: [ 
-                                            { cols:[
-                                                popupHeadline,
-                                                {},
-                                                btnClosePopup,
-                                            ]},
-                                            popupSubtitle,
-                                            mainBtnPopup,
-                                            {height:20}
-                                        ]}]
-                                        
-                                    },
-                
-                                }).show();
-                            }
-
-                            tableErrorState ();
-
-                            if (error.status == 401){
-                        
-                                if (!($$("popupNotAuth"))){
-                                    notAuthPopup();
-                                }
-                          
-                            }
-                        }, 
-            
-                    });
-                }
-            });
-        }
-
-        function setDataRows (){
-            if(data.type == "dbtable"){
-                getItemData ("table");
-            } else if (data.type == "tform"){
-                getItemData ("table-view");
-            }
-        }
-
-        function autorefreshProperty (){
-            if (data.autorefresh){
-    
-                let userprefsOther = webix.storage.local.get("userprefsOtherForm");
-
-                if (userprefsOther && userprefsOther.autorefCounterOpt !== undefined){
-                    if (userprefsOther.autorefCounterOpt >= 15000){
-    
-                        setInterval(function(){
-                            if(data.type == "dbtable"){
-                                getItemData ("table");
-                            } else if (data.type == "tform"){
-                                getItemData ("table-view");
-                            }
-                        }, userprefsOther.autorefCounterOpt );
-                    } else {
-                        setInterval(function(){
-                            if(data.type == "dbtable"){
-                                getItemData ("table");
-                            } else if (data.type == "tform"){
-                                getItemData ("table-view");
-                            }
-                        }, 120000);
-                    }
-                }
-            } 
-        }
-
-        setDataRows ();
-        autorefreshProperty ();
-
-                
-    }
+   
 
     function createDetailAction (columnsData){
         let idCol;
@@ -778,7 +490,7 @@ function getInfoTable (idCurrTable,idsParam) {
 
         let dataContent = STORAGE.fields.content;
         let data = dataContent[idsParam];
-
+   
         columnsData.forEach(function(field,i){
             if( field.type == "action" && data.actions[field.id].rtype == "detail"){
                 checkAction = true;
@@ -796,6 +508,7 @@ function getInfoTable (idCurrTable,idsParam) {
                     id:"action-first"+idCol, 
                     maxWidth:130, 
                     src:urlFieldAction, 
+                    label:"Подробнее",
                     header:"Подробнее", 
                     template:"<span class='webix_icon wxi-angle-down'></span> "
                 });
@@ -917,6 +630,7 @@ function getInfoTable (idCurrTable,idsParam) {
                     columns.splice(countCols,0,{ 
                         id:"action"+i, 
                         header:"Действие",
+                        label:"Действие",
                         maxWidth:100, 
                         template:"{common.trashIcon()}"
                     });
@@ -1016,6 +730,8 @@ function getInfoTable (idCurrTable,idsParam) {
             }
     
             function createUpload       (el,i){
+                // console.log(data)
+                // console.log(data.actions.submit.url)
                 return  {   
                     view: "uploader", 
                     value: "Upload file", 
@@ -1331,6 +1047,342 @@ function getInfoTable (idCurrTable,idsParam) {
 
     }
 
+   
+   
+    function createTableRows (){
+        let dataContent = STORAGE.fields.content;
+        let data = dataContent[idsParam];
+        
+        function getItemData (table){
+
+            function setTableState(){
+                try{
+                    if (table == "table"){
+                        if(!($$("table-newAddBtnId").isEnabled())){
+                            $$("table-newAddBtnId").enable();
+                        }
+                        if(!($$("table-filterId").isEnabled())){
+                            $$("table-filterId").enable();
+                        }
+                        if(!($$("table-exportBtn").isEnabled())){
+                            $$("table-exportBtn").enable();
+                        }
+                    }
+                } catch (err){
+                    setFunctionError(err,"content","createTableRows => setTableState")
+                }
+            }
+
+            function datePrefs (data){
+                let dateFormat;
+
+                let columns = $$(table).getColumns();
+                let dateCols = [];
+
+                function searchDateCols (){
+                    try{
+                        columns.forEach(function(col,i){
+
+                            if (col.type == "datetime"){
+                                dateCols.push(col.id);
+                            }
+                        });
+                    } catch (err){
+                        setFunctionError(err,"content","createTableRows => searchDateCols")
+                    }
+                }
+                searchDateCols ();
+            
+                data.forEach(function(el,i){
+
+                    function dateFormatting (elType){
+                      
+                        if (el[elType]){
+                            dateFormat = new Date(el[elType]);
+                            el[elType] = dateFormat;
+                            
+                        }
+                    }
+
+                    function setDateFormatting (){
+                        dateCols.forEach(function(el,i){
+                            dateFormatting (el);
+                        });
+                    }
+
+                    setDateFormatting ();
+                 
+                });
+            }
+
+            function parseRowData (data){
+               
+                const idCurrView= $$(idCurrTable);
+          
+              
+
+                try{
+                    if (data.length !== 0){
+                    
+                        idCurrView.hideOverlay("Ничего не найдено");
+                
+                        idCurrView.parse(data);
+                
+                    
+                    } else {
+                        idCurrView.showOverlay("Ничего не найдено");
+                        idCurrView.clearAll();
+                    }
+
+                    //getUserPrefs();
+                } catch (err){
+                    setFunctionError(err,"content","createTableRows => parseRowData");
+                }
+            }
+
+
+            function setCounterVal (){
+                let prevCountRows ;
+                try{
+                    prevCountRows = $$(idCurrTable).count();
+                    $$(idFindElem).setValues(prevCountRows.toString());
+                    if(idCurrTable == "table"){
+                        $$("table-findElements").setValues(prevCountRows.toString());
+                    }
+                } catch (err){
+                    setFunctionError(err,"content","createTableRows => setCounterVal");
+                }
+            }
+
+            function clearTable(){
+                $$(table).clearAll();
+            }
+
+            $$(table).load({
+                $proxy:true,
+                load:function(view, params){
+                    return webix.ajax().get("/init/default/api/"+itemTreeId,{
+                        success:function(text, data, XmlHttpRequest){
+                            data = data.json().content;
+                            $$(table).config.idTable = itemTreeId;
+                            try {
+                                clearTable    ();
+                                setTableState ();
+                                datePrefs     (data);
+                                parseRowData  (data);
+                                setCounterVal ();
+                            
+                            } catch (err){
+                                setFunctionError(err,"content","getItemData => table load");
+                            } 
+                    
+                        },
+                        error:function(text, data, XmlHttpRequest){    
+                            function tableErrorState (){
+                                let prevCountRows = "-";
+                                try {
+                                    $$(idFindElem).setValues(prevCountRows.toString());
+                                    $$("table-findElements").setValues(prevCountRows.toString());
+                                    if($$("table-newAddBtnId").isEnabled()){
+                                        $$("table-newAddBtnId").disable();
+                                    }
+                                    if($$("table-filterId")){
+                                        $$("table-filterId").disable();
+                                    }
+
+                                    if($$("table-exportBtn")){
+                                        $$("table-exportBtn").disable();
+                                    }
+                              
+                                } catch (err){
+                                    setFunctionError(err,"content","tableErrorState")
+
+                                }
+                            }
+
+                            function notAuthPopup(){
+
+                                const popupHeadline = {   
+                                    template:"Вы не авторизованы", 
+                                    width:250,
+                                    css:"webix_template-not-found", 
+                                    borderless:true, 
+                                    height:20 
+                                };
+                                const btnClosePopup = {
+                                    view:"button",
+                                    id:"buttonClosePopup",
+                                    css:"popup_close-btn",
+                                    type:"icon",
+                                    width:35,
+                                   
+                                    icon: 'wxi-close',
+                                    click:function(){
+                                        try{
+                                            if ($$("popupNotAuth")){
+                                                $$("popupNotAuth").destructor();
+                                            }
+                                        } catch (err){
+                                            setFunctionError(err,"content","notAuthPopup btnClosePopup click");
+                                        }
+                                    
+                                    }
+                                };
+                
+                                const popupSubtitle = {   
+                                    template:"Войдите в систему, чтобы продолжить.",
+                                    css:"webix_template-not-found-descr", 
+                                    borderless:true, 
+                                    height:35 
+                                };
+                
+                                const mainBtnPopup = {
+                                    view:"button",
+                                    css:"webix_btn-go-login",
+                                    height:46,
+                                    value:"Войти",
+                                    click:function(){
+                                        function destructPopup(){
+                                            try{
+                                                if ($$("popupNotAuth")){
+                                                    $$("popupNotAuth").destructor();
+                                                }
+                                            } catch (err){
+                                                setFunctionError(err,"content","notAuthPopup destructPopup");
+                                            }
+                                        }
+                                        function navigate(){
+                                            try{
+                                                Backbone.history.navigate("/", { trigger:true});
+                                                window.location.reload();
+                                            } catch (err){
+                                                setFunctionError(err,"content","notAuthPopup navigate");
+                                            }
+                                        }
+                                        destructPopup();
+                                        navigate();
+                                     
+                                   
+                                    }
+                                };
+                
+                                webix.ui({
+                                    view:"popup",
+                                    id:"popupNotAuth",
+                                    css:"webix_popup-prev-href",
+                                    width:340,
+                                    height:125,
+                                    modal:true,
+                                    position:"center",
+                                    body:{
+                                        rows:[
+                                        {rows: [ 
+                                            { cols:[
+                                                popupHeadline,
+                                                {},
+                                                btnClosePopup,
+                                            ]},
+                                            popupSubtitle,
+                                            mainBtnPopup,
+                                            {height:20}
+                                        ]}]
+                                        
+                                    },
+                
+                                }).show();
+                            }
+
+                            tableErrorState ();
+  
+                            if (XmlHttpRequest.status == 401){
+                        
+                                if (!($$("popupNotAuth"))){
+                                    notAuthPopup();
+                                }
+                          
+                            }
+                        }, 
+            
+                    });
+                }
+            })
+            .finally(function(){
+              
+                function getUserPrefs(){
+      
+                    const idCurrView= $$(idCurrTable);
+            
+                    try{
+                        const currFieldTable = idCurrView.config.idTable;
+                        const storageData = webix.storage.local.get("visibleColsPrefs_"+currFieldTable);
+                    
+                        if(storageData){
+                            storageData.forEach(function(el){
+                                if(!el.value ){
+                                    if(idCurrView.isColumnVisible(el.id)){
+                                        idCurrView.hideColumn(el.id);
+                                    }
+                                 
+                                } else {
+                                    if( !( idCurrView.isColumnVisible(el.id) ) ){
+                                        idCurrView.showColumn(el.id);
+                                    }
+                                }
+                            });
+                        }
+            
+                    } catch (err){
+                        setFunctionError(err,"table","onAfterLoad => getUserPrefs");
+                    }
+                }
+
+                //getUserPrefs();
+            });
+        }
+
+        function setDataRows (){
+            if(data.type == "dbtable"){
+                getItemData ("table");
+            } else if (data.type == "tform"){
+                getItemData ("table-view");
+            }
+        }
+
+        function autorefreshProperty (){
+            if (data.autorefresh){
+    
+                let userprefsOther = webix.storage.local.get("userprefsOtherForm");
+
+                if (userprefsOther && userprefsOther.autorefCounterOpt !== undefined){
+                    if (userprefsOther.autorefCounterOpt >= 15000){
+    
+                        setInterval(function(){
+                            if(data.type == "dbtable"){
+                                getItemData ("table");
+                            } else if (data.type == "tform"){
+                                getItemData ("table-view");
+                            }
+                        }, userprefsOther.autorefCounterOpt );
+                    } else {
+                        setInterval(function(){
+                            if(data.type == "dbtable"){
+                                getItemData ("table");
+                            } else if (data.type == "tform"){
+                                getItemData ("table-view");
+                            }
+                        }, 120000);
+                    }
+                }
+            } 
+        }
+
+        setDataRows ();
+        autorefreshProperty ();
+
+                
+    }
+    
+
     async function generateTable (){ // SINGLE ELS
 
         if (!STORAGE.fields){
@@ -1338,18 +1390,17 @@ function getInfoTable (idCurrTable,idsParam) {
         }
 
         if (STORAGE.fields){
-
             createExperementalElement ();
             let columnsData = createTableCols ();
             createDetailAction (columnsData);
             createDynamicElems ();
             createTableRows ();
-             
+
         }
     } 
 
     getValsTable ();
-
+   
     if (titem == undefined) {
         setLogValue("error","Данные не найдены");
     } else {
@@ -1389,7 +1440,6 @@ function getInfoDashboard (idsParam,single=false){
         const getData =  webix.ajax().get(url);
         
         getData.then(function(data){
-        
 
             let dashLayout=[{type:"wide",rows:[]}];
             let dataCharts = data.json().charts;
@@ -1657,14 +1707,14 @@ function getInfoDashboard (idsParam,single=false){
                         }
                     }
 
-
-                    if (window.innerWidth > 830){
-                        createMainView();
+                    createMainView();
+                    // if (window.innerWidth > 830){
+                    //     createMainView();
                         
-                    } else {
-                        createAdaptiveView();
+                    // } else {
+                    //     createAdaptiveView();
                         
-                    }
+                    // }
 
                     function createDashInfo(){
                         const template = setHeadlineBlock("dash-template");

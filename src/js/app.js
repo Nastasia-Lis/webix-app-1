@@ -1,4 +1,4 @@
-console.log("expa 1.0.38"); 
+console.log("expa 1.0.39"); 
 
 import * as textInputClean from "./blocks/textInputSettings.js";
 import {login} from "./components/login.js";
@@ -17,7 +17,6 @@ try{
         webix.protoUI({
             name:"edittree"
         }, webix.EditAbility, webix.ui.tree);
-
 
      
 
@@ -87,21 +86,7 @@ try{
                     },
 
         });
-        
-        // window.addEventListener('resize', function(event) {
-    
-        //     if ($$("tree").isVisible()){
-        //     } else {
-        //         if(window.innerWidth <= 600){
-        //             if($$("sideMenuResizer")){
-        //                 $$("sideMenuResizer").hide(); 
-        //             }
-        //         } 
-        //     }
 
-
-        // }, true);
-        // console.log(window.innerWidth)
 
         resizeAdaptive();
 
@@ -120,7 +105,7 @@ try{
         }
 
 
-        adaptivePoints();
+      adaptivePoints();
       
         textInputClean.textInputClean();
 

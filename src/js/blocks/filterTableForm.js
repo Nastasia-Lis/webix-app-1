@@ -917,11 +917,11 @@ function filterBtnClick (idTable,idBtnEdit){
                 setSecondaryBtnState();
                 
                 hideElem($$("filterTableForm"));
-                showElem($$("table-editForm"));
+             //   showElem($$("table-editForm"));
 
-                hideElem($$(idBtnEdit));
+              //  hideElem($$(idBtnEdit));
                 hideElem($$("filterTableBarContainer"));
-                showElem($$("editTableBarContainer"));
+                //showElem($$("editTableBarContainer"));
              
             }
         }     
@@ -935,19 +935,20 @@ function filterBtnClick (idTable,idBtnEdit){
        
     }
 
-   
-    if (window.innerWidth > 1200){
-        filterMaxAdaptive();
+    filterMaxAdaptive();
+    // if (window.innerWidth > 1200){
+    //     filterMaxAdaptive();
         
-    } else {
-        filterMinAdaptive();
+    // } else {
+    //     filterMinAdaptive();
 
-    }
+    // }
  
 }
 
 function toolbarFilterBtn(idTable,idBtnEdit,idFilter,visible){
-    const btn = {   view:"button",
+    const btn = 
+    {   view:"button",
         width: 50, 
         type:"icon",
         id:idFilter,
@@ -2644,7 +2645,7 @@ function filterLibraryBtn (){
 
                 function childs(el,id){
                     try{
-                        console.log(el)
+                     
                         $$(el.id).getChildViews().forEach(function(child,i){
                             
                             let condition = $$(child.config.id)._collection[0].id;
@@ -2662,7 +2663,6 @@ function filterLibraryBtn (){
                                         value: $$(idInput+"-btnFilterOperations").getValue()
                                     }
                                 };
-                                console.log(idInput,"idInput")
     
                                 if (condition.includes("and")){
                                     tempalteCollectionItem.condition = "and";

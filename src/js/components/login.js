@@ -60,8 +60,6 @@ function login () {
                         webix.ajax().get("/init/default/api/userprefs/", {
                             success:function(text, data, XmlHttpRequest){
 
-
-                            
                             },
                             error:function(text, data, XmlHttpRequest){
                                 ajaxErrorTemplate("007-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);

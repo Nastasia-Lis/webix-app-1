@@ -18,7 +18,6 @@ function getTableNames (content){
     return tableNames;
 }
 
-
 function checkNotAuth (err){
     if (err.status               === 401                  && 
         window.location.pathname !== "/index.html"        && 

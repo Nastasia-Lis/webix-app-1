@@ -2,244 +2,7 @@ import {defaultStateForm,createEditFields,validateProfForm} from "../blocks/edit
 import {catchErrorTemplate,ajaxErrorTemplate} from "../blocks/logBlock.js";
 import {modalBox,popupExec} from "../blocks/notifications.js";
 import {setLogValue} from '../blocks/logBlock.js';
-
-
-import {setHeadlineBlock} from '../blocks/blockHeadline.js';
-import {toolbarFilterBtn} from "../blocks/filterTableForm.js";
-
 import {setAjaxError,setFunctionError} from "../blocks/errors.js";
-
-
-// function editBtnClick(idBtnEdit) {
-//     try {
-
-//         if (window.innerWidth > 1200){
-//             let btnClass = document.querySelector(".webix_btn-filter");
-//             $$("filterTableForm").hide();
-//             $$("table-editForm").show();
-//             btnClass.classList.add("webix-transparent-btn");
-//             btnClass.classList.remove("webix-transparent-btn--primary");
-//             $$(idBtnEdit).hide();
-//             if ($$("editTableBarContainer") ){
-//                 $$("editTableBarContainer").show();
-//             }
-//             if ($$("filterTableBarContainer") && $$("filterTableBarContainer").isVisible()){
-//                 $$("filterTableBarContainer").hide();
-//             }
-
-
-//         } else {
-//             if (!($$("tableEditPopup"))){
-//                 webix.ui({
-//                     view:"popup",
-//                     css:"webix_popup-table-container webix_popup-config",
-//                     modal:true,
-//                     id:"tableEditPopup",
-//                     escHide:true,
-//                     position:"center",
-//                     body:{
-//                         id:"tableEditPopupContainer",rows:[
-
-//                         ]
-//                     }
-//                 }).show();
-
-
-//                 $$("tableEditPopupContainer").addView($$("editTableBarAdaptive"));
-
-//                 if($$("editTableBarHeadline") && !($$("editTableBarHeadline").isVisible())){
-//                     $$("editTableBarHeadline").show();
-//                 }
-
-//                 let size = window.innerWidth*0.7;
-//                 if( $$("editTableBarAdaptive").$width > 200){
-//                     $$("editTableBarAdaptive").config.width = size;
-//                     $$("editTableBarAdaptive").resize();
-//                 }
-
-          
-               
-//             } else {
-//                 $$("tableEditPopup").show();
-
-//                 let size = window.innerWidth*0.7;
-          
-//                 if( $$("editTableBarAdaptive").$width > 200){
-//                     $$("editTableBarAdaptive").config.width = size;
-//                     $$("editTableBarAdaptive").resize();
-//                 }
-
-//                 if ($$("tableEditPopupContainer").getChildViews().length){
-                    
-//                     if (!($$("table-newAddBtnId").isEnabled())){
-//                         $$("table-newAddBtnId").enable();
-//                     }
-
-//                     if ($$("editTableBarContainer") ){
-//                         $$("editTableBarContainer").show();
-//                     }
-
-//                 } else {
-//                     $$("tableEditPopupContainer").addView($$("editTableBarAdaptive"));
-
-//                     if($$("editTableBarHeadline") && !($$("editTableBarHeadline").isVisible())){
-//                         $$("editTableBarHeadline").show();
-//                     }
-//                 }
-//             }
-//             if($$("table-newAddBtnId")){
-//                 if($$("table-saveNewBtn").isVisible() && $$("table-newAddBtnId").isEnabled()){
-//                     $$("table-newAddBtnId").disable();
-//                 } else {
-//                     $$("table-newAddBtnId").enable();
-//                 }
-//             }
-//         }
-//     } catch (error){
-//         console.log(error);
-//         catchErrorTemplate("012-000", error);
-//     }
-// }
-
-// function exportToExcel(idTable){
-//     webix.toExcel(idTable, {
-//       filename:"Table",
-//       filterHTML:true,
-//       styles:true
-//     });
-//     setLogValue("success","Таблица сохранена");
-// }
-
-
-// function tableToolbar (idTable,visible=false) {
-
-//     let idExport         = idTable+"-exportBtn",
-//         idBtnEdit        = idTable+"-editTableBtnId",
-//         idFindElements   = idTable+"-findElements",
-//         idFilterElements = idTable+"-idFilterElements",
-//         idFilter         = idTable+"-filterId",
-//         idHeadline       = idTable+"-templateHeadline"
-//     ;
-
-//     return { 
-        
-//         rows:[
-//             setHeadlineBlock(idHeadline),
-
-//             {//id:"filterBar", 
-//             css:"webix_filterBar",
-//             padding:{
-//                 bottom:4,
-//                // right:10
-//             }, 
-//             height: 40,
-//           //  margin:5, 
-                
-//                 cols: [
-//                     toolbarFilterBtn(idTable,idBtnEdit,idFilter,visible),
-//                 // {   view:"button",
-//                 //     width: 50, 
-//                 //     type:"icon",
-//                 //     id:idFilter,
-//                 //     hidden:visible,
-//                 //     icon:"fas fa-filter",
-//                 //     css:"webix_btn-filter webix-transparent-btn ",
-//                 //     disabled:true,
-//                 //     title:"текст",
-//                 //     height:42,
-//                 //     click:function(){
-//                 //         filterBtnClick(idTable,idBtnEdit);
-//                 //     },
-//                 //     on: {
-//                 //         onAfterRender: function () {
-//                 //             this.getInputNode().setAttribute("title","Показать/скрыть фильтры");
-//                 //         }
-//                 //     } 
-//                 // },
-//                 {   view:"button",
-//                     maxWidth:200, 
-//                     value:"<span class='webix_icon fas fa-pen'></span><span style='padding-left: 5px'>Редактор таблицы</span>",
-//                     id:idBtnEdit,
-//                     hidden:true,
-//                     css:"webix_btn-edit",
-//                     title:"текст",
-//                     height:42,
-//                     click:function(){
-//                         editBtnClick(idBtnEdit);
-//                     },
-//                     on: {
-//                         onAfterRender: function () {
-//                             if(idTable !== "table" && this.isVisible()){
-//                                 this.hide();
-//                             }
-//                             this.getInputNode().setAttribute("title","Редактировать таблицу");
-//                         }
-//                     } 
-//                 },
-//                 {},
-
-//                 {   view:"button",
-//                     width: 50, 
-//                     type:"icon",
-//                     id:idExport,
-//                     hidden:visible,
-//                     icon:"fas fa-circle-down",
-//                     css:"webix_btn-download webix-transparent-btn",
-//                     title:"текст",
-//                     height:42,
-//                     click:function(){
-//                         exportToExcel(idTable)
-//                     },
-//                     on: {
-//                         onAfterRender: function () {
-//                             this.getInputNode().setAttribute("title","Экспорт таблицы");
-//                         }
-//                     } 
-//                 },
-
-
-//                 ],
-//             },
-
-//             {cols:[
-//                 {   view:"template",
-//                     id:idFindElements,
-//                     css:"webix_style-template-count",
-//                     height:30,
-//                     template:function () {
-//                         if (Object.keys($$(idFindElements).getValues()).length !==0){
-//                             return "<div style='color:#999898;'> Общее количество записей:"+
-//                                     " "+$$(idFindElements).getValues()+
-//                                     " </div>";
-//                         } else {
-//                             return "";
-//                         }
-//                     }
-                 
-//                 },
-
-//                 {   view:"template",
-//                     id:idFilterElements,
-//                     css:"webix_style-template-count",
-//                     height:30,
-//                     template:function () {
-//                         if (Object.keys($$(idFilterElements).getValues()).length !==0){
-                            
-//                             return "<div style='color:#999898;'>Видимое количество записей:"+
-//                                     " "+$$(idFilterElements).getValues()+
-//                                     " </div>";
-//                         } else {
-//                             return "";
-//                         }
-//                     }
-//                 },
-
-//             ]},
-//         ]
-
-        
-//     };
-// }
 
 function getItemId (){
     let id;
@@ -257,7 +20,6 @@ function table (idTable, onFunc, editableParam=false) {
         view:"datatable",
         id: idTable,
         css:"webix_table-style webix_header_border webix_data_border",
-        resizeColumn: true,
         autoConfig: true,
         editable:editableParam,
         editaction:"dblclick",
@@ -266,9 +28,13 @@ function table (idTable, onFunc, editableParam=false) {
         datathrottle: 5000,
         loadahead:100,
         footer: true,
-        minWidth:500, 
+      //  minWidth:500, 
         select:true,
-        minColumnWidth:200,
+      //  fillspace:true,
+        resizeColumn: true,
+       // autowidth:true,
+
+      
         on:onFunc,
         onClick:{
             "wxi-trash":function(){
@@ -483,9 +249,12 @@ function putData (nextItem, valuesProp, currId, editInForm=false){
     }
 }
 
-
 //----- table edit parameters
 let onFuncTable = {
+ 
+    // "onresize":webix.once(function(){
+    //     this.adjustColumn("cdt", true);
+    // }),
     onBeforeLoad:function(){
         this.showOverlay("Загрузка...");
     },
@@ -534,7 +303,7 @@ let onFuncTable = {
         }
 
         function hideEmptyTemplate (){
-            if ($$("EditEmptyTempalte") && $$("EditEmptyTempalte").isVisible()){
+            if ($$("EditEmptyTempalte")){
                 $$("EditEmptyTempalte").hide();
             }
         }
@@ -586,27 +355,22 @@ let onFuncTable = {
             } catch (err){
                 setLogValue("error","table initPopup: "+err);
             }
-        }
+        } 
 
-        function adaptiveEditFormPopup (){
+        function adaptiveEditForm (){
             try {
-                if (window.innerWidth < 1200){
+                if (window.innerWidth < 850){
 
-                    if (!($$("tableEditPopup"))){
-                        
-                        createEditPopup ();
-                        initPopup ();
-
-                    } else {
-                        $$("tableEditPopup").show();
-       
-                        if (!($$("tableEditPopupContainer").getChildViews().length)){
-                            initPopup ();
-                        }
-             
+                    if ($$("tableContainer") && $$("tableContainer").isVisible()){
+                        $$("tableContainer").hide();
                     }
+                    if ($$("tree") && $$("tree").isVisible()){
+                        $$("tree").hide();
+                    }
+             
+                    $$("table-editForm").show();
+                    $$("table-backTableBtn").show();
 
-                
                     hideEmptyTemplate ();
                 }
             } catch (err){
@@ -614,9 +378,9 @@ let onFuncTable = {
             }
         }
         try {
-            adaptiveEditTableBtn ();
+         //  adaptiveEditTableBtn ();
             statePutEditForm ();
-            adaptiveEditFormPopup ();
+            adaptiveEditForm ();
         
         } catch (error){
             console.log(error);
@@ -625,6 +389,7 @@ let onFuncTable = {
 
   
     },
+    
     onBeforeSelect:function(selection, preserve){
         const editPopup = document.querySelector(".edit-popup");
 
@@ -709,18 +474,47 @@ let onFuncTable = {
 
         modalBoxTable ();
     },
+
     onAfterLoad:function(){
+      
+        // const idCurrView= this;
+        // function getUserPrefs(){
+        //     try{
+        //         const idCurrTable = idCurrView.config.idTable;
+        //         const storageData = webix.storage.local.get("visibleColsPrefs_"+idCurrTable);
+        //         console.log(idCurrView.getColumns())
+        //         if(storageData){
+        //             storageData.forEach(function(el){
+
+        //                 if(!el.value ){
+        //                     console.log(el.id,idCurrView.isColumnVisible(el.id))
+        //                     if(idCurrView.isColumnVisible(el.id)){
+        //                         idCurrView.hideColumn(el.id);
+        //                     }
+                            
+        //                 } else {
+        //                     if( !( idCurrView.isColumnVisible(el.id) ) ){
+        //                         idCurrView.showColumn(el.id);
+        //                     }
+        //                 }
+        //             });
+        //         }
+        //     } catch (err){
+        //         setFunctionError(err,"table","onAfterLoad => getUserPrefs");
+        //     }
+        // }
+
+        // getUserPrefs()
         try {
             this.hideOverlay();
 
             if (!this.count()){
-                this.showOverlay("Ничего не найдено");
+             //   this.showOverlay("Ничего не найдено");
             }
 
             defaultStateForm ();
-        } catch (error){
-            console.log(error);
-            catchErrorTemplate("012-000", error);
+        } catch (err){
+            setFunctionError(err,"table","onAfterLoad")
         }
     },  
     onAfterDelete: function() {
@@ -758,6 +552,17 @@ let onFuncTable = {
         }
     },
     onAfterRender:function(){
+        //  maxWidth:100,
+
+        // if (this.config.width !== 455){
+        //    // this.define("width",window.innerWidth/3),
+        //   // this.define("width",455);
+        //   this.define("width",455),
+        //     this.resize();
+        //     console.log(this)
+        // }
+     
+      
         function adaptiveBtnEditTable (){
             try{
                 if (window.innerWidth < 1200 ){
@@ -769,12 +574,14 @@ let onFuncTable = {
                 setLogValue("error","table adaptiveBtnEditTable: "+err);
             }
         }
-        adaptiveBtnEditTable ();
+        //adaptiveBtnEditTable ();
     }
 
     
  
 };
+
+
 
 
 export {

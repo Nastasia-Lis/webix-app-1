@@ -165,13 +165,13 @@ function treeSidebar () {
               
               
             //    removeElements ($$("inputsFilter"))
-                hideElements ($$("table-editTableBtnId"));
+              //  hideElements ($$("table-editTableBtnId"));
                 hideElements ($$("filterTableBarContainer"));
 
                 showElements ($$("filterEmptyTempalte"));
                 showElements ($$("EditEmptyTempalte"));
-                showElements ($$("editTableBarContainer"));
-                showElements ($$("table-editForm"));
+              //  showElements ($$("editTableBarContainer"));
+                //showElements ($$("table-editForm"));
 
                 disableElements     ($$("btnFilterSubmit"));
                 disableElements     ($$("filterLibrarySaveBtn"));
@@ -197,6 +197,7 @@ function treeSidebar () {
                             let storageData = STORAGE.fields.content;
                             single = false;
                                 if (storageData[idsUndefined]){
+                                  
                                     single = true;
                                     if        (storageData[idsUndefined].type == "dbtable"  ){
                                         showElements ($$("tables"));
@@ -273,14 +274,29 @@ function treeSidebar () {
 
                     function viewSingleElements(){
                         parentsArray.forEach(function(el,i){
-                     
+                            let singleAction = $$("tree").getItem(idsUndefined).action; //dashboard
+                            let treeItemAct  = $$("tree").getItem(el).action;
                             if (idsUndefined){
                                 initUndefinedElement();
                             } 
-                    
-                            if (el !== idsUndefined){
-                                hideElements ($$(el));
-                            } 
+              
+                            if (singleAction !== treeItemAct && treeItemAct){
+                               // console.log(singleAction,"singleAction")
+                               // console.log(treeItemAct,"treeItemAct")
+                                if (treeItemAct == "dbtable" || treeItemAct == "all_dbtable"){
+                                    hideElements ($$("tables"));
+                                } else if (treeItemAct == "tform" || treeItemAct == "all_tform"){
+                                    hideElements ($$("forms"));
+                                } else if (treeItemAct == "dashboard" || getItemParent !== "dashboards"){
+                                    hideElements ($$("dashboards"));
+                                }
+                            }
+                          //  console.log( $$("tree").getItem(idsUndefined).action,"ids")
+                        //   console.log( $$("tree").getItem(el).action,el,idsUndefined,'EL')
+                          //  console.log( $$($$("tree").getItem(el).action),'ELeeeee')
+                            // if (el !== idsUndefined){
+                            //     hideElements ($$(el));
+                            // } 
                                         
                         }); 
                     }
@@ -288,7 +304,9 @@ function treeSidebar () {
                     function viewDefaultElements(){
                         try{
                             parentsArray.forEach(function(el,i){
+
                                 if (el == getItemParent){
+                                   
                                     if ($$(el)){
                                         $$(el).show();
 
@@ -298,11 +316,25 @@ function treeSidebar () {
                                         } 
                                     }
                                 } else if ($$(el) || el=="treeTempl"){
+                                  //  let singleAction = $$("tree").getItem(idsUndefined).action; //dashboard
+                                    
                                     if ($$(el)){
                                         $$(el).hide();
                                     }
                                     
-                                }      
+                                } else {
+                               
+                                    let treeItemAct  = $$("tree").getItem(el).action;
+                                   
+                                    if (treeItemAct == "dbtable" && getItemParent !== "tables"){
+                                        hideElements ($$("tables"));
+                                    } else if (treeItemAct == "tform" && getItemParent !== "forms"){
+                                        hideElements ($$("forms"));
+                                    } else if (treeItemAct == "dashboard" && getItemParent !== "dashboards"){
+                                       
+                                        hideElements ($$("dashboards"));
+                                    }
+                                }     
                                 
                             }); 
                         } catch (err){
@@ -592,13 +624,16 @@ function treeSidebar () {
             },
 
             onBeforeSelect: function(data) {
-               
-                const getItemParent = $$("tree").getParentId(data);
-                const filterForm = $$("filterTableForm");
-                const inputs = $$("inputsFilter");
-
+                const tree          = $$("tree");
+                const getItemParent = tree.getParentId(data);
+                const selectItem    = tree.getItem(data);
+                const filterForm    = $$("filterTableForm");
+                const inputs        = $$("inputsFilter");
+      
                 
-                if (data.includes("q-none_data-tree_") || data.includes("q-load_data-tree_")){
+                if (data.includes("q-none_data-tree_") || 
+                    data.includes("q-load_data-tree_") ||
+                    selectItem.webix_kids              ){
                     return false;
                 }
                 
@@ -608,7 +643,7 @@ function treeSidebar () {
 
                             filterForm.hide();
                             setStateFilterBtn();
-                            hideElements ($$("table-editTableBtnId"));
+                           // hideElements ($$("table-editTableBtnId"));
                             showElements ($$("table-editForm"));
                         
                         }
@@ -619,6 +654,12 @@ function treeSidebar () {
                     } catch (err){
                         setFunctionError(err,"sidebar","onBeforeSelect => setFilterDefaultState");
                     }
+                }
+
+                function adaptiveViewEditTable(){
+                    hideElements($$("table-backTableBtn"));
+                    hideElements($$("table-backTableBtn"));
+                    showElements($$("tableContainer"));
                 }
 
 
@@ -703,6 +744,7 @@ function treeSidebar () {
 
                     if (!STORAGE.fields){
                         await getData("fields"); 
+                  
                     }
                     let content = STORAGE.fields.content;
                     let obj = Object.keys(content); 
