@@ -140,6 +140,7 @@ function favsPopup(){
         css:"webix_popup-prev-href",
         width:400,
         minHeight:300,
+        escHide:true,
         modal:true,
         position:"center",
         body:{

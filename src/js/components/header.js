@@ -39,7 +39,7 @@ function header() {
                 }
             } else {
                 if ($$("tree").isVisible()){
-                    this.config.icon ="wxi-angle-double-right";
+                   // this.config.icon ="wxi-angle-double-right";
                     this.refresh();
                     $$("tree").hide();
                     if($$("sideMenuResizer")){
@@ -48,10 +48,10 @@ function header() {
 
                 } else {
                     $$("tree").show();
-                   $$("tree").config.width = window.innerWidth;
+                  $$("tree").config.width = window.innerWidth;
                     $$("tree").resize()
                     
-                    this.config.icon ="wxi-angle-double-left";
+                   // this.config.icon ="wxi-angle-double-left";
                     this.refresh();
                     if(window.innerWidth >= 800){
                         if($$("sideMenuResizer")){

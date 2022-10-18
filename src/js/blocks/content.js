@@ -5,6 +5,25 @@ import {setAjaxError,setFunctionError} from "./errors.js";
 
 import {setHeadlineBlock} from './blockHeadline.js';
 
+function hideElem(elem){
+    try{
+        if (elem && elem.isVisible()){
+            elem.hide();
+        }
+    } catch (err){
+        setFunctionError(err,"content","hideElem");
+    }
+}
+
+function showElem (elem){
+    try{
+        if (elem && !(elem.isVisible())){
+            elem.show();
+        }
+    } catch (err){
+        setFunctionError(err,"content","showElem");
+    }
+}
 
 function submitBtn (idElements, url, verb, rtype){
 
@@ -86,26 +105,57 @@ function submitBtn (idElements, url, verb, rtype){
     }
 
     function postButton(){
+
+        async function uploadData(formData,link){
+            fetch(link, {
+                method: "POST", 
+                body: formData
+            })  
+
+            .then((response) => response.json())
+            .then(function(data){
+                const loadEl = $$("templateLoad");
+       
+                if (data.err_type == "i"){
+                    loadEl.setValues("Файл загружен");
+                    setLogValue("success","Файл успешно загружен");
+                } else {
+                    loadEl.setValues("Ошибка");
+                    setLogValue("error",data.err);
+                }
+            });
+
+        }
+
+        function addLoadEl(container){
+            container.addView({
+                id:"templateLoad",
+                template: function(){
+                    if (Object.keys($$("templateLoad").getValues()).length !==0){
+                        return $$("templateLoad").getValues();
+                    } else {
+                        return "Загрузка ...";
+                    }
+                },
+                borderless:true,
+            });
+        }
         try{
+       
             idElements.forEach((el,i) => {
                 if (el.id.includes("customUploader")){
                 
                     let value = Object.values($$(el.id).files.data.pull)[0];
                     let link = $$(el.id).config.upload;
-          
 
-                    const postData = webix.ajax().post(link,value);
-                    postData.then(function(data){
-                        data = data.json();
-                        if (data.err_type !== "i"){
-                            setFunctionError(data.err,"content","postButton upload")
-                        }
-                    });
-                    postData.fail(function(err){
-                        setAjaxError(err, "content","postButton upload");
+                    let formData = new FormData();  
+                    let container = $$(el.id).getParentView();
+                    addLoadEl(container);
 
-                    });
+                    formData.append("file", value.file);
 
+                    uploadData(formData,link);
+                   
                 }
             });
         } catch (err){  
@@ -363,7 +413,7 @@ function getInfoTable (idCurrTable,idsParam) {
         try{
             colsName.forEach(function(data) {
                 fieldType = dataFields[data].type;
-            
+  
                 function createReferenceCol (){
                     try{
                         let findTableId = fieldType.slice(10);
@@ -390,6 +440,7 @@ function getInfoTable (idCurrTable,idsParam) {
                 function createTextCol      (){
                     try{
                         dataFields[data].editor = "text";
+                        dataFields[data].sort = "string";
                     }catch (err){
                         setFunctionError(err,"content","createTableCols => createTextCol")
                     }
@@ -397,6 +448,7 @@ function getInfoTable (idCurrTable,idsParam) {
                 function createIntegerCol   (){
                     try{
                         dataFields[data].editor = "text";
+                        dataFields[data].sort = "int";
                         dataFields[data].numberFormat="1 111";
                     }catch (err){
                         setFunctionError(err,"content","createTableCols => createIntegerCol");
@@ -405,6 +457,7 @@ function getInfoTable (idCurrTable,idsParam) {
                 function createBoolCol      (){
                     try{
                         dataFields[data].editor = "combo";
+                        dataFields[data].sort = "text";
                         dataFields[data].collection = [
                             {id:1, value: "Да"},
                             {id:2, value: "Нет"}
@@ -438,6 +491,7 @@ function getInfoTable (idCurrTable,idsParam) {
 
                 function setHeaderCol   (){
                     dataFields[data].header = dataFields[data]["label"];
+              
                 }
 
                 function userPrefsId    (){
@@ -451,8 +505,6 @@ function getInfoTable (idCurrTable,idsParam) {
                
                     try{        
                         columnsData.push(dataFields[data]);
-                       // console.log(columnsData,'ccc')
-                       // console.log(dataFields[data],'dddd')
                     } catch (err){
                         setFunctionError(err,"content","createTableCols => pushColsData");
                     }
@@ -523,7 +575,7 @@ function getInfoTable (idCurrTable,idsParam) {
         let dataContent = STORAGE.fields.content;
         let data = dataContent[idsParam];  
         let dataInputsArray = data.inputs;
-
+      
         function generateCustomInputs (){  
             let customInputs = [];
             let objInuts = Object.keys(data.inputs);
@@ -553,15 +605,16 @@ function getInfoTable (idCurrTable,idsParam) {
             }
     
             function getOptionData      (dataInputsArray,el){
-
+                const url = "/init/default/api/"+dataInputsArray[el].apiname;
                 return new webix.DataCollection({url:{
                     $proxy:true,
                     load: function(){
-                        return ( webix.ajax().get("/init/default/api/"+dataInputsArray[el].apiname).then(function (data) {   
+                        return ( webix.ajax().get(url).then(function (data) {   
                                 
                                 let dataSrc = data.json().content;
                                 let dataOptions=[];
                                 let optionElement;
+
                                 function dataTemplate(i,valueElem){
                                    let template = {id:i+1, value:valueElem};
                                    return template;
@@ -709,7 +762,7 @@ function getInfoTable (idCurrTable,idsParam) {
                             
                         } else if (findAction.verb == "POST"){
                             submitBtn(idElements,findAction.url,"post");
-                        
+                            $$("customBtn"+i).disable();
                         } 
                         else if (findAction.verb == "download"){
                             submitBtn(idElements,findAction.url, "get", "download",id);
@@ -736,27 +789,43 @@ function getInfoTable (idCurrTable,idsParam) {
                     view: "uploader", 
                     value: "Upload file", 
                     id:"customUploader"+i,
-                    name:"customUploader"+i,
                     height:48,
                     autosend:false,
                     upload: data.actions.submit.url,
-                   // upload:"/init/default/api/reports",
                     label:dataInputsArray[el].label, 
                     labelPosition:"top",
-                    click:function(){
-                        if ($$("contextActionsPopup")){
-                            $$("contextActionsPopup").destructor();
-                        }
-                    },
                     on: {
                         onAfterRender: function () {
                             this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
+
+                            const parent = this.getParentView()
+                            const childs = parent.getChildViews()
+
+                            childs.forEach(function(el,i){
+                                if (el.config.id.includes("customBtn")){
+                                    el.disable();
+                                }
+                            });
+                        },
+                        onBeforeFileAdd:function(){
+                            const loadEl = $$("templateLoad");
+                            if (loadEl){
+                                loadEl.getParentView().removeView(loadEl);
+                            }
                         },
                         onAfterFileAdd:function(file){
+                            const parent = this.getParentView()
+                            const childs = parent.getChildViews()
 
+                            childs.forEach(function(el,i){
+                                if (el.config.id.includes("customBtn")){
+                                    el.enable();
+                                }
+                            });
                         }
+
                     }
-                }
+                };
             }
     
             function createDatepicker   (el,i){
@@ -870,152 +939,29 @@ function getInfoTable (idCurrTable,idsParam) {
         function adaptiveCustomInputs (){
 
             function maxInputsSize (customInputs){
-             
-                customInputs.forEach(function(el,i){
-                    if (el.view == "text"){
-                        el.maxWidth = 300;
-                        el.minWidth = 150;
-                    }
-
-                    if (el.view == "combo"){
-                        el.width = 250;
-                    }
-
-                    if (el.view == "button" && el.icon == "wxi-trash"){
-                        el.width = 100;
-                    }
-
-                    
-                    if (el.view == "button" && el.css == "webix_primary"){
-                        el.maxWidth = 550;
-                        el.minWidth = 100;
-                    }
-
-                    if (el.view == "datepicker"){
-                        el.width = 300;
-                        el.minWidth = 100;
-                    }
-
-                    if (el.view == "checkbox"){
-                        el.minWidth = 220;
-                    }
-
-                });
+      
                 let inpObj = {
                     id:"customInputs",
                     css:"webix_custom-inp", 
-                    cols:customInputs
+                    rows:[
+                        {height:20},
+                        {rows:customInputs}
+                    ],
+                    width:350,
                 };
 
-                let filterBar = $$("table-view-filterId").getParentView();
+           
                 function addInputs(){
+                   
                     try{
-                        $$(filterBar.config.id).addView( 
-                            {id:"customInputsMain",cols:[
-                                inpObj
-                            ]}
-                        ,2);
+                        $$("viewToolsContainer").addView( inpObj,0);
+                  
                     } catch (err){
                         setFunctionError(err,"content","adaptiveCustomInputs => addInputs");
                     } 
                 }
                 addInputs();
 
-            }
-
-            function minInputsSize (customInputs){
-                customInputs.forEach(function(el,i){
-                    el.bottomPadding = 10;
-                });
-                customInputs.push({});
-                let inpObj = {
-                    id:"customInputsAdaptive",
-                    rows:[
-                        {   id:"customInputs",
-                            css:"webix_custom-inp", 
-                            rows:
-                            customInputs
-                        }
-                ]} ;
-
-                const popupTemplate = {template:"Доступные действия", css:"webix_template-actions", borderless:true, height:40 };
-                const poupCloseBtn = {
-                    view:"button",
-                    id:"buttonClosePopupActions",
-                    css:"popup_close-btn",
-                    type:"icon",
-                    hotkey: "esc",
-                    width:25,
-                    icon: 'wxi-close',
-                    click:function(){
-                        if ($$("contextActionsPopup")){
-                            $$("contextActionsPopup").hide();
-                        }
-                    
-                    }
-                };
-
-                const popupContainer =  {
-                    view:"scrollview",
-                    borderless:true,
-                    scroll:"y", 
-                    body:{ 
-                    id:"contextActionsPopupContainer",
-                    css:"webix_context-actions-popup",
-                    rows:[ 
-                        inpObj
-                    ]
-                    }
-                };
-
-                $$(filterBar.config.id).addView({
-                    view:"button", 
-                    id:"contextActionsBtnAdaptive",
-                    maxWidth:100, 
-                    value:"Действия", 
-                    css:"webix_primary", 
-                    popup:webix.ui({
-                            view:"popup",
-                            css:"webix_popup-actions-container webix_popup-config",
-                            modal:true,
-                            id:"contextActionsPopup",
-                            escHide:true,
-                            position:"center",
-                            body:{
-
-                                rows:[
-                                    {cols:[
-                                        popupTemplate,
-                                        poupCloseBtn,
-                                    ]},
-                                    popupContainer
-                                ]
-                            }
-                    }),
-                    click:function(){
-                        function setPopupSize(){
-                            try{
-                                let sizeInputs = $$("customInputs").$height +50;
-                                let popup = $$("contextActionsPopup");
-                                if(popup.config.height !== sizeInputs){
-                                    popup.config.height = sizeInputs;
-                                    popup.resize();
-                                }
-                                let size = window.innerWidth - 100;
-
-                                if( popup.$width > 200){
-                                    popup.config.width = size;
-                                    popup.resize();
-                                }
-                            } catch (error){
-                                setFunctionError(err,"content","adaptiveCustomInputs => popup click setPopupSize");
-                            } 
-                        }
-                        setPopupSize();
-                    }
-                        
-                
-                },2);
             }
 
             function removeContextBtn(){
@@ -1028,18 +974,102 @@ function getInfoTable (idCurrTable,idsParam) {
                 } 
             }
             removeContextBtn();
+            const tools = $$("viewTools");
+            
+            
+            function viewToolsBtnClick(){
+                const btnClass = document.querySelector(".webix_btn-filter");
+                const primaryBtnClass = "webix-transparent-btn--primary";
+                const secondaryBtnClass = "webix-transparent-btn";
 
+                function toolMinAdaptive(){
+                    hideElem($$("formsContainer"));
+                    hideElem($$("tree"));
+                    showElem($$("table-backFormsBtnFilter"));
+  
+                   tools.config.width = window.innerWidth;
+                   tools.resize();
+                }
+
+                function toolMaxAdaptive(){
+
+                    if         (btnClass.classList.contains(primaryBtnClass)){
+
+                        btnClass.classList.add(secondaryBtnClass);
+                        btnClass.classList.remove(primaryBtnClass);
+                        hideElem(tools);
+
+                    } else if (btnClass.classList.contains(secondaryBtnClass)){
+
+                        btnClass.classList.add(primaryBtnClass);
+                        btnClass.classList.remove(secondaryBtnClass);
+                        showElem(tools);
+                    }
+                }
+
+                const contaierWidth = $$("formsContainer").$width;
+         
+                toolMaxAdaptive();
+                
+                if(!(btnClass.classList.contains(secondaryBtnClass))){
+                    if (contaierWidth < 850  ){
+                        hideElem($$("tree"));
+                        if (contaierWidth  < 850 ){
+                            toolMinAdaptive();
+                        }
+                    } else {
+                    hideElem($$("table-backFormsBtnFilter"));
+                    tools.config.width = 350;
+                    tools.resize();
+                    }
+                } else {
+                    hideElem(tools);
+                    hideElem($$("table-backFormsBtnFilter"));
+                    showElem($$("formsContainer"));
+                }
+
+            }
+
+            
             if (data.inputs){  
                 let customInputs;
            
                 customInputs = generateCustomInputs ();
+            
+                const filterBar = $$("table-view-filterId").getParentView();
+                const btnTools = 
+                {   view:"button",
+                    width: 50, 
+                    type:"icon",
+                    id:"viewToolsBtn",
+                    icon:"fas fa-ruler-combined",
+                    css:"webix_btn-filter webix-transparent-btn",
+                    title:"текст",
+                    height:42,
+                    click:function(){
+                        viewToolsBtnClick();
+                    },
+                    on: {
+                        onAfterRender: function () {
+                            this.getInputNode().setAttribute("title","Показать/скрыть доступные дейсвтия");
+                        }
+                    } 
+                };
                 
-                if (window.innerWidth > 830){
-                   maxInputsSize (customInputs);
-
+                if( !$$("viewToolsBtn") ){
+                    filterBar.addView(btnTools,2);
                 } else {
-                    minInputsSize (customInputs);
+                    showElem(  $$("viewToolsBtn"));
                 }
+             
+
+                maxInputsSize (customInputs);
+
+            } else {
+              
+                hideElem(tools);
+                hideElem($$("viewToolsBtn"));
+              
             }
         }
         
@@ -1587,77 +1617,11 @@ function getInfoDashboard (idsParam,single=false){
                 }
 
                 function createSpace(){
-                    function createAdaptiveView(){
-                        const headline = {  
-                            template:"Фильтр",height:30, 
-                            css:"webix_dash-filter-headline",
-                            borderless:true
-                        };
+                    function backBtnClick (){
+                        const dashTool = $$("dashboard-tool-main");
 
-                        const btnClose = {
-                            view:"button",
-                            id:"buttonClosePopupDashFilter",
-                            css:"popup_close-btn",
-                            type:"icon",
-                            hotkey: "esc",
-                            width:25,
-                            icon: 'wxi-close',
-                            click:function(){
-                                if ($$("contextDashFilterPopup")){
-                                    $$("contextDashFilterPopup").hide();
-                                }
-                            
-                            }
-                        };
-
-                        const bodyPopup = {
-                            id:"contextDashFilterPopupContainer",
-                            rows:[
-
-                                {id:"dashToolInputsAdaptive",rows:[
-                                    {   id:"dashboardToolHeadContainer",
-                                        cols:[
-                                            headline,
-                                            btnClose
-                                        ]
-                                    },
-                                    
-                                    { rows:inputsArray}
-                                ]}
-                            ],
-                        };
-                        const filterBtn = {
-                            view:"button", 
-                            id:"dashFilterBtn", 
-                            value:"Фильтры", 
-                            css:{"margin":"10px 0px!important"}, 
-                            height:46,
-                            margin:10,
-                            popup:webix.ui({
-                                view:"popup",
-                                css:"webix_popup-dash-container webix_popup-config",
-                                modal:true,
-                                id:"contextDashFilterPopup",
-                                escHide:true,
-                                position:"center",
-                                body: bodyPopup
-                            })
-                        };
-                
-                        try{
-                            if (!$$("dashFilterBtn")){
-                                $$("dashboardInfoContainer").addView(
-                                    
-                                    {   id:"dashboard-tool-adaptive",
-                                        cols:[
-                                            filterBtn
-                                        ]
-                                    }
-                                ,0);
-                            }
-                        } catch (err){  
-                            setFunctionError(err,"content","getInfoDashboard => createAdaptiveView");
-                        }
+                        hideElem(dashTool);
+                        showElem($$("dashboardInfoContainer"));
                     }
 
                     function createMainView(){
@@ -1668,31 +1632,39 @@ function getInfoDashboard (idsParam,single=false){
                             borderless:true
                         };
 
-                        const btnclose = {
-                            view:"button",
-                            id:"buttonClosePopupDashFilter",
-                            css:"popup_close-btn",
+                        
+                        const filterBackBtn = { 
+                            view:"button", 
+                            id:"dash-backDashBtn",
                             type:"icon",
+                            icon:"fas fa-right-long",
+                            value:"Вернуться к дашбордам",
+                            hidden:true,  
+                            height:15,
                             hotkey: "esc",
-                            hidden:true,
-                            width:25,
-                            icon: 'wxi-close',
-                            click:function(){
-                                if ($$("contextDashFilterPopup")){
-                                    $$("contextDashFilterPopup").hide();
-                                }
+                            minWidth:50,
+                            width:55,
                             
-                            }
+                            click:function(){
+                                backBtnClick();
+                            },
+                            
+                            on: {
+                                onAfterRender: function () {
+                                    this.getInputNode().setAttribute("title","Вернуться к дашбордам");
+                                }
+                            } 
                         };
                         const mainView = {
                             id:"dashboard-tool-main",
                             padding:20,
+                            hidden:true,
                             minWidth:250,
                             rows:[
                                 {   id:"dashboardToolHeadContainer",
                                     cols:[
                                         headline,
-                                        btnclose
+                                        filterBackBtn,
                                     ]
                                 },
                                 
@@ -1708,18 +1680,94 @@ function getInfoDashboard (idsParam,single=false){
                     }
 
                     createMainView();
-                    // if (window.innerWidth > 830){
-                    //     createMainView();
+          
+                  
+                    function createFilterBtn(){
+                
+                        function filterBtnClick (){
+                            const dashTool = $$("dashboard-tool-main");
+
+                            function filterMinAdaptive(){
+                               /// hideElem($$("tableContainer"));
+                                hideElem($$("tree"));
+                                hideElem($$("dashboardInfoContainer"));
+
+                                showElem(dashTool);
+                                showElem($$("dash-backDashBtn"));
+                                
+                                dashTool.config.width = window.innerWidth;
+                                dashTool.resize();
+                              
                         
-                    // } else {
-                    //     createAdaptiveView();
+                            }
+
+                            function filterMaxAdaptive(){
+                                if (dashTool.isVisible()){
+                                    hideElem(dashTool);
+                                } else {
+                                    showElem(dashTool);
+                                }
+                              
+                              
+                            }
+                       
+                            filterMaxAdaptive();
+                            if ($$("dashboardContainer").$width < 850){
+                           
+                                hideElem($$("tree"));
+                                if ($$("dashboardContainer").$width  < 850 ){
+                                    filterMinAdaptive();
+                                }
+                            } else {
+                                hideElem($$("dash-backDashBtn"));
+                                if (dashTool.config.width !== 350){
+                                    dashTool.config.width = 350;
+                                    dashTool.resize();
+                                }
+                            }
+
+
+                        }
+
+                        const filterBtn = {
+                            view:"button", 
+                            id:"dashFilterBtn", 
+                            css:"webix-transparent-btn",
+                            type:"icon",
+                            icon:"fas fa-filter",
+                            width:50,
+                            click:function(){
+                                filterBtnClick();
+                            },
+                            on:{
+                                onAfterRender: function () {
+                                    this.getInputNode().setAttribute("title","Показать/скрыть фильтры");
+                                },
+                            }
                         
-                    // }
+                            
+                        };
+                
+                        const container     = $$("dash-template").getParentView();
+                        const containerView = $$(container.config.id);
+                         
+                        if (!$$("dashFilterBtn")){
+                            containerView.addView(
+                                
+                                {   id:"dashboard-tool-btn",
+                                    cols:[
+                                        filterBtn
+                                    ]
+                                }
+                            ,2);
+                        }
+                      
+                    }
 
                     function createDashInfo(){
                         const template = setHeadlineBlock("dash-template");
                  
-
+                       
                         const dashCharts = {
                             id:"dashboard-charts",
                             view:"flexlayout",
@@ -1759,6 +1807,8 @@ function getInfoDashboard (idsParam,single=false){
                             
                     }
                     createDashInfo();
+
+                    createFilterBtn()
                 }
 
                 function updateDash(){

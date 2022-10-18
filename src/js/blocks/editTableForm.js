@@ -30,6 +30,27 @@ function validateProfForm (){
             
             errors[el] = {};
 
+            function numberField(){
+                
+                function containsText(str) {
+                    return /\D/.test(str);
+                }
+
+                if (propElement.customType              &&
+                    propElement.customType == "integer" ){
+
+                    const check =  containsText(values[el]) ;
+
+                    if ( check ){
+                        errors[el].isNum = "Данное поле должно содержать только числа";
+                    } else {
+                        errors[el].isNum = null;
+                    }
+                       
+                }
+            }
+
+
             function valLength(){ 
                 try{
                
@@ -45,9 +66,11 @@ function validateProfForm (){
                     setFunctionError(err,"editTableForm","valLength");
                 }
             }
+
+
             function valNotNull (){
                 try{
-                    if (propElement.notnull==true && values[el].length == 0 ){
+                    if (propElement.notnull == true && values[el].length == 0 ){
                         errors[el].notnull = "Поле не может быть пустым";
                     } else {
                         errors[el].notnull = null;
@@ -60,7 +83,7 @@ function validateProfForm (){
             function valUnique (){
                 try{
                 errors[el].unique = null;
-                if (propElement.unique==true){
+                if (propElement.unique == true){
                     let tableRows = Object.values($$("table").data.pull);
                     tableRows.forEach(function(row,i){
                         if (values[el].localeCompare(row[el]) == 0 && row.id !== $$("table").getSelectedId().id){
@@ -73,7 +96,7 @@ function validateProfForm (){
                 }
             }
 
-
+            numberField();
             valLength ();
             valNotNull ();
             valUnique ();
@@ -204,6 +227,7 @@ function saveItem(addBtnClick=false, refBtnClick=false){
                         try{
                             $$( "table" ).updateItem(itemData.id, itemData);
                             $$("table").clearSelection();
+                          
                             defaultStateForm();
                         } catch (err){
                             setFunctionError(err,"editTableForm","saveItem => updateWorkspace");
@@ -497,14 +521,50 @@ function removeItem() {
 function backTableBtnClick() {
     const form           = $$("table-editForm");
     const tableContainer = $$("tableContainer");
- 
-    if ( form && form.isVisible() ){
-        form.hide();
+    
+
+    function defaultState(){
+        if ( form && form.isVisible() ){
+            form.hide();
+        }
+    
+        if ( tableContainer && !(tableContainer.isVisible()) ){
+            tableContainer.show();
+        }
+
+        if ($$("table")){
+            $$("table").clearSelection();
+        }
     }
 
-    if ( tableContainer && !(tableContainer.isVisible()) ){
-        tableContainer.show();
+    function createModalBox(){
+
+        modalBox().then(function(result){
+                        
+            if (result == 1 || result == 2){
+                if (result == 1){
+                    defaultState();
+                } else if (result == 2){
+                    if ($$("editTableFormProperty").getValues().id){
+                        saveItem();
+                        defaultState();
+                    } else {
+                        saveNewItem(); 
+                    }
+                }
+
+                setDirtyProperty ();
+            }
+        });
     }
+
+    if ( $$("editTableFormProperty").config.dirty){
+        createModalBox ();
+    
+    } else {
+        defaultState();
+    }
+  
 
 }
 
@@ -575,7 +635,7 @@ function createEditFields (parentElement) {
         }
 
         function createEmptySpace(){
-            $$("propertyRefbtnsContainer").addView({height:28,width:1});
+            $$("propertyRefbtnsContainer").addView({height:29,width:1});
         }
 
         async function toRefTable (refTable){ 
@@ -618,9 +678,16 @@ function createEditFields (parentElement) {
                 hideEmptyTempalte();
             }
         }
-
+        function showSpace(){
+            const space = $$("tablePropBtnsSpace");
+            if( space && !(space.isVisible()) ){
+                space.show();
+            }
+        }
+        
 
         function createRefBtn(selectBtn){
+       
             
             function btnClick (idBtn){
                 const srcTable = $$(idBtn).config.srcTable;
@@ -664,8 +731,8 @@ function createEditFields (parentElement) {
                 type:"icon",
                 srcTable:selectBtn,
                 width:30,
-                height:28,
-                icon: 'wxi-angle-right',
+                height:29,
+                icon: 'fas fa-up-right-from-square',
                 on: {
                     onAfterRender: function () {
                     this.getInputNode().setAttribute("title","Перейти в родительскую таблицу");
@@ -675,6 +742,343 @@ function createEditFields (parentElement) {
                     btnClick (id);
                 }
             });
+
+            showSpace();
+        }
+
+        function createPopupOpenBtn(elem){
+       
+            function btnClick (){
+                
+                function destructPopup(){
+                    try{
+                        if ($$("editTablePopupText")){
+                            $$("editTablePopupText").destructor();
+                        }
+                    } catch (err){
+                        setFunctionError(err,"editTableForm","createPopupOpenBtn => destructPopup");
+                    }
+                }
+
+
+                function editPropSubmitClick (){
+                    const value = $$("editPropTextarea").getValue();
+                    $$("editTableFormProperty").setValues({ [elem.id]:[value] }, true);
+
+                    destructPopup();
+                }
+
+                function setTextareaVal(){
+                    const area = $$("editPropTextarea");
+                    if (elem.value){
+                        area.setValue(elem.value);
+                    }
+                }
+ 
+
+                function popupEdit(){
+
+                    const popupHeadline = {   
+                        template:"Редактор поля  «" + elem.label + "»", 
+                        width:250,
+                        css:"popup_headline", 
+                        borderless:true, 
+                        height:20 
+                    };
+                
+                    const btnClosePopup = {
+                        view:"button",
+                        id:"buttonClosePopup",
+                        css:"popup_close-btn",
+                        type:"icon",
+                        width:35,
+                        icon: 'wxi-close',
+                        click:function(){
+                            const area  = $$("editPropTextarea");
+                            const value = area.getValue();
+                     
+                            if (area.dirtyValue){
+                                modalBox().then(function(result){
+                    
+                                    if (result == 1 || result == 2){
+                                        if (result == 2){
+                                            const prop = $$("editTableFormProperty");
+                                            prop.setValues({ [elem.id]:[value] }, true);
+                                        };
+                                        destructPopup();
+                                    }
+                                });
+                            } else {
+                                destructPopup();
+                            }
+
+                        }
+                    };
+                    
+                    const textarea = { 
+                        view:"textarea",
+                        id:"editPropTextarea", 
+                        height:150, 
+                        dirtyValue:false,
+                        placeholder:"Введите текст",
+                        on:{
+                            onKeyPress:function(){
+                               
+                                const btn = $$("editPropSubmitBtn");
+                                if( btn && !(btn.isEnabled()) ){
+                                    btn.enable();
+                                }
+                                $$("editPropTextarea").dirtyValue = true;
+                            }
+                        }
+                    };
+
+                    const btnSave = {
+                        view:"button",
+                        id:"editPropSubmitBtn", 
+                        value:"Добавить значение", 
+                        css:"webix_primary", 
+                        disabled:true,
+                        click:function(){
+                            editPropSubmitClick();
+                        }
+                 
+                    };
+                 
+                    webix.ui({
+                        view:"popup",
+                        id:"editTablePopupText",
+                        css:"webix_popup-prev-href",
+                        width:400,
+                        minHeight:300,
+                        modal:true,
+                        escHide:true,
+                        position:"center",
+                        body:{
+                            rows:[
+                            {rows: [ 
+                                { cols:[
+                                    popupHeadline,
+                                    {},
+                                    btnClosePopup,
+                                ]},
+                                textarea,
+                                {height:15},
+                                btnSave,
+                            ]}]
+                            
+                        },
+                
+                    }).show();
+                    
+                    setTextareaVal();
+                
+                }
+                popupEdit();
+
+
+            }
+            $$("propertyRefbtnsContainer").addView({ 
+                view:"button", 
+                type:"icon",
+                width:30,
+                height:29,
+                icon: 'fas fa-window-restore',
+                on: {
+                    onAfterRender: function () {
+                    this.getInputNode().setAttribute("title","Открыть большой редактор текста");
+                    },
+                },
+                click:function ( ){
+                    btnClick ( );
+                }
+            });
+            showSpace();
+        }
+
+        function createDatePopup(elem){
+            function btnClick(){
+                function destructPopup(){
+                    try{
+                        if ($$("editTablePopupCalendar")){
+                            $$("editTablePopupCalendar").destructor();
+                        }
+                    } catch (err){
+                        setFunctionError(err,"editTableForm","createDatePopup => destructPopup");
+                    }
+                }
+
+                function editPropCalendarSubmitClick (){
+                    const dateVal = $$("editCalendarDate").getValue();
+                    const timeVal = $$("editCalendarTime").getValue();
+                    console.log(dateVal,"dateVal")
+                    console.log(timeVal,"timeVal")
+
+                    webix.message({type:"debug", text:"Блок находится в разработке"});
+                }
+
+
+                function enableSubmitBtn (){
+                    const btn = $$("editPropCalendarSubmitBtn");
+                    if( btn && !(btn.isEnabled()) ){
+                        btn.enable();
+                    }
+                }
+
+                function popupEdit(){
+
+                    const popupHeadline = {   
+                        template:"Редактор поля  «" + elem.label + "»", 
+                        width:250,
+                        css:"popup_headline", 
+                        borderless:true, 
+                        height:20 
+                    };
+                
+                    const btnClosePopup = {
+                        view:"button",
+                        id:"buttonClosePopup",
+                        css:"popup_close-btn",
+                        type:"icon",
+                        width:35,
+                        icon: 'wxi-close',
+                        click:function(){
+                            // const area  = $$("editPropTextarea");
+                            // const value = area.getValue();
+                     
+                            // if (area.dirtyValue){
+                            //     modalBox().then(function(result){
+                    
+                            //         if (result == 1 || result == 2){
+                            //             if (result == 2){
+                            //                 const prop = $$("editTableFormProperty");
+                            //                 prop.setValues({ [elem.id]:[value] }, true);
+                            //             };
+                            //             destructPopup();
+                            //         }
+                            //     });
+                            // } else {
+                            //     destructPopup();
+                            // }
+                            destructPopup();
+                        }
+                    };
+
+                    const dateEditor = {
+                        rows:[
+                            {
+                                view:"calendar",
+                                format:"%d.%m.%y",
+                                borderless:true,
+                                id:"editCalendarDate",
+                                width:300,
+                                height:250,
+                                on:{
+                                    onChange:function(){
+                                        enableSubmitBtn ();
+                                    }
+                                }
+                            }, 
+                            {height:10}, 
+                            {   
+                                view: "datepicker",
+                                format:"%H:%i:%s",
+                                placeholder:"Время",
+                                height:48,
+                                editable:true,
+                                value :"00:00:00",
+                                type:"time",
+                                seconds: true,
+                                suggest:{
+                                    type:"timeboard",
+                                    hotkey: "enter",
+                                    id:"editCalendarTime",
+                                    body:{
+                                        button:true,
+                                        seconds: true,
+                                        value :"00:00:00",
+                                        twelve :false,
+                                        height :110,
+                                    },
+                               
+                                },
+                                on: {
+                                    onAfterRender: function () {
+                                        this.getInputNode().setAttribute("title","Часы, минуты, секунды");
+                                        
+                                    },
+                                    onTimedKeyPress:function(){
+                                        console.log($$("editCalendarTime"))
+                                    }
+                                   
+                                   
+                                }
+                            }
+                        ]
+                    };
+                    
+                   
+
+                    const btnSave = {
+                        view:"button",
+                        id:"editPropCalendarSubmitBtn", 
+                        value:"Добавить значение", 
+                        css:"webix_primary", 
+                       // disabled:true,
+                        click:function(){
+                            editPropCalendarSubmitClick();
+                        }
+                 
+                    };
+                 
+                    webix.ui({
+                        view:"popup",
+                        id:"editTablePopupCalendar",
+                        css:"webix_popup-prev-href",
+                        width:400,
+                        minHeight:300,
+                        modal:true,
+                        escHide:true,
+                        position:"center",
+                        body:{
+                            rows:[
+                            {rows: [ 
+                                { cols:[
+                                    popupHeadline,
+                                    {},
+                                    btnClosePopup,
+                                ]},
+                                dateEditor,
+                                {height:15},
+                                btnSave,
+                            ]}]
+                            
+                        },
+                
+                    }).show();
+                    
+         
+                
+                }
+                popupEdit();
+            }
+
+            $$("propertyRefbtnsContainer").addView({ 
+                view:"button", 
+                type:"icon",
+                width:30,
+                height:29,
+                icon: 'fas fa-calendar',
+                on: {
+                    onAfterRender: function () {
+                    this.getInputNode().setAttribute("title","Открыть календарь");
+                    },
+                },
+                click:function (id){
+                    btnClick (id);
+                }
+            });
+            showSpace();
         }
 
         if (!($$("propertyRefbtns")._cells.length)){
@@ -682,52 +1086,22 @@ function createEditFields (parentElement) {
             if (!$$("propertyRefbtnsContainer")){
                 createBtnsContainer();
             }
-            
 
             propertyElems.forEach(function(el,i){
-                if (el.type == "combo"){
+
+                if        (el.type == "combo"){
                     createRefBtn(el.id);
-                } else {
+                } else if (el.customType == "popup"){
+                    createPopupOpenBtn(el);
+                } else if (el.type == "date") {
+                    createDatePopup(el);
+                } else {    
                     createEmptySpace();
                 }
             });
         }
     }
 
-
-    function popupTextArea (elId){
-        function setStateSaveBtn(){
-            if ($$("table-saveBtn")                && 
-                $$("table-saveBtn").isVisible()    &&
-              !($$("table-saveBtn").isEnabled()) ){ 
-                    $$("table-saveBtn").enable();
-            }
-        }
-        return webix.ui({
-            view:"popup",
-            css:"edit-popup",
-            body:{
-                view:"textarea", 
-                id:elId+"_popup",
-                width:300, 
-                height:100 ,
-                on:{
-                 
-                    onChange:function(){
-                      
-                        setStateSaveBtn();
-                    },
-                  
-                   
-                }
-            },
-            on:{
-                onBlur:function(){
-                  //  console.log(888)
-                }
-            }
-        })
-    }
 
     try {
         let columnsData = $$("table").getColumns();
@@ -770,6 +1144,7 @@ function createEditFields (parentElement) {
                         defVal = "";
                     }
 
+
                     return defVal;
                 }
 
@@ -781,6 +1156,7 @@ function createEditFields (parentElement) {
                     notnull: el.notnull,
                     length:el.length,
                     value: defValue ()
+                    
                 };
 
                 function createDateTimeInput(){
@@ -809,21 +1185,14 @@ function createEditFields (parentElement) {
                     ];
                 }
 
-                function destructPopup(){
-                    if ($$(el.id+"_popup")){
-                        $$(el.id+"_popup").destructor();
-                    }
-                }
 
                 function createTextInput(){
-                    if (el.length==0 || el.length > 512){
-                        destructPopup();
-                        template.type="popup";
-                        template.popup = popupTextArea (el.id);
+                    if (el.length == 0 || el.length > 512){
+                        template.customType="popup";
 
-                    } else {
-                        template.type = "text";
-                    }
+                    } 
+                    template.type = "text";
+             
                 }
 
                 function addIntegerType(){
@@ -887,9 +1256,11 @@ function defaultStateForm () {
     }
 
     function formPropertyState(){
-        if ($$("editTableFormProperty") && $$("editTableFormProperty").isVisible()){
+ 
+        if ($$("editTableFormProperty")){
             $$("editTableFormProperty").clear();
             $$("editTableFormProperty").hide();
+       
         }
     }
 
@@ -1069,27 +1440,34 @@ const editFormBtns = {
     css:"webix_form-adaptive", 
     margin:5, 
     rows:[
-   
-        {
-            margin:5,rows:[
+        {cols:[
+            {id:"tablePropBtnsSpace",width:35, hidden:true},
+            {rows:[
                 {
-                    margin:5,cols:[
-                        backTableBtn,
-                        newAddBtn,  
-                        delBtn
+                    margin:5,rows:[
+                        {
+                            margin:5,cols:[
+                                backTableBtn,
+                                newAddBtn,  
+                                delBtn,
+                            ]
+                        },
+                
                     ]
                 },
         
-            ]
-        },
-
-        {   margin:10, 
-            rows:[ 
-                saveBtn,
-                saveNewBtn,
-                emptyTmplate,
-            ]
-        },
+                {   margin:10, 
+                    rows:[ 
+                        saveBtn,
+                        saveNewBtn,
+                        emptyTmplate,
+                    ]
+                },
+             
+            ]}
+        ]}
+   
+     
 
     ]
 };
@@ -1142,13 +1520,34 @@ const propertyEditForm = {
     tooltip:function(obj){
         let value;
         let label = obj.label;
+        let typeElem;
+        
+        if        ( obj.type       == "date" ){
+            typeElem = "Выберите дату";
+
+        } else if ( obj.type       == "combo" ){
+            typeElem = "Выберите значение";
+
+        } else if ( obj.customType == "integer" ){
+            typeElem = "Введите число";
+
+        } else {
+            typeElem = "Введите текст";
+        } 
+        
         if (obj.type == "date"){
             let formatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s:%S");
             value = formatData(obj.value);
+            
         } else{
             value = obj.value;
         }
-        return"Название: "+label+" <br> Значение: " + value;
+        if (obj.value){
+            return "Название: "+label+" <br> Значение: " + value;
+        } else {
+            return "Название: "+label+" <br>" + typeElem;
+        }
+     
     },
     hidden:true,
     elements:[],
@@ -1181,9 +1580,14 @@ const propertyEditForm = {
     }
 };
 
-const propertyRefBtns = {   
-    id:"propertyRefbtns",  
-    rows:[]
+const propertyRefBtns = {  
+    cols:[
+        {   id:"propertyRefbtns",  
+            rows:[]
+        },
+        {width:5}
+    ] 
+ 
 };
 
 const editForm = {
@@ -1192,20 +1596,22 @@ const editForm = {
     hidden:true,
     css:"webix_form-edit",
     minHeight:350,
-    minWidth:210,
-    width: 350,
     borderless:true,
     scroll:true,
     elements:[
-   
+
         editFormBtns,
-        {scroll:"y",  cols:[
-            {width:5},
-            propertyEditForm,
-            {width:8},
-            propertyRefBtns
-        ]
+
+        {   scroll:"y", 
+            cols:[
+                propertyRefBtns,
+                {width:4},
+                propertyEditForm,
+                {width:4}
+            ]
         },
+
+        
 
     ],
    

@@ -753,110 +753,21 @@ function createFilterElements (parentElement, viewPosition=1) {
     
 }
 
-function filterBtnClick (idTable,idBtnEdit){
-    const filter          = $$("filterTableForm");
-    const adaptiveInputs  = $$("editFilterBarAdaptive");
+function filterBtnClick (idTable){
+    const filter = $$("filterTableForm");
     
     function filterMinAdaptive(){
-        const popupInputsContainer  = $$("tableFilterPopupContainer");
-        let filterFormValues;
-
-        function getFilterVals(){
-            try{
-                if (filter){
-                    filterFormValues = filter.getValues();
-                }
-            } catch (err) {
-                setFunctionError(err,"filterTableForm","filterMinAdaptive => getFilterVals");
-            }
-        }
-
-        function addInputsToPopup(){
-            try{
-                if (popupInputsContainer){
-                    popupInputsContainer.addView(adaptiveInputs);
-                }
-            } catch (err) {
-                setFunctionError(err,"filterTableForm","filterMinAdaptive => addInputsToPopup");
-            }
-        }
-
-        function setFilterValues(){
-            try{
-                if (filterFormValues){
-                    filter.setValues(filterFormValues);
-                    filter.setDirty();
-                    filterFormValues = 
-                    null;
-                }
-            } catch (err) {
-                setFunctionError(err,"filterTableForm","filterMinAdaptive => setFilterValues");
-            }
-        }
-
-        function setInputsSize(){
-            try{
-                const size = window.innerWidth - 200;
-                if( adaptiveInputs.$width > 200){
-                    adaptiveInputs.config.width = size;
-                    adaptiveInputs.resize();
-                }
-            } catch (err) {
-                setFunctionError(err,"filterTableForm","filterMinAdaptive => setInputsSize");
-            }
-        }
-
-        hideElem($$("editTableBarContainer"));
-        showElem($$("tableFilterPopup"));
-        showElem(popupInputsContainer);
-        getFilterVals();
-        addInputsToPopup();
-
-        showElem($$("editFilterBarHeadline"));
-
-        if(filter.getChildViews() !== 0){
-            createFilterElements("filterTableForm",3);
-        }
-
-        showElem(filter);
-        setFilterValues();
-        setInputsSize();
+        hideElem($$("tableContainer"));
+        hideElem($$("tree"));
+        showElem($$("table-backTableBtnFilter"));
+        
+        filter.config.width = window.innerWidth;
+        filter.resize();
+      
 
     }
 
     function filterMaxAdaptive(){
-        const inputsContainer = $$("filterTableBarContainer");
-
-        let filterFormValues;
-        function getFilterVals(){
-            try{
-                if (filter.getValues()){
-                    filterFormValues = filter.getValues();
-                }
-            } catch (err) {
-                setFunctionError(err,"filterTableForm","filterMaxAdaptive => getFilterVals");
-            }
-        }
-
-        function addInputs(){
-            try{
-                const inputsParent = adaptiveInputs.getParentView();
-                if (inputsParent.config.id !==  "filterTableBarContainer"){
-                    inputsContainer.addView(adaptiveInputs);
-                }
-            } catch (err) {
-                setFunctionError(err,"filterTableForm","filterMaxAdaptive => addInputs");
-            }
-        }
-
-        function getInputsWidth(){
-            try{
-                adaptiveInputs.config.width = 350;
-                adaptiveInputs.resize();
-            } catch (err) {
-                setFunctionError(err,"filterTableForm","filterMaxAdaptive => getInputsWidth");
-            }
-        }
 
         function clearTableSelection(){
             $$(idTable).clearSelection();
@@ -866,17 +777,6 @@ function filterBtnClick (idTable,idBtnEdit){
             const btnClass = document.querySelector(".webix_btn-filter");
             const primaryBtnClass = "webix-transparent-btn--primary";
             const secondaryBtnClass = "webix-transparent-btn";
-
-            function setFilterVals(){
-                try{
-                    if (filterFormValues){
-                        filter.setValues(filterFormValues);
-                        filterFormValues = null;
-                    }
-                } catch (err) {
-                    setFunctionError(err,"filterTableForm","filterMaxAdaptive => setFilterVals");
-                }
-            }
 
             function setPrimaryBtnState(){
                 try{
@@ -900,17 +800,11 @@ function filterBtnClick (idTable,idBtnEdit){
  
                 hideElem($$("table-editForm"));
                 showElem(filter);
-           
                 if(filter.getChildViews() !== 0){
                     createFilterElements("filterTableForm",3);
                 }
 
-                setFilterVals();
-
                 setPrimaryBtnState();
-
-                showElem($$(idBtnEdit));
-                hideElem($$("editTableBarContainer"));
                 showElem($$("filterTableBarContainer"));
             } else {
 
@@ -926,24 +820,24 @@ function filterBtnClick (idTable,idBtnEdit){
             }
         }     
     
-        getFilterVals();
-        addInputs();
-        hideElem($$("editFilterBarHeadline"));
-        getInputsWidth();
         clearTableSelection();
         toolbarBtnLogic();
        
     }
 
+    
     filterMaxAdaptive();
-    // if (window.innerWidth > 1200){
-    //     filterMaxAdaptive();
-        
-    // } else {
-    //     filterMinAdaptive();
-
-    // }
- 
+    
+    if ($$("container").$width < 850){
+        hideElem($$("tree"));
+        if ($$("container").$width  < 850 ){
+            filterMinAdaptive();
+        }
+    } else {
+        hideElem($$("table-backTableBtnFilter"));
+        filter.config.width = 350;
+        filter.resize();
+    }
 }
 
 function toolbarFilterBtn(idTable,idBtnEdit,idFilter,visible){
@@ -2600,7 +2494,7 @@ function filterSubmitBtn (){
 
 }
 
-function filterLibraryBtn (){
+function filterLibraryBtn () {
     try {
         webix.prompt({
             title: "Название шаблона",
@@ -2818,6 +2712,41 @@ function filterLibraryBtn (){
     }
 }
 
+function backTableBtnClick() {
+    const filterForm     = $$("filterTableForm");
+    const tableContainer = $$("tableContainer");
+    
+
+    function setBtnFilterState(){
+        const btnClass          = document.querySelector(".webix_btn-filter");
+        const primaryBtnClass   = "webix-transparent-btn--primary";
+        const secondaryBtnClass = "webix-transparent-btn";
+
+        if (btnClass.classList.contains(primaryBtnClass)){
+            btnClass.classList.add(secondaryBtnClass);
+            btnClass.classList.remove(primaryBtnClass);
+        }
+    }
+    function defaultState(){
+        if ( filterForm && filterForm.isVisible() ){
+            filterForm.hide();
+        }
+    
+        if ( tableContainer && !(tableContainer.isVisible()) ){
+            tableContainer.show();
+        }
+
+        if ($$("table")){
+            $$("table").clearSelection();
+        }
+    }
+
+
+    defaultState();
+    setBtnFilterState();
+  
+}
+
 function clearPopupBtn (){
     $$("popupFilterEdit").destructor();
     resetFilterBtn ();
@@ -2889,6 +2818,29 @@ const formBtnSubmit = {
     click:filterSubmitBtn,
 };
 
+
+const filterBackTableBtn = { 
+    view:"button", 
+    id:"table-backTableBtnFilter",
+    type:"icon",
+    icon:"fas fa-left-long",
+    value:"Вернуться к таблице",
+    hidden:true,  
+    height:48,
+    minWidth:50,
+    width:55,
+   
+    click:function(){
+        backTableBtnClick();
+    },
+
+    on: {
+        onAfterRender: function () {
+            this.getInputNode().setAttribute("title","Вернуться к таблице");
+        }
+    } 
+};
+
 const formLibrarySaveBtn = {   
     view:"button",
     id:"filterLibrarySaveBtn",
@@ -2931,9 +2883,11 @@ const filterTableForm = {
             rows:[
                 {   margin:5, 
                     rows:[
+                      
                     {   responsive:"form-adaptive",  
                         margin:5, 
                         cols:[
+                            filterBackTableBtn,
                             formEditBtn,
                             formResetBtn,
                         ],

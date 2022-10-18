@@ -15,11 +15,14 @@ import {filterForm} from "./filterTableForm.js";
 import {editTreeLayout,contextMenu} from "../components/editTree.js";
 import {getInfoTable, getInfoEditTree,getInfoDashboard} from "./content.js";
 import {setStorageData} from "./storageSetting.js";
+import {viewTools} from "./viewTools.js";
 
 import  {STORAGE,getData} from "../blocks/globalStorage.js";
 
 
 import {setAjaxError,setFunctionError} from "./errors.js";
+
+
 
 
 
@@ -91,23 +94,40 @@ function createElements(specificElement){
                         css:"webix_tableView",
                         hidden:true,                       
                         rows:[
-                            tableToolbar("table-view", true ),
-                            { view:"resizer",class:"webix_resizers",},
-                            
-                            {   view:"scrollview", 
-                                body: {
-                                    view:"flexlayout",
-                                    cols:[
-                                        table ("table-view"),
-                                        {   view:"resizer",
-                                            class:"webix_resizers", 
-                                            id:"propResize", 
-                                            hidden:true
-                                        },
-                                        propertyTemplate("propTableView")
-                                    ]
-                                }
-                            }, 
+                            {cols:[
+                                {id:"formsContainer",rows:[
+                                    tableToolbar("table-view", true ),
+                                    { view:"resizer",class:"webix_resizers",},
+                                    
+                                    {   view:"scrollview", 
+                                        body: {
+                                            view:"flexlayout",
+                                            cols:[
+                                                table ("table-view"),
+                                                {   view:"resizer",
+                                                    class:"webix_resizers", 
+                                                    id:"propResize", 
+                                                    hidden:true
+                                                },
+                                                // { view:"resizer",class:"webix_resizers",},
+                                                // {id:"formsTools",cols:[
+                                                //     propertyTemplate("propTableView")
+                                                // ]},
+                                        
+                                            ]
+                                        }
+                                    }, 
+                                ]}, 
+
+                                { view:"resizer",class:"webix_resizers",},
+                                {id:"formsTools",rows:[
+                                    viewTools,
+                                    propertyTemplate("propTableView"),
+                                    
+                                ]},
+                            ]},
+                        
+                         
                         ],
 
                         
@@ -257,7 +277,7 @@ function getWorkspace (){
                     action:el.action,
                 };
 
-
+          
                 if ( !(el.title) ){
                     menuItem.value="Без названия";
                 }
@@ -269,7 +289,8 @@ function getWorkspace (){
                     } else {
                         menuItem.data = generateChildsTree (el);
                     }         
-                }
+                } 
+            
 
             } catch (err){
                 setFunctionError(err,"router","generateParentTree");
@@ -313,6 +334,8 @@ function getWorkspace (){
                 menuHeader = []
             ;
 
+            const delims = [];
+
             try {
                 menu = STORAGE.mmenu.mmenu;
         
@@ -328,15 +351,19 @@ function getWorkspace (){
 
         
                 menu.forEach(function(el,i){
-                    //console.log(el,'rrrr')
-                   // if (el.name !== "dashboards" && el.name !== "tables"){
+                    if (el.mtype !== 3){
                         menuTree.push  ( generateParentTree (el, menu, menuTree  ) );
                         if (el.childs.length !==0){
                             menuHeader = generateHeaderMenu (el, menu, menuHeader);
                         }
-                   // }
-                   
+                    } else {
+                        delims.push(el.name);
+                        menuTree.push({id:el.name, disabled:true,value:"1"})
+                    }
+              
                 });
+
+                
 
                 $$("tree").clearAll();
                 $$("tree").parse(menuTree);
@@ -344,12 +371,20 @@ function getWorkspace (){
                     $$("button-context-menu").config.popup.data = menuHeader;
                     $$("button-context-menu").enable();
                 }
+
+         
+                delims.forEach(function(el){
+                    $$("tree").addCss(el, "tree_delim-items");
+
+                });
             } catch (err){
                 setFunctionError(err,"router","generateMenuTree");
             }
         }
 
         generateMenuTree (); 
+
+ 
     }
 
     function createContent (){ 

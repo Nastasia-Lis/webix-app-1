@@ -359,17 +359,27 @@ let onFuncTable = {
 
         function adaptiveEditForm (){
             try {
-                if (window.innerWidth < 850){
+                if ($$("container").$width < 850){
 
-                    if ($$("tableContainer") && $$("tableContainer").isVisible()){
-                        $$("tableContainer").hide();
-                    }
+                  
                     if ($$("tree") && $$("tree").isVisible()){
                         $$("tree").hide();
                     }
-             
+
+                    if ($$("container").$width< 850){
+                        if ($$("tableContainer") && $$("tableContainer").isVisible()){
+                            $$("tableContainer").hide();
+                        }
+
+                        $$("table-editForm").config.width = window.innerWidth;
+                        $$("table-editForm").resize();
+
+                        $$("table-backTableBtn").show();
+                    }
+                  
+
                     $$("table-editForm").show();
-                    $$("table-backTableBtn").show();
+                 
 
                     hideEmptyTemplate ();
                 }

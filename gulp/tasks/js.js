@@ -13,11 +13,17 @@ export const js = () => {
         ))  
         .pipe(webpack({
             mode: app.isBuild ? 'production' : 'development',
+           
             output: {
                 filename: 'expaw.js'
              //  filename: '[name].bundle.js',
             },
 
+         //   devtool: "source-map",
+           
+       
+
+ 
             // entry: {
             //     index: './src/js/app.js',
             //     another: './src/js/treeItems/tableTemplate.js',

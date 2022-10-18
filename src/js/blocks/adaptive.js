@@ -890,196 +890,44 @@ function resizeAdaptive (){
         
     }
 
-
-
     function resizeForms(){
 
-        function createPopupForms (){
-            const filterBar = $$("table-view-filterId").getParentView();
-            let inputs = Object.values($$("customInputs")._collection);
-            let customInputsCollection = inputs; 
-            let inputsContainer = $$("customInputsMain").getParentView();
-          
-            function setInputParameters(){
-                try{
-                    if(customInputsCollection.length){
-                        customInputsCollection.forEach(function(el,i){
-                            el.bottomPadding = 10;
-                            if (el.width){
-                                delete el.width;
-                            }
-
-                            if (el.minWidth){
-                                delete el.minWidth;
-                            }
-
-                            if (el.maxWidth){
-                                delete el.maxWidth;
-                            }
-                        });
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeForms => createPopupForms");
-                }
-            }
-
-            customInputsCollection = {
-                id:"customInputsAdaptive",
-                rows:[
-                    {   id:"customInputs",
-                        rows:customInputsCollection
-                    }
-                ]
-            }; 
+        const tools = $$("viewTools");    
+        const сontainer = $$("formsContainer");
+      
+        function createFormAdaptive(){
             
-            setInputParameters();
-            removeElem ($$("customInputsMain"));
+            if (tools.isVisible()){
+                tools.config.width = window.innerWidth;
+                tools.resize();
 
-            const formPopupHeadline ={
-                template:"Доступные действия", 
-                css:"webix_template-actions", 
-                borderless:true, 
-                height:40 
-            };
-
-            const formPopupCloseBtn = {
-                view:"button",
-                id:"buttonClosePopupActions",
-                css:"popup_close-btn",
-                type:"icon",
-                hotkey: "esc",
-                width:25,
-                icon: 'wxi-close',
-                click:function(){
-                    hideElem($$("contextActionsPopup"));
-                
-                }
-            };
-            
-            const formPopupContsiner = {
-                view:"scrollview",
-                borderless:true,
-                scroll:"y", 
-                body:{ 
-                    id:"contextActionsPopupContainer",
-                    css:"webix_context-actions-popup",
-                    rows:[ 
-                        customInputsCollection
-                    ]
-                }
-            };
-
-            const popupForm = webix.ui({
-                view:"popup",
-                css:"webix_popup-actions-container webix_popup-config",
-                modal:true,
-                id:"contextActionsPopup",
-                escHide:true,
-                position:"center",
-                width:400,
-                body:{
-                    rows:[
-                        {cols:[
-                            formPopupHeadline,
-                            formPopupCloseBtn,
-                        ]},
-                        formPopupContsiner
-                    ]
-                }
-            });
-
-            const popupShowBtn = {
-                view:"button", 
-                id:"contextActionsBtnAdaptive",
-                maxWidth:100, 
-                value:"Действия", 
-                css:"webix_primary", 
-                popup:popupForm,
-                click:function(){
-                    function setPopupHeight (){
-                        try{
-                            if ( $$("contextActionsPopup").config.height !== $$("customInputsAdaptive").$height +60){
-                                $$("contextActionsPopup").config.height = $$("customInputsAdaptive").$height +60
-                                $$("contextActionsPopup").resize();
-                            }
-                        } catch (err){
-                            setFunctionError(err,"adaptive","resizeForms => popupShowBtn click");
-                        }
-                    }
-                    setPopupHeight ();
-                }
-                
-                
-            };
-
-            function addAdaptiveFormView(){
-                try{
-                    if($$(filterBar.config.id)){
-                        $$(filterBar.config.id).addView(popupShowBtn,2);
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeForms => addAdaptiveFormView");
-                }
-            }
-
-            addAdaptiveFormView();
-
-        }
-
-        function removePopupForms(){
-            const  filterBar = $$("table-view-filterId").getParentView();
-            const inputs = $$("customInputsAdaptive")._collection[0].rows;
-            const collection = {
-                id:"customInputs",
-                cols:inputs
-            };
-
-            function destructPopupForms(){
-                try{
-                    if ($$("contextActionsPopup")){
-                        $$("contextActionsPopup").destructor();
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeForms => destructPopupForms");
-                }
-            }
-
-            function addAdaptiveInputs(){
-                try{
-                    $$(filterBar.config.id).addView( 
-                        {id:"customInputsMain",cols:
-                            [
-                                collection
-                            ]
-                        }
-                    ,2);
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeForms => addAdaptiveInputs");
-                }
-            }
-            removeElem ($$("contextActionsBtnAdaptive"));
-            destructPopupForms();
-
-            if (!($$("customInputs"))){
-                addAdaptiveInputs();
+                hideElem (сontainer);
+                hideElem (tree);
+                showElem ($$("table-backFormsBtnFilter"));
             }
         }
 
+        function createFormMain(){
+            if (tools.isVisible()          && 
+            tools.config.width !== 350 ){
 
+                tools.config.width = 350;
+                tools.resize();
+
+                showElem (сontainer);
+                hideElem ($$("table-backFormsBtnFilter"));
+            }
+         
+        }
      
-        if (window.innerWidth < 830 && !($$("contextActionsBtn"))){
+        if (window.innerWidth < 850){
+            createFormAdaptive();
+        }
 
-            if ($$("customInputsMain")){
-                createPopupForms ();
-            }
 
-        } else if (window.innerWidth > 830 && $$("contextActionsBtnAdaptive")||window.innerWidth > 830 && $$("contextActionsBtn")){
-            
-            if ($$("customInputsAdaptive")){
-                removePopupForms();
-                
-            } 
-
+        if (window.innerWidth > 850){
+       
+            createFormMain();
         }
 
 
@@ -1088,139 +936,38 @@ function resizeAdaptive (){
       
     }
 
+
+    const tree  = $$("tree");
+
+
     function resizeDashboards(){
-
+        const dashTool = $$("dashboard-tool-main");
+        const dashContainer = $$("dashboardInfoContainer");
+       
         function createDashAdaptive(){
-            let tools;
-           
-            function getTools(){
-                let tools;
-                if ($$("dashboard-tool-main")){
-                    tools = $$("dashboard-tool-main")._collection;
-                }
-                return tools;
-            }
+            
+            if (dashTool.isVisible()){
+                dashTool.config.width = window.innerWidth;
+                dashTool.resize();
 
-            function createFilterPopupBtn (){
-                return {
-                    view:"button", 
-                    id:"dashFilterBtn", 
-                    value:"Фильтры", 
-                    css:{"margin":"10px 0px!important"}, 
-                    height:46,
-                    margin:10,
-                    popup:webix.ui({
-                        view:"popup",
-                        css:"webix_popup-dash-container webix_popup-config",
-                        modal:true,
-                        id:"contextDashFilterPopup",
-                        escHide:true,
-                        position:"center",
-                        body:{
-                            id:"contextDashFilterPopupContainer",
-                            rows:[]
-                        }
-                    }),
-                    click:function(){
-                        showElem ($$("contextDashFilterPopup"));
-                        showElem ($$("buttonClosePopupDashFilter"));
-                    }
-                };
-            }
-
-            function addDashAdaptive(){
-                try{
-                    $$("dashboardInfoContainer").addView(
-                        {   id:"dashboard-tool-adaptive",
-                            cols:[
-                                createFilterPopupBtn ()
-                            ]
-                        }
-                    ,0);
-              
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeDashboards => addDashAdaptive");
-                }
-            }
-          
-            function removeDashTool(){
-                tools = getTools();
-                removeElem ($$("dashboard-tool-main"));
-            }
-
-            function addAdaptiveInputs(tools){
-                try{
-                    $$("contextDashFilterPopupContainer").addView( {
-                        id:"dashToolInputsAdaptive",  
-                        rows:tools
-                    });
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeDashboards => addAdaptiveInputs");
-                }
-            }
-
-
-            if ($$("dashboard-tool-main") && $$("dashboard-tool-main").isVisible()){
-                    
-                hideElem($$("dashboard-tool-main"));
-                if (!($$("dashFilterBtn"))){ //id:"dashboard-tool-adaptive"
-           
-                    addDashAdaptive();
-                }
-
-                removeDashTool();
-
-                if (!$$("dashToolInputsAdaptive")){
-                                        
-                    addAdaptiveInputs(tools);
-                } 
+                hideElem (dashContainer);
+                hideElem (tree);
+                showElem ($$("dash-backDashBtn"));
             }
         }
 
 
         function createDashMain(){
+            if (dashTool.isVisible()          && 
+            dashTool.config.width !== 350 ){
+
+                dashTool.config.width = 350;
+                dashTool.resize();
+
+                showElem (dashContainer);
+                hideElem ($$("dash-backDashBtn"));
+            }
          
-            let tools;
-            function removeDashAdaptiveTools(){
-
-                tools = $$("dashToolInputsAdaptive")._collection;
-                removeElem ($$("dashboard-tool-adaptive"));
-            }
-            
-            function destructDashPopup(){
-      
-                try{
-                    if ($$("contextDashFilterPopup")){
-                        $$("contextDashFilterPopup").destructor();
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeDashboards => destructDashPopup");
-                }
-                
-            }
-
-            function addMainTool(){
-
-                try{
-                    $$("dashboardTool").addView({  
-                        id:"dashboard-tool-main",
-                        padding:20,
-                        minWidth:250,
-                        rows:tools, 
-                    });
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeDashboards => addMainTool");
-                }
-                    
-            }
-
-            if($$("dashFilterBtn")){
-                removeDashAdaptiveTools();
-                destructDashPopup();
-                removeElem ($$("dashFilterBtn"));
-                addMainTool();
-                hideElem($$("buttonClosePopupDashFilter"));
-            }
         }
         
         if (window.innerWidth < 850){
@@ -1237,237 +984,95 @@ function resizeAdaptive (){
                 
     }
 
+
+    const container = $$("tableContainer");
+    
+
     function resizeTableEditForm(){
-     
+        const editForm  = $$("table-editForm");
+        const backBtn   = $$("table-backTableBtn");
+
         function tableAdaptiveView(){
 
-            if (window.innerWidth < 850){
-                console.log("меньше")
-                console.log($$("table-editForm").config.width)
-                $$("table-editForm").config.width = window.innerWidth;
-                // $$("editTableBarContainer").config.width = window.innerWidth;
-                $$("table-editForm").resize();
-               // $$("tableContainer").hide()
+            if (editForm.isVisible()){
+                editForm.config.width = window.innerWidth;
+                editForm.resize();
+
+                hideElem (container);
+                hideElem (tree);
+                showElem (backBtn);
             }
-      
-          
+        
+
         }
 
         function tableMainView(){
 
-            function addEditElements(){
-                try{
-                    if ( $$("editTableBarContainer")){
-                        $$("editTableBarContainer").addView($$("editTableBarAdaptive"))
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableEditForm => addEditElements");
-                }
+            if (editForm.isVisible()          && 
+                editForm.config.width !== 350 ){
+
+                editForm.config.width = 350;
+                editForm.resize();
+
+                showElem (container);
+                hideElem (backBtn);
             }
 
-            function setEditBarWidth(){
-                try{
-                    if ( $$("editTableBarAdaptive")){
-                        $$("editTableBarAdaptive").config.width = 350;
-                        $$("editTableBarAdaptive").resize();
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableEditForm => setEditBarWidth");
-                }
-            }
-     
-  
-            hideElem($$("tableEditPopup"));
+        }
 
-            if (!($$("editTableBarContainer")   &&  $$("editTableBarContainer").isVisible  ()  || 
-                  $$("filterTableBarContainer") &&  $$("filterTableBarContainer").isVisible()) ){
-                
-                showElem ($$("editTableBarContainer"));
-                hideElem($$("filterTableForm"));
-                showElem ($$("table-editForm"));
-            }
         
-            addEditElements();
-            showElem ($$("editTableBarAdaptive"));
-          //  hideElem($$("table-editTableBtnId"));
-            setEditBarWidth();
-            hideElem($$("editTableBarHeadline"));
-
+        if ($$("container").$width < 850 && editForm.isVisible()){
+            hideElem (tree);
         }
 
     
-        if (window.innerWidth < 1200){
+        if (window.innerWidth < 850){
             tableAdaptiveView();
-
         }
 
-        if (window.innerWidth > 1200){
-           // tableMainView();
+        if (window.innerWidth > 850){
+            tableMainView();
         }
-
-     //   autoResizePopup ("editTableBarAdaptive", 1.5);
 
     }
 
     function resizeTableFilterForm (){
+        const  filterForm = $$("filterTableForm");
+
         function filterAdaptive(){
+            if (filterForm.isVisible()){
+                filterForm.config.width = window.innerWidth;
+                filterForm.resize();
 
-            function setBtnState(){
-                let btnClass = document.querySelector(".webix_btn-filter");
-                try{
-                    if(btnClass && btnClass.classList.contains(".webix-transparent-btn--primary")){
-                        btnClass.classList.add(".webix-transparent-btn");
-                        btnClass.classList.remove(".webix-transparent-btn--primary");
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableFilterForm => setBtnState");
-                }
+                hideElem (container);
+                hideElem (tree);
+                showElem ($$("table-backTableBtnFilter"));
+
             }
-
-
-            function getFilterValues(){
-                let filterFormValues;
-                try{
-                    if ($$("filterTableForm") && $$("filterTableForm").getValues()){
-                        filterFormValues = $$("filterTableForm").getValues();
-                        
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableFilterForm => getFilterValues");
-                }
-                return filterFormValues;
-            }
-
-            function addAdaptiveElements(){
-                try{
-                    if ($$("tableFilterPopupContainer")){
-                        $$("tableFilterPopupContainer").addView($$("editFilterBarAdaptive"));
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableFilterForm => addAdaptiveElements");
-                }
-            }
-
-
-            function setFilterValues(){
-                let filterFormValues =getFilterValues();
-                try{
-                    if (filterFormValues &&  $$("filterTableForm")){
-                        $$("filterTableForm").setValues(filterFormValues);
-                        $$("filterTableForm").setDirty();
-                        filterFormValues = null;
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableFilterForm => setFilterValues");
-                }
-            }
-
-            setBtnState();
-            hideElem($$("filterTableBarContainer"));
-
-           
-
-            if ($$("filterTableForm") && $$("filterTableForm").isDirty()){
-                hideElem($$("editTableBarContainer"));
-                showElem ($$("tableFilterPopup"));
-                showElem ($$("tableFilterPopupContainer"));
-                addAdaptiveElements();
-                showElem ($$("editFilterBarHeadline"));
-                showElem ($$("filterTableForm"));
-                setFilterValues();
-            }
-
-            autoResizePopup ("popupFilterEdit", 1.5);
         }
 
         function filterMain(){
+            if (filterForm.isVisible()          && 
+                filterForm.config.width !== 350 ){
 
+            filterForm.config.width = 350;
+            filterForm.resize();
 
-            function getFormValues(){
-                let filterFormValues;
-                try{
-                    if ($$("filterTableForm") && $$("filterTableForm").getValues()){
-                        filterFormValues = $$("filterTableForm").getValues();
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableFilterForm => getFormValues");
-                }
-                return filterFormValues;
-            }
-
-            function addFilterElements(){
-                const filterContainerParent = $$("editFilterBarAdaptive").getParentView();
-                try{
-                    if (filterContainerParent.config.id !==  "filterTableBarContainer"){
-                        $$("filterTableBarContainer").addView($$("editFilterBarAdaptive"));
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableFilterForm => addFilterElements");
-                }
-            }
-
-
-            function setSizeFilterContainer(){
-                try{
-                    if($$("editFilterBarAdaptive")){
-                        $$("editFilterBarAdaptive").config.width = 350;
-                        $$("editFilterBarAdaptive").resize();
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableFilterForm => hideFilterHeadline");
-                }
-            }
-
-            function setBtnState(){
-                let btnClass = document.querySelector(".webix_btn-filter");
-                try{
-                    btnClass.classList.add(".webix-transparent-btn--primary");
-                    btnClass.classList.remove(".webix-transparent-btn");
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableFilterForm => setBtnState");
-                }
-            }
-
-            function setFilterValues(filterFormValues){
-                try{
-                    if (filterFormValues && $$("filterTableForm")){
-                        $$("filterTableForm").setValues(filterFormValues);
-                        filterFormValues = null;
-                    }
-                } catch (err){
-                    setFunctionError(err,"adaptive","resizeTableFilterForm => setFilterValues");
-                }
-            }
-
-        
-            if ($$("tableFilterPopup").isVisible()){
-                hideElem($$("tableFilterPopup"));
-
-                let filterFormValues = getFormValues();
-                
-                addFilterElements();
-                hideElem($$("editFilterBarHeadline"));
-                setSizeFilterContainer();
-
-                if ($$("filterTableBarContainer") && !($$("filterTableBarContainer").isVisible())){
-                    showElem ($$("filterTableForm"));
-                    hideElem($$("table-editForm"));
-                    setFilterValues(filterFormValues);
-                   setBtnState();
-
-                    hideElem($$("editTableBarContainer"));
-                    showElem ($$("filterTableBarContainer"));
-                }
-                
-            }
+            showElem (container);
+            hideElem ($$("table-backTableBtnFilter"));
+        }
         }
        
-        if (window.innerWidth < 1200){
+        if (window.innerWidth < 850){
             filterAdaptive();
         }
 
+        if ($$("container").$width < 850 && filterForm.isVisible()){
+            hideElem (tree);
+        }
 
-        if (window.innerWidth > 1200){
+
+        if (window.innerWidth > 850){
             filterMain();
         }
 
@@ -1481,12 +1086,12 @@ function resizeAdaptive (){
 
         function setAdaptiveLogic(visibleEl){
             if (visibleEl == "forms"){
-              //  resizeForms();
+                resizeForms();
             } else if (visibleEl == "dashboards"){
-              //  resizeDashboards();
+                resizeDashboards();
             } else if (visibleEl == "tables"){
                 resizeTableEditForm();
-              //  resizeTableFilterForm ();
+                resizeTableFilterForm ();
             } else if (visibleEl == "userprefs"){
                 //none
             } else if (visibleEl == "user_auth"){

@@ -46,29 +46,40 @@ function editBtnClick() {
 
         if (editForm && editForm.isVisible()){
          
+           
             hideElem(editForm);
             hideElem($$("editTableBarContainer"));
 
         }else if (editForm && !(editForm.isVisible())) {
             showElem(editForm);
             showElem($$("editTableBarContainer"));
+            hideElem($$("tablePropBtnsSpace"));
         }
 
     }
-
+  
 
     function minView () {
         hideElem($$("tableContainer"));
         hideElem($$("tree"));
         showElem($$("table-backTableBtn"));
         
+        $$("table-editForm").config.width = window.innerWidth;
+        $$("table-editForm").resize();
     }
- 
+
     maxView ();
-    if (window.innerWidth < 850){
-        minView ();
-    }  else {
+    if ($$("container").$width < 850 ){
+        hideElem($$("tree"));
+
+        if ($$("container").$width  < 850 ){
+            minView ();
+        }
+      
+    } else {
         hideElem($$("table-backTableBtn"));
+        $$("table-editForm").config.width = 350;
+        $$("table-editForm").resize();
     }
 }
 

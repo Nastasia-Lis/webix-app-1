@@ -11681,6 +11681,28 @@ button {
   color: var(--gray-light) !important;
 }
 
+.tree_delim-items {
+  color: transparent !important;
+  pointer-events: none;
+  height: 1px !important;
+  border-bottom: 1px solid var(--gray) !important;
+  padding: 0px 2px !important;
+  margin-bottom: 8px !important;
+  margin-left: 15px !important;
+}
+
+.tree_delim-items .webix_tree_file {
+  color: transparent !important;
+}
+
+.tree_load-items {
+  pointer-events: none;
+}
+
+.tree_load-items .webix_tree_file {
+  color: transparent !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .fa-beat,
   .fa-bounce,

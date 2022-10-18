@@ -643,7 +643,7 @@ function treeSidebar () {
 
                             filterForm.hide();
                             setStateFilterBtn();
-                           // hideElements ($$("table-editTableBtnId"));
+                        
                             showElements ($$("table-editForm"));
                         
                         }
@@ -656,18 +656,51 @@ function treeSidebar () {
                     }
                 }
 
+                function setBtnCssState(){
+                    const btnClass          = document.querySelector(".webix_btn-filter");
+                    const primaryBtnClass   = "webix-transparent-btn--primary";
+                    const secondaryBtnClass = "webix-transparent-btn";
+            
+                    if (btnClass && btnClass.classList.contains(primaryBtnClass)){
+                        btnClass.classList.add(secondaryBtnClass);
+                        btnClass.classList.remove(primaryBtnClass);
+                    }
+                  
+                }
+                function setFormToolsDefaultState(){
+                    const formsTools     = $$("viewTools");
+                    const formsContainer = $$("formsContainer");
+           
+                    hideElements (formsTools);
+                    showElements (formsContainer);
+                  
+              
+                }
+
                 function adaptiveViewEditTable(){
                     hideElements($$("table-backTableBtn"));
-                    hideElements($$("table-backTableBtn"));
+                    hideElements($$("table-editForm"));
                     showElements($$("tableContainer"));
                 }
 
+                function adaptiveViewDashFilter(){
+                    const dashTool = $$("dashboard-tool-main");
+                    const dashContainer = $$("dashboardInfoContainer");
 
-                if(getItemParent=="tables"){
-                    setFilterDefaultState();
-                    removeElements ($$("propertyRefbtnsContainer"));
-                    hideElements ($$("editTableFormProperty"));
+                    hideElements (dashTool);
+                    showElements (dashContainer);
                 }
+
+                setBtnCssState();
+                setFilterDefaultState();
+                removeElements ($$("propertyRefbtnsContainer"));
+                hideElements ($$("editTableFormProperty"));
+
+                setFormToolsDefaultState();
+
+                adaptiveViewDashFilter();
+
+                adaptiveViewEditTable();
 
 
                 async function getSingleTreeItem() {
@@ -730,6 +763,8 @@ function treeSidebar () {
                         disabled:true,
                         value:"Загрузка ..."
                     }, 0, id );  
+                    
+                    tree.addCss(idLoadElement, "tree_load-items");
                 }
 
                 function createNoneEl(){
@@ -780,7 +815,7 @@ function treeSidebar () {
                     function generateMenuData (typeChild){
                         let itemsExists = false;
                         try{
-                         
+                        
                             obj.forEach(function(data) {
                                
                                 if (content[data].type == typeChild && !findNotUniqueItem(data)){ 
@@ -806,7 +841,7 @@ function treeSidebar () {
 
                             if (!itemsExists){
                                 removeTreeEls();
-                                if(!(tree.exists(idNoneElement))){
+                                if( !(tree.exists(idNoneElement)) ){
                                     createNoneEl();
                                     tree.addCss(idNoneElement, "tree_none-items");
                                 }
@@ -817,10 +852,18 @@ function treeSidebar () {
                 
                     }
 
+       
+
                     if (selectedItem.action.includes("all_")){
                         let index = selectedItem.action.indexOf("_");
                         let type = selectedItem.action.slice(index+1);
                         generateMenuData (type);
+                    } else {
+                        // removeTreeEls();
+                        // if(!(tree.exists(idNoneElement))){
+                        //     createNoneEl();
+                        //     tree.addCss(idNoneElement, "tree_none-items");
+                        // }
                     }
                 
                     
