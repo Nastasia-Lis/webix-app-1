@@ -340,24 +340,19 @@ function createDatePopup(elem){
             const calendar       = $$("editCalendarDate");
             const btn            = $$("editPropCalendarSubmitBtn");
 
-            function getMilliseconds(){
-                const index = val.lastIndexOf(":")+1;
-                const msec = val.slice(index);
-                return msec;
-            }
-
             function unsetDirtyProp(elem){
                 elem.config.dirtyProp = false;
             }
 
             function setValuesDate(){
                 try{
-                    if ( val ){
+        
+                    if ( val && !isNaN(postFormatHour(val)) ){
                         calendar.setValue( val );
                         $$("hourInp").setValue (postFormatHour(val));
                         $$("minInp") .setValue (postFormatMin (val));
                         $$("secInp") .setValue (postFormatSec (val));
-                        $$("msecInp").setValue (getMilliseconds()  );
+
             
                     } else {
                         calendar.setValue( new Date() );
@@ -371,8 +366,7 @@ function createDatePopup(elem){
                     unsetDirtyProp( $$("hourInp"));
                     unsetDirtyProp( $$("minInp" ) );
                     unsetDirtyProp( $$("secInp" ) );
-                    unsetDirtyProp( $$("msecInp"));
-                  
+            
                 } catch (err){
                     setFunctionError(err,logNameFile,"setValuesDate");
                 }
@@ -392,9 +386,8 @@ function createDatePopup(elem){
             const hour    = $$("hourInp").getValue();
             const min     = $$("minInp") .getValue();
             const sec     = $$("secInp") .getValue();
-            const msec    = $$("msecInp").getValue();
 
-            const timeVal = hour+":"+min+":"+sec+":"+msec;
+            const timeVal = hour+":"+min+":"+sec;
             const dateVal = postFormatDate(calendar.getValue());
 
             const sentVal = dateVal+" "+timeVal;
@@ -413,15 +406,11 @@ function createDatePopup(elem){
                         errors.push(idEl);
                     }
 
-                    if (item.length < 2 && idEl !== "msecInp"){
+                    if (item.length < 2){
                         $$("timeForm").markInvalid(idEl);
                         errors.push(idEl);
                     }
 
-                    if (item.length < 3 && idEl == "msecInp"){
-                        $$("timeForm").markInvalid(idEl);
-                        errors.push(idEl);
-                    }
                 } catch (err){
                     setFunctionError(err,logNameFile,"validTime element: "+idEl);
                 }
@@ -430,7 +419,6 @@ function createDatePopup(elem){
             validTime(hour,23 ,"hourInp");
             validTime(min, 59, "minInp" );
             validTime(sec, 59, "secInp" );
-            validTime(msec,999,"msecInp");
 
             function setValToProperty(){
                 try{
@@ -463,8 +451,6 @@ function createDatePopup(elem){
                 checkDirty ( $$("hourInp") );
                 checkDirty ( $$("minInp" ) );
                 checkDirty ( $$("secInp" ) );
-                checkDirty ( $$("msecInp") );
-
    
                 if (check){
                     modalBox().then(function(result){
@@ -522,13 +508,13 @@ function createDatePopup(elem){
             } ;
         
 
-            function returnInput(idEl,plch="00",attr=2){
+            function returnInput(idEl){
                 return {
                     view: "text",
                     name:idEl,
                     id:idEl,
-                    placeholder:plch,
-                    attributes:{ maxlength :attr },
+                    placeholder:"00",
+                    attributes:{ maxlength :2 },
                     dirtyProp:false,
                     on:{
                         onKeyPress:function(){
@@ -562,7 +548,7 @@ function createDatePopup(elem){
                 type:"space",
                 elements:[
                     {   template:"<div style='font-size:13px!important'>"+
-                        "Введите время в формате xx : xx : xx : xxx</div>",
+                        "Введите время в формате xx : xx : xx</div>",
                         borderless:true,
                         css:"popup_time-timeFormHead",
                         
@@ -572,9 +558,7 @@ function createDatePopup(elem){
                         timeSpacer (1),
                         returnInput("minInp"),
                         timeSpacer (2),
-                        returnInput("secInp"),
-                        timeSpacer (3),
-                        returnInput("msecInp","000",3)
+                        returnInput("secInp")
                     ]}
                 ]
             };
@@ -736,7 +720,7 @@ function createEditFields (parentElement) {
                         return new Date(el.default);
                     }
 
-                    const formatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s:%S");
+                    const formatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
 
                     let defVal;
             
@@ -758,9 +742,11 @@ function createEditFields (parentElement) {
                     } else if (el.default !== "None" && el.default !== "null"){
                         defVal = el.default;
 
-                    } else if (el.default  == "None" || el.default  == "null"){
+                    } else if (el.default  == "None"){
                         defVal = "";
 
+                    } else if (el.default  == "null") {
+                        defVal = null;
                     }
 
 

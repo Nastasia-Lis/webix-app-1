@@ -430,7 +430,7 @@ function getInfoTable (idCurrTable,idsParam) {
 
                 function createDatetimeCol  (){
                     try{
-                        dataFields[data].format = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s:%S");
+                        dataFields[data].format = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
                         dataFields[data].editor = "date";
                     }catch (err){
                         setFunctionError(err,"content","createTableCols => createDatetimeCol")
@@ -783,8 +783,6 @@ function getInfoTable (idCurrTable,idsParam) {
             }
     
             function createUpload       (el,i){
-                // console.log(data)
-                // console.log(data.actions.submit.url)
                 return  {   
                     view: "uploader", 
                     value: "Upload file", 
@@ -981,8 +979,8 @@ function getInfoTable (idCurrTable,idsParam) {
                 const btnClass          = document.querySelector(".webix_btn-filter");
                 const primaryBtnClass   = "webix-transparent-btn--primary";
                 const secondaryBtnClass = "webix-transparent-btn";
-                const formResizer      = $$("formsTools-resizer");
-
+                const formResizer       = $$("formsTools-resizer");
+                const formsTools        = $$("viewTools");
                 function toolMinAdaptive(){
                     hideElem($$("formsContainer"));
                     hideElem($$("tree"));
@@ -1008,6 +1006,7 @@ function getInfoTable (idCurrTable,idsParam) {
                         btnClass.classList.remove(secondaryBtnClass);
                         showElem(tools);
                         showElem(formResizer);
+                        showElem(formsTools);
                     }
                 }
 
@@ -1112,7 +1111,7 @@ function getInfoTable (idCurrTable,idsParam) {
             function datePrefs (data){
                 let dateFormat;
 
-                let columns = $$(table).getColumns();
+                const columns = $$(table).getColumns();
                 let dateCols = [];
 
                 function searchDateCols (){
@@ -1155,7 +1154,33 @@ function getInfoTable (idCurrTable,idsParam) {
                
                 const idCurrView= $$(idCurrTable);
           
-              
+                function getUserPrefs(){
+      
+                    const idCurrView= $$(idCurrTable);
+            
+                    try{
+                        const currFieldTable = idCurrView.config.idTable;
+                        const storageData = webix.storage.local.get("visibleColsPrefs_"+currFieldTable);
+                    
+                        if(storageData){
+                            storageData.forEach(function(el){
+                                if(!el.value ){
+                                    if(idCurrView.isColumnVisible(el.id)){
+                                        idCurrView.hideColumn(el.id);
+                                    }
+                                 
+                                } else {
+                                    if( !( idCurrView.isColumnVisible(el.id) ) ){
+                                        idCurrView.showColumn(el.id);
+                                    }
+                                }
+                            });
+                        }
+            
+                    } catch (err){
+                        setFunctionError(err,"table","onAfterLoad => getUserPrefs");
+                    }
+                }
 
                 try{
                     if (data.length !== 0){
@@ -1170,7 +1195,7 @@ function getInfoTable (idCurrTable,idsParam) {
                         idCurrView.clearAll();
                     }
 
-                    //getUserPrefs();
+                    getUserPrefs();
                 } catch (err){
                     setFunctionError(err,"content","createTableRows => parseRowData");
                 }
@@ -1203,7 +1228,6 @@ function getInfoTable (idCurrTable,idsParam) {
                     
                             $$(table).config.idTable = itemTreeId;
 
-                            console.log( $$(table),itemTreeId)
                             try {
                                 clearTable    ();
                                 setTableState ();
@@ -1375,7 +1399,6 @@ function getInfoTable (idCurrTable,idsParam) {
                     }
                 }
 
-                //getUserPrefs();
             });
         }
 

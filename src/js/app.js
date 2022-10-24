@@ -1,15 +1,21 @@
-console.log("expa 1.0.41"); 
+console.log("expa 1.0.42"); 
 
 import {textInputClean} from "./blocks/commonFunctions.js";
 import {login} from "./components/login.js";
 import {setUserPrefs} from "./blocks/storageSetting.js";
 import {header} from "./components/header.js";
-import {treeSidebar} from "./components/sidebar.js";
+
+import {treeSidebar} from "./components/treeSidabar/layout.js";
+//import {treeSidebar} from "./components/sidebar.js";
+
+
 import {logLayout} from "./blocks/logBlock.js";
 import {resetTimer} from  "./blocks/autoLogout.js";
 
 import {catchErrorTemplate} from "./blocks/logBlock.js";
 import {resizeAdaptive,adaptivePoints} from "./blocks/adaptive.js";
+
+
 
 try{
 
@@ -125,6 +131,7 @@ try{
         webix.i18n.parseFormat = "%d.%m.%Y %H:%i:%s";
         webix.i18n.setLocale();
         webix.Date.startOnMonday = true;
+
     });
 
 } catch(error){

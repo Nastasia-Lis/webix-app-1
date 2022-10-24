@@ -40,6 +40,36 @@ function validateProfForm (){
                 }
             }
 
+            function dateField(){
+         
+                if (propElement.type              &&
+                    propElement.type == "customDate" ){
+                     
+                    let check =  false;
+
+                    const x = values[el].replace(/\D/g, '')
+                    .match(/(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})/);
+
+                    for (let i = 1; i < 7; i++) {
+  
+                        if (x[i].length !== 2 && !check){
+                            if (!check){
+                                check = true;
+                            }
+                        }
+                    }
+
+                    if ( check ){
+                        errors[el].date = "Неверный формат даты. Введите дату в формате xx.xx.xx xx:xx:xx";
+                    } else {
+                        errors[el].date = null;
+                    }
+                       
+                }
+       
+  
+            }
+
             function valLength(){ 
                 try{
                
@@ -86,12 +116,11 @@ function validateProfForm (){
                 }
             }
            
-
-            numberField();
-            valLength ();
-            valNotNull ();
-            valUnique ();
-            console.log(errors)
+            dateField   ();
+            numberField ();
+            valLength   ();
+            valNotNull  ();
+            valUnique   ();
         });
     }
 

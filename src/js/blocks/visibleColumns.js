@@ -1,3 +1,6 @@
+import {setFunctionError, setAjaxError} from "./errors.js";
+import { setLogValue } from "./logBlock.js";
+
 function  visibleColsButtonClick(idTable){
     const currTable  = $$(idTable);
     const columns    = $$(idTable).getColumns(true);

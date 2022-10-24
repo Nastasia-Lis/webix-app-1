@@ -68,7 +68,7 @@ function createTemplate (){
     document.getElementById('custom-date-editor').addEventListener('input', function (e) {
 
         const x = e.target.value.replace(/\D/g, '')
-        .match(/(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,3})/);
+        .match(/(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})/);
 
         function setNum(index){
             return (x[index] ? x[index] : ' __ ');
@@ -76,7 +76,7 @@ function createTemplate (){
 
         if (e.inputType !== "deleteContentBackward"){
             e.target.value = setNum(1) + '.' + setNum(2) + '.' + setNum(3) + '  '+ 
-            setNum(4) + ':' + setNum(5) + ':' + setNum(6) + ':' + setNum(7);
+            setNum(4) + ':' + setNum(5) + ':' + setNum(6);
         }
      
     });

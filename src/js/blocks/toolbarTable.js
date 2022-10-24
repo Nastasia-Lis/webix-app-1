@@ -7,6 +7,8 @@ import {toolbarFilterBtn} from "./tableFilter/toolbarBtn.js";
 import {toolbarEditButton} from "./tableEditForm/toolbarBtn.js";
 import {toolbarVisibleColsBtn} from "./visibleColumns.js";
 
+
+
 function exportToExcel(idTable){
     try{
         webix.toExcel(idTable, {
@@ -86,7 +88,7 @@ function tableToolbar (idTable,visible=false) {
                     toolbarFilterBtn(idTable,visible),
                     toolbarEditButton(idTable),
                     {},
-                    // toolbarVisibleColsBtn(idTable),
+                  //  toolbarVisibleColsBtn(idTable),
                     toolbarDownloadButton(idTable,visible)
                 ],
             },

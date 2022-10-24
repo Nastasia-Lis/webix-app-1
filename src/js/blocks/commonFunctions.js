@@ -7,7 +7,7 @@ function getItemId (){
     try{
         const table     = $$("table");
         const tableView = $$("tables-view");
-        console.log(table)
+
         if ($$("tables").isVisible()){
             idTable = table.config.idTable;
         } else if ($$("forms").isVisible()){
@@ -23,7 +23,7 @@ function getItemId (){
 
 function hideElem(elem){
     try{
-        if (elem && elem.isVisible()){
+        if (elem){
             elem.hide();
         }
     } catch (err){
@@ -52,6 +52,16 @@ function removeElem (elem){
     }
 }
 
+function disableElem(element){
+    try{
+        if (element && element.isEnabled()){
+            element.disable();
+        }
+    } catch (err){
+        setFunctionError(err,"sidebar","disableElements");
+    }
+}
+
 function textInputClean(){
     let mdView = null;
   
@@ -76,6 +86,7 @@ export {
     getItemId,
     hideElem,
     showElem,
- removeElem,
+    removeElem,
+    disableElem,
     textInputClean
 };

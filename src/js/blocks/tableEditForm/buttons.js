@@ -50,6 +50,7 @@ function addNewStateSpace(){
     }
 }
 
+
 function saveItem(addBtnClick=false, refBtnClick=false){    
   
     try{    
@@ -63,13 +64,14 @@ function saveItem(addBtnClick=false, refBtnClick=false){
 
             if( itemData.id ) {
                 const link       = "/init/default/api/"+currId+"/"+itemData.id;
-                const putData    = webix.ajax().put(link, uniqueData (itemData));
+                
                 const editForm   = $$("table-editForm");
                 const property   = $$("editTableFormProperty");
                 const addBtn     = $$("table-newAddBtnId");
                 const emptyTempl = $$("EditEmptyTempalte");
                 const container  = $$("tableContainer");
 
+                const putData    = webix.ajax().put(link, uniqueData (itemData));
 
                 putData.then(function(data){
                     data = data.json();
@@ -204,7 +206,10 @@ function removeNullFields(arr){
 
     vals.forEach(function(el,i){
         if (el){
-            sentObj[keys[i]] = el;
+
+            sentObj[keys[i]]= el;
+            
+
         }
     });
 
@@ -212,8 +217,8 @@ function removeNullFields(arr){
 }
 
 function saveNewItem (){
-    const currId   = getItemId ();
-    console.log(currId)
+    const currId = getItemId ();
+ 
     if (!(validateProfForm().length)){
 
         const editForm  = $$("table-editForm");

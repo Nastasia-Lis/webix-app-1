@@ -8,6 +8,7 @@ import {saveItem, saveNewItem} from "../blocks/tableEditForm/buttons.js";
 import {setAjaxError,setFunctionError} from "../blocks/errors.js";
 
 import {favsPopup} from "../blocks/favsLink.js";
+import {checkFonts} from "../blocks/checkFonts.js";
 
 
 let userLocation;
@@ -110,6 +111,7 @@ function header() {
                     on: {
                         onAfterRender: function () {
                             this.getInputNode().setAttribute("title","Видимость бокового меню");
+                            checkFonts();
                         }
                     }    
                 },

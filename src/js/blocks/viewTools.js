@@ -35,7 +35,7 @@ const filterBackTableBtn = {
     type:"icon",
     icon:"icon-arrow-right",
     value:"Вернуться к таблице",
-    hidden:true,  
+ //   hidden:true,  
     height:28,
     minWidth:50,
     width:55,

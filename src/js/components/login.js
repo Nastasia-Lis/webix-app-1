@@ -1,6 +1,5 @@
- import {router} from "../blocks/routerConfig/router.js";
- import {createElements,removeElements} from "../blocks/routerConfig/common.js";
- //import {router,removeElements,createElements} from "../blocks/router.js";
+import {router} from "../blocks/routerConfig/router.js";
+import {createElements,removeElements} from "../blocks/routerConfig/common.js";
 
 
 import {catchErrorTemplate,ajaxErrorTemplate} from "../blocks/logBlock.js";

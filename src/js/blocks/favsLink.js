@@ -5,6 +5,25 @@ import {setStorageData} from "./storageSetting.js";
 
 
 
+function getUserData(){
+    const userprefsGetData = webix.ajax("/init/default/api/whoami");
+    userprefsGetData.then(function(data){
+        data = data.json().content;
+
+        let userData = {};
+    
+        userData.id       = data.id;
+        userData.name     = data.first_name;
+        userData.username = data.username;
+        
+        setStorageData("user", JSON.stringify(userData));
+        
+    });
+    userprefsGetData.fail(function(err){
+        setAjaxError(err, "favsLink","btnSaveLpostContentinkClick => getUserData");
+    });
+}
+
 
 
 function favsPopupCollectionClick (){
@@ -13,11 +32,19 @@ function favsPopupCollectionClick (){
     getData.then(function(data){
         data = data.json().content;
         const favCollection = [];
+
+        let user = webix.storage.local.get("user");
+
+        if (!user){
+            getUserData();
+            user = webix.storage.local.get("user");
+        }
+    
         
         function getFavsCollection(){
             try{
                 data.forEach(function(el){
-                    if (el.name.includes("fav-link")){
+                    if (el.name.includes("fav-link") && user.id == el.owner){
                         favCollection.push(JSON.parse(el.prefs));
                     }
                 });
@@ -48,8 +75,13 @@ function favsPopupCollectionClick (){
             }
          
         }
-        getFavsCollection();
-        createOptions();
+        
+        if (user){
+            getFavsCollection();
+            createOptions();
+        }
+   
+    
     });
 
     getData.fail(function(err){
@@ -272,26 +304,7 @@ function saveFavsClick(){
             let user = webix.storage.local.get("user");
             let ownerData;
 
-            function getUserData(){
-                const userprefsGetData = webix.ajax("/init/default/api/whoami");
-                userprefsGetData.then(function(data){
-                    data = data.json().content;
 
-                    let userData = {};
-                
-                    userData.id       = data.id;
-                    userData.name     = data.first_name;
-                    userData.username = data.username;
-                    
-                    setStorageData("user", JSON.stringify(userData));
-                    
-                });
-                userprefsGetData.fail(function(err){
-                    setAjaxError(err, "favsLink","btnSaveLpostContentinkClick => getUserData");
-                });
-            }
-
-            
             if (!user){
                 getUserData();
                 user = webix.storage.local.get("user");
