@@ -6,11 +6,8 @@
 
 
 // icons
-@import "src/scss/font_aws/fontawesome";
+@import "src/scss/icons/icomoon";
 
-@import "src/scss/font_aws/solid";
-@import "src/scss/font_aws/brands";
-@import "src/scss/font_aws/regular";
 
 
 html, body {
@@ -23,7 +20,6 @@ html, body {
 ::-webkit-scrollbar {
     width: auto!important;   /* ширина для вертикального скролла */
     height: auto!important; /* высота для горизонтального скролла */
-  //  background-color: #e1e1e1!important;
 }
 
 /* ползунок скроллбара */
@@ -147,7 +143,7 @@ margin-left: 0px!important;
 .webix_list_item.menu{
     font-size: 13px!important;
 }
-.fa-right-from-bracket{
+.icon-sign-out{
     color:var(--danger-dark)!important;
 }
 
@@ -952,4 +948,34 @@ label, button{
 
 .tree_load-items .webix_tree_file{
     color: transparent!important;
+}
+
+
+
+
+// popup
+.popup-date_template .webix_template{
+    padding-right: 0px!important;
+}
+
+.popup-time_template .webix_template{
+    padding-left: 0px!important;
+    padding-right: 0px!important;
+}
+
+
+.popup_time-spacer {
+    background-color: transparent!important;
+    font-size: 20px!important;
+}
+.popup_time-spacer .webix_template{
+    padding: 2px 2px 0px 2px!important;
+ 
+}
+
+
+.popup_time-timeFormHead{
+    background-color: transparent!important;
+}.popup_time-timeFormHead .webix_template{
+    padding: 0px!important;
 }

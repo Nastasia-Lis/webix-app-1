@@ -3,7 +3,7 @@ import webpack from "webpack-stream";
 import HtmlWebpackPlugin from  "html-webpack-plugin";
 //const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-export const js = () => {
+export const jsNotMin = () => {
     return app.gulp.src(app.path.src.js, {sourcemaps: app.isDev})
         .pipe(app.plugins.plumber(
             app.plugins.notify.onError({
@@ -15,20 +15,20 @@ export const js = () => {
             mode: app.isBuild ? 'production' : 'development',
            
             output: {
-                filename: 'expaw.js'
-            //   filename: '[name].bundle.js',
+                filename: 'expaw-not-min.js'
+             //  filename: '[name].bundle.js',
             },
 
          //   devtool: "source-map",
            
-            // optimization:  {
-            //     minimize: false,
-            // },
+            optimization:  {
+                minimize: false,
+            },
 
  
             // entry: {
             //     index: './src/js/app.js',
-            //     another: './src/js/components/table.js',
+            //     another: './src/js/treeItems/tableTemplate.js',
             // },
 
             // optimization:  {
@@ -40,7 +40,6 @@ export const js = () => {
             // plugins: [
             //     new HtmlWebpackPlugin({
             //         title: 'Output Management',
-            //         inject: true,
             //         //filename: '../index.html',
             //        // template:  'dist/js/index.html',
             //        template: 'src/index.html',

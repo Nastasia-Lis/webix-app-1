@@ -1,4 +1,8 @@
-import {router,createElements,removeElements} from "../blocks/router.js";
+ import {router} from "../blocks/routerConfig/router.js";
+ import {createElements,removeElements} from "../blocks/routerConfig/common.js";
+ //import {router,removeElements,createElements} from "../blocks/router.js";
+
+
 import {catchErrorTemplate,ajaxErrorTemplate} from "../blocks/logBlock.js";
 import {setStorageData} from "../blocks/storageSetting.js";
 
@@ -57,17 +61,17 @@ function login () {
 
                         }
                     }).then(function(data){
-                        webix.ajax().get("/init/default/api/userprefs/", {
-                            success:function(text, data, XmlHttpRequest){
-
-                            },
-                            error:function(text, data, XmlHttpRequest){
-                                ajaxErrorTemplate("007-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
-                            }
-                        }).catch(error => {
-                            console.log(error);
-                            ajaxErrorTemplate("007-000",error.status,error.statusText,error.responseURL);
-                        });
+                        // webix.ajax().get("/init/default/api/userprefs/", {
+                        //     success:function(text, data, XmlHttpRequest){
+                        //         console.log(14)
+                        //     },
+                        //     error:function(text, data, XmlHttpRequest){
+                        //         ajaxErrorTemplate("007-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
+                        //     }
+                        // }).catch(error => {
+                        //     console.log(error);
+                        //     ajaxErrorTemplate("007-000",error.status,error.statusText,error.responseURL);
+                        // });
 
 
 

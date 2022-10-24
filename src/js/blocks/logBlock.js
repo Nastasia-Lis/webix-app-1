@@ -41,7 +41,7 @@ function setLogValue (typeNotify,notifyText,specificSrc) {
         }
 
         if (srcTable == "version"){
-            name = 'Expa v1.0.40';
+            name = 'Expa v1.0.41';
         } else if (srcTable == "cp") {
             name = 'Смена пароля';
         } else {
@@ -113,12 +113,12 @@ function setLogValue (typeNotify,notifyText,specificSrc) {
         }
         function openLog(){
             try{
-                if ($$("webix_log-btn").config.icon =="fas fa-eye"){
+                if ($$("webix_log-btn").config.icon =="icon-eye"){
                     $$("logLayout").config.height = 90;
                     $$("logLayout").resize();
                     $$("webix_log-btn").setValue(2);
 
-                    $$("webix_log-btn").config.icon ="fas fa-eye-slash";
+                    $$("webix_log-btn").config.icon ="icon-eye-slash";
                     $$("webix_log-btn").refresh();
 
                     setStorageData("LogVisible", JSON.stringify("show"));
@@ -182,9 +182,9 @@ const logBlock = {
                 }
             }
     
-            if ($$("webix_log-btn").config.icon =="fas fa-eye"){
+            if ($$("webix_log-btn").config.icon =="icon-eye"){
                 addNotify();
-            } else if ($$("webix_log-btn").config.icon =="fas fa-eye-slash"){
+            } else if ($$("webix_log-btn").config.icon =="icon-eye-slash"){
                 clearNotify();
             }
             

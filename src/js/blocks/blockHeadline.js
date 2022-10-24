@@ -33,7 +33,7 @@ function setHeadlineBlock (idTemplate, title=null){
         view:"button", 
         css:"webix-transparent-btn",
         type:"icon",
-        icon:"fas fa-star",
+        icon:"icon-star",
         width:50,
         click:function(){
             saveFavsClick();

@@ -1,20 +1,22 @@
 function backFilterBtnClick (){
-    const tools = $$("viewTools");    
-    const сontainer = $$("formsContainer");
+    const tools       = $$("formsTools");    
+    const сontainer   = $$("formsContainer");
+    const formResizer = $$("formsTools-resizer");
 
     function setBtnFilterState(){
         const btnClass          = document.querySelector(".webix_btn-filter");
         const primaryBtnClass   = "webix-transparent-btn--primary";
         const secondaryBtnClass = "webix-transparent-btn";
 
-        if (btnClass.classList.contains(primaryBtnClass)){
-            btnClass.classList.add(secondaryBtnClass);
-            btnClass.classList.remove(primaryBtnClass);
+        if (btnClass.classList.contains(primaryBtnClass  )){
+            btnClass.classList.add     (secondaryBtnClass);
+            btnClass.classList.remove  (primaryBtnClass  );
         }
     }
     function defaultState(){
         if ( tools && tools.isVisible() ){
             tools.hide();
+            formResizer.hide();
         }
     
         if ( сontainer && !(сontainer.isVisible()) ){
@@ -31,7 +33,7 @@ const filterBackTableBtn = {
     view:"button", 
     id:"table-backFormsBtnFilter",
     type:"icon",
-    icon:"fas fa-right-long",
+    icon:"icon-arrow-right",
     value:"Вернуться к таблице",
     hidden:true,  
     height:28,
@@ -50,10 +52,11 @@ const filterBackTableBtn = {
 };
 
 const viewTools = {
-    hidden:true,
     id:"viewTools",
+    padding:10,
     rows:[
        {cols:[
+
             {  
                 template:"Действия",
                 height:30, 

@@ -6,17 +6,56 @@ function setStorageData (name, value){
     } 
 }
 
+function setLoginActionPref(userLocation, userprefsWorkspace){
+
+    try{
+        if (userprefsWorkspace.LoginActionOpt == 2){
+            if (userLocation       && 
+                userLocation.href  && 
+                userLocation.href !== window.location.href ){
+            
+                window.location.replace(userLocation.href);
+            }
+        }
+    } catch(err){
+        setFunctionError(err,"storageSettings","setLoginActionPref");
+    }
+}
+
+
+function moveUser(){
+    const localPath = "/index.html/content";
+    const expaPath  = "/init/default/spaw/content";
+
+    if (window.location.pathname == localPath || window.location.pathname == expaPath){
+  
+        const userprefsWorkspace = webix.storage.local.get("userprefsWorkspaceForm");
+        const userLocation       = webix.storage.local.get("userLocationHref");
+
+        const url = new URL(userLocation.href);
+        console.log(userLocation)
+        if (userprefsWorkspace                    && 
+            userprefsWorkspace.LoginActionOpt     && 
+            url.origin == window.location.origin  &&
+            !(url.pathname.includes("logout")     )){
+            
+            setLoginActionPref(userLocation,userprefsWorkspace);
+        }
+    }
+}
+
 function setUserPrefs (){
     
     const userprefsData = webix.ajax("/init/default/api/userprefs/");
    
     userprefsData.then(function(data){
-        let user = webix.storage.local.get("user");
+        const user = webix.storage.local.get("user");
         data = data.json().content;
         
         function setDataToStorage(){
             try{
                 data.forEach(function(el,i){
+                    console.log(el)
                     if (el.owner == user.id && !(el.name.includes("fav-link_"))){
                         setStorageData (el.name, el.prefs);
                     }
@@ -26,37 +65,10 @@ function setUserPrefs (){
             }
         }
 
-        function setLoginActionPref(userLocation, userprefsWorkspace){
-            try{
-                if (userprefsWorkspace.LoginActionOpt == 2){
-                    if (userLocation       && 
-                        userLocation.href  && 
-                        userLocation.href !== window.location.href ){
-                        window.location.replace(userLocation.href);
-                    }
-                }
-            } catch(err){
-                setFunctionError(err,"storageSettings","setLoginActionPref");
-            }
-        }
         if (user){
-
-          
             setDataToStorage();
-
-            if (window.location.pathname=="/index.html/content" || window.location.pathname=="/init/default/spaw/content"){
-                let userprefsWorkspace = webix.storage.local.get("userprefsWorkspaceForm");
-                let userLocation = webix.storage.local.get("userLocationHref");
-
-                const url = new URL(userLocation.href);
-
-                if (userprefsWorkspace                    && 
-                    userprefsWorkspace.LoginActionOpt     && 
-                    url.origin == window.location.origin  &&
-                    !(url.pathname.includes("logout")     )){
-                        setLoginActionPref(userLocation,userprefsWorkspace);
-                    }
-            }
+            moveUser();
+          
         }
     });
     userprefsData.fail(function(err){
@@ -64,27 +76,35 @@ function setUserPrefs (){
     });
 
 
-    
-
     function setLogPref(){
-        let userprefsWorkspace = webix.storage.local.get("userprefsWorkspaceForm");
+        const userprefsWorkspace = webix.storage.local.get("userprefsWorkspaceForm");
+        const logLayout          = $$("logLayout");
+        const logBtn             = $$("webix_log-btn");
+
+        function hideLog(){
+            logLayout.config.height = 5;
+            logBtn.config.icon ="icon-eye";
+        }
+
+        function showLog(){
+            logLayout.config.height = 90;
+            logBtn.config.icon ="icon-eye-slash";
+        }
+        
         try{
             if (userprefsWorkspace){
      
                 if (userprefsWorkspace.logBlockOpt !== undefined ){
 
                     if (userprefsWorkspace.logBlockOpt=="2"){
-                        $$("logLayout").config.height = 5;
-                        $$("logLayout").resize();
-                        $$("webix_log-btn").config.icon ="fas fa-eye";
-                        $$("webix_log-btn").refresh();
+                        hideLog();
     
                     } else if(userprefsWorkspace.logBlockOpt=="1"){
-                        $$("logLayout").config.height = 90;
-                        $$("logLayout").resize();
-                        $$("webix_log-btn").config.icon ="fas fa-eye-slash";
-                        $$("webix_log-btn").refresh();
+                        showLog();
                     }
+
+                    logLayout.resize();
+                    logBtn.refresh();
                 }
     
     

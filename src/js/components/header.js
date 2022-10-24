@@ -3,7 +3,8 @@ import {modalBox} from "../blocks/notifications.js";
 import {setLogValue} from '../blocks/logBlock.js';
 import {setStorageData,setUserLocation} from "../blocks/storageSetting.js";
 import {catchErrorTemplate,ajaxErrorTemplate} from "../blocks/logBlock.js";
-import {saveItem, saveNewItem} from "../blocks/editTableForm.js";
+
+import {saveItem, saveNewItem} from "../blocks/tableEditForm/buttons.js";
 import {setAjaxError,setFunctionError} from "../blocks/errors.js";
 
 import {favsPopup} from "../blocks/favsLink.js";
@@ -14,6 +15,23 @@ let headerContextId;
 
 function header() {
     function collapseClick (){
+
+        function setSearchInputState(visible=false){
+            const headerChilds = $$("header").getChildViews();
+
+            headerChilds.forEach(function(el){
+                if (el.config.id.includes("search" )      || 
+                    el.config.id.includes("log-btn")      || 
+                    el.config.id.includes("context-menu") ){
+                    if(visible){
+                        el.show();
+                    } else {
+                        el.hide();
+                    }
+                  
+                }
+            });
+        }
         try {
 
             if (window.innerWidth > 850 ){
@@ -45,10 +63,11 @@ function header() {
                     if($$("sideMenuResizer")){
                         $$("sideMenuResizer").hide();
                     } 
+                    setSearchInputState(true);
 
                 } else {
                     $$("tree").show();
-                  $$("tree").config.width = window.innerWidth;
+                    $$("tree").config.width = window.innerWidth;
                     $$("tree").resize()
                     
                    // this.config.icon ="wxi-angle-double-left";
@@ -58,10 +77,12 @@ function header() {
                             $$("sideMenuResizer").show();
                         }
                     } 
-                
-                    
+
+                    setSearchInputState();
                 }
             }
+
+           
         } catch (error){
             console.log(error);
             catchErrorTemplate("009-000", error);
@@ -80,7 +101,7 @@ function header() {
                     view:"button",
                     type:"icon",
                     id:"collapseBtn",
-                    icon:"fas fa-bars",
+                    icon:"icon-bars",
                     css:"webix_collapse",
                     title:"текст",
                     height:42, 
@@ -110,7 +131,7 @@ function header() {
             {   view:"button",  
                 id:"webix_log-btn",
                 type:"icon", 
-                icon:"fas fa-eye-slash",
+                icon:"icon-eye",
                 height:42, 
                 badge:0,
                 width: 50,
@@ -136,13 +157,13 @@ function header() {
                             $$("logLayout").config.height = 90;
                         
                             $$("logLayout").resize();
-                            this.config.icon ="fas fa-eye-slash";
+                            this.config.icon ="icon-eye-slash";
                             this.refresh();
                            // setStorageData("LogVisible", JSON.stringify("show"));
                         } else {
                             $$("logLayout").config.height = 5;
                             $$("logLayout").resize();
-                            this.config.icon ="fas fa-eye";
+                            this.config.icon ="icon-eye";
                             this.refresh();
                             //setStorageData("LogVisible", JSON.stringify("hide"));
             
@@ -159,7 +180,7 @@ function header() {
                 id:"button-context-menu",
                 type:"icon",
                 disabled:true,
-                icon: 'fas fa-user',
+                icon: 'icon-user',
                 height:38, 
                 width: 50,
                 popup: {
@@ -169,6 +190,12 @@ function header() {
                     data: [],
                     on:{
                         onItemClick:function(id, e, node){
+                            function clearTree(){
+                                if ($$("tree")){
+                                    $$("tree").clearAll();
+                                }
+                            }
+
                             function modalBoxTable (navPath){
                                 try{
                                     modalBox().then(function(result){
@@ -178,6 +205,7 @@ function header() {
                                             
                                             $$("editTableFormProperty").config.dirty = false;
                                             $$("editTableFormProperty").refresh();
+                                            clearTree();
                                         } else if (result == 2){
                                             if ($$("editTableFormProperty") && $$("editTableFormProperty").config.dirty){
                                                 if (saveBtn.isVisible()){
@@ -189,7 +217,7 @@ function header() {
                                                 $$("editTableFormProperty").config.dirty = false;
                                                 $$("editTableFormProperty").refresh();
                                                 Backbone.history.navigate(navPath, { trigger:true});
-                                            
+                                                clearTree();
                                             }
                                             
                                         }
@@ -200,7 +228,26 @@ function header() {
                                 }
                                
                             }
+
+                            function hideContentElements(id){
+                                $$("container").getChildViews().forEach(function(el){
+                                
+                                    if ( el.config.id !== id && $$(el.config.id).isVisible() ){
+                                        $$(el.config.id).hide();
+                                    }
+                                }); 
+                            }
+
+                            // function createPath(){
+                            //     if (window.location.href.includes("localhost:3000/index.html/")){
+                            //         return "/index.html/";
+                            //     } else {
+                            //         return "/init/default/spaw/";
+                            //     }
+                            // }
+                      
                             try {
+                              //  const path = createPath();
                             
                                 if (id=="logout"){
                                     if($$("editTableFormProperty") && $$("editTableFormProperty").config.dirty || $$("cp-form") && $$("cp-form").isDirty()){
@@ -269,14 +316,24 @@ function header() {
                                     if ($$("editTableFormProperty") && $$("editTableFormProperty").config.dirty){
                                     modalBoxTable ("cp");
                                     } else {
-                                        Backbone.history.navigate("cp", { trigger:true});
+                                        clearTree();
+                                       Backbone.history.navigate("/cp", { trigger:true});
+                                        //console.log( window.location.hostname)
+                                       
+                                       // window.location.replace(path+"cp");
                                     }
+                                    hideContentElements("user_auth");
                                 } else if (id == "userprefs"){
                                     if ($$("editTableFormProperty") && $$("editTableFormProperty").config.dirty){
                                     modalBoxTable ("userprefs");
                                     } else {
-                                        Backbone.history.navigate("userprefs", { trigger:true});
+                                        clearTree();
+                                       Backbone.history.navigate("/userprefs", { trigger:true});
+                                       // window.location.replace("/index.html/userprefs");
+                                      
+                                      // window.location.replace(path+"userprefs");
                                     }
+                                    hideContentElements("userprefs");
                                 } else if (id == "favs"){
                                    
                                     favsPopup();
@@ -286,6 +343,8 @@ function header() {
                                 catchErrorTemplate("005-000", error);
                             }
  
+
+                  
                         }
                     }
                 },

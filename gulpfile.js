@@ -20,6 +20,7 @@ import {html} from "./gulp/tasks/html.js";
 import {server} from "./gulp/tasks/server.js";
 import {scss} from "./gulp/tasks/scss.js";
 import {js} from "./gulp/tasks/js.js";
+import {jsNotMin} from "./gulp/tasks/jsNotMin.js";
 import {images} from "./gulp/tasks/images.js";
 import {codebase} from "./gulp/tasks/codebase.js";
 import {init} from "./gulp/tasks/init.js";
@@ -43,9 +44,9 @@ function watcher () {
 
 const mainTasks = gulp.parallel(copy, html, scss, js, images);
 
-const dev = gulp.series(reset,codebase, mainTasks, gulp.parallel(watcher, server));
+const dev = gulp.series(reset,codebase,fonts, mainTasks, gulp.parallel(watcher, server));
 
-const build = gulp.series(reset, fonts, cssWebix, jsWebix, mainTasks);
+const build = gulp.series(reset, fonts, cssWebix, jsWebix,jsNotMin, mainTasks);
 
 export {dev};
 export {build};

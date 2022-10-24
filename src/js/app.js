@@ -1,12 +1,12 @@
-console.log("expa 1.0.40"); 
+console.log("expa 1.0.41"); 
 
-import * as textInputClean from "./blocks/textInputSettings.js";
+import {textInputClean} from "./blocks/commonFunctions.js";
 import {login} from "./components/login.js";
 import {setUserPrefs} from "./blocks/storageSetting.js";
 import {header} from "./components/header.js";
 import {treeSidebar} from "./components/sidebar.js";
 import {logLayout} from "./blocks/logBlock.js";
-import  {resetTimer} from  "./blocks/autoLogout.js";
+import {resetTimer} from  "./blocks/autoLogout.js";
 
 import {catchErrorTemplate} from "./blocks/logBlock.js";
 import {resizeAdaptive,adaptivePoints} from "./blocks/adaptive.js";
@@ -106,8 +106,15 @@ try{
 
 
       adaptivePoints();
-      
-        textInputClean.textInputClean();
+
+        webix.editors.customDate = webix.extend({
+        render:function(){
+          return webix.html.create("div", {
+            "class":"webix_dt_editor"
+          }, "<input class='webix_custom-date-editor' id='custom-date-editor' type='text'>");
+        }}, webix.editors.text);
+
+        textInputClean();
 
         setUserPrefs();
 

@@ -9,9 +9,9 @@ import {userprefsLayout} from "../components/userprefs.js";
  
 // other blocks
 import {tableToolbar} from "./toolbarTable.js";
-import {editTableBar} from "./editTableForm.js";
+import {editTableBar} from "./tableEditForm/layout.js";
 import {propertyTemplate} from "./viewPropertyTable.js";
-import {filterForm} from "./filterTableForm.js";
+import {filterForm} from "./tableFilter/layout.js"
 import {editTreeLayout,contextMenu} from "../components/editTree.js";
 import {getInfoTable, getInfoEditTree,getInfoDashboard} from "./content.js";
 import {setStorageData} from "./storageSetting.js";
@@ -119,8 +119,8 @@ function createElements(specificElement){
                                     }, 
                                 ]}, 
 
-                                { view:"resizer",class:"webix_resizers",},
-                                {id:"formsTools",rows:[
+                                { view:"resizer",id:"formsTools-resizer",hidden:true,class:"webix_resizers",},
+                                {id:"formsTools",hidden:true,rows:[
                                     viewTools,
                                     propertyTemplate("propTableView"),
                                     
@@ -304,10 +304,10 @@ function getWorkspace (){
             let items = [];
             
             try{ 
-                items.push({id:"favs", value:"Избранное", icon: "fas fa-star"});
-                items.push({id:"userprefs", value:"Настройки", icon: "fas fa-gear"});
-                items.push({id:"cp", value:"Смена пароля", icon: "fas fa-lock"});
-                items.push({id:"logout", value:"Выйти", css:"webix_logout", icon: "fas fa-right-from-bracket"});
+                items.push({id:"favs", value:"Избранное", icon: "icon-star"});
+                items.push({id:"userprefs", value:"Настройки", icon: "icon-cog"});
+                items.push({id:"cp", value:"Смена пароля", icon: "icon-lock"});
+                items.push({id:"logout", value:"Выйти", css:"webix_logout", icon: "icon-sign-out"});
                 // el.childs.forEach(function(child,i){
                 //     let item = {
                 //         id:child.name,
@@ -358,15 +358,16 @@ function getWorkspace (){
                         }
                     } else {
                         delims.push(el.name);
-                        menuTree.push({id:el.name, disabled:true,value:"1"})
+                        menuTree.push({id:el.name, disabled:true,value:"1"});
                     }
               
                 });
 
                 
-
+              
                 $$("tree").clearAll();
                 $$("tree").parse(menuTree);
+           
                 if ($$("button-context-menu").config.popup.data !== undefined){
                     $$("button-context-menu").config.popup.data = menuHeader;
                     $$("button-context-menu").enable();
@@ -381,14 +382,14 @@ function getWorkspace (){
                 setFunctionError(err,"router","generateMenuTree");
             }
         }
-
+ 
         generateMenuTree (); 
 
- 
+   
     }
 
     function createContent (){ 
- 
+
         function showMainContent(){
             try {
                 $$("userAuth").hide();
@@ -411,10 +412,11 @@ function getWorkspace (){
         showMainContent();
 
         setUserData();
-
+        
         createElements();
-
+      
         getMenuTree();
+   
     }
 
     async function getAuth () {
@@ -431,6 +433,8 @@ function getWorkspace (){
     getAuth ();
 
 }
+
+
 
 function hideAllElements (){
     try {
@@ -466,6 +470,8 @@ function hideNoneContent(){
     }
 }
 
+
+
 function checkTreeOrder(){
     try{
         if ($$("tree").data.order.length == 0){
@@ -486,6 +492,8 @@ function closeTree(){
     }
     
 }
+
+
 
 function router (){
     let routes= new (Backbone.Router.extend({
@@ -807,6 +815,7 @@ function router (){
         },
         
         cp: function(){
+   
             function showUserAuth(){
                 try{
                     if ($$("user_auth")){
@@ -827,27 +836,33 @@ function router (){
                 } catch (err){
                     setFunctionError(err,"router","router:cp function setUserValues");
                 }
+         
             }
 
-           
 
+      
             removeNullContent();
             hideAllElements ();
+
             hideNoneContent();
+          
             checkTreeOrder();
-
-
+   
+ 
             if($$("user_auth")){
                 showUserAuth();
             } else {
+              
                 createElements("cp");
                 showUserAuth();
+                
             }
 
             closeTree();
+ 
             setUserValues();
-
-        
+  
+      
         },
     
         userprefs: function(){
@@ -1013,7 +1028,7 @@ function router (){
 }
 
 export {
-    router,
-    createElements,
+   router,
+   createElements,
     removeElements
 };

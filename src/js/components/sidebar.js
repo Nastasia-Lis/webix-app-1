@@ -1,4 +1,8 @@
-import {defaultStateForm,validateProfForm} from "../blocks/editTableForm.js";
+ 
+import {defaultStateForm} from "../blocks/tableEditForm/states.js";
+import {validateProfForm} from "../blocks/tableEditForm/validation.js";
+
+
 import {modalBox} from "../blocks/notifications.js";
 import {getInfoTable,getInfoDashboard} from "../blocks/content.js";
 import {setLogValue} from "../blocks/logBlock.js";
@@ -162,16 +166,22 @@ function treeSidebar () {
                         setFunctionError(err,"sidebar","onSelectChange => setTableName");
                     }
                 }
+
+                function setSearchInputState(){
+                    const headerChilds = $$("header").getChildViews();
+        
+                    headerChilds.forEach(function(el){
+                        if (el.config.id.includes("search")){
+                            el.show();
+                        }
+                    });
+                }
               
-              
-            //    removeElements ($$("inputsFilter"))
-              //  hideElements ($$("table-editTableBtnId"));
+                setSearchInputState();
                 hideElements ($$("filterTableBarContainer"));
 
                 showElements ($$("filterEmptyTempalte"));
                 showElements ($$("EditEmptyTempalte"));
-              //  showElements ($$("editTableBarContainer"));
-                //showElements ($$("table-editForm"));
 
                 disableElements     ($$("btnFilterSubmit"));
                 disableElements     ($$("filterLibrarySaveBtn"));
@@ -300,7 +310,7 @@ function treeSidebar () {
                                         
                         }); 
                     }
-
+          
                     function viewDefaultElements(){
                         try{
                             parentsArray.forEach(function(el,i){
@@ -445,7 +455,7 @@ function treeSidebar () {
                         const saveNewBtn = $$("table-saveNewBtn");
                         const saveBtn    = $$("table-saveBtn");
                         const delBtn     = $$("table-delBtnId");
-                        
+                 
                         if (saveNewBtn.isVisible()) {
                             saveNewBtn.hide();
 
@@ -620,10 +630,12 @@ function treeSidebar () {
                     modalBoxTree ();
                     return false;
                 }
-
+                
+                setDefaultStateBtns ();
             },
 
             onBeforeSelect: function(data) {
+              
                 const tree          = $$("tree");
                 const getItemParent = tree.getParentId(data);
                 const selectItem    = tree.getItem(data);
@@ -752,6 +764,7 @@ function treeSidebar () {
             },
 
             onBeforeOpen:function (id){
+        
                 const tree          = $$("tree");
                 const selectedItem  = $$("tree").getItem(id);
                 const idLoadElement = "q-load_data-tree_"+ webix.uid();
@@ -870,8 +883,10 @@ function treeSidebar () {
                 }
 
                 if ($$("tree").getItem(id).$count===-1){
+                 
                     createLoadEl();
                     getMenuChilds();
+                  
                 }
       
             },

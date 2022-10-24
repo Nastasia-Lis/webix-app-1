@@ -1,4 +1,8 @@
-import {defaultStateForm,createEditFields,validateProfForm} from "../blocks/editTableForm.js";
+
+ 
+import {defaultStateForm,createEditFields} from '../blocks/tableEditForm/states.js';
+import {validateProfForm} from '../blocks/tableEditForm/validation.js';
+
 import {catchErrorTemplate,ajaxErrorTemplate} from "../blocks/logBlock.js";
 import {modalBox,popupExec} from "../blocks/notifications.js";
 import {setLogValue} from '../blocks/logBlock.js';
@@ -135,10 +139,28 @@ function setDirtyProperty (){
 
 function toEditForm (nextItem) {
     let valuesTable = $$("table").getItem(nextItem); 
+
+    function setViewDate(){
+        const parseDate = webix.Date.dateToStr("%d.%m.%y %H:%i:%s:%S");
+        Object.values(valuesTable).forEach(function(el,i){
+     
+            if(el instanceof Date){
+                const key   = Object.keys(valuesTable)[i];
+                const value = parseDate(el);
+                valuesTable[key] = value;
+            }
+          
+        });
+    }
     try {
    
         if ($$("editTableFormProperty") && !($$("editTableFormProperty").isVisible())){
             $$("editTableFormProperty").show();
+
+            if (window.innerWidth > 850){
+                $$("table-editForm").config.width = 350;   
+                $$("table-editForm").resize();
+            }
         }
 
         if (!($$("table-newAddBtnId").isEnabled())){
@@ -146,7 +168,7 @@ function toEditForm (nextItem) {
         }
 
         setDirtyProperty ();
-
+        setViewDate();
         $$("editTableFormProperty").setValues(valuesTable);
       
         $$("table-saveNewBtn").hide();
@@ -401,13 +423,12 @@ let onFuncTable = {
     },
     
     onBeforeSelect:function(selection, preserve){
+ 
         const editPopup = document.querySelector(".edit-popup");
 
         if (editPopup){
             const idPopup = editPopup.getAttribute("view_id");
-            console.log($$(idPopup))
             $$(idPopup).hide();
-            console.log($$(idPopup))
         }
         let valuesProp = $$("editTableFormProperty").getValues();
         let currId = getItemId ();
@@ -452,12 +473,21 @@ let onFuncTable = {
                 validateError ();
             }
         }
-
+ 
+ 
         function modalBoxTable (){
+
+    
             if ($$("editTableFormProperty").config.dirty){
-                
+                const prevSelect = $$("table").getSelectedId();
                 modalBox().then(function(result){
                     const saveBtn  = $$("table-saveBtn");
+                    // if(result == 0){
+                    //     if (prevSelect){
+                    //         $$("table").select(prevSelect);
+                    //     }
+                     
+                    // }
                     if (result == 1){
                         toEditForm(nextItem);
                         $$("table").select(selection.id);
@@ -481,8 +511,14 @@ let onFuncTable = {
                 toEditForm(nextItem);
             }
         }
-
+ 
         modalBoxTable ();
+
+        if ($$("editTableFormProperty").config.dirty){
+            return false;
+        }
+
+      
     },
 
     onAfterLoad:function(){

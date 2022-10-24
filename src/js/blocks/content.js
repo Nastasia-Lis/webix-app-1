@@ -727,7 +727,7 @@ function getInfoTable (idCurrTable,idsParam) {
                     css:"webix_danger", 
                     type:"icon", 
                     disabled:true,
-                    icon:"fas fa-trash",
+                    icon:"icon-trash",
                     inputWidth:55,
                     inputHeight:35,
                   ///  height:35,
@@ -969,26 +969,27 @@ function getInfoTable (idCurrTable,idsParam) {
                     if ($$("contextActionsBtn")){
                         $$(filterBar.config.id).removeView($$("contextActionsBtn"));
                     }
-                } catch (error){
+                } catch (err){
                     setFunctionError(err,"content","adaptiveCustomInputs => removeContextBtn");
                 } 
             }
             removeContextBtn();
-            const tools = $$("viewTools");
-            
-            
+           // const tools = $$("viewTools");
+           const tools = $$("formsTools");
+           
             function viewToolsBtnClick(){
-                const btnClass = document.querySelector(".webix_btn-filter");
-                const primaryBtnClass = "webix-transparent-btn--primary";
+                const btnClass          = document.querySelector(".webix_btn-filter");
+                const primaryBtnClass   = "webix-transparent-btn--primary";
                 const secondaryBtnClass = "webix-transparent-btn";
+                const formResizer      = $$("formsTools-resizer");
 
                 function toolMinAdaptive(){
                     hideElem($$("formsContainer"));
                     hideElem($$("tree"));
                     showElem($$("table-backFormsBtnFilter"));
-  
-                   tools.config.width = window.innerWidth;
-                   tools.resize();
+                    hideElem(formResizer);
+                    tools.config.width = window.innerWidth-45;
+                    tools.resize();
                 }
 
                 function toolMaxAdaptive(){
@@ -998,12 +999,15 @@ function getInfoTable (idCurrTable,idsParam) {
                         btnClass.classList.add(secondaryBtnClass);
                         btnClass.classList.remove(primaryBtnClass);
                         hideElem(tools);
+                        hideElem(formResizer);
+                        
 
                     } else if (btnClass.classList.contains(secondaryBtnClass)){
 
                         btnClass.classList.add(primaryBtnClass);
                         btnClass.classList.remove(secondaryBtnClass);
                         showElem(tools);
+                        showElem(formResizer);
                     }
                 }
 
@@ -1022,8 +1026,10 @@ function getInfoTable (idCurrTable,idsParam) {
                     tools.config.width = 350;
                     tools.resize();
                     }
+                    showElem(formResizer);
                 } else {
                     hideElem(tools);
+                    hideElem(formResizer);
                     hideElem($$("table-backFormsBtnFilter"));
                     showElem($$("formsContainer"));
                 }
@@ -1042,7 +1048,7 @@ function getInfoTable (idCurrTable,idsParam) {
                     width: 50, 
                     type:"icon",
                     id:"viewToolsBtn",
-                    icon:"fas fa-ruler-combined",
+                    icon:"icon-filter",
                     css:"webix_btn-filter webix-transparent-btn",
                     title:"текст",
                     height:42,
@@ -1521,6 +1527,7 @@ function getInfoDashboard (idsParam,single=false){
                         css:{"margin":"20px!important","height":"50px!important"},
                         body: {
                             view:"flexlayout",
+                            padding:20,
                             rows:[]
                         }
                     },0);
@@ -1637,7 +1644,7 @@ function getInfoDashboard (idsParam,single=false){
                             view:"button", 
                             id:"dash-backDashBtn",
                             type:"icon",
-                            icon:"fas fa-right-long",
+                            icon:"icon-arrow-right",
                             value:"Вернуться к дашбордам",
                             hidden:true,  
                             height:15,
@@ -1694,11 +1701,9 @@ function getInfoDashboard (idsParam,single=false){
 
                                 showElem(dashTool);
                                 showElem($$("dash-backDashBtn"));
-                                
-                                dashTool.config.width = window.innerWidth;
+                            
+                                dashTool.config.width = window.innerWidth-45;
                                 dashTool.resize();
-                              
-                        
                             }
 
                             function filterMaxAdaptive(){
@@ -1734,7 +1739,7 @@ function getInfoDashboard (idsParam,single=false){
                             id:"dashFilterBtn", 
                             css:"webix-transparent-btn",
                             type:"icon",
-                            icon:"fas fa-filter",
+                            icon:"icon-filter",
                             width:50,
                             click:function(){
                                 filterBtnClick();
@@ -1861,7 +1866,7 @@ function getInfoDashboard (idsParam,single=false){
 
             function setScrollHeight(){
                 try{
-                    if ($$("webix_log-btn").config.icon =="fas fa-eye"){
+                    if ($$("webix_log-btn").config.icon =="icon-eye"){
                         $$("logLayout").config.height = 90;
                         $$("logLayout").resize();
                         $$("logLayout").config.height = 5;
