@@ -1,15 +1,15 @@
 import {setFunctionError,setAjaxError}   from "../errors.js";
-import {hideElem} from "../commonFunctions.js";
-
 import {hideAllElements,checkTreeOrder,closeTree,createElements} from "./common.js";
+
+
+const logNameFile = "router => userprefs";
 
 function showUserprefs(){
     try{
-    
         $$("userprefs").show();
     } catch (err){
       
-        setFunctionError(err,"router","router:userprefs function showUserprefs");
+        setFunctionError(err,logNameFile,"showUserprefs");
     }
 }
 
@@ -21,20 +21,67 @@ function setUserprefsNameValue (){
         }
     } catch (err){
       
-        setFunctionError(err,"router","router:userprefs function setUserprefsNameValue");
+        setFunctionError(err,logNameFile,"setUserprefsNameValue");
     }
 
 }
 
 function hideNoneContent(){
-    if($$("webix__none-content")){
-        $$("webix__none-content").hide();
+    try{
+        const elem = $$("webix__none-content");
+        if(elem){
+            elem.hide();
+        }
+    } catch (err){
+        
+        setFunctionError(err,logNameFile,"hideNoneContent");
+    }
+}
+
+function getDataUserprefs(){
+    const userprefsData = webix.ajax().get("/init/default/api/userprefs/");
+
+    userprefsData.then(function(data){
+
+        data = data.json().content;
+    
+        function setTemplateValue(){
+            try{
+                data.forEach(function(el,i){
+        
+                    if (el.name.includes("userprefs") && 
+                        el.name.lastIndexOf("userprefs") == 0){
+                        $$(el.name).setValues(JSON.parse(el.prefs));
+                    }
+                });
+            } catch (err){
+                setFunctionError(err,logNameFile,"getDataUserprefs");
+            }
+        }
+
+        setTemplateValue();
+        
+    });
+
+    userprefsData.fail(function(err){
+        setAjaxError(err, logNameFile,"getDataUserprefs");
+    });
+}
+
+function removeNullContent(){
+    try{
+        const elem = $$("webix__null-content");
+        if(elem){
+            const parent = elem.getParentView();
+            parent.removeView(elem);
+        }
+    } catch (err){
+        setFunctionError(err,logNameFile,"removeNullContent");
     }
 }
 
 
 function userprefsRouter(){
-
 
     hideAllElements ();
   
@@ -44,35 +91,7 @@ function userprefsRouter(){
         showUserprefs();
     } else {
         createElements("userprefs");
-
-        const userprefsData = webix.ajax().get("/init/default/api/userprefs/");
-
-        userprefsData.then(function(data){
-
-            data = data.json().content;
-        
-            function setTemplateValue(){
-                try{
-                    data.forEach(function(el,i){
-            
-                        if (el.name.includes("userprefs") && 
-                            el.name.lastIndexOf("userprefs") == 0){
-                            $$(el.name).setValues(JSON.parse(el.prefs));
-                        }
-                    });
-                } catch (err){
-                    setFunctionError(err,"router","router:cp function setUserValues");
-                }
-            }
-
-            setTemplateValue();
-            
-        });
-
-        userprefsData.fail(function(err){
-            setAjaxError(err, "router","router:userprefs userprefsData");
-        });
-
+        getDataUserprefs();
         showUserprefs();
 
     }
@@ -81,13 +100,7 @@ function userprefsRouter(){
     closeTree();
     hideNoneContent();
 
-
-    if($$("webix__null-content")){
-        const parent = $$("webix__null-content").getParentView();
-        parent.removeView($$("webix__null-content"));
-    }
-
-   
+    removeNullContent();
 }
 
 export{

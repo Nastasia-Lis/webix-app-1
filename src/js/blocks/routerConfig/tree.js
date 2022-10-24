@@ -1,12 +1,13 @@
 
 import {setFunctionError} from "../errors.js";
 import {STORAGE,getData} from "../globalStorage.js";
-import {hideElem,showElem} from "../commonFunctions.js";
+import {hideElem} from "../commonFunctions.js";
 
 import {getInfoTable,getInfoDashboard} from "../content.js";
 
 import {getWorkspace} from "./common.js";
 
+const logNameFile = "router => tree";
 
 function treeRouter(id){
     
@@ -25,15 +26,15 @@ function treeRouter(id){
             css:"popup_close-btn",
             type:"icon",
             width:35,
-           
             icon: 'wxi-close',
             click:function(){
                 try{
-                    if ($$("popupNotFound")){
-                        $$("popupNotFound").hide();
+                    const popup = $$("popupNotFound");
+                    if (popup){
+                        popup.hide();
                     }
                 } catch (err){
-                    setFunctionError(err,"router","router:tree, btnClosePopup click");
+                    setFunctionError(err,logNameFile,"btnClosePopup click");
                 }
             
             }
@@ -58,7 +59,7 @@ function treeRouter(id){
                             $$("popupNotFound").destructor();
                         }
                     } catch (err){
-                        setFunctionError(err,"router","router:tree, mainBtnPopup click destructPopup");
+                        setFunctionError(err,logNameFile,"mainBtnPopup click destructPopup");
                     }
                 }
                 function navigate(){
@@ -66,7 +67,7 @@ function treeRouter(id){
                         Backbone.history.navigate("content", { trigger:true});
                         window.location.reload();
                     } catch (err){
-                        setFunctionError(err,"router","router:tree, mainBtnPopup click navigate");
+                        setFunctionError(err,logNameFile,"mainBtnPopup click navigate");
                     }
                 }
                 destructPopup();
@@ -100,13 +101,14 @@ function treeRouter(id){
     
         }).show();
     }
+
     function showNotFoundPopup (){
         try{
             setTimeout(function(){
                 notFoundPopup();
             }, 1500);
         } catch (err){
-            setFunctionError(err,"router","router:tree function showNotFoundPopup");
+            setFunctionError(err,logNameFile,"showNotFoundPopup");
         }
     }
     
@@ -117,11 +119,12 @@ function treeRouter(id){
     
         function showElem(idElem){
             try{
-                if ($$(idElem)){
-                    $$(idElem).show();
+                const elem = $$(idElem);
+                if (elem){
+                    elem.show();
                 }
             } catch (err){
-                setFunctionError(err,"router","router:tree function showTableData (element: "+idElem+")");
+                setFunctionError(err,logNameFile,"showTableData (element: "+idElem+")");
             }
         }
     
@@ -157,7 +160,7 @@ function treeRouter(id){
                     }
                 });
             } catch (err){
-                setFunctionError(err,"router","router:tree function createElem");
+                setFunctionError(err,logNameFile,"createElem");
             }
         }
         createElem();
@@ -168,35 +171,37 @@ function treeRouter(id){
     }
     
     function setTableName (){
-    
-        if ($$("table-templateHeadline") ){
+        
+        if ($$("table-templateHeadline")){
+            const headline = $$("table-templateHeadline");
             try{
                 STORAGE.tableNames.forEach(function(el,i){
                     if (el.id == id){
-                        if($$("table-templateHeadline")){
-                            $$("table-templateHeadline").setValues(el.name);
+                        if(headline){
+                            headline.setValues(el.name);
                         }
                     }
                     
                 });
             } catch (err){
-                setFunctionError(err,"router","router:tree function setTableName element table-templateHeadline");
+                setFunctionError(err,logNameFile,"setTableName");
             }
         } 
         
         if ($$("table-view-templateHeadline")){
+            const headline = $$("table-view-templateHeadline");
             try{
                 STORAGE.tableNames.forEach(function(el,i){
                     if (el.id == id){
-                        if($$("table-view-templateHeadline")){
-                            $$("table-view-templateHeadline").setValues(el.name);
+                        if(headline){
+                            headline.setValues(el.name);
                         }
                     
                     }
                     
                 });
             } catch (err){
-                setFunctionError(err,"router","router:tree function setTableName element table-view-templateHeadline");
+                setFunctionError(err,logNameFile,"setTableName element table-view-templateHeadline");
             }
         }
     }
@@ -216,19 +221,18 @@ function treeRouter(id){
     
     async function createTable (){
         await getWorkspace ();
-    
-        try{
-    
-            $$("tree").attachEvent("onAfterLoad", function () {
-                let parentId;
-    
+     
+        try{   
+            const tree = $$("tree");
+            tree.attachEvent("onAfterLoad", function () {
+
                 function treeselectItem(){
-                    parentId = $$("tree").getParentId(id);
-                    $$("tree").open(parentId);
-                    $$("tree").select(id);
+                    const parentId = tree.getParentId(id);
+                    tree.open(parentId);
+                    tree.select(id);
                 }
     
-                if ($$("tree").getItem(id)){
+                if (tree.getItem(id)){
                 
                     treeselectItem();
                 
@@ -242,17 +246,18 @@ function treeRouter(id){
             
             });
         } catch (err){
-            setFunctionError(err,"router","router:tree function createTable");
+            setFunctionError(err,logNameFile,"createTable");
         }
     }
     
     function checkTable(){
         try {
-            if ($$("tree").data.order.length == 0){
+            const tree = $$("tree");
+            if (tree.data.order.length == 0){
                 createTable ();
             }
         } catch (err){
-            setFunctionError(err,"router","router:tree function checkTable");
+            setFunctionError(err,logNameFile,"checkTable");
     
         }
     }

@@ -1200,7 +1200,10 @@ function getInfoTable (idCurrTable,idsParam) {
                     return webix.ajax().get("/init/default/api/"+itemTreeId,{
                         success:function(text, data, XmlHttpRequest){
                             data = data.json().content;
+                    
                             $$(table).config.idTable = itemTreeId;
+
+                            console.log( $$(table),itemTreeId)
                             try {
                                 clearTable    ();
                                 setTableState ();

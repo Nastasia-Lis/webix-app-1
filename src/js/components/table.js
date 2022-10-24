@@ -7,40 +7,37 @@ import {catchErrorTemplate,ajaxErrorTemplate} from "../blocks/logBlock.js";
 import {modalBox,popupExec} from "../blocks/notifications.js";
 import {setLogValue} from '../blocks/logBlock.js';
 import {setAjaxError,setFunctionError} from "../blocks/errors.js";
+import {showElem,hideElem,removeElem,getItemId} from "../blocks/commonFunctions.js";
 
-function getItemId (){
-    let id;
+// function getItemId (){
+//     let id;
 
-    if ($$("tables").isVisible()){
-        id = $$("table").config.idTable;
-    } else if ($$("forms").isVisible()){
-        id = $$("table-view").config.idTable;
-    }
-    return id;
-}
+//     if ($$("tables").isVisible()){
+//         id = $$("table").config.idTable;
+
+//     } else if ($$("forms").isVisible()){
+//         id = $$("table-view").config.idTable;
+//     }
+//     return id;
+// }
 
 function table (idTable, onFunc, editableParam=false) {
     return {
-        view:"datatable",
-        id: idTable,
-        css:"webix_table-style webix_header_border webix_data_border",
-        autoConfig: true,
-        editable:editableParam,
-        editaction:"dblclick",
-        minHeight:350,
-        datafetch:5,
+        view        :"datatable",
+        id          : idTable,
+        css         :"webix_table-style webix_header_border webix_data_border",
+        autoConfig  : true,
+        editable    :editableParam,
+        editaction  :"dblclick",
+        minHeight   :350,
+        datafetch   :5,
         datathrottle: 5000,
-        loadahead:100,
-        footer: true,
-      //  minWidth:500, 
-        select:true,
-      //  fillspace:true,
+        loadahead   :100,
+        footer      : true,
+        select      :true,
         resizeColumn: true,
-       // autowidth:true,
-
-      
-        on:onFunc,
-        onClick:{
+        on          :onFunc,
+        onClick     :{
             "wxi-trash":function(){
                 try {
                     popupExec("Запись будет удалена").then(
@@ -129,58 +126,72 @@ function table (idTable, onFunc, editableParam=false) {
 }
 
 function setCounterVal (){
-    $$("table-findElements").setValues($$("table").count().toString());
+    const tableCount = $$("table").count().toString();
+    $$("table-findElements").setValues(tableCount);
 }
 
 function setDirtyProperty (){
-    $$("editTableFormProperty").config.dirty = false;
-    $$("editTableFormProperty").refresh();
+    const prop = $$("editTableFormProperty");
+    prop.config.dirty = false;
+    prop.refresh();
 }
 
 function toEditForm (nextItem) {
-    let valuesTable = $$("table").getItem(nextItem); 
+    const valuesTable = $$("table").getItem(nextItem); 
 
     function setViewDate(){
         const parseDate = webix.Date.dateToStr("%d.%m.%y %H:%i:%s:%S");
+        
         Object.values(valuesTable).forEach(function(el,i){
      
             if(el instanceof Date){
-                const key   = Object.keys(valuesTable)[i];
-                const value = parseDate(el);
+                const key        = Object.keys(valuesTable)[i];
+                const value      = parseDate(el);
                 valuesTable[key] = value;
             }
           
         });
     }
-    try {
-   
-        if ($$("editTableFormProperty") && !($$("editTableFormProperty").isVisible())){
-            $$("editTableFormProperty").show();
 
-            if (window.innerWidth > 850){
-                $$("table-editForm").config.width = 350;   
-                $$("table-editForm").resize();
+    function setPropState(){
+        try{
+            const prop      = $$("editTableFormProperty");
+            const form      = $$("table-editForm"); 
+            const newAddBtn = $$("table-newAddBtnId");
+
+            if (prop && !(prop.isVisible())){
+                prop.show();
+
+                if (window.innerWidth > 850){
+                    form.config.width = 350;   
+                    form.resize();
+                }
             }
-        }
 
-        if (!($$("table-newAddBtnId").isEnabled())){
-            $$("table-newAddBtnId").enable();
-        }
+            if (!(newAddBtn.isEnabled())){
+                newAddBtn.enable();
+            }
 
-        setDirtyProperty ();
-        setViewDate();
-        $$("editTableFormProperty").setValues(valuesTable);
-      
-        $$("table-saveNewBtn").hide();
-        $$("table-saveBtn").show();
-        $$("table-delBtnId").enable();
-    } catch (error){
-        console.log(error);
-        setLogValue("error","toEditForm: "+error);
+            setDirtyProperty();
+            setViewDate     ();
+
+            prop.setValues(valuesTable);
+        
+            $$("table-saveNewBtn").hide();
+            $$("table-saveBtn").show();
+            $$("table-delBtnId").enable();
+
+        } catch (err){   
+            setFunctionError(err,"table","toEditForm => setPropState");
+        }
     }
+
+    setPropState();
+
 }
 
 function removePrefBtns (){
+  //  removeElem($$("propertyRefbtnsContainer"));
     if ($$("propertyRefbtnsContainer")){
         $$("propertyRefbtns").removeView($$("propertyRefbtnsContainer")) 
     }

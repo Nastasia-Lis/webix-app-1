@@ -33,7 +33,7 @@ function moveUser(){
         const userLocation       = webix.storage.local.get("userLocationHref");
 
         const url = new URL(userLocation.href);
-        console.log(userLocation)
+ 
         if (userprefsWorkspace                    && 
             userprefsWorkspace.LoginActionOpt     && 
             url.origin == window.location.origin  &&
@@ -55,7 +55,6 @@ function setUserPrefs (){
         function setDataToStorage(){
             try{
                 data.forEach(function(el,i){
-                    console.log(el)
                     if (el.owner == user.id && !(el.name.includes("fav-link_"))){
                         setStorageData (el.name, el.prefs);
                     }

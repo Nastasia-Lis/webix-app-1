@@ -1,4 +1,3 @@
-import {setLogValue} from "./logBlock.js";
 import {setAjaxError,setFunctionError} from "./errors.js";
 
 const STORAGE = {};

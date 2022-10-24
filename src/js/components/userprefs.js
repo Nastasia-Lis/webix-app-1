@@ -1,475 +1,522 @@
 
 import {catchErrorTemplate,ajaxErrorTemplate,setLogValue} from "../blocks/logBlock.js";
 import {setStorageData} from "../blocks/storageSetting.js";
+import {setFunctionError,setAjaxError} from "../blocks/errors.js";
 
 let defaultValue = {
-    userprefsOther:{},
+    userprefsOther    :{},
     userprefsWorkspace:{},
 };
 
 function saveSettings (){
-   
-    const form = $$("userprefsTabbar").getValue()+"Form";
-    if ($$(form).isDirty()){
-    try{
-        webix.ajax().get("/init/default/api/userprefs/", {
-            success:function(text, data, XmlHttpRequest){
-                data = data.json().content;
-                if (data.err_type == "e"){
-                    setLogValue("error",data.error);
-                }
+    const tabbarVal = $$("userprefsTabbar").getValue();
+    const form = $$( tabbarVal+"Form" );
+    
+    function getUserprefsData(){
 
-                let settingExists = false;
-                const values = $$(form).getValues();
-                let sentObj = {
-                    name:form,
-                    prefs:values,
-                };
+        const getData =  webix.ajax().get("/init/default/api/userprefs/");
+        
+        getData.then(function(data){
+            data = data.json().content;
 
-                
+            if (data.err_type == "e"){
+                setLogValue("error",data.error);
+            }
+
+            let settingExists = false;
+
+            const values = form.getValues();
+
+            const sentObj = {
+                name :form,
+                prefs:values,
+            };
+
+            function putPrefs(el){
+                const url     = "/init/default/api/userprefs/"+el.id;
+                const putData = webix.ajax().put(url, sentObj);
+
+                putData.then(function(data){
+                    data = data.json();
+                    if (data.err_type == "i"){
+                        setStorageData (form, JSON.stringify(form.getValues()));
+                        setLogValue("success","Настройки сохранены");
+
+                    } if (data.err_type == "e"){
+                        setLogValue("error",data.error);
+                    }
+
+                    const tabbarVal         = $$("userprefsTabbar").getValue();
+                    defaultValue[tabbarVal] = values;
+
+                    form.setDirty(false);
+                });
+
+                putData.fail(function(err){
+                    setAjaxError(err, "userprefs","putPrefs");
+                });
+            }
+
+            function findExistsData(){
                 try{
                     data.forEach(function(el,i){
                         if (el.name == form){
                             settingExists = true;
-
-                            webix.ajax().put("/init/default/api/userprefs/"+el.id, sentObj, {
-                                success:function(text, data, XmlHttpRequest){
-                                    data = data.json();
-                                    if (data.err_type == "i"){
-                                        setStorageData (form, JSON.stringify($$(form).getValues()));
-                                        setLogValue("success","Настройки сохранены");
-                                    } if (data.err_type == "e"){
-                                        setLogValue("error",data.error);
-                                    }
-                                    defaultValue[$$("userprefsTabbar").getValue()] = values;
-                                    $$(form).setDirty(false);
-                                },
-                                error:function(text, data, XmlHttpRequest){
-                                    ajaxErrorTemplate("015-011",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
-                                }
-                            }).catch(error => {
-                                console.log(error);
-                                ajaxErrorTemplate("015-011",error.status,error.statusText,error.responseURL);
-                            });
-                        
+                            putPrefs(el);
                         } 
                     });
-                } catch (error){
-                    console.log(error);
-                    catchErrorTemplate("015-000", error);
+                } catch (err){
+                    setFunctionError(err,"userprefs","findExistsData");
                 }
-
-
-                try{
-                    if (!settingExists){
-                        
-                        let ownerId = webix.storage.local.get("user").id;
-        
-                        if (ownerId){
-                            sentObj.owner = ownerId;
-                        } else {
-                            webix.ajax("/init/default/api/whoami",{
-                                success:function(text, data, XmlHttpRequest){
-                                    
-                                    sentObj.owner = data.json().content.id;
-
-                                    let userData = {};
-                                    userData.id = data.json().content.id;
-                                    userData.name = data.json().content.first_name;
-                                    userData.username = data.json().content.username;
-                                    
-                                    setStorageData("user", JSON.stringify(userData));
-                                },
-                                error:function(text, data, XmlHttpRequest){
-                                    ajaxErrorTemplate("005-011",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
-                                }
-                            }).catch(error => {
-                                console.log(error);
-                                ajaxErrorTemplate("005-000",error.status,error.statusText,error.responseURL);
-                            });
-                        }
-
-
-                        webix.ajax().post("/init/default/api/userprefs/",sentObj, {
-                            success:function(text, data, XmlHttpRequest){
-                                data = data.json();
-        
-                                if (data.err_type == "i"){
-                                    setLogValue("success","Настройки сохранены");
-                                } else if (data.err_type == "e"){
-                                    setLogValue("error",data.error);
-                                }
-                                defaultValue[$$("userprefsTabbar").getValue()] = values;
-                                $$(form).setDirty(false);
-                                
-                            },
-                            error:function(text, data, XmlHttpRequest){
-                                ajaxErrorTemplate("015-001",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
-                            }
-                        }).catch(error => {
-                            console.log(error);
-                            ajaxErrorTemplate("015-001",error.status,error.statusText,error.responseURL);
-                        });
-                    }
-                } catch (error){
-                    console.log(error);
-                    catchErrorTemplate("015-000", error);
-                }
-
-            
-            },
-            error:function(text, data, XmlHttpRequest){
-                ajaxErrorTemplate("015-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
             }
-        }).catch(error => {
-            console.log(error);
-            ajaxErrorTemplate("015-000",error.status,error.statusText,error.responseURL);
+
+            findExistsData();
+
+
+            function getOwnerData(){
+                const getData = webix.ajax("/init/default/api/whoami");
+                getData.then(function(data){
+                    data = data.json().content;
+                    sentObj.owner = data.id;
+
+                    const userData = {};
+
+                    userData.id       = data.id;
+                    userData.name     = data.first_name;
+                    userData.username = data.username;
+                    
+                    setStorageData("user", JSON.stringify(userData));
+                });
+
+                getData.fail(function(err){  
+                    setAjaxError(err, "userprefs","getOwnerData");
+                });
+            }
+
+            function postPrefs(){
+                const url      = "/init/default/api/userprefs/";
+                const postData = webix.ajax().post(url,sentObj);
+
+                postData.then(function(data){
+                    data = data.json();
+
+                    if (data.err_type == "i"){
+                        setLogValue("success","Настройки сохранены");
+
+                    } else if (data.err_type == "e"){
+                        setLogValue("error",data.error);
+                    }
+
+                    const tabbarVal         = $$("userprefsTabbar").getValue();
+                    defaultValue[tabbarVal] = values;
+
+                    form.setDirty(false);
+                });
+
+                postData.fail(function(err){
+                    setAjaxError(err, "userprefs","postPrefs");
+                });
+            }
+
+          
+            if (!settingExists){
+                
+                const ownerId = webix.storage.local.get("user").id;
+
+                if (ownerId){
+                    sentObj.owner = ownerId;
+                } else {
+                    getOwnerData();
+                }
+
+                postPrefs();
+            }
+
         });
-    } catch (error){
-        console.log(error);
-        catchErrorTemplate("015-000", error);
+        getData.fail(function(err){
+            setAjaxError(err, "userprefs","getUserprefsData");
+        });
     }
 
-
+    if ( form.isDirty() ){
+        getUserprefsData();
     } else {
         setLogValue("debug","Сохранять нечего");
     }
 }
 
 
-const userprefsHeadline =  [ 
+const autorefRadio   = {
+    view:"radio",
+    labelPosition:"top", 
+    label:"Автообновление специфичных страниц", 
+    value:1,
+    name:"autorefOpt", 
+    options:[
+        {"id":1, "value":"Включено"},
+        {"id":2, "value":"Выключено"}
+    ],
+    on:{
+        onChange:function(newValue, oldValue,config){
+            try{
+                const counter = $$("userprefsAutorefCounter");
+                if (newValue == 1 && !(counter.isVisible()) ){
+                    counter.show();
+                }
 
-    {   
-    view:"template",
-    template:"<div>Настройки</div>",
-    css:"webix_headline-userprefs",
-    height:35, 
-    borderless:true,
-    },
-
-    {   view:"template",
-        id:"userprefsName",
-        css:"webix_userprefs-info",
-        template:function(){
-            if (Object.keys($$("userprefsName").getValues()).length !==0){
-                return "<div style='display:inline-block;color:var(--primary);font-size:13px!important;font-weight:600'>Имя пользователя:</div>"+"⠀"+"<div style='display:inline-block;font-size:13px!important;font-weight:600' >"+$$("userprefsName").getValues()+"<div>";
-            } else {
-                return "<div style='display:inline-block;color:var(--primary);font-size:13px!important;font-weight:600'>Имя пользователя:</div><div style='display:inline-block;font-size:13px!important;font-weight:600'>не указано</div>";
+                if (newValue == 2 &&  counter.isVisible()   ){
+                    counter.hide();
+                }
+        
+            } catch (err){
+                setFunctionError(err,"userprefs","autorefRadio => onChange");
             }
-        },
-        height:50, 
-        borderless:true,
-        },
+         
+        }
+    }
+};
 
-];
+const autorefCounter = {   
+    view:"counter", 
+    id:"userprefsAutorefCounter",
+    labelPosition:"top",
+    name:"autorefCounterOpt", 
+    label:"Интервал автообновления (в миллисекундах)" ,
+    min:15000, 
+    max:900000,
+    on:{
+        onChange:function(newValue, oldValue, config){
+            function createMsg (textMsg){
+                return webix.message({
+                    type:"debug",
+                    expire:1000, 
+                    text:textMsg
+                });
+            }
+
+            try{
+                const counter = $$("userprefsAutorefCounter");
+                const minVal  = counter.config.min;
+                const maxVal  = counter.config.max;
+                
+                if (newValue == minVal){
+                    createMsg ("Минимально возможное значение");
+
+                } else if (newValue == maxVal){
+                    createMsg ("Максимально возможное значение");
+                }
+            } catch (err){
+                setFunctionError(err,"userprefs","autorefCounter => onChange");
+            }
+
+
+
+        }
+    }
+};
+
+const visibleIdRadio = {
+    view:"radio",
+    labelPosition:"top", 
+    label:"ID в таблицах", 
+    value:1,
+    name:"visibleIdOpt", 
+    options:[
+        {"id":1, "value":"Показывать"   },
+        {"id":2, "value":"Не показывать"}
+    ],
+};
+
+const otherForm =  {    
+    view:"form", 
+    id:"userprefsOtherForm",
+    borderless:true,
+    elements:[
+        autorefRadio,
+        {height:5},
+        autorefCounter,
+        {height:5},
+        visibleIdRadio,
+        {}
+    ],
+    on:{
+        onChange:function(){
+            const saveBtn  = $$("userprefsSaveBtn");
+            const resetBtn = $$("userprefsResetBtn");
+            const form     = $$("userprefsOtherForm");
+
+            function setSaveBtnState(){
+                try{
+                    if ( form.isDirty() && !(saveBtn.isEnabled()) ){
+                        saveBtn.enable();
+                    } else if (!(form.isDirty())){
+                        saveBtn.disable();
+                    }
+                } catch (err){
+                    setFunctionError(err,"userprefs","otherForm => onChange setSaveBtnState");
+                }
+            }
+
+            
+            function setResetBtnState(){
+                try{
+                    if ( form.isDirty() && !(resetBtn.isEnabled()) ){
+                        resetBtn.enable();
+                    } else if ( !(form.isDirty()) ){
+                        resetBtn.disable();
+                    }  
+                } catch (err){
+                    setFunctionError(err,"userprefs","otherForm => onChange setResetBtnState");
+                }
+            }
+            
+            setSaveBtnState ();
+            setResetBtnState();
+         
+        }
+    }
+};
 
 const userprefsOther = {
-    view:"scrollview",
+    view      :"scrollview",
     borderless:true, 
-    css:"webix_multivew-cell",
-     id:"userprefsOther", 
-    scroll:"y", 
-    body:{    
-        view:"form", 
-        id:"userprefsOtherForm",
-        borderless:true,
-        elements:[
-            {
-                view:"radio",
-                labelPosition:"top", 
-                label:"Автообновление специфичных страниц", 
-                value:1,
-                name:"autorefOpt", 
-                options:[
-                    {"id":1, "value":"Включено"},
-                    {"id":2, "value":"Выключено"}
-                ],
-                on:{
-                    onChange:function(newValue, oldValue,config){
-                        try{
+    css       :"webix_multivew-cell",
+    id        :"userprefsOther", 
+    scroll    :"y", 
+    body      :otherForm
+};
 
-            
-                            if (newValue == 1 && !($$("userprefsAutorefCounter").isVisible())){
-                                $$("userprefsAutorefCounter").show();
-                            }
+const logBlockRadio = {
+    view         :"radio",
+    labelPosition:"top",
+    name         :"logBlockOpt", 
+    label        :"Отображение блока системных сообщений", 
+    value        :1, 
+    options      :[
+        {"id":1, "value":"Показать"}, 
+        {"id":2, "value":"Скрыть"  }
+    ],
+    on:{
+        onAfterRender: function () {
+            this.getInputNode().setAttribute("title","Показать/скрыть по умолчанию блок системных сообщений");
+        },
 
-                            if (newValue == 2 && $$("userprefsAutorefCounter").isVisible()){
-                                $$("userprefsAutorefCounter").hide();
-                            }
-                        
+        onChange:function(newValue, oldValue){
+            try{
+                const btn = $$("webix_log-btn");
 
-                        } catch (error){
-                            console.log(error);
-                            catchErrorTemplate("015-000", error);
-                        }
-                     
+                if (newValue !== oldValue){
+             
+                    if (newValue == 1){
+                        btn.setValue(2);
+                    } else {
+                        btn.setValue(1);
                     }
-                }
-            },
-            {height:5},
-            {   view:"counter", 
-                id:"userprefsAutorefCounter",
-                labelPosition:"top",
-                name:"autorefCounterOpt", 
-                label:"Интервал автообновления (в миллисекундах)" ,
-                min:15000, 
-                max:900000,
-                on:{
-                    onChange:function(newValue, oldValue, config){
-                        try{
-
-                            const minVal = $$("userprefsAutorefCounter").config.min;
-                            const maxVal = $$("userprefsAutorefCounter").config.max;
-                            
-                            if (newValue == minVal){
                 
-                                webix.message({type:"debug",expire:1000, text:"Минимальное возможное значение"});
-                            } else if (newValue == maxVal){
-                                webix.message({type:"debug",expire:1000, text:"Максимальное возможное значение"});
-                            }
-                        } catch (error){
-                            console.log(error);
-                            catchErrorTemplate("015-000", error);
-                        }
-
-
-
-                    }
                 }
-            },
-            {height:5},
-            {
-                view:"radio",
-                labelPosition:"top", 
-                label:"ID в таблицах", 
-                value:1,
-                name:"visibleIdOpt", 
-                options:[
-                    {"id":1, "value":"Показывать"},
-                    {"id":2, "value":"Не показывать"}
-                ],
-                // on:{
-                //     onChange:function(newValue, oldValue,config){
-                //         try{
-
-            
-                //             if (newValue == 1 ){
-                                
-                //             }
-
-                //             if (newValue == 2){
-                               
-                //             }
-                        
-
-                //         } catch (error){
-                //             console.log(error);
-                //            // catchErrorTemplate("015-000", error);
-                //         }
-                     
-                //     }
-                // }
-            },
-            {}
-        ],
-        on:{
-            onChange:function(){
-                if (this.isDirty() && !($$("userprefsSaveBtn").isEnabled())){
-                    $$("userprefsSaveBtn").enable();
-                } else if (!(this.isDirty())){
-                    $$("userprefsSaveBtn").disable();
-                }
-
-                if (this.isDirty() && !($$("userprefsResetBtn").isEnabled())){
-                    $$("userprefsResetBtn").enable();
-                } else if (!(this.isDirty())){
-                    $$("userprefsResetBtn").disable();
-                }  
+            } catch (err){
+                setFunctionError(err,"userprefs","logBlockRadio => onChange");
             }
+ 
+        }
+    }
+};
+
+const loginActionSelect = {   
+    view         :"select", 
+    name         :"LoginActionOpt",
+    label        :"Действие после входа в систему", 
+    labelPosition:"top",
+    value        :2, 
+    options      :[
+    { "id":1, "value":"Перейти на главную страницу"            },
+    // { "id":3, "value":"Предложить вернуться на последнюю открытую страницу" },
+    { "id":2, "value":"Перейти на последнюю открытую страницу" },
+    ],
+    on:{
+        onAfterRender: function () {
+            this.getInputNode().setAttribute("title","Показывать/не показывать всплывающее окно при загрузке приложения");
+        },
+
+    }
+};
+
+const workspaceForm =  {    
+    view      :"form", 
+    id        :"userprefsWorkspaceForm",
+    borderless:true,
+    elements  :[
+        { cols:[
+            { rows:[  
+                logBlockRadio,
+                {height:15},
+                
+                {cols:[
+                    loginActionSelect,
+                    {}
+                ]}
+
+            ]},
+        ]},
+
+    ],
+
+    on:{
+        onChange:function(){
+            const form     = $$("userprefsWorkspaceForm");
+            const saveBtn  = $$("userprefsSaveBtn");
+            const resetBtn = $$("userprefsResetBtn");
+
+            function setSaveBtnState(){
+                try{
+                    if ( form.isDirty() && !(saveBtn.isEnabled()) ){
+                        saveBtn.enable();
+                    } else if ( !(form.isDirty()) ){
+                        saveBtn.disable();
+                    }
+                } catch (err){
+                    setFunctionError(err,"userprefs","workspaceForm => setSaveBtnState");
+                }
+            }
+
+            function setResetBtnState(){
+                try{
+                    if ( form.isDirty() && !(resetBtn.isEnabled()) ){
+                        resetBtn.enable();
+                    } else if ( !(form.isDirty()) ){
+                        resetBtn.disable();
+                    }  
+                } catch (err){
+                    setFunctionError(err,"userprefs","workspaceForm => setResetBtnState");
+                }
+            }
+      
+            setSaveBtnState ();
+            setResetBtnState();
         }
     }
 };
 
 const userprefsWorkspace = {
-    view:"scrollview",
+    view      :"scrollview",
     borderless:true, 
-    css:"webix_multivew-cell",
-    id:"userprefsWorkspace",
-    scroll:"y", 
-    body:{    
-        view:"form", 
-        id:"userprefsWorkspaceForm",
-        borderless:true,
-        elements:[
-            { cols:[
-                { rows:[  
-                    {
-                        view:"radio",
-                        labelPosition:"top",
-                        name:"logBlockOpt", 
-                        label:"Отображение блока системных сообщений", 
-                        value:1, options:[
-                            {"id":1, "value":"Показать"}, 
-                            {"id":2, "value":"Скрыть"}
-                        ],
-                        on:{
-                            onAfterRender: function () {
-                                this.getInputNode().setAttribute("title","Показать/скрыть по умолчанию блок системных сообщений");
-                            },
-                    
-                            onChange:function(newValue, oldValue, config){
-                                try{
-
-                                    if (newValue !== oldValue){
-                                 
-                                        if (newValue == 1){
-                                            $$("webix_log-btn").setValue(2);
-                                        } else {
-                                            $$("webix_log-btn").setValue(1);
-                                        }
-                                    
-                                    }
-                                } catch (error){
-                                    console.log(error);
-                                    catchErrorTemplate("015-000", error);
-                                }
-     
-
-                                
-                            }
-                        }
-                    },
-                    {height:15},
-                    {cols:[
-                    {   view:"select", 
-                        name:"LoginActionOpt",
-                        label:"Действие после входа в систему", 
-                        labelPosition:"top",
-                        value:2, 
-                        options:[
-                        { "id":1, "value":"Перейти на главную страницу" },
-                       // { "id":3, "value":"Предложить вернуться на последнюю открытую страницу" },
-                        { "id":2, "value":"Перейти на последнюю открытую страницу" },
-                        ],
-                        on:{
-                            onAfterRender: function () {
-                                this.getInputNode().setAttribute("title","Показывать/не показывать всплывающее окно при загрузке приложения");
-                            },
-   
-                        }
-                    },
-                    {}
-                    ]}
-                ]},
-               //{}
-            ]},
-    
-        ],
-        on:{
-            onChange:function(){
-                if (this.isDirty() && !($$("userprefsSaveBtn").isEnabled())){
-                    $$("userprefsSaveBtn").enable();
-                } else if (!(this.isDirty())){
-                    $$("userprefsSaveBtn").disable();
-                }
-
-                if (this.isDirty() && !($$("userprefsResetBtn").isEnabled())){
-                    $$("userprefsResetBtn").enable();
-                } else if (!(this.isDirty())){
-                    $$("userprefsResetBtn").disable();
-                }  
-            }
-        }
-    }
-    
-   
+    css       :"webix_multivew-cell",
+    id        :"userprefsWorkspace",
+    scroll    :"y", 
+    body      :workspaceForm
 };
 
 
 const userprefsConfirmBtns =  { 
-    id:"a1", rows:[
-    {responsive:"a1",cols:[
-      //  {width:20},          
-        {   view:"button", 
+    id:"a1", 
+    rows:[
+        {   responsive:"a1",
+            cols:[
         
-            height:48,
-            minWidth:200,
-            value:"Сбросить" ,
-            id:"userprefsResetBtn",
-            disabled:true,
-        },
-        //{width:10}, 
-        {   view:"button", 
-            value:"Сохранить настройки" ,
-            height:48, 
-            minWidth:200,
-            id:"userprefsSaveBtn",
-            css:"webix_primary",
-            disabled:true,
-            click: saveSettings,
-        },
-       // {width:20}, 
-     
-    ]}
+            {   view    :"button", 
+            
+                height  :48,
+                minWidth:200,
+                value   :"Сбросить" ,
+                id      :"userprefsResetBtn",
+                disabled:true,
+            },
+
+            {   view    :"button", 
+                value   :"Сохранить настройки" ,
+                height  :48, 
+                minWidth:200,
+                id      :"userprefsSaveBtn",
+                css     :"webix_primary",
+                disabled:true,
+                click   : saveSettings,
+            },
+        ]}
     ]
+};
+
+function createHeadlineSpan(headMsg){
+    return `<span class='webix_tabbar-filter-headline'>${headMsg}</span>`;
+}
+
+const tabbar = {   
+    view     :"tabbar",  
+    type     :"top", 
+    id       :"userprefsTabbar",
+    css      :"webix_filter-popup-tabbar",
+    multiview:true, 
+    height   :50,
+    options  : [
+        {   value: createHeadlineSpan("Рабочее пространство"), 
+            id   : 'userprefsWorkspace' 
+        },
+        {   value: createHeadlineSpan("Другое"), 
+            id   : 'userprefsOther' 
+        },
+    ],
+
+    on     :{
+        onBeforeTabClick:function(id){
+            const tabbarVal = $$("userprefsTabbar").getValue()+"Form";
+            const form      = $$(tabbarVal);
+
+            function disableBtn(btn){
+                try{
+                    if (btn.isEnabled()){
+                        btn.disable();
+                    }   
+                } catch (err){
+                    setFunctionError(err,"userprefs","tabbar => onBeforeTabClick");
+                }
+            }
+
+            function createModalBox(){
+                try{
+                    webix.modalbox({
+                        title   :"Данные не сохранены",
+                        css     :"webix_modal-custom-save",
+                        buttons :["Отмена", "Не сохранять", "Сохранить"],
+                        width   :500,
+                        text    :"Выберите действие перед тем как продолжить"
+                    }).then(function(result){
+
+                        if ( result == 1){
+                            
+                            const storageData = webix.storage.local.get(tabbarVal);
+                            const saveBtn     = $$("userprefsSaveBtn");
+                            const resetBtn    = $$("userprefsResetBtn");
+                            const tabbar      = $$("userprefsTabbar");
+
+                            form.setValues(storageData);
+
+                            tabbar.setValue(id);
+
+                            disableBtn(saveBtn);
+                            disableBtn(resetBtn);
+
+                        } else if ( result == 2){
+                            saveSettings ();
+                            tabbar.setValue(id);
+                        }
+                    });
+                } catch (err){
+                    setFunctionError(err,"userprefs","tabbar => createModalBox");
+                }
+            }
+
+
+            if (form.isDirty()){
+                createModalBox();
+                return false;
+            }
+
+        }
+    }
 };
 
 const userprefsTabbar =  {
     rows:[
-        {   view:"tabbar",  
-            type:"top", 
-            id:"userprefsTabbar",
-            css:"webix_filter-popup-tabbar",
-            multiview:true, 
-            options: [
-            {  value: "<span class='webix_tabbar-filter-headline'>Рабочее пространство</span>", id: 'userprefsWorkspace' },
-            {   value: "<span class=webix_tabbar-filter-headline'>Другое</span>", id: 'userprefsOther' },
-            ],
-            height:50,
-            on:{
-                onBeforeTabClick:function(id){
-                    const formId = $$("userprefsTabbar").getValue()+"Form";
- 
-                    try{
-                        if ($$(formId).isDirty()){
-                            webix.modalbox({
-                                title:"Данные не сохранены",
-                                css:"webix_modal-custom-save",
-                                buttons:["Отмена", "Не сохранять", "Сохранить"],
-                                width:500,
-                                text:"Выберите действие перед тем как продолжить"
-                            }).then(function(result){
-                                if ( result == 1){
-                                    
-                                    let storageData = webix.storage.local.get(formId);
-                                    $$(formId).setValues(storageData);
-
-                                    $$("userprefsTabbar").setValue(id);
-                                    if ($$("userprefsSaveBtn").isEnabled()){
-                                        $$("userprefsSaveBtn").disable();
-                                    }
-
-                                    if ($$("userprefsResetBtn").isEnabled()){
-                                        $$("userprefsResetBtn").disable();
-                                    }
-
-                                } else if ( result == 2){
-                                    saveSettings ();
-                                    $$("userprefsTabbar").setValue(id);
-                                }
-                            });
-                            
-                            return false;
-                        }
-                    } catch (error){
-                        console.log(error);
-                        catchErrorTemplate("005-000", error);
-                    }
-
-                   
-                }
-            }
-        },
+        tabbar,
         {
             cells:[
                 userprefsWorkspace,
@@ -480,13 +527,67 @@ const userprefsTabbar =  {
     ]
 };
 
+
+const headline = {   
+    view:"template",
+    template:"<div>Настройки</div>",
+    css:"webix_headline-userprefs",
+    height:35, 
+    borderless:true,
+};
+
+
+const userInfo =  {   
+    view:"template",
+    id:"userprefsName",
+    css:"webix_userprefs-info",
+    height:50, 
+    borderless:true,
+
+    template:function(){
+        function createDivData(msg){
+            return `
+            <div style = '
+                display:inline-block;
+                color:var(--primary);
+                font-size:13px!important;
+                font-weight:600
+            '>Имя пользователя:</div>
+
+            <div style = '
+                display:inline-block;
+                font-size:13px!important;
+                font-weight:600
+            '>${msg}</div>`;
+        }
+
+        const val       = $$("userprefsName").getValues();
+        const lenghtVal = Object.keys(val).length;
+
+        if (lenghtVal !==0){
+            return createDivData(val); 
+        } else {
+            return createDivData("не указано");        
+        }
+    },
+};
+
+const userprefsHeadline =  [ 
+    headline,
+    userInfo,
+];
+
+
 const userprefsLayout = {
 
     rows:[
-        { padding:{
-            top:15, bottom:0, left:20, right:0
-        },rows:
-            userprefsHeadline,
+        {   padding:{
+                top:15, 
+                bottom:0, 
+                left:20, 
+                right:0
+            },
+            rows:userprefsHeadline,
         },
         userprefsTabbar,
     ]

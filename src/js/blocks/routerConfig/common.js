@@ -19,7 +19,7 @@ import  {STORAGE,getData}           from "../globalStorage.js";
 import {setFunctionError}           from "../errors.js";
 
 
-
+const logNameFile = "router => common";
 function createElements(specificElement){
 
     function createDashboards(){
@@ -35,7 +35,7 @@ function createElements(specificElement){
                 3);
             }
         } catch (err){
-            setFunctionError(err,"router","createDashboards");
+            setFunctionError(err,logNameFile,"createDashboards");
         }
     }
 
@@ -73,7 +73,7 @@ function createElements(specificElement){
                 5);
             }
         } catch (err){
-            setFunctionError(err,"router","createTables")
+            setFunctionError(err,logNameFile,"createTables")
         }
     }
 
@@ -127,7 +127,7 @@ function createElements(specificElement){
                 6);
             }
         } catch (err){
-            setFunctionError(err,"router","createForms")
+            setFunctionError(err,logNameFile,"createForms")
         }
     }
 
@@ -155,7 +155,7 @@ function createElements(specificElement){
                 }
             }
         } catch (err){
-            setFunctionError(err,"router","createTreeTempl")
+            setFunctionError(err,logNameFile,"createTreeTempl")
         }
     }
 
@@ -175,7 +175,7 @@ function createElements(specificElement){
                 7);
             }
         } catch (err){
-            setFunctionError(err,"router","createCp")
+            setFunctionError(err,logNameFile,"createCp")
         }
     }
 
@@ -195,7 +195,7 @@ function createElements(specificElement){
                 8);
             }
         } catch (err){
-            setFunctionError(err,"router","createUserprefs")
+            setFunctionError(err,logNameFile,"createUserprefs")
         }
     }
 
@@ -215,11 +215,13 @@ function removeElements(){
 
     function removeElement(idElement){
         try {
-            if ($$(idElement)){
-                $$("container").removeView($$(idElement));
+            const elem   = $$(idElement);
+            const parent = $$("container");
+            if (elem){
+                parent.removeView(elem);
             }
         } catch (err){
-            setFunctionError(err,"router","removeElement (element: "+idElement+")")
+            setFunctionError(err,logNameFile,"removeElement (element: "+idElement+")")
         }
     }
     removeElement ("tables");
@@ -252,7 +254,7 @@ function getWorkspace (){
                     });
                 });
             } catch (err){
-                setFunctionError(err,"router","generateChildsTree");
+                setFunctionError(err,logNameFile,"generateChildsTree");
             }
             return childs;
         }
@@ -282,7 +284,7 @@ function getWorkspace (){
             
 
             } catch (err){
-                setFunctionError(err,"router","generateParentTree");
+                setFunctionError(err,logNameFile,"generateParentTree");
             }
             return menuItem;
         } 
@@ -311,7 +313,7 @@ function getWorkspace (){
 
               
             } catch (err){
-                setFunctionError(err,"router","generateHeaderMenu");
+                setFunctionError(err,logNameFile,"generateHeaderMenu");
             }
 
             return items;
@@ -319,11 +321,13 @@ function getWorkspace (){
 
         function generateMenuTree (){ 
             let menu,
-                menuTree = [],
+                menuTree   = [],
                 menuHeader = []
             ;
 
-            const delims = [];
+            const delims     = [];
+            const tree       = $$("tree");
+            const btnContext = $$("button-context-menu");
 
             try {
                 menu = STORAGE.mmenu.mmenu;
@@ -354,20 +358,20 @@ function getWorkspace (){
 
                 
 
-                $$("tree").clearAll();
-                $$("tree").parse(menuTree);
-                if ($$("button-context-menu").config.popup.data !== undefined){
-                    $$("button-context-menu").config.popup.data = menuHeader;
-                    $$("button-context-menu").enable();
+                tree.clearAll();
+                tree.parse(menuTree);
+                if (btnContext.config.popup.data !== undefined){
+                    btnContext.config.popup.data = menuHeader;
+                    btnContext.enable();
                 }
 
          
                 delims.forEach(function(el){
-                    $$("tree").addCss(el, "tree_delim-items");
+                    tree.addCss(el, "tree_delim-items");
 
                 });
             } catch (err){
-                setFunctionError(err,"router","generateMenuTree");
+                setFunctionError(err,logNameFile,"generateMenuTree");
             }
         }
 
@@ -384,14 +388,14 @@ function getWorkspace (){
                 $$("mainLayout").show();
             } catch (err){
                 window.alert("showMainContent: "+err+ " (Подробности: ошибка в отрисовке контента)");
-                setFunctionError(err,"router","showMainContent");
+                setFunctionError(err,logNameFile,"showMainContent");
             }
         }
 
         function setUserData(){
-            let userStorageData = {};
-            userStorageData.id = STORAGE.whoami.content.id;
-            userStorageData.name = STORAGE.whoami.content.first_name;
+            let userStorageData      = {};
+            userStorageData.id       = STORAGE.whoami.content.id;
+            userStorageData.name     = STORAGE.whoami.content.first_name;
             userStorageData.username = STORAGE.whoami.content.username;
             
             setStorageData("user", JSON.stringify(userStorageData));
@@ -429,7 +433,7 @@ function checkTreeOrder(){
             getWorkspace ();
         }
     } catch (err){
-        setFunctionError(err,"router","router function checkTreeOrder");
+        setFunctionError(err,logNameFile,"checkTreeOrder");
     }
 }
 
@@ -439,7 +443,7 @@ function closeTree(){
             $$("tree").closeAll();
         }
     } catch (err){
-        setFunctionError(err,"router","closeTree");
+        setFunctionError(err,logNameFile,"closeTree");
     }
     
 }
@@ -448,14 +452,17 @@ function hideAllElements (){
 
     try {
         $$("container").getChildViews().forEach(function(el,i){
+           
             if(el.config.view=="scrollview"|| el.config.view=="layout"){
-                if ($$(el.config.id).isVisible()){
-                    $$(el.config.id).hide();
+                const element = $$(el.config.id);
+                
+                if (element.isVisible()){
+                    element.hide();
                 }
             }
         });
     } catch (err){
-        setFunctionError(err,"router","hideAllElements");
+        setFunctionError(err,logNameFile,"hideAllElements");
     }
   
      

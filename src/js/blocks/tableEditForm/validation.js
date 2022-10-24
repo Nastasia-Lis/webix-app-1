@@ -182,6 +182,7 @@ function uniqueData (itemData){
         setFunctionError(err,logNameFile,"uniqueData");
     }
 
+    console.log(validateData,"validateData")
     return validateData;
 }
 

@@ -1,29 +1,35 @@
 import {STORAGE,getData} from "../globalStorage.js";
 import {setFunctionError} from "../errors.js";
 
+
+const logNameFile = "router => index";
+
 function indexRouter(){
     function goToContentPage(){
     
         try {
             Backbone.history.navigate("content", { trigger:true});
         } catch (err){
-            setFunctionError(err,"router","router:index function goToContentPage");
+            setFunctionError(err,logNameFile,"goToContentPage");
         }
     }
 
     function showWorkspace(){
         try{
-            if($$("mainLayout")){
-                $$("mainLayout").hide();
+            const main  = $$("mainLayout");
+            const login = $$("userAuth");
+            
+            if(main){
+                (main).hide();
             }
 
-            if(  $$("userAuth")){
-                $$("userAuth").show();
+            if(login){
+                login.show();
             }
             
         } catch (err){
             window.alert("getAuth: "+err+ " (Подробности: ошибка в отрисовке контента, router:index function showWorkspace)");
-            setFunctionError(err,"router","router:index function showWorkspace");
+            setFunctionError(err,logNameFile,"index => showWorkspace");
         }
     }
 

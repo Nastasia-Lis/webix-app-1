@@ -213,7 +213,7 @@ function removeNullFields(arr){
 
 function saveNewItem (){
     const currId   = getItemId ();
-
+    console.log(currId)
     if (!(validateProfForm().length)){
 
         const editForm  = $$("table-editForm");

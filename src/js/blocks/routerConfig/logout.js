@@ -1,25 +1,31 @@
 import {setFunctionError,setAjaxError}   from "../errors.js";
 
+const logNameFile = "router => logout";
+
 function logoutRouter(){
     const logoutData = webix.ajax().post("/init/default/logout/");
 
     logoutData.then(function(data){
         function showNoneContent(){
             try{
-                if($$("webix__none-content")){
-                    $$("webix__none-content").show();
+                const elem = $$("webix__none-content");
+
+                if(elem){
+                    elem.show();
                 }
             } catch (err){
-                setFunctionError(err,"router","router:logout function showNoneContent");
+                setFunctionError(err,logNameFile,"showNoneContent");
             }
         }
         function clearTree (){
             try{
-                if( $$("tree")){
-                    $$("tree").clearAll();
+                const tree = $$("tree");
+
+                if( tree){
+                    tree.clearAll();
                 }
             } catch (err){
-                setFunctionError(err,"router","router:logout function clearTree");
+                setFunctionError(err,logNameFile,"clearTree");
             }
         }
 
@@ -27,7 +33,7 @@ function logoutRouter(){
             try{
                 webix.storage.local.clear();
             } catch (err){
-                setFunctionError(err,"router","router:logout function clearStorage");
+                setFunctionError(err,logNameFile,"clearStorage");
             }
         }
 
@@ -35,7 +41,7 @@ function logoutRouter(){
             try{
                 history.back();
             } catch (err){
-                setFunctionError(err,"router","router:logout function backPage");
+                setFunctionError(err,logNameFile,"backPage");
             }
         }
 
@@ -47,7 +53,7 @@ function logoutRouter(){
     });
 
     logoutData.fail(function(err){
-        setAjaxError(err, "router","router:logout logoutData");
+        setAjaxError(err, logNameFile,"logoutData");
     });  
 }
 

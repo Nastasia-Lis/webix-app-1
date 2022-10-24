@@ -3,12 +3,12 @@ import {setFunctionError} from "./errors.js";
 
 function getItemId (){
     let idTable;
- 
-    try{
-        const table     = $$("tables");
-        const tableView = $$("tables-view");
 
-        if (table.isVisible()){
+    try{
+        const table     = $$("table");
+        const tableView = $$("tables-view");
+        console.log(table)
+        if ($$("tables").isVisible()){
             idTable = table.config.idTable;
         } else if ($$("forms").isVisible()){
             idTable = tableView.config.idTable;
@@ -76,6 +76,6 @@ export {
     getItemId,
     hideElem,
     showElem,
-   // removeElem,
+ removeElem,
     textInputClean
 };

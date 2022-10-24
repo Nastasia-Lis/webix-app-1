@@ -5,19 +5,31 @@ import {hideAllElements,checkTreeOrder,closeTree,createElements} from "./common.
 
 import {getInfoEditTree} from "../content.js";
 
+
+const logNameFile = "router => experimental";
+
 function showTreeTempl(){
     try{
         $$("treeTempl").show();
     } catch (err){
-        setFunctionError(err,"router","router:experimental function showTreeTempl");
+        setFunctionError(err,logNameFile,"showTreeTempl");
     }
 }
-function experimentalRouter(){
-    
-    if($$("webix__null-content")){
-        const parent = $$("webix__null-content").getParentView();
-        parent.removeView($$("webix__null-content"));
+
+function removeNullContent(){
+    try{
+        const elem = $$("webix__null-content");
+        if(elem){
+            const parent = elem.getParentView();
+            parent.removeView(elem);
+        }
+    } catch (err){
+        setFunctionError(err,logNameFile,"removeNullContent");
     }
+}
+
+function experimentalRouter(){
+    removeNullContent();
 
     hideAllElements ();
     
