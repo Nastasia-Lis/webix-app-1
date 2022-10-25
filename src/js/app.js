@@ -1,19 +1,17 @@
-console.log("expa 1.0.42"); 
+console.log("expa 1.0.43"); 
 
-import {textInputClean} from "./blocks/commonFunctions.js";
-import {login} from "./components/login.js";
-import {setUserPrefs} from "./blocks/storageSetting.js";
-import {header} from "./components/header.js";
+import {textInputClean}                 from "./blocks/commonFunctions.js";
+import {login}                          from "./components/login.js";
+import {setUserPrefs}                   from "./blocks/storageSetting.js";
+import {header}                         from "./components/header.js";
 
-import {treeSidebar} from "./components/treeSidabar/layout.js";
-//import {treeSidebar} from "./components/sidebar.js";
+import {treeSidebar}                    from "./components/treeSidabar/layout.js";
 
+import {logLayout}                      from "./blocks/logBlock.js";
+import {resetTimer}                     from  "./blocks/autoLogout.js";
 
-import {logLayout} from "./blocks/logBlock.js";
-import {resetTimer} from  "./blocks/autoLogout.js";
-
-import {catchErrorTemplate} from "./blocks/logBlock.js";
-import {resizeAdaptive,adaptivePoints} from "./blocks/adaptive.js";
+import {catchErrorTemplate}             from "./blocks/logBlock.js";
+import {resizeAdaptive,adaptivePoints}  from "./blocks/adaptive.js";
 
 
 
@@ -111,7 +109,7 @@ try{
         }
 
 
-      adaptivePoints();
+        adaptivePoints();
 
         webix.editors.customDate = webix.extend({
         render:function(){

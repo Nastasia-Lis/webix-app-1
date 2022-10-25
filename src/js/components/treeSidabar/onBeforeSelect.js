@@ -11,12 +11,10 @@ const logNameFile = "treeSidebar => onBeforeSelect";
 function onBeforeSelectFunc(data){
 
     const tree          = $$("tree");
-   // const getItemParent = tree.getParentId(data);
     const selectItem    = tree.getItem(data);
     const filterForm    = $$("filterTableForm");
     const inputs        = $$("inputsFilter");
 
-    
     if (data.includes("q-none_data-tree_") || 
         data.includes("q-load_data-tree_") ||
         selectItem.webix_kids              ){
@@ -77,9 +75,27 @@ function onBeforeSelectFunc(data){
         showElem (dashContainer);
     }
 
+    function disableVisibleBtn(){
+        const viewBtn =  $$("table-view-visibleCols");
+        const btn     =  $$("table-visibleCols");
+        
+        function disableBtn(el){
+            if (el){
+                el.disable();
+            }
+        }
+
+        if ( viewBtn.isVisible() ){
+            disableBtn(viewBtn);
+        } else if ( btn.isVisible() ){
+            disableBtn(btn);
+        }
+      
+    }
+
     setBtnCssState();
     setFilterDefaultState();
-    removeElem ($$("propertyRefbtnsContainer"));
+
     hideElem   ($$("editTableFormProperty"));
 
     setFormToolsDefaultState();
@@ -88,6 +104,7 @@ function onBeforeSelectFunc(data){
 
     adaptiveViewEditTable();
 
+    disableVisibleBtn();
 
     async function getSingleTreeItem() {
 

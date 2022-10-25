@@ -103,24 +103,28 @@ function onSelectChangeFunc(ids){
             }
         });
     }
-  
+    removeElem  ($$("propertyRefbtnsContainer"));
+    hideElem    ($$("tablePropBtnsSpace"));
+    hideElem    ($$("editTableFormProperty"));
+    
     setSearchInputState();
-    hideElem ($$("filterTableBarContainer"));
-
-    showElem ($$("filterEmptyTempalte"));
-    showElem ($$("EditEmptyTempalte"));
-
-    disableElem     ($$("btnFilterSubmit"));
-    disableElem     ($$("filterLibrarySaveBtn"));
-    disableElem     ($$("resetFilterBtn"));
     
-    setWidthEditForm    ();
-    
-    setStateFilterBtn   ();
-    
-    hideTreeTempl       ();
+    hideElem    ($$("filterTableBarContainer"));
 
-    hideNoneContent     ();
+    showElem    ($$("filterEmptyTempalte"));
+    showElem    ($$("EditEmptyTempalte"));
+
+    disableElem ($$("btnFilterSubmit"));
+    disableElem ($$("filterLibrarySaveBtn"));
+    disableElem ($$("resetFilterBtn"));
+    
+    setWidthEditForm  ();
+    
+    setStateFilterBtn ();
+    
+    hideTreeTempl     ();
+
+    hideNoneContent   ();
 
     function visibleTreeItem(idsUndefined){
 

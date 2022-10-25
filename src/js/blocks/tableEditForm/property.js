@@ -32,7 +32,7 @@ function editingEnd (editor,value){
 function propTooltipAction (obj){
     const label      = obj.label;
     const labelText  = "Название: "+label+" <br>";
-    const formatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s:%S");
+    const formatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
     let value;
     let typeElem;
     

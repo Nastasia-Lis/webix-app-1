@@ -88,7 +88,7 @@ function tableToolbar (idTable,visible=false) {
                     toolbarFilterBtn(idTable,visible),
                     toolbarEditButton(idTable),
                     {},
-                  //  toolbarVisibleColsBtn(idTable),
+                    toolbarVisibleColsBtn(idTable),
                     toolbarDownloadButton(idTable,visible)
                 ],
             },

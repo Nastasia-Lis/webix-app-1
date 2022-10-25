@@ -45,29 +45,51 @@ function validateProfForm (){
                 if (propElement.type              &&
                     propElement.type == "customDate" ){
                      
-                    let check =  false;
-
+                    let check      = false;
+                    let countEmpty = 0;
+      
                     const x = values[el].replace(/\D/g, '')
                     .match(/(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})/);
 
                     for (let i = 1; i < 7; i++) {
-  
-                        if (x[i].length !== 2 && !check){
+
+                        if (x[i].length == 0){
+                            countEmpty++;
+                        }
+
+                        if (x[i].length !== 2){
+                         
                             if (!check){
                                 check = true;
                             }
                         }
                     }
 
-                    if ( check ){
-                        errors[el].date = "Неверный формат даты. Введите дату в формате xx.xx.xx xx:xx:xx";
-                    } else {
+
+                    if ( countEmpty == 6 ){
                         errors[el].date = null;
+
+                    } else {
+
+                        if( (x[1] > 31 || x[1] < 1) ||
+                            (x[2] > 12 || x[2] < 1) ||
+
+                            x[4] > 23 ||
+                            x[5] > 59 ||
+                            x[6] > 59 ){
+                                check = true;
+                            }
+      
+                        if ( check ) {
+                            errors[el].date = "Неверный формат даты. Введите дату в формате xx.xx.xx xx:xx:xx";
+    
+                        } else {
+                            errors[el].date = null;
+                        }
                     }
                        
                 }
        
-  
             }
 
             function valLength(){ 
@@ -211,7 +233,6 @@ function uniqueData (itemData){
         setFunctionError(err,logNameFile,"uniqueData");
     }
 
-    console.log(validateData,"validateData")
     return validateData;
 }
 

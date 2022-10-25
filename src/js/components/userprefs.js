@@ -9,13 +9,13 @@ let defaultValue = {
 };
 
 function saveSettings (){
-    const tabbarVal = $$("userprefsTabbar").getValue();
-    const form = $$( tabbarVal+"Form" );
+    const tabbarVal = $$("userprefsTabbar").getValue()+"Form" ;
+    const form = $$(tabbarVal);
     
     function getUserprefsData(){
 
         const getData =  webix.ajax().get("/init/default/api/userprefs/");
-        
+     
         getData.then(function(data){
             data = data.json().content;
 
@@ -28,7 +28,7 @@ function saveSettings (){
             const values = form.getValues();
 
             const sentObj = {
-                name :form,
+                name :tabbarVal,
                 prefs:values,
             };
 
@@ -39,15 +39,15 @@ function saveSettings (){
                 putData.then(function(data){
                     data = data.json();
                     if (data.err_type == "i"){
-                        setStorageData (form, JSON.stringify(form.getValues()));
+                        setStorageData (tabbarVal, JSON.stringify(form.getValues()));
                         setLogValue("success","Настройки сохранены");
 
                     } if (data.err_type == "e"){
                         setLogValue("error",data.error);
                     }
 
-                    const tabbarVal         = $$("userprefsTabbar").getValue();
-                    defaultValue[tabbarVal] = values;
+                    const name         = $$("userprefsTabbar").getValue();
+                    defaultValue[name] = values;
 
                     form.setDirty(false);
                 });
@@ -56,11 +56,12 @@ function saveSettings (){
                     setAjaxError(err, "userprefs","putPrefs");
                 });
             }
-
+     
             function findExistsData(){
                 try{
                     data.forEach(function(el,i){
-                        if (el.name == form){
+                       
+                        if (el.name == tabbarVal){
                             settingExists = true;
                             putPrefs(el);
                         } 
@@ -94,9 +95,11 @@ function saveSettings (){
             }
 
             function postPrefs(){
+       
                 const url      = "/init/default/api/userprefs/";
+  
                 const postData = webix.ajax().post(url,sentObj);
-
+ 
                 postData.then(function(data){
                     data = data.json();
 
@@ -122,13 +125,13 @@ function saveSettings (){
             if (!settingExists){
                 
                 const ownerId = webix.storage.local.get("user").id;
-
+     
                 if (ownerId){
                     sentObj.owner = ownerId;
                 } else {
                     getOwnerData();
                 }
-
+       
                 postPrefs();
             }
 
@@ -147,14 +150,14 @@ function saveSettings (){
 
 
 const autorefRadio   = {
-    view:"radio",
-    labelPosition:"top", 
-    label:"Автообновление специфичных страниц", 
-    value:1,
-    name:"autorefOpt", 
-    options:[
-        {"id":1, "value":"Включено"},
-        {"id":2, "value":"Выключено"}
+    view            : "radio",
+    labelPosition   : "top", 
+    label           : "Автообновление специфичных страниц", 
+    value           : 1,
+    name            : "autorefOpt", 
+    options         : [
+        {"id" : 1, "value" : "Включено"},
+        {"id" : 2, "value" : "Выключено"}
     ],
     on:{
         onChange:function(newValue, oldValue,config){
@@ -177,14 +180,14 @@ const autorefRadio   = {
 };
 
 const autorefCounter = {   
-    view:"counter", 
-    id:"userprefsAutorefCounter",
-    labelPosition:"top",
-    name:"autorefCounterOpt", 
-    label:"Интервал автообновления (в миллисекундах)" ,
-    min:15000, 
-    max:900000,
-    on:{
+    view            : "counter", 
+    id              : "userprefsAutorefCounter",
+    labelPosition   : "top",
+    name            : "autorefCounterOpt", 
+    label           : "Интервал автообновления (в миллисекундах)" ,
+    min             : 15000, 
+    max             : 900000,
+    on              : {
         onChange:function(newValue, oldValue, config){
             function createMsg (textMsg){
                 return webix.message({
@@ -216,22 +219,22 @@ const autorefCounter = {
 };
 
 const visibleIdRadio = {
-    view:"radio",
-    labelPosition:"top", 
-    label:"ID в таблицах", 
-    value:1,
-    name:"visibleIdOpt", 
-    options:[
-        {"id":1, "value":"Показывать"   },
-        {"id":2, "value":"Не показывать"}
+    view            : "radio",
+    labelPosition   : "top", 
+    label           : "ID в таблицах", 
+    value           : 1,
+    name            : "visibleIdOpt", 
+    options         : [
+        {"id" : 1, "value" : "Показывать"   },
+        {"id" : 2, "value" : "Не показывать"}
     ],
 };
 
 const otherForm =  {    
-    view:"form", 
-    id:"userprefsOtherForm",
-    borderless:true,
-    elements:[
+    view        : "form", 
+    id          : "userprefsOtherForm",
+    borderless  : true,
+    elements    : [
         autorefRadio,
         {height:5},
         autorefCounter,
@@ -278,23 +281,23 @@ const otherForm =  {
 };
 
 const userprefsOther = {
-    view      :"scrollview",
-    borderless:true, 
-    css       :"webix_multivew-cell",
-    id        :"userprefsOther", 
-    scroll    :"y", 
-    body      :otherForm
+    view      : "scrollview",
+    borderless: true, 
+    css       : "webix_multivew-cell",
+    id        : "userprefsOther", 
+    scroll    : "y", 
+    body      : otherForm
 };
 
 const logBlockRadio = {
-    view         :"radio",
-    labelPosition:"top",
-    name         :"logBlockOpt", 
-    label        :"Отображение блока системных сообщений", 
-    value        :1, 
-    options      :[
-        {"id":1, "value":"Показать"}, 
-        {"id":2, "value":"Скрыть"  }
+    view         : "radio",
+    labelPosition: "top",
+    name         : "logBlockOpt", 
+    label        : "Отображение блока системных сообщений", 
+    value        : 1, 
+    options      : [
+        {"id" : 1, "value" : "Показать"}, 
+        {"id" : 2, "value" : "Скрыть"  }
     ],
     on:{
         onAfterRender: function () {
@@ -323,15 +326,14 @@ const logBlockRadio = {
 };
 
 const loginActionSelect = {   
-    view         :"select", 
-    name         :"LoginActionOpt",
-    label        :"Действие после входа в систему", 
-    labelPosition:"top",
-    value        :2, 
-    options      :[
-    { "id":1, "value":"Перейти на главную страницу"            },
-    // { "id":3, "value":"Предложить вернуться на последнюю открытую страницу" },
-    { "id":2, "value":"Перейти на последнюю открытую страницу" },
+    view         : "select", 
+    name         : "LoginActionOpt",
+    label        : "Действие после входа в систему", 
+    labelPosition: "top",
+    value        : 2, 
+    options      : [
+    { "id" : 1, "value" : "Перейти на главную страницу"            },
+    { "id" : 2, "value" : "Перейти на последнюю открытую страницу" },
     ],
     on:{
         onAfterRender: function () {
@@ -342,10 +344,10 @@ const loginActionSelect = {
 };
 
 const workspaceForm =  {    
-    view      :"form", 
-    id        :"userprefsWorkspaceForm",
-    borderless:true,
-    elements  :[
+    view      : "form", 
+    id        : "userprefsWorkspaceForm",
+    borderless: true,
+    elements  : [
         { cols:[
             { rows:[  
                 logBlockRadio,
@@ -361,7 +363,7 @@ const workspaceForm =  {
 
     ],
 
-    on:{
+    on        :{
         onChange:function(){
             const form     = $$("userprefsWorkspaceForm");
             const saveBtn  = $$("userprefsSaveBtn");
@@ -398,37 +400,37 @@ const workspaceForm =  {
 };
 
 const userprefsWorkspace = {
-    view      :"scrollview",
-    borderless:true, 
-    css       :"webix_multivew-cell",
-    id        :"userprefsWorkspace",
-    scroll    :"y", 
-    body      :workspaceForm
+    view      : "scrollview",
+    borderless: true, 
+    css       : "webix_multivew-cell",
+    id        : "userprefsWorkspace",
+    scroll    : "y", 
+    body      : workspaceForm
 };
 
 
 const userprefsConfirmBtns =  { 
     id:"a1", 
     rows:[
-        {   responsive:"a1",
+        {   responsive : "a1",
             cols:[
         
-            {   view    :"button", 
+            {   view    : "button", 
             
-                height  :48,
-                minWidth:200,
-                value   :"Сбросить" ,
-                id      :"userprefsResetBtn",
-                disabled:true,
+                height  : 48,
+                minWidth: 200,
+                value   : "Сбросить" ,
+                id      : "userprefsResetBtn",
+                disabled: true,
             },
 
-            {   view    :"button", 
-                value   :"Сохранить настройки" ,
-                height  :48, 
-                minWidth:200,
-                id      :"userprefsSaveBtn",
-                css     :"webix_primary",
-                disabled:true,
+            {   view    : "button", 
+                value   : "Сохранить настройки" ,
+                height  : 48, 
+                minWidth: 200,
+                id      : "userprefsSaveBtn",
+                css     : "webix_primary",
+                disabled: true,
                 click   : saveSettings,
             },
         ]}
@@ -440,12 +442,12 @@ function createHeadlineSpan(headMsg){
 }
 
 const tabbar = {   
-    view     :"tabbar",  
-    type     :"top", 
-    id       :"userprefsTabbar",
-    css      :"webix_filter-popup-tabbar",
-    multiview:true, 
-    height   :50,
+    view     : "tabbar",  
+    type     : "top", 
+    id       : "userprefsTabbar",
+    css      : "webix_filter-popup-tabbar",
+    multiview: true, 
+    height   : 50,
     options  : [
         {   value: createHeadlineSpan("Рабочее пространство"), 
             id   : 'userprefsWorkspace' 
@@ -455,7 +457,7 @@ const tabbar = {
         },
     ],
 
-    on     :{
+    on       :{
         onBeforeTabClick:function(id){
             const tabbarVal = $$("userprefsTabbar").getValue()+"Form";
             const form      = $$(tabbarVal);
@@ -538,13 +540,13 @@ const headline = {
 
 
 const userInfo =  {   
-    view:"template",
-    id:"userprefsName",
-    css:"webix_userprefs-info",
-    height:50, 
-    borderless:true,
+    view        : "template",
+    id          : "userprefsName",
+    css         : "webix_userprefs-info",
+    height      : 50, 
+    borderless  : true,
 
-    template:function(){
+    template    : function(){
         function createDivData(msg){
             return `
             <div style = '
@@ -582,10 +584,10 @@ const userprefsLayout = {
 
     rows:[
         {   padding:{
-                top:15, 
-                bottom:0, 
-                left:20, 
-                right:0
+                top     :15, 
+                bottom  :0, 
+                left    :20, 
+                right   :0
             },
             rows:userprefsHeadline,
         },

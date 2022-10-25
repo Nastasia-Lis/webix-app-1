@@ -6,12 +6,13 @@ function getItemId (){
 
     try{
         const table     = $$("table");
-        const tableView = $$("tables-view");
+        const tableView = $$("table-view");
 
         if ($$("tables").isVisible()){
             idTable = table.config.idTable;
         } else if ($$("forms").isVisible()){
             idTable = tableView.config.idTable;
+  
         }
 
     } catch (err){

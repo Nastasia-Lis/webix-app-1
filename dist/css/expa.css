@@ -1256,6 +1256,14 @@ button {
   color: var(--primary-dark) !important;
 }
 
+.btn-history {
+  background: var(--gray-light) !important;
+}
+
+.btn-history .webix_button.webix_img_btn:hover {
+  background: #d5d4d5 !important;
+}
+
 .tree_none-items {
   color: var(--gray) !important;
 }

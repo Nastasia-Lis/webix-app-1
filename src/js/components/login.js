@@ -1,138 +1,133 @@
-import {router} from "../blocks/routerConfig/router.js";
-import {createElements,removeElements} from "../blocks/routerConfig/common.js";
+import {router}                                 from "../blocks/routerConfig/router.js";
+import {createElements,removeElements}          from "../blocks/routerConfig/common.js";
 
+import {setStorageData}                         from "../blocks/storageSetting.js";
 
-import {catchErrorTemplate,ajaxErrorTemplate} from "../blocks/logBlock.js";
-import {setStorageData} from "../blocks/storageSetting.js";
+import {setFunctionError, setAjaxError}         from "../blocks/errors.js";
 
+function createSentObj(){
+    const loginData = {};
+    const form      = $$("formAuth");
+    try{
+     
+        const userData  = form.getValues();
 
-function login () {
-    router();
-    
-    function getLogin(){
+        loginData.un    = userData.username;
+        loginData.np    = userData.password;
+        
+    } catch (err){
+        setFunctionError(err,"login","createSentObj");
+    }
+
+    return loginData;
+}
+
+function postLoginData(){
+    const loginData = createSentObj();
+    const form      = $$("formAuth");
+
+    const postData  = webix.ajax().post("/init/default/login",loginData);
+
+    postData.then(function(data){
+        
+        if (data.json().err_type == "i"){
+
+            data = data.json().content;
+            const userData     = {};
        
-        let userData = $$("formAuth").getValues();
-        let loginData = {};
 
-        try {
-           
-            $$("formAuth").validate();
-            loginData.un = userData.username;
-            loginData.np = userData.password;
-
-            webix.ajax().post("/init/default/login",loginData,{
-                success:function(text, data, XmlHttpRequest){
- 
-                    webix.ajax("/init/default/api/whoami",{
-                        success:function(text, data, XmlHttpRequest){
-                            try {
-                   
-                                let userData = {};
-                                userData.id = data.json().content.id;
-                                userData.name = data.json().content.first_name;
-                                userData.username = data.json().content.username;
-                                
-                                setStorageData("user", JSON.stringify(userData));
+            userData.id        = data.id;
+            userData.name      = data.first_name;
+            userData.username  = data.username;
+            
+            setStorageData("user", JSON.stringify(userData));
 
 
-                                if ( $$('formAuth')){
-                                    $$('formAuth').clear();
-                                }
-                    
-                   
-                                Backbone.history.navigate("content", { trigger:true});
-                                window.location.reload();
-                            
+            if (form){
+                form.clear();
+            }
 
-                                
-                            } catch (error){
-                                console.log(error);
-                                catchErrorTemplate("007-005", error);
-                            }
-                        },
-                        error:function(text, data, XmlHttpRequest){
-                            if ($$("formAuth")&&$$("formAuth").isDirty()){
-                                $$("formAuth").markInvalid("username", "");
-                                $$("formAuth").markInvalid("password", "Неверный логин или пароль");
-                            }
+            Backbone.history.navigate("content", { trigger:true});
+            window.location.reload();
 
-                            ajaxErrorTemplate("007-006",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
-
-                        }
-                    }).then(function(data){
-                        // webix.ajax().get("/init/default/api/userprefs/", {
-                        //     success:function(text, data, XmlHttpRequest){
-                        //         console.log(14)
-                        //     },
-                        //     error:function(text, data, XmlHttpRequest){
-                        //         ajaxErrorTemplate("007-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
-                        //     }
-                        // }).catch(error => {
-                        //     console.log(error);
-                        //     ajaxErrorTemplate("007-000",error.status,error.statusText,error.responseURL);
-                        // });
-
-
-
-                    });
-                },
-                error:function(text, data, XmlHttpRequest){
-                    webix.message({type:"error",expire:3000, text:"Не удалось выполнить выход"});
-                    ajaxErrorTemplate("007-006",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
-                }
-            }).catch(error => {
-                console.log(error);
-                ajaxErrorTemplate("007-006",error.status,error.statusText,error.responseURL);
-            });
-        } catch (error){
-            console.log(error);
-            catchErrorTemplate("007-000", error);
-
+        } else {
+            if (form && form.isDirty()){
+                form.markInvalid("username", "");
+                form.markInvalid("password", "Неверный логин или пароль");
+            }
         }
 
-    }
-    
-    
-    return {
-        view:"form",
-        id:"formAuth",
-        width:250,
-        borderless:true,
-        elements: [
-            {   view:"text", 
-                label:"Логин", 
-                name:"username",
-                invalidMessage:"Поле должно быть заполнено",
-                on:{
-                    onItemClick:function(){
-                        $$('formAuth').clearValidation();
-                    }
-                }  
-            },
-                {view:"text", 
-                label:"Пароль", 
-                name:"password",
-                invalidMessage:"Поле должно быть заполнено",
-                type:"password",
-                on:{
-                    onItemClick:function(){
-                        $$('formAuth').clearValidation();
-                    }
-                } 
-            },
-            {   view:"button", 
-                value: "Войти", 
-                css:"webix_primary",
-                hotkey: "enter", 
-                align:"center", 
-                click:getLogin
-            }, 
+    });
+
+    postData.fail(function(err){
+        setAjaxError(err, "login","postLoginData");
+    });
+}
+
+function getLogin(){
+
+    const form = $$("formAuth");
+
+    form.validate();
+    postLoginData();
+
+}
+
+function login () {
+  
+    router();
+
+    const invalidMsgText = "Поле должно быть заполнено";
+
+    const login =  {   
+        view            : "text", 
+        label           : "Логин", 
+        name            : "username",
+        invalidMessage  : invalidMsgText,
+        on              : {
+            onItemClick:function(){
+                $$('formAuth').clearValidation();
+            }
+        }  
+    };
+
+    const pass =  {   
+        view            : "text", 
+        label           : "Пароль", 
+        name            : "password",
+        invalidMessage  : invalidMsgText,
+        type            : "password",
+        on              : {
+            onItemClick:function(){
+                $$('formAuth').clearValidation();
+            }
+        } 
+    };
+
+    const btnSubmit = {   
+        view    : "button", 
+        value   : "Войти", 
+        css     : "webix_primary",
+        hotkey  : "enter", 
+        align   : "center", 
+        click   :getLogin
+    };
+
+    const form = {
+        view        : "form",
+        id          : "formAuth",
+        width       : 250,
+        borderless  : true,
+        elements    : [
+            login,
+            pass,
+            btnSubmit, 
         ],
 
         rules:{
             
-            "username":webix.rules.isNotEmpty,
-            "password":webix.rules.isNotEmpty,
+            "username" : webix.rules.isNotEmpty,
+            "password" : webix.rules.isNotEmpty,
     
           },
     
@@ -142,14 +137,12 @@ function login () {
         }
     
     };
+    
+    
+    return form;
 
 }
-// $$("formAuth").getChildViews().forEach(function(el,i){
-//     if (el.config.view == "text"){
-//         $$(el.config.id).define("css",'webix_invalid')
-//         $$(el.config.id).refresh();
-//     }
-// });
+
 
 export {
     login,

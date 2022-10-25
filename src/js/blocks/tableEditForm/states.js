@@ -649,9 +649,9 @@ function createDatePopup(elem){
 
 
 function setToolBtns(){
-    const property = $$("editTableFormProperty");
-    const refBtns  = $$("propertyRefbtns");
-    let propertyElems = property.config.elements;
+    const property      = $$("editTableFormProperty");
+    const refBtns       = $$("propertyRefbtns");
+    const propertyElems = property.config.elements;
 
     function createBtnsContainer(){
         try{
@@ -720,7 +720,7 @@ function createEditFields (parentElement) {
                         return new Date(el.default);
                     }
 
-                    const formatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
+                    const formatData = webix.Date.dateToStr("%d.%m.%y %H:%i:%s");
 
                     let defVal;
             

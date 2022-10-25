@@ -393,27 +393,27 @@ function getInfoTable (idCurrTable,idsParam) {
 
     function createTableCols (){
   
-        let dataContent = STORAGE.fields.content;
-        let data = dataContent[idsParam];
+        const dataContent   = STORAGE.fields.content;
+        const data          = dataContent[idsParam];
+        const dataFields    = data.fields;
+        const colsName      = Object.keys(data.fields);
+        const columnsData   = [];
+      
+
         let fieldType;
-        let dataFields = data.fields;
-
-        let colsName = Object.keys(data.fields);
-
-
-        let columnsData = [];
-
 
         function refreshCols(columnsData){
-            if($$(idCurrTable)){
-                $$(idCurrTable).refreshColumns(columnsData);
+            const table = $$(idCurrTable);
+            if(table){
+                table.refreshColumns(columnsData);
             }
         }
 
         try{
             colsName.forEach(function(data) {
                 fieldType = dataFields[data].type;
-  
+         
+            
                 function createReferenceCol (){
                     try{
                         let findTableId = fieldType.slice(10);
@@ -494,17 +494,28 @@ function getInfoTable (idCurrTable,idsParam) {
               
                 }
 
+                // function setHiddenAttr (){
+                //     if(dataFields[data].hidden && dataFields[data].hidden == true && !(dataFields[data].visibleCol) ){
+                //         dataFields[data].hiddenCustomAttr = true;
+                //     }
+                // }
+
                 function userPrefsId    (){
-                    let setting = webix.storage.local.get("userprefsOtherForm");
+                    const setting = webix.storage.local.get("userprefsOtherForm");
                     if(setting && setting.visibleIdOpt=="2"){
                         dataFields[data].hidden = true;
                     }
                 }  
 
+            
+
                 function pushColsData(){ 
                
                     try{        
-                        columnsData.push(dataFields[data]);
+                        if (dataFields[data].label){
+                            columnsData.push(dataFields[data]);
+                        }
+        
                     } catch (err){
                         setFunctionError(err,"content","createTableCols => pushColsData");
                     }
@@ -524,6 +535,8 @@ function getInfoTable (idCurrTable,idsParam) {
         
             });
             refreshCols(columnsData);
+
+
  
         } catch (err){
             setFunctionError(err,"content","createTableCols");
@@ -538,30 +551,31 @@ function getInfoTable (idCurrTable,idsParam) {
     function createDetailAction (columnsData){
         let idCol;
         let actionKey;
-        let checkAction = false;
+        let checkAction     = false;
 
-        let dataContent = STORAGE.fields.content;
-        let data = dataContent[idsParam];
+        const dataContent   = STORAGE.fields.content;
+        const data          = dataContent[idsParam];
    
         columnsData.forEach(function(field,i){
-            if( field.type == "action" && data.actions[field.id].rtype == "detail"){
+            if( field.type  == "action" && data.actions[field.id].rtype == "detail"){
                 checkAction = true;
-                idCol = i;
-                actionKey = field.id;
+                idCol       = i;
+                actionKey   = field.id;
             } 
         });
         
         if (actionKey !== undefined){
-            let urlFieldAction = data.actions[actionKey].url;
+            const urlFieldAction = data.actions[actionKey].url;
         
             if (checkAction){
-                let columns = $$(idCurrTable).config.columns;
+                const columns = $$(idCurrTable).config.columns;
                 columns.splice(0,0,{ 
-                    id:"action-first"+idCol, 
+                    id      :"action-first"+idCol, 
                     maxWidth:130, 
-                    src:urlFieldAction, 
-                    label:"Подробнее",
-                    header:"Подробнее", 
+                    src     :urlFieldAction, 
+                    css     :"action-column",
+                    label   :"Подробнее",
+                    header  :"Подробнее", 
                     template:"<span class='webix_icon wxi-angle-down'></span> "
                 });
                 $$(idCurrTable).refreshColumns();
@@ -582,12 +596,12 @@ function getInfoTable (idCurrTable,idsParam) {
 
             function createTextInput    (el,i){
                 return {   
-                    view:"text",
-                    placeholder:dataInputsArray[el].label, 
-                    id: "customInputs"+i,
-                    height:48,
-                    labelPosition:"top",
-                    on: {
+                    view            :"text",
+                    placeholder     :dataInputsArray[el].label, 
+                    id              : "customInputs"+i,
+                    height          :48,
+                    labelPosition   :"top",
+                    on              : {
                         onAfterRender: function () {
                             this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
                         },
@@ -679,11 +693,13 @@ function getInfoTable (idCurrTable,idsParam) {
             function createDeleteAction (i){
                 let countCols = $$(idCurrTable).getColumns().length;
                 let columns = $$(idCurrTable).config.columns;
+   
                 try{
                     columns.splice(countCols,0,{ 
                         id:"action"+i, 
                         header:"Действие",
                         label:"Действие",
+                        css:"action-column",
                         maxWidth:100, 
                         template:"{common.trashIcon()}"
                     });
@@ -692,6 +708,7 @@ function getInfoTable (idCurrTable,idsParam) {
                 } catch (err){
                     setFunctionError(err,"content","generateCustomInputs => createDeleteAction")
                 } 
+
             }
 
             function getInputsId        (element){
@@ -989,9 +1006,10 @@ function getInfoTable (idCurrTable,idsParam) {
                     tools.config.width = window.innerWidth-45;
                     tools.resize();
                 }
+            
 
                 function toolMaxAdaptive(){
-
+                  
                     if         (btnClass.classList.contains(primaryBtnClass)){
 
                         btnClass.classList.add(secondaryBtnClass);
@@ -1009,11 +1027,11 @@ function getInfoTable (idCurrTable,idsParam) {
                         showElem(formsTools);
                     }
                 }
-
+      
+                hideElem($$("propTableView"));
                 const contaierWidth = $$("formsContainer").$width;
          
                 toolMaxAdaptive();
-                
                 if(!(btnClass.classList.contains(secondaryBtnClass))){
                     if (contaierWidth < 850  ){
                         hideElem($$("tree"));
@@ -1157,15 +1175,18 @@ function getInfoTable (idCurrTable,idsParam) {
                 function getUserPrefs(){
       
                     const idCurrView= $$(idCurrTable);
-            
+               
                     try{
                         const currFieldTable = idCurrView.config.idTable;
                         const storageData = webix.storage.local.get("visibleColsPrefs_"+currFieldTable);
                     
                         if(storageData){
+
                             storageData.forEach(function(el){
-                                if(!el.value ){
-                                    if(idCurrView.isColumnVisible(el.id)){
+        
+                                if(!el.value){
+                                    const colIndex = idCurrView.getColumnIndex(el.id);
+                                    if(idCurrView.isColumnVisible(el.id) && colIndex !== -1){
                                         idCurrView.hideColumn(el.id);
                                     }
                                  
@@ -1174,7 +1195,9 @@ function getInfoTable (idCurrTable,idsParam) {
                                         idCurrView.showColumn(el.id);
                                     }
                                 }
+
                             });
+         
                         }
             
                     } catch (err){
@@ -1182,20 +1205,43 @@ function getInfoTable (idCurrTable,idsParam) {
                     }
                 }
 
+                function enableVisibleBtn(){
+                    const viewBtn =  $$("table-view-visibleCols");
+                    const btn     =  $$("table-visibleCols");
+                    
+              
+
+                    
+                    function disableBtn(el){
+                        if (el){
+                            el.enable();
+                        }
+                    }
+            
+                    if ( viewBtn.isVisible() ){
+                        disableBtn(viewBtn);
+                    } else if ( btn.isVisible() ){
+                        disableBtn(btn);
+                    }
+                  
+                }
+
                 try{
                     if (data.length !== 0){
-                    
                         idCurrView.hideOverlay("Ничего не найдено");
-                
                         idCurrView.parse(data);
-                
-                    
                     } else {
                         idCurrView.showOverlay("Ничего не найдено");
                         idCurrView.clearAll();
                     }
 
+                    
+              
                     getUserPrefs();
+                    setTimeout(() => {
+                        enableVisibleBtn();
+                    }, 1000);
+               
                 } catch (err){
                     setFunctionError(err,"content","createTableRows => parseRowData");
                 }
@@ -1225,7 +1271,6 @@ function getInfoTable (idCurrTable,idsParam) {
                     return webix.ajax().get("/init/default/api/"+itemTreeId,{
                         success:function(text, data, XmlHttpRequest){
                             data = data.json().content;
-                    
                             $$(table).config.idTable = itemTreeId;
 
                             try {
@@ -1398,7 +1443,7 @@ function getInfoTable (idCurrTable,idsParam) {
                         setFunctionError(err,"table","onAfterLoad => getUserPrefs");
                     }
                 }
-
+             
             });
         }
 

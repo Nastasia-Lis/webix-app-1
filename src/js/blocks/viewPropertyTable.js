@@ -3,7 +3,7 @@ function propertyTemplate (idProp){
         view:"property",  
         id:idProp, 
         tooltip:"Имя: #label#<br> Значение: #value#",
-        width:350,
+        width:348,
         nameWidth:150,
         editable:true,
         scroll:true,

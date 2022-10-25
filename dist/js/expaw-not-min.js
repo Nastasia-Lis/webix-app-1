@@ -5,7 +5,7 @@ var __webpack_exports__ = {};
 ;// CONCATENATED MODULE: ./src/js/blocks/storageSetting.js
 
 
-function storageSetting_setStorageData (name, value){
+function setStorageData (name, value){
     if (typeof(Storage) !== 'undefined') {
         localStorage.setItem(name, value);
     } 
@@ -61,7 +61,7 @@ function setUserPrefs (){
             try{
                 data.forEach(function(el,i){
                     if (el.owner == user.id && !(el.name.includes("fav-link_"))){
-                        storageSetting_setStorageData (el.name, el.prefs);
+                        setStorageData (el.name, el.prefs);
                     }
                 });
             } catch(err){
@@ -76,7 +76,7 @@ function setUserPrefs (){
         }
     });
     userprefsData.fail(function(err){
-        errors_setAjaxError(err, "storageSettings","setUserPrefs");
+        setAjaxError(err, "storageSettings","setUserPrefs");
     });
 
 
@@ -170,7 +170,7 @@ function getData (fileName){
                 }
                 return STORAGE[fileName];
             }).catch(err => {
-                errors_setAjaxError(err, "globalStorage","getData");
+                setAjaxError(err, "globalStorage","getData");
                 checkNotAuth (err);
             }
         );
@@ -231,7 +231,7 @@ function logBlock_setLogValue (typeNotify,notifyText,specificSrc) {
         }
 
         if (srcTable == "version"){
-            name = 'Expa v1.0.42';
+            name = 'Expa v1.0.43';
 
         } else if (srcTable == "cp") {
             name = 'Смена пароля';
@@ -322,7 +322,7 @@ function logBlock_setLogValue (typeNotify,notifyText,specificSrc) {
                     btn.config.icon ="icon-eye-slash";
                     btn.refresh();
 
-                    storageSetting_setStorageData("LogVisible", JSON.stringify("show"));
+                    setStorageData("LogVisible", JSON.stringify("show"));
                 }
             } catch (err){
                 errors_setFunctionError(err,"logBlock","openLog");
@@ -450,7 +450,7 @@ function ajaxErrorTemplate (code, status,statusText,responseURL){
 ;// CONCATENATED MODULE: ./src/js/blocks/errors.js
 
 
-function errors_setAjaxError(err,file,func){
+function setAjaxError(err,file,func){
     if (err.status === 400 ||  err.status === 401 || err.status === 404){
         logBlock_setLogValue("error", file+" function "+func+": "+err.status+" "+err.statusText+" "+err.responseURL+" ("+err.responseText+") ");
     } else {
@@ -474,12 +474,13 @@ function getItemId (){
 
     try{
         const table     = $$("table");
-        const tableView = $$("tables-view");
+        const tableView = $$("table-view");
 
         if ($$("tables").isVisible()){
             idTable = table.config.idTable;
         } else if ($$("forms").isVisible()){
             idTable = tableView.config.idTable;
+  
         }
 
     } catch (err){
@@ -4770,6 +4771,187 @@ function modalBox (title,text,btns){
     }
 }
 
+;// CONCATENATED MODULE: ./src/js/components/table/btnsInTable.js
+
+
+
+
+
+
+const logNameFile = "table => btnsIntable";
+
+function trashBtn(config,idTable){
+    function delElem(){
+ 
+        const table      = $$(idTable);
+        const formValues = table.getItem(config.row);
+        const itemTreeId = getItemId ();
+        const url        = "/init/default/api/"+itemTreeId+"/"+formValues.name+".json" ;
+ 
+        const delData    =  webix.ajax().del(url, formValues);
+
+        delData.then(function(data){
+            data = data.json();
+            if (data.err_type == "i"){
+                try {
+                    const selectEl = table.getSelectedId();
+                    table.remove(selectEl);
+                } catch (err){
+                    errors_setFunctionError(err,logNameFile,"wxi-trash => delData");
+                }
+                logBlock_setLogValue("success","Данные успешно удалены");
+            } else {
+                logBlock_setLogValue("error",data.err);
+            }
+        });
+
+        delData.fail(function(err){
+            setAjaxError(err, logNameFile,"wxi-trash => delElem");
+        });
+    }
+
+  
+    popupExec("Запись будет удалена").then(function(res){
+
+        if (res){
+            delElem();
+        }
+  
+    });
+}
+
+function showPropBtn (cell){
+    const propertyElem = $$("propTableView");
+
+    function hideViewTools(){
+        const btnClass          = document.querySelector(".webix_btn-filter");
+        const primaryBtnClass   = "webix-transparent-btn--primary";
+        const secondaryBtnClass = "webix-transparent-btn";
+        
+        hideElem($$("formsTools"));
+
+        if (btnClass.classList.contains(primaryBtnClass)){
+            btnClass.classList.add(secondaryBtnClass);
+            btnClass.classList.remove(primaryBtnClass);
+        }
+    }
+
+    function createUrl(){
+        let url;
+        try{
+            const id      = cell.row;
+            const columns = $$("table-view").getColumns();
+
+
+            columns.forEach(function(el,i){
+                if (el.id == cell.column){
+                    url           = el.src;
+                    let urlArgEnd = url.search("{");
+                    url           = url.slice(0,urlArgEnd)+id+".json"; 
+                }
+            });  
+        } catch (err){
+            errors_setFunctionError(err,logNameFile,"wxi-angle-down => createUrl");
+        }
+        return url;
+    }
+
+    function getProp(){
+        const url       = createUrl();
+        const getData   = webix.ajax(url);
+
+        getData.then(function(data){
+
+            data = data.json().content;
+            
+            function setProps(){
+                const arrayProperty = [];
+      
+                try{
+                    data.forEach(function(el,i){
+                        arrayProperty.push({
+                            type    :"text", 
+                            id      :i+1,
+                            label   :el.name, 
+                            value   :el.value
+                        });
+                    });
+
+                    propertyElem.define("elements", arrayProperty);
+                } catch (err){
+                    errors_setFunctionError(err,logNameFile,"wxi-angle-down => setProps");
+                }
+            }
+            
+            function initSpace(){
+                hideViewTools();
+                showElem(propertyElem);
+            }
+
+
+            function resizeProp(){
+                try{
+                    if (propertyElem.config.width < 200){
+                        propertyElem.config.width = 200;
+                        propertyElem.resize();
+                    }
+                } catch (err){
+                    errors_setFunctionError(err,logNameFile,"wxi-angle-down => resizeProp");
+                }
+            }
+
+            setProps();
+            initSpace();
+            resizeProp();
+
+        });
+
+        getData.fail(function(err){
+            setAjaxError(err, logNameFile,"wxi-angle-down => getProp");
+        });
+    }
+
+    if (!(propertyElem.isVisible()))   {
+        getProp();
+    } else {
+        hideElem(propertyElem);
+    }
+}
+
+
+;// CONCATENATED MODULE: ./src/js/components/table/layout.js
+
+
+function table (idTable, onFunc, editableParam=false) {
+    return {
+        view        :"datatable",
+        id          : idTable,
+        css         :"webix_table-style webix_header_border webix_data_border",
+        autoConfig  : true,
+        editable    :editableParam,
+        editaction  :"dblclick",
+        minHeight   :350,
+        datafetch   :5,
+        datathrottle: 5000,
+        loadahead   :100,
+        footer      : true,
+        select      :true,
+        resizeColumn: true,
+        on          :onFunc,
+        onClick     :{
+            "wxi-trash":function(event,config,html){
+                trashBtn(config,idTable);
+            },
+
+            "wxi-angle-down":function(event, cell, target){
+                showPropBtn (cell);
+            },
+            
+        },
+    };
+}
+
+
 ;// CONCATENATED MODULE: ./src/js/blocks/favsLink.js
 
 
@@ -4789,11 +4971,11 @@ function getUserData(){
         userData.name     = data.first_name;
         userData.username = data.username;
         
-        storageSetting_setStorageData("user", JSON.stringify(userData));
+        setStorageData("user", JSON.stringify(userData));
         
     });
     userprefsGetData.fail(function(err){
-        errors_setAjaxError(err, "favsLink","btnSaveLpostContentinkClick => getUserData");
+        setAjaxError(err, "favsLink","btnSaveLpostContentinkClick => getUserData");
     });
 }
 
@@ -4858,7 +5040,7 @@ function favsPopupCollectionClick (){
     });
 
     getData.fail(function(err){
-        errors_setAjaxError(err, "favsLink","favsPopupCollectionClick getData");
+        setAjaxError(err, "favsLink","favsPopupCollectionClick getData");
     });
 
     
@@ -5110,7 +5292,7 @@ function saveFavsClick(){
                 });
 
                 postData.fail(function(err){
-                    errors_setAjaxError(err, "favsLink","btnSaveLinkClick => postContent");
+                    setAjaxError(err, "favsLink","btnSaveLinkClick => postContent");
                 });
             }
         }
@@ -5171,7 +5353,7 @@ function saveFavsClick(){
            
             });
             getData.fail(function(err){
-                errors_setAjaxError(err, "favsLink","getUserprefs getData");
+                setAjaxError(err, "favsLink","getUserprefs getData");
             });
             }
 
@@ -5253,7 +5435,18 @@ function saveFavsClick(){
 
 
 
+;// CONCATENATED MODULE: ./src/js/blocks/historyBtns.js
+function prevBtnClick (){
+    history.back();
+}
+
+function nextBtnClick (){
+    history.forward();
+}   
+
+
 ;// CONCATENATED MODULE: ./src/js/blocks/blockHeadline.js
+
 
 
 
@@ -5303,13 +5496,56 @@ function setHeadlineBlock (idTemplate, title=null){
         
     };
 
+    const prevBtn = {
+        view:"button", 
+        css:"webix-transparent-btn btn-history",
+        type:"icon",
+        icon:"icon-arrow-left",
+        width:50,
+        click:function(){
+            prevBtnClick();
+        },
+        on:{
+            onAfterRender: function () {
+                this.getInputNode().setAttribute("title","Вернуться назад");
+            },
+        }
+    
+        
+    };
+ 
+    const nextBtn = {
+        view:"button", 
+        css:"webix-transparent-btn btn-history",
+        type:"icon",
+        icon:"icon-arrow-right",
+        width:50,
+        click:function(){
+            nextBtnClick();
+        },
+        on:{
+            onAfterRender: function () {
+                this.getInputNode().setAttribute("title","Перейти вперёд");
+            },
+        }
+    
+        
+    };
+ 
+
+
     const headlineLayout = {
-        css:"webix_block-headline",cols:[
+        css:"webix_block-headline",
+        cols:[
             headline,
             {},
+            {cols:[
+                prevBtn,
+                nextBtn,
+            ]},
             favsBtn
         ]
-    }
+    };
 
     return headlineLayout;
 }
@@ -5405,7 +5641,7 @@ function submitBtn (idElements, url, verb, rtype){
             }
         });
         getData.fail(function(err){
-            errors_setAjaxError(err, "content","refreshButton");
+            setAjaxError(err, "content","refreshButton");
         });
     }
 
@@ -5418,7 +5654,7 @@ function submitBtn (idElements, url, verb, rtype){
                 errors_setFunctionError(err,"content","downloadButton")
             } 
         }).catch(err => {
-            errors_setAjaxError(err, "content","downloadButton");
+            setAjaxError(err, "content","downloadButton");
         });
     }
 
@@ -5551,7 +5787,7 @@ function getComboOptions (refTable){
                         return dataArray;
                     
                     }).catch(err => {
-                        errors_setAjaxError(err, "content","getComboOptions");
+                        setAjaxError(err, "content","getComboOptions");
                     })
             );
             
@@ -5711,27 +5947,27 @@ function getInfoTable (idCurrTable,idsParam) {
 
     function createTableCols (){
   
-        let dataContent = STORAGE.fields.content;
-        let data = dataContent[idsParam];
+        const dataContent   = STORAGE.fields.content;
+        const data          = dataContent[idsParam];
+        const dataFields    = data.fields;
+        const colsName      = Object.keys(data.fields);
+        const columnsData   = [];
+      
+
         let fieldType;
-        let dataFields = data.fields;
-
-        let colsName = Object.keys(data.fields);
-
-
-        let columnsData = [];
-
 
         function refreshCols(columnsData){
-            if($$(idCurrTable)){
-                $$(idCurrTable).refreshColumns(columnsData);
+            const table = $$(idCurrTable);
+            if(table){
+                table.refreshColumns(columnsData);
             }
         }
 
         try{
             colsName.forEach(function(data) {
                 fieldType = dataFields[data].type;
-  
+         
+            
                 function createReferenceCol (){
                     try{
                         let findTableId = fieldType.slice(10);
@@ -5812,17 +6048,28 @@ function getInfoTable (idCurrTable,idsParam) {
               
                 }
 
+                // function setHiddenAttr (){
+                //     if(dataFields[data].hidden && dataFields[data].hidden == true && !(dataFields[data].visibleCol) ){
+                //         dataFields[data].hiddenCustomAttr = true;
+                //     }
+                // }
+
                 function userPrefsId    (){
-                    let setting = webix.storage.local.get("userprefsOtherForm");
+                    const setting = webix.storage.local.get("userprefsOtherForm");
                     if(setting && setting.visibleIdOpt=="2"){
                         dataFields[data].hidden = true;
                     }
                 }  
 
+            
+
                 function pushColsData(){ 
                
                     try{        
-                        columnsData.push(dataFields[data]);
+                        if (dataFields[data].label){
+                            columnsData.push(dataFields[data]);
+                        }
+        
                     } catch (err){
                         errors_setFunctionError(err,"content","createTableCols => pushColsData");
                     }
@@ -5842,6 +6089,8 @@ function getInfoTable (idCurrTable,idsParam) {
         
             });
             refreshCols(columnsData);
+
+
  
         } catch (err){
             errors_setFunctionError(err,"content","createTableCols");
@@ -5856,30 +6105,31 @@ function getInfoTable (idCurrTable,idsParam) {
     function createDetailAction (columnsData){
         let idCol;
         let actionKey;
-        let checkAction = false;
+        let checkAction     = false;
 
-        let dataContent = STORAGE.fields.content;
-        let data = dataContent[idsParam];
+        const dataContent   = STORAGE.fields.content;
+        const data          = dataContent[idsParam];
    
         columnsData.forEach(function(field,i){
-            if( field.type == "action" && data.actions[field.id].rtype == "detail"){
+            if( field.type  == "action" && data.actions[field.id].rtype == "detail"){
                 checkAction = true;
-                idCol = i;
-                actionKey = field.id;
+                idCol       = i;
+                actionKey   = field.id;
             } 
         });
         
         if (actionKey !== undefined){
-            let urlFieldAction = data.actions[actionKey].url;
+            const urlFieldAction = data.actions[actionKey].url;
         
             if (checkAction){
-                let columns = $$(idCurrTable).config.columns;
+                const columns = $$(idCurrTable).config.columns;
                 columns.splice(0,0,{ 
-                    id:"action-first"+idCol, 
+                    id      :"action-first"+idCol, 
                     maxWidth:130, 
-                    src:urlFieldAction, 
-                    label:"Подробнее",
-                    header:"Подробнее", 
+                    src     :urlFieldAction, 
+                    css     :"action-column",
+                    label   :"Подробнее",
+                    header  :"Подробнее", 
                     template:"<span class='webix_icon wxi-angle-down'></span> "
                 });
                 $$(idCurrTable).refreshColumns();
@@ -5900,12 +6150,12 @@ function getInfoTable (idCurrTable,idsParam) {
 
             function createTextInput    (el,i){
                 return {   
-                    view:"text",
-                    placeholder:dataInputsArray[el].label, 
-                    id: "customInputs"+i,
-                    height:48,
-                    labelPosition:"top",
-                    on: {
+                    view            :"text",
+                    placeholder     :dataInputsArray[el].label, 
+                    id              : "customInputs"+i,
+                    height          :48,
+                    labelPosition   :"top",
+                    on              : {
                         onAfterRender: function () {
                             this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
                         },
@@ -5963,7 +6213,7 @@ function getInfoTable (idCurrTable,idsParam) {
                                 return dataOptions;
                                 }).catch(err => {
                                     console.log(err);
-                                    errors_setAjaxError(err, "content","generateCustomInputs => getOptionData");
+                                    setAjaxError(err, "content","generateCustomInputs => getOptionData");
                                 })
                             );
                         
@@ -5997,11 +6247,13 @@ function getInfoTable (idCurrTable,idsParam) {
             function createDeleteAction (i){
                 let countCols = $$(idCurrTable).getColumns().length;
                 let columns = $$(idCurrTable).config.columns;
+   
                 try{
                     columns.splice(countCols,0,{ 
                         id:"action"+i, 
                         header:"Действие",
                         label:"Действие",
+                        css:"action-column",
                         maxWidth:100, 
                         template:"{common.trashIcon()}"
                     });
@@ -6010,6 +6262,7 @@ function getInfoTable (idCurrTable,idsParam) {
                 } catch (err){
                     errors_setFunctionError(err,"content","generateCustomInputs => createDeleteAction")
                 } 
+
             }
 
             function getInputsId        (element){
@@ -6307,9 +6560,10 @@ function getInfoTable (idCurrTable,idsParam) {
                     tools.config.width = window.innerWidth-45;
                     tools.resize();
                 }
+            
 
                 function toolMaxAdaptive(){
-
+                  
                     if         (btnClass.classList.contains(primaryBtnClass)){
 
                         btnClass.classList.add(secondaryBtnClass);
@@ -6327,11 +6581,11 @@ function getInfoTable (idCurrTable,idsParam) {
                         content_showElem(formsTools);
                     }
                 }
-
+      
+                content_hideElem($$("propTableView"));
                 const contaierWidth = $$("formsContainer").$width;
          
                 toolMaxAdaptive();
-                
                 if(!(btnClass.classList.contains(secondaryBtnClass))){
                     if (contaierWidth < 850  ){
                         content_hideElem($$("tree"));
@@ -6475,15 +6729,18 @@ function getInfoTable (idCurrTable,idsParam) {
                 function getUserPrefs(){
       
                     const idCurrView= $$(idCurrTable);
-            
+               
                     try{
                         const currFieldTable = idCurrView.config.idTable;
                         const storageData = webix.storage.local.get("visibleColsPrefs_"+currFieldTable);
                     
                         if(storageData){
+
                             storageData.forEach(function(el){
-                                if(!el.value ){
-                                    if(idCurrView.isColumnVisible(el.id)){
+        
+                                if(!el.value){
+                                    const colIndex = idCurrView.getColumnIndex(el.id);
+                                    if(idCurrView.isColumnVisible(el.id) && colIndex !== -1){
                                         idCurrView.hideColumn(el.id);
                                     }
                                  
@@ -6492,7 +6749,9 @@ function getInfoTable (idCurrTable,idsParam) {
                                         idCurrView.showColumn(el.id);
                                     }
                                 }
+
                             });
+         
                         }
             
                     } catch (err){
@@ -6500,20 +6759,43 @@ function getInfoTable (idCurrTable,idsParam) {
                     }
                 }
 
+                function enableVisibleBtn(){
+                    const viewBtn =  $$("table-view-visibleCols");
+                    const btn     =  $$("table-visibleCols");
+                    
+              
+
+                    
+                    function disableBtn(el){
+                        if (el){
+                            el.enable();
+                        }
+                    }
+            
+                    if ( viewBtn.isVisible() ){
+                        disableBtn(viewBtn);
+                    } else if ( btn.isVisible() ){
+                        disableBtn(btn);
+                    }
+                  
+                }
+
                 try{
                     if (data.length !== 0){
-                    
                         idCurrView.hideOverlay("Ничего не найдено");
-                
                         idCurrView.parse(data);
-                
-                    
                     } else {
                         idCurrView.showOverlay("Ничего не найдено");
                         idCurrView.clearAll();
                     }
 
+                    
+              
                     getUserPrefs();
+                    setTimeout(() => {
+                        enableVisibleBtn();
+                    }, 1000);
+               
                 } catch (err){
                     errors_setFunctionError(err,"content","createTableRows => parseRowData");
                 }
@@ -6543,7 +6825,6 @@ function getInfoTable (idCurrTable,idsParam) {
                     return webix.ajax().get("/init/default/api/"+itemTreeId,{
                         success:function(text, data, XmlHttpRequest){
                             data = data.json().content;
-                    
                             $$(table).config.idTable = itemTreeId;
 
                             try {
@@ -6716,7 +6997,7 @@ function getInfoTable (idCurrTable,idsParam) {
                         errors_setFunctionError(err,"table","onAfterLoad => getUserPrefs");
                     }
                 }
-
+             
             });
         }
 
@@ -7235,7 +7516,7 @@ function getInfoDashboard (idsParam,single=false){
         });
        
         getData.fail(function(err){
-            errors_setAjaxError(err, "content","getInfoDashboard => getAjax");
+            setAjaxError(err, "content","getInfoDashboard => getAjax");
         });
         
 
@@ -7663,7 +7944,7 @@ function getInfoEditTree() {
     });
 
     getData.fail(function(err){
-        errors_setAjaxError(err, "content","getInfoEditTree");
+        setAjaxError(err, "content","getInfoEditTree");
     });
 
   
@@ -7674,7 +7955,7 @@ function getInfoEditTree() {
 ;// CONCATENATED MODULE: ./src/js/blocks/tableEditForm/property.js
 
 
-const logNameFile = "tableEditForm => property";
+const property_logNameFile = "tableEditForm => property";
 
 function setDirtyProperty (type=false){
     try{
@@ -7684,7 +7965,7 @@ function setDirtyProperty (type=false){
             property.refresh();
         }
     } catch (err){
-        errors_setFunctionError(err,logNameFile,"setDirtyProperty");
+        errors_setFunctionError(err,property_logNameFile,"setDirtyProperty");
     } 
 }
 
@@ -7699,14 +7980,14 @@ function editingEnd (editor,value){
         setDirtyProperty (true);
 
     } catch (err){
-        errors_setFunctionError(err,logNameFile,"editingEnd");
+        errors_setFunctionError(err,property_logNameFile,"editingEnd");
     }
 }
 
 function propTooltipAction (obj){
     const label      = obj.label;
     const labelText  = "Название: "+label+" <br>";
-    const formatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s:%S");
+    const formatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
     let value;
     let typeElem;
     
@@ -7878,29 +8159,51 @@ function validateProfForm (){
                 if (propElement.type              &&
                     propElement.type == "customDate" ){
                      
-                    let check =  false;
-
+                    let check      = false;
+                    let countEmpty = 0;
+      
                     const x = values[el].replace(/\D/g, '')
                     .match(/(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})/);
 
                     for (let i = 1; i < 7; i++) {
-  
-                        if (x[i].length !== 2 && !check){
+
+                        if (x[i].length == 0){
+                            countEmpty++;
+                        }
+
+                        if (x[i].length !== 2){
+                         
                             if (!check){
                                 check = true;
                             }
                         }
                     }
 
-                    if ( check ){
-                        errors[el].date = "Неверный формат даты. Введите дату в формате xx.xx.xx xx:xx:xx";
-                    } else {
+
+                    if ( countEmpty == 6 ){
                         errors[el].date = null;
+
+                    } else {
+
+                        if( (x[1] > 31 || x[1] < 1) ||
+                            (x[2] > 12 || x[2] < 1) ||
+
+                            x[4] > 23 ||
+                            x[5] > 59 ||
+                            x[6] > 59 ){
+                                check = true;
+                            }
+      
+                        if ( check ) {
+                            errors[el].date = "Неверный формат даты. Введите дату в формате xx.xx.xx xx:xx:xx";
+    
+                        } else {
+                            errors[el].date = null;
+                        }
                     }
                        
                 }
        
-  
             }
 
             function valLength(){ 
@@ -8044,7 +8347,6 @@ function uniqueData (itemData){
         errors_setFunctionError(err,validation_logNameFile,"uniqueData");
     }
 
-    console.log(validateData,"validateData")
     return validateData;
 }
 
@@ -8160,7 +8462,7 @@ function saveItem(addBtnClick=false, refBtnClick=false){
                     }
                 });
                 putData.fail(function(err){
-                    errors_setAjaxError(err, buttons_logNameFile,"saveItem");
+                    setAjaxError(err, buttons_logNameFile,"saveItem");
                 });
             }    
 
@@ -8335,7 +8637,7 @@ function saveNewItem (){
             }
         });
         postData.fail(function(err){
-            errors_setAjaxError(err, "tableEditForm => btns","saveNewItem");
+            setAjaxError(err, "tableEditForm => btns","saveNewItem");
         });
     
 
@@ -8386,7 +8688,7 @@ function removeItem() {
                     }
                 });
                 removeData.fail(function(err){
-                    errors_setAjaxError(err, buttons_logNameFile,"removeItem");
+                    setAjaxError(err, buttons_logNameFile,"removeItem");
                 });
      
         });
@@ -9217,9 +9519,9 @@ function createDatePopup(elem){
 
 
 function setToolBtns(){
-    const property = $$("editTableFormProperty");
-    const refBtns  = $$("propertyRefbtns");
-    let propertyElems = property.config.elements;
+    const property      = $$("editTableFormProperty");
+    const refBtns       = $$("propertyRefbtns");
+    const propertyElems = property.config.elements;
 
     function createBtnsContainer(){
         try{
@@ -9288,7 +9590,7 @@ function createEditFields (parentElement) {
                         return new Date(el.default);
                     }
 
-                    const formatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
+                    const formatData = webix.Date.dateToStr("%d.%m.%y %H:%i:%s");
 
                     let defVal;
             
@@ -9469,8 +9771,7 @@ function defaultStateForm () {
 }
 
 
-;// CONCATENATED MODULE: ./src/js/components/table.js
-
+;// CONCATENATED MODULE: ./src/js/components/table/common.js
  
 
 
@@ -9478,131 +9779,14 @@ function defaultStateForm () {
 
 
 
-
-
-
-// function getItemId (){
-//     let id;
-
-//     if ($$("tables").isVisible()){
-//         id = $$("table").config.idTable;
-
-//     } else if ($$("forms").isVisible()){
-//         id = $$("table-view").config.idTable;
-//     }
-//     return id;
-// }
-
-function table (idTable, onFunc, editableParam=false) {
-    return {
-        view        :"datatable",
-        id          : idTable,
-        css         :"webix_table-style webix_header_border webix_data_border",
-        autoConfig  : true,
-        editable    :editableParam,
-        editaction  :"dblclick",
-        minHeight   :350,
-        datafetch   :5,
-        datathrottle: 5000,
-        loadahead   :100,
-        footer      : true,
-        select      :true,
-        resizeColumn: true,
-        on          :onFunc,
-        onClick     :{
-            "wxi-trash":function(){
-                try {
-                    popupExec("Запись будет удалена").then(
-                        function(){
-                            let formValues = $$(idTable).getItem(id);
-                            let itemTreeId = getItemId () ;
-
-                            webix.ajax().del("/init/default/api/"+itemTreeId+"/"+formValues.id+".json", formValues,{
-                                success:function(){
-                                    $$(idTable).remove($$(idTable).getSelectedId());
-                                    logBlock_setLogValue("success","Данные успешно удалены");
-                                },
-                                error:function(text, data, XmlHttpRequest){
-                                    ajaxErrorTemplate("012-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
-
-                                }
-                            }).catch(error => {
-                                console.log(error);
-                                ajaxErrorTemplate("012-000",error.status,error.statusText,error.responseURL);
-                            });
-                    });
-                } catch (error){
-                    console.log(error);
-                    catchErrorTemplate("012-000", error);
-                }
-            },
-
-            "wxi-angle-down":function(event, cell, target){
-                try {
-                    if (!($$("propTableView").isVisible()))   {
-                        let id = cell.row;
-                        let url;
-                        let columns = $$("table-view").getColumns();
-
-                        columns.forEach(function(el,i){
-                            if (el.id == cell.column){
-                                url=el.src;
-                                let urlArgEnd = url.search("{");
-                                url = url.slice(0,urlArgEnd)+id+".json"; 
-                            }
-                        });    
-
-                        webix.ajax(url,{
-                            success:function(text, data, XmlHttpRequest){
-                                try {
-                                    data = data.json().content;
-                                    let arrayProperty = [];
-                                    data.forEach(function(el,i){
-                                        arrayProperty.push({type:"text", id:i+1,label:el.name, value:el.value})
-                                    });
-                                    $$("propTableView").define("elements", arrayProperty);
-                                    $$("propTableView").show();
-                      
-                                    if ($$("propTableView").config.width < 200){
-                                        $$("propTableView").config.width = 200;
-                                        $$("propTableView").resize();
-                                    }
-                                    $$("propResize").show();
-                                } catch (error){
-                                    console.log(error);
-                                    catchErrorTemplate("012-000", error);
-                                }
-                            },
-                            error:function(text, data, XmlHttpRequest){
-                                ajaxErrorTemplate("012-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
-
-
-                            }
-                        }).catch(error => {
-                            console.log(error);
-                            ajaxErrorTemplate("012-000",error.status,error.statusText,error.responseURL);
-                        });
-                    } else {
-                        $$("propTableView").hide();
-                        $$("propResize").hide();
-                    }
-                } catch (error){
-                    console.log(error);
-                    catchErrorTemplate("012-000", error);
-                }
-
-            },
-            
-        }
-    };
-}
+const common_logNameFile = "table => common";
 
 function setCounterVal (){
     const tableCount = $$("table").count().toString();
     $$("table-findElements").setValues(tableCount);
 }
 
-function table_setDirtyProperty (){
+function common_setDirtyProperty (){
     const prop = $$("editTableFormProperty");
     prop.config.dirty = false;
     prop.refresh();
@@ -9624,7 +9808,7 @@ function toEditForm (nextItem) {
             
             });
         } catch (err){ 
-            errors_setFunctionError(err,"table","setViewDate")
+            errors_setFunctionError(err,common_logNameFile,"setViewDate")
         }
     }
 
@@ -9647,7 +9831,7 @@ function toEditForm (nextItem) {
                 newAddBtn.enable();
             }
 
-            table_setDirtyProperty();
+            common_setDirtyProperty();
             setViewDate     ();
 
             prop.setValues(valuesTable);
@@ -9657,7 +9841,7 @@ function toEditForm (nextItem) {
             $$("table-delBtnId")  .enable();
 
         } catch (err){   
-            errors_setFunctionError(err,"table","toEditForm => setPropState");
+            errors_setFunctionError(err,common_logNameFile,"toEditForm => setPropState");
         }
     }
 
@@ -9677,13 +9861,13 @@ function validateError (){
                 }
             });
         } catch (err){ 
-            errors_setFunctionError(err,"table","validateError")
+            errors_setFunctionError(err,common_logNameFile,"validateError")
         }
         logBlock_setLogValue("error",el.textError+" (Поле: "+nameEl+")");
     });
 }
 
-function table_uniqueData (itemData){
+function common_uniqueData (itemData){
     let validateData = {};
 
     try{
@@ -9708,7 +9892,7 @@ function table_uniqueData (itemData){
             compareVals ();
         });
     } catch (err){ 
-        errors_setFunctionError(err,"table","uniqueData")
+        errors_setFunctionError(err,common_logNameFile,"uniqueData")
     }
     return validateData;
 }
@@ -9721,7 +9905,7 @@ function putData (nextItem, valuesProp, currId, editInForm=false){
 
             let sentValues;
             if (editInForm){
-                sentValues = table_uniqueData (valuesProp);
+                sentValues = common_uniqueData (valuesProp);
             } else {
                 sentValues = valuesProp;
             }
@@ -9748,7 +9932,7 @@ function putData (nextItem, valuesProp, currId, editInForm=false){
             });
 
             putData.fail(function(err){
-                errors_setAjaxError(err, "table","putData");
+                setAjaxError(err, common_logNameFile,"putData");
             });
         
         }
@@ -9758,6 +9942,20 @@ function putData (nextItem, valuesProp, currId, editInForm=false){
     }
 }
 
+
+;// CONCATENATED MODULE: ./src/js/components/table/onFuncs.js
+ 
+
+
+
+
+
+
+
+
+
+
+const onFuncs_logNameFile = "table => onFuncs";
 
 const onFuncTable = {
 
@@ -9783,7 +9981,7 @@ const onFuncTable = {
 
             }
         } catch (err){
-            errors_setFunctionError(err,"table","onBeforeEditStop");
+            errors_setFunctionError(err,onFuncs_logNameFile,"onBeforeEditStop");
         }
     },
 
@@ -9802,7 +10000,7 @@ const onFuncTable = {
                 btnClass.classList.remove("webix-transparent-btn--primary");
 
             } catch (err){
-                errors_setFunctionError(err,"table","onAfterSelect => filterTableHide");
+                errors_setFunctionError(err,onFuncs_logNameFile,"onAfterSelect => filterTableHide");
             }
         }
 
@@ -9827,7 +10025,7 @@ const onFuncTable = {
                 }
 
             } catch (err){
-                errors_setFunctionError(err,"table","onAfterSelect => statePutEditForm")
+                errors_setFunctionError(err,onFuncs_logNameFile,"onAfterSelect => statePutEditForm")
             }
         }
 
@@ -9855,7 +10053,7 @@ const onFuncTable = {
                     hideElem($$("EditEmptyTempalte"));
                 }
             } catch (err){
-                errors_setFunctionError(err,"table","onAfterSelect => adaptiveEditForm");
+                errors_setFunctionError(err,onFuncs_logNameFile,"onAfterSelect => adaptiveEditForm");
             }
         }
 
@@ -9909,7 +10107,7 @@ const onFuncTable = {
                 });
 
                 postData.fail(function(err){
-                    errors_setAjaxError(err, "table","onBeforeSelect => postNewData");
+                    setAjaxError(err, onFuncs_logNameFile,"onBeforeSelect => postNewData");
                 });
  
             } else {
@@ -9949,7 +10147,7 @@ const onFuncTable = {
                     toEditForm(nextItem);
                 }
             } catch (err){ 
-                errors_setFunctionError(err,"table","onBeforeSelect => modalBoxTable")
+                errors_setFunctionError(err,onFuncs_logNameFile,"onBeforeSelect => modalBoxTable")
             }
         }
  
@@ -9961,41 +10159,12 @@ const onFuncTable = {
     },
 
     onAfterLoad:function(){
-      
-        // const idCurrView= this;
-        // function getUserPrefs(){
-        //     try{
-        //         const idCurrTable = idCurrView.config.idTable;
-        //         const storageData = webix.storage.local.get("visibleColsPrefs_"+idCurrTable);
-        //         console.log(idCurrView.getColumns())
-        //         if(storageData){
-        //             storageData.forEach(function(el){
-
-        //                 if(!el.value ){
-        //                     console.log(el.id,idCurrView.isColumnVisible(el.id))
-        //                     if(idCurrView.isColumnVisible(el.id)){
-        //                         idCurrView.hideColumn(el.id);
-        //                     }
-                            
-        //                 } else {
-        //                     if( !( idCurrView.isColumnVisible(el.id) ) ){
-        //                         idCurrView.showColumn(el.id);
-        //                     }
-        //                 }
-        //             });
-        //         }
-        //     } catch (err){
-        //         setFunctionError(err,"table","onAfterLoad => getUserPrefs");
-        //     }
-        // }
-
-        // getUserPrefs()
         try {
             this.hideOverlay();
 
             defaultStateForm ();
         } catch (err){
-            errors_setFunctionError(err,"table","onAfterLoad")
+            errors_setFunctionError(err,onFuncs_logNameFile,"onAfterLoad")
         }
     },  
 
@@ -10071,7 +10240,7 @@ function doAuthCp (){
             });
             
             postData.fail(function(err){
-                errors_setAjaxError(err, "authSettings","doAuthCp post");
+                setAjaxError(err, "authSettings","doAuthCp post");
             });
 
         }
@@ -10190,13 +10359,13 @@ let defaultValue = {
 };
 
 function saveSettings (){
-    const tabbarVal = $$("userprefsTabbar").getValue();
-    const form = $$( tabbarVal+"Form" );
+    const tabbarVal = $$("userprefsTabbar").getValue()+"Form" ;
+    const form = $$(tabbarVal);
     
     function getUserprefsData(){
 
         const getData =  webix.ajax().get("/init/default/api/userprefs/");
-        
+     
         getData.then(function(data){
             data = data.json().content;
 
@@ -10209,7 +10378,7 @@ function saveSettings (){
             const values = form.getValues();
 
             const sentObj = {
-                name :form,
+                name :tabbarVal,
                 prefs:values,
             };
 
@@ -10220,28 +10389,29 @@ function saveSettings (){
                 putData.then(function(data){
                     data = data.json();
                     if (data.err_type == "i"){
-                        storageSetting_setStorageData (form, JSON.stringify(form.getValues()));
+                        setStorageData (tabbarVal, JSON.stringify(form.getValues()));
                         logBlock_setLogValue("success","Настройки сохранены");
 
                     } if (data.err_type == "e"){
                         logBlock_setLogValue("error",data.error);
                     }
 
-                    const tabbarVal         = $$("userprefsTabbar").getValue();
-                    defaultValue[tabbarVal] = values;
+                    const name         = $$("userprefsTabbar").getValue();
+                    defaultValue[name] = values;
 
                     form.setDirty(false);
                 });
 
                 putData.fail(function(err){
-                    errors_setAjaxError(err, "userprefs","putPrefs");
+                    setAjaxError(err, "userprefs","putPrefs");
                 });
             }
-
+     
             function findExistsData(){
                 try{
                     data.forEach(function(el,i){
-                        if (el.name == form){
+                       
+                        if (el.name == tabbarVal){
                             settingExists = true;
                             putPrefs(el);
                         } 
@@ -10266,18 +10436,20 @@ function saveSettings (){
                     userData.name     = data.first_name;
                     userData.username = data.username;
                     
-                    storageSetting_setStorageData("user", JSON.stringify(userData));
+                    setStorageData("user", JSON.stringify(userData));
                 });
 
                 getData.fail(function(err){  
-                    errors_setAjaxError(err, "userprefs","getOwnerData");
+                    setAjaxError(err, "userprefs","getOwnerData");
                 });
             }
 
             function postPrefs(){
+       
                 const url      = "/init/default/api/userprefs/";
+  
                 const postData = webix.ajax().post(url,sentObj);
-
+ 
                 postData.then(function(data){
                     data = data.json();
 
@@ -10295,7 +10467,7 @@ function saveSettings (){
                 });
 
                 postData.fail(function(err){
-                    errors_setAjaxError(err, "userprefs","postPrefs");
+                    setAjaxError(err, "userprefs","postPrefs");
                 });
             }
 
@@ -10303,19 +10475,19 @@ function saveSettings (){
             if (!settingExists){
                 
                 const ownerId = webix.storage.local.get("user").id;
-
+     
                 if (ownerId){
                     sentObj.owner = ownerId;
                 } else {
                     getOwnerData();
                 }
-
+       
                 postPrefs();
             }
 
         });
         getData.fail(function(err){
-            errors_setAjaxError(err, "userprefs","getUserprefsData");
+            setAjaxError(err, "userprefs","getUserprefsData");
         });
     }
 
@@ -10328,14 +10500,14 @@ function saveSettings (){
 
 
 const autorefRadio   = {
-    view:"radio",
-    labelPosition:"top", 
-    label:"Автообновление специфичных страниц", 
-    value:1,
-    name:"autorefOpt", 
-    options:[
-        {"id":1, "value":"Включено"},
-        {"id":2, "value":"Выключено"}
+    view            : "radio",
+    labelPosition   : "top", 
+    label           : "Автообновление специфичных страниц", 
+    value           : 1,
+    name            : "autorefOpt", 
+    options         : [
+        {"id" : 1, "value" : "Включено"},
+        {"id" : 2, "value" : "Выключено"}
     ],
     on:{
         onChange:function(newValue, oldValue,config){
@@ -10358,14 +10530,14 @@ const autorefRadio   = {
 };
 
 const autorefCounter = {   
-    view:"counter", 
-    id:"userprefsAutorefCounter",
-    labelPosition:"top",
-    name:"autorefCounterOpt", 
-    label:"Интервал автообновления (в миллисекундах)" ,
-    min:15000, 
-    max:900000,
-    on:{
+    view            : "counter", 
+    id              : "userprefsAutorefCounter",
+    labelPosition   : "top",
+    name            : "autorefCounterOpt", 
+    label           : "Интервал автообновления (в миллисекундах)" ,
+    min             : 15000, 
+    max             : 900000,
+    on              : {
         onChange:function(newValue, oldValue, config){
             function createMsg (textMsg){
                 return webix.message({
@@ -10397,22 +10569,22 @@ const autorefCounter = {
 };
 
 const visibleIdRadio = {
-    view:"radio",
-    labelPosition:"top", 
-    label:"ID в таблицах", 
-    value:1,
-    name:"visibleIdOpt", 
-    options:[
-        {"id":1, "value":"Показывать"   },
-        {"id":2, "value":"Не показывать"}
+    view            : "radio",
+    labelPosition   : "top", 
+    label           : "ID в таблицах", 
+    value           : 1,
+    name            : "visibleIdOpt", 
+    options         : [
+        {"id" : 1, "value" : "Показывать"   },
+        {"id" : 2, "value" : "Не показывать"}
     ],
 };
 
 const otherForm =  {    
-    view:"form", 
-    id:"userprefsOtherForm",
-    borderless:true,
-    elements:[
+    view        : "form", 
+    id          : "userprefsOtherForm",
+    borderless  : true,
+    elements    : [
         autorefRadio,
         {height:5},
         autorefCounter,
@@ -10459,23 +10631,23 @@ const otherForm =  {
 };
 
 const userprefsOther = {
-    view      :"scrollview",
-    borderless:true, 
-    css       :"webix_multivew-cell",
-    id        :"userprefsOther", 
-    scroll    :"y", 
-    body      :otherForm
+    view      : "scrollview",
+    borderless: true, 
+    css       : "webix_multivew-cell",
+    id        : "userprefsOther", 
+    scroll    : "y", 
+    body      : otherForm
 };
 
 const logBlockRadio = {
-    view         :"radio",
-    labelPosition:"top",
-    name         :"logBlockOpt", 
-    label        :"Отображение блока системных сообщений", 
-    value        :1, 
-    options      :[
-        {"id":1, "value":"Показать"}, 
-        {"id":2, "value":"Скрыть"  }
+    view         : "radio",
+    labelPosition: "top",
+    name         : "logBlockOpt", 
+    label        : "Отображение блока системных сообщений", 
+    value        : 1, 
+    options      : [
+        {"id" : 1, "value" : "Показать"}, 
+        {"id" : 2, "value" : "Скрыть"  }
     ],
     on:{
         onAfterRender: function () {
@@ -10504,15 +10676,14 @@ const logBlockRadio = {
 };
 
 const loginActionSelect = {   
-    view         :"select", 
-    name         :"LoginActionOpt",
-    label        :"Действие после входа в систему", 
-    labelPosition:"top",
-    value        :2, 
-    options      :[
-    { "id":1, "value":"Перейти на главную страницу"            },
-    // { "id":3, "value":"Предложить вернуться на последнюю открытую страницу" },
-    { "id":2, "value":"Перейти на последнюю открытую страницу" },
+    view         : "select", 
+    name         : "LoginActionOpt",
+    label        : "Действие после входа в систему", 
+    labelPosition: "top",
+    value        : 2, 
+    options      : [
+    { "id" : 1, "value" : "Перейти на главную страницу"            },
+    { "id" : 2, "value" : "Перейти на последнюю открытую страницу" },
     ],
     on:{
         onAfterRender: function () {
@@ -10523,10 +10694,10 @@ const loginActionSelect = {
 };
 
 const workspaceForm =  {    
-    view      :"form", 
-    id        :"userprefsWorkspaceForm",
-    borderless:true,
-    elements  :[
+    view      : "form", 
+    id        : "userprefsWorkspaceForm",
+    borderless: true,
+    elements  : [
         { cols:[
             { rows:[  
                 logBlockRadio,
@@ -10542,7 +10713,7 @@ const workspaceForm =  {
 
     ],
 
-    on:{
+    on        :{
         onChange:function(){
             const form     = $$("userprefsWorkspaceForm");
             const saveBtn  = $$("userprefsSaveBtn");
@@ -10579,37 +10750,37 @@ const workspaceForm =  {
 };
 
 const userprefsWorkspace = {
-    view      :"scrollview",
-    borderless:true, 
-    css       :"webix_multivew-cell",
-    id        :"userprefsWorkspace",
-    scroll    :"y", 
-    body      :workspaceForm
+    view      : "scrollview",
+    borderless: true, 
+    css       : "webix_multivew-cell",
+    id        : "userprefsWorkspace",
+    scroll    : "y", 
+    body      : workspaceForm
 };
 
 
 const userprefsConfirmBtns =  { 
     id:"a1", 
     rows:[
-        {   responsive:"a1",
+        {   responsive : "a1",
             cols:[
         
-            {   view    :"button", 
+            {   view    : "button", 
             
-                height  :48,
-                minWidth:200,
-                value   :"Сбросить" ,
-                id      :"userprefsResetBtn",
-                disabled:true,
+                height  : 48,
+                minWidth: 200,
+                value   : "Сбросить" ,
+                id      : "userprefsResetBtn",
+                disabled: true,
             },
 
-            {   view    :"button", 
-                value   :"Сохранить настройки" ,
-                height  :48, 
-                minWidth:200,
-                id      :"userprefsSaveBtn",
-                css     :"webix_primary",
-                disabled:true,
+            {   view    : "button", 
+                value   : "Сохранить настройки" ,
+                height  : 48, 
+                minWidth: 200,
+                id      : "userprefsSaveBtn",
+                css     : "webix_primary",
+                disabled: true,
                 click   : saveSettings,
             },
         ]}
@@ -10621,12 +10792,12 @@ function createHeadlineSpan(headMsg){
 }
 
 const tabbar = {   
-    view     :"tabbar",  
-    type     :"top", 
-    id       :"userprefsTabbar",
-    css      :"webix_filter-popup-tabbar",
-    multiview:true, 
-    height   :50,
+    view     : "tabbar",  
+    type     : "top", 
+    id       : "userprefsTabbar",
+    css      : "webix_filter-popup-tabbar",
+    multiview: true, 
+    height   : 50,
     options  : [
         {   value: createHeadlineSpan("Рабочее пространство"), 
             id   : 'userprefsWorkspace' 
@@ -10636,7 +10807,7 @@ const tabbar = {
         },
     ],
 
-    on     :{
+    on       :{
         onBeforeTabClick:function(id){
             const tabbarVal = $$("userprefsTabbar").getValue()+"Form";
             const form      = $$(tabbarVal);
@@ -10719,13 +10890,13 @@ const userprefs_headline = {
 
 
 const userInfo =  {   
-    view:"template",
-    id:"userprefsName",
-    css:"webix_userprefs-info",
-    height:50, 
-    borderless:true,
+    view        : "template",
+    id          : "userprefsName",
+    css         : "webix_userprefs-info",
+    height      : 50, 
+    borderless  : true,
 
-    template:function(){
+    template    : function(){
         function createDivData(msg){
             return `
             <div style = '
@@ -10763,10 +10934,10 @@ const userprefsLayout = {
 
     rows:[
         {   padding:{
-                top:15, 
-                bottom:0, 
-                left:20, 
-                right:0
+                top     :15, 
+                bottom  :0, 
+                left    :20, 
+                right   :0
             },
             rows:userprefsHeadline,
         },
@@ -10858,7 +11029,7 @@ function contextMenu (){
                             });
 
                             postData.fail(function(err){
-                                errors_setAjaxError(err, "editTree","case add");
+                                setAjaxError(err, "editTree","case add");
                             });
 
 
@@ -10892,7 +11063,7 @@ function contextMenu (){
                             });
 
                             putData.fail(function(err){
-                                errors_setAjaxError(err, "editTree","case rename");
+                                setAjaxError(err, "editTree","case rename");
                             });
                         }
                         break;
@@ -10916,7 +11087,7 @@ function contextMenu (){
                         });
 
                         delData.fail(function(err){
-                            errors_setAjaxError(err, "editTree","case delete");
+                            setAjaxError(err, "editTree","case delete");
                         });
 
                         break;
@@ -10997,13 +11168,13 @@ function editTreeLayout () {
                     });
 
                     postData.fail(function(err){
-                        errors_setAjaxError(err, "editTree","tree onAfterEditStop postData");
+                        setAjaxError(err, "editTree","tree onAfterEditStop postData");
                     });
 
 
                 }
             } catch (err){
-                errors_setAjaxError(err, "editTree","tree onAfterEditStop");
+                setAjaxError(err, "editTree","tree onAfterEditStop");
             }
         },
         }
@@ -11967,9 +12138,14 @@ function toolbarEditButton (idTable){
 
 
 
+
+
+
+
+
 function  visibleColsButtonClick(idTable){
     const currTable  = $$(idTable);
-    const columns    = $$(idTable).getColumns(true);
+    let columns    = $$(idTable).getColumns(true);
 
     function createCheckboxes(){
         const checkboxes = [];
@@ -11981,7 +12157,7 @@ function  visibleColsButtonClick(idTable){
                     btnSubmit.disable();
                 }
             } catch (err){
-                setFunctionError(err,"toolbarTable","createCheckboxes => disableBtn");
+                errors_setFunctionError(err,"toolbarTable","createCheckboxes => disableBtn");
             }
         
         }
@@ -11994,7 +12170,7 @@ function  visibleColsButtonClick(idTable){
                     btnSubmit.enable();
                 }
             } catch (err){
-                setFunctionError(err,"toolbarTable","createCheckboxes => enableBtn");
+                errors_setFunctionError(err,"toolbarTable","createCheckboxes => enableBtn");
             }
         }
 
@@ -12017,7 +12193,7 @@ function  visibleColsButtonClick(idTable){
                         }
                     });  
                 } catch (err){
-                    setFunctionError(err,"toolbarTable","createCheckboxes => findCheckedElem");
+                    errors_setFunctionError(err,"toolbarTable","createCheckboxes => findCheckedElem");
                 }
                 return nullCounter;
             }
@@ -12047,7 +12223,7 @@ function  visibleColsButtonClick(idTable){
                     }
 
                 } catch (err){
-                    setFunctionError(err,"toolbarTable","checkboxOnChange => setSelectAllState");
+                    errors_setFunctionError(err,"toolbarTable","checkboxOnChange => setSelectAllState");
                 }
             }
             
@@ -12088,7 +12264,7 @@ function  visibleColsButtonClick(idTable){
                 });
    
             } catch (err){
-                setFunctionError(err,"toolbarTable","createCheckboxes => checkboxSelectAllLogic");
+                errors_setFunctionError(err,"toolbarTable","createCheckboxes => checkboxSelectAllLogic");
             }
         }
     
@@ -12121,10 +12297,27 @@ function  visibleColsButtonClick(idTable){
                     } 
                 });
 
-             
-                columns.forEach(function(col){
+               
+          
+                // currTable.config.backCols.forEach(function(el,i){
+                //     const found     = columns.find(element => element.id == el.id);
+                //     const currCols  = currTable.config.columns;
+                //     if( !found ){
+                //         console.log(currCols,"currCols1") 
+                //         currCols.splice(i,0,el);
+                //         currTable.refreshColumns();
+                //         console.log(currCols,"currCols2") 
+                //     }
                    
-                    if(col.id !== "css_class"){
+                // });
+
+               
+                 columns = currTable.getColumns(true);
+                // console.log(columns) 
+                columns.forEach(function(col){
+
+                    if(col.css !== "action-column" && !col.hiddenCustomAttr ){
+      
                         checkboxes.push({
                             view:"checkbox", 
                             id:col.id+"_checkbox-visible", 
@@ -12140,12 +12333,10 @@ function  visibleColsButtonClick(idTable){
                     }
                    
                 });
-
-                 
         
               
             } catch (err){
-                setFunctionError(err,"toolbarTable","getCheckboxArray");
+                errors_setFunctionError(err,"toolbarTable","getCheckboxArray");
             }
         }
 
@@ -12155,6 +12346,8 @@ function  visibleColsButtonClick(idTable){
                 btnSubmit.disable();
             }
         }
+
+
         function getUserprefsValues(){
             const id          = currTable.config.idTable;
             const selectAll   = $$("selectAll");
@@ -12164,7 +12357,6 @@ function  visibleColsButtonClick(idTable){
 
             if (storageData){
                 storageData.forEach(function(el){
-                    console.log(el)
                     $$(el.id+"_checkbox-visible").setValue(el.value);
                     values.push(el.value);
                     disableSubmitBtn();
@@ -12194,7 +12386,7 @@ function  visibleColsButtonClick(idTable){
                 });
                 getUserprefsValues();
             } catch (err){
-                setFunctionError(err,"toolbarTable","createCheckboxes => addCheckboxes");
+                errors_setFunctionError(err,"toolbarTable","createCheckboxes => addCheckboxes");
             }
         }
 
@@ -12204,7 +12396,7 @@ function  visibleColsButtonClick(idTable){
                     $$("visibleColsEmptyTempalte").hide();
                 }
             } catch (err){
-                setFunctionError(err,"toolbarTable","createCheckboxes => hideEmptyTemplate");
+                errors_setFunctionError(err,"toolbarTable","createCheckboxes => hideEmptyTemplate");
             }
         }
 
@@ -12214,7 +12406,7 @@ function  visibleColsButtonClick(idTable){
                     $$("popupVisibleCols").show();
                 }
             } catch (err){
-                setFunctionError(err,"toolbarTable","createCheckboxes => showPopup");
+                errors_setFunctionError(err,"toolbarTable","createCheckboxes => showPopup");
             }
         }
 
@@ -12240,14 +12432,13 @@ function  visibleColsButtonClick(idTable){
         };
 
         function saveExistsTemplate(sentObj,idPutData){
-            console.log(sentObj,idPutData)
             const putData = webix.ajax().put("/init/default/api/userprefs/"+idPutData, sentObj);
     
             putData.then(function(data){
                 data = data.json();
                  
                 if (data.err_type !== "i"){
-                    setLogValue("error","toolbarTable function saveExistsTemplate putData: "+ data.err);
+                    logBlock_setLogValue("error","toolbarTable function saveExistsTemplate putData: "+ data.err);
                 } else {
                     setStorageData("visibleColsPrefs_"+id, JSON.stringify(sentObj.prefs));
                 }
@@ -12292,7 +12483,7 @@ function  visibleColsButtonClick(idTable){
                 data = data.json();
      
                 if (data.err_type !== "i"){
-                    setFunctionError(data.err,"filterTableForm","tabbarClick")
+                    errors_setFunctionError(data.err,"filterTableForm","tabbarClick")
                 } else {
                     setStorageData("visibleColsPrefs_"+id, JSON.stringify(sentObj.prefs));
                 }
@@ -12322,7 +12513,7 @@ function  visibleColsButtonClick(idTable){
                         }
                     });
                 } catch (err){
-                    setFunctionError(err,"toolbarTable","getUserprefsData getData");
+                    errors_setFunctionError(err,"toolbarTable","getUserprefsData getData");
                 }
             });
 
@@ -12362,7 +12553,7 @@ function  visibleColsButtonClick(idTable){
             
                 });
             } catch (err){
-                setFunctionError(err,"toolbarTable","visibleColsSubmitClick => pushChecksId");
+                errors_setFunctionError(err,"toolbarTable","visibleColsSubmitClick => pushChecksId");
             }
         }
 
@@ -12375,24 +12566,34 @@ function  visibleColsButtonClick(idTable){
                     colsId.push({id:idCol, value:value});
                 });
             } catch (err){
-                setFunctionError(err,"toolbarTable","visibleColsSubmitClick => pushValuesChecks");
+                errors_setFunctionError(err,"toolbarTable","visibleColsSubmitClick => pushValuesChecks");
             }
         }
 
         function setStateCols(el){
+        
             try{
+       
                 if (el.value){
+               
                     if ( !( currTable.isColumnVisible(el.id) ) ){
+               
                         currTable.showColumn(el.id);
+                   
                     }
 
                 } else {
                     if ( currTable.isColumnVisible(el.id) ){
+                  
                         currTable.hideColumn(el.id);
                     }
                 }
+
+                currTable.refreshColumns();
+
+
             } catch (err){
-                setFunctionError(err,"toolbarTable","visibleColsSubmitClick => pushValuesChecks element: "+el);
+                errors_setFunctionError(err,"toolbarTable","visibleColsSubmitClick => pushValuesChecks element: "+el);
             }
         }
 
@@ -12402,7 +12603,7 @@ function  visibleColsButtonClick(idTable){
                     $$("popupVisibleCols").destructor();
                 }
             } catch (err){
-                setFunctionError(err,"toolbarTable","visibleColsSubmitClick => destructPopup");
+                errors_setFunctionError(err,"toolbarTable","visibleColsSubmitClick => destructPopup");
             }
         }
 
@@ -12422,7 +12623,7 @@ function  visibleColsButtonClick(idTable){
 
         destructPopup();
         
-        setLogValue("success", "Таблица обновлена");
+        logBlock_setLogValue("success", "Таблица обновлена");
     }
 
 
@@ -12449,7 +12650,7 @@ function  visibleColsButtonClick(idTable){
                         $$("popupVisibleCols").destructor();
                     }
                 } catch (err){
-                    setFunctionError(err,"toolbarTable","popupVisibleCols click");
+                    errors_setFunctionError(err,"toolbarTable","popupVisibleCols click");
                 }
             
             }
@@ -12530,6 +12731,7 @@ function toolbarVisibleColsBtn(idTable){
         type:"icon",
         id:idVisibleCols,
         //hidden:visible,
+        disabled:true,
         icon:"icon-columns",
         css:"webix_btn-download webix-transparent-btn",
         title:"текст",
@@ -12639,7 +12841,7 @@ function tableToolbar (idTable,visible=false) {
                     toolbarFilterBtn(idTable,visible),
                     toolbarEditButton(idTable),
                     {},
-                  //  toolbarVisibleColsBtn(idTable),
+                    toolbarVisibleColsBtn(idTable),
                     toolbarDownloadButton(idTable,visible)
                 ],
             },
@@ -12699,7 +12901,7 @@ function propertyTemplate (idProp){
         view:"property",  
         id:idProp, 
         tooltip:"Имя: #label#<br> Значение: #value#",
-        width:350,
+        width:348,
         nameWidth:150,
         editable:true,
         scroll:true,
@@ -13040,7 +13242,7 @@ function popupSubmitBtn (){
         });
 
         userprefsData.fail(function(err){
-            errors_setAjaxError(err, popup_logNameFile,"getLibraryData");
+            setAjaxError(err, popup_logNameFile,"getLibraryData");
         });
 
 
@@ -13475,7 +13677,7 @@ const removeBtn = {
 
                         });
                         deleteTemplate.fail(function(err){
-                            errors_setAjaxError(err, popup_logNameFile,"getLibraryData");
+                            setAjaxError(err, popup_logNameFile,"getLibraryData");
                         });
                     }
 
@@ -13589,7 +13791,7 @@ function getUserprefsData (){
         PREFS_STORAGE.userprefs = data.json();
         return PREFS_STORAGE.userprefs;
     }).fail(err => {
-        errors_setAjaxError(err, tableFilter_buttons_logNameFile,"getUserprefsData");
+        setAjaxError(err, tableFilter_buttons_logNameFile,"getUserprefsData");
     }
 );
 }
@@ -13618,7 +13820,7 @@ function editFiltersBtn (){
                         userData.name     = data.first_name;
                         userData.username = data.username;
                         
-                        storageSetting_setStorageData("user", JSON.stringify(userData));
+                        setStorageData("user", JSON.stringify(userData));
                     }
     
                     function getStorageData (){
@@ -13639,7 +13841,7 @@ function editFiltersBtn (){
                 });
         
                 whoamiData.fail(function(err){
-                    errors_setAjaxError(err, tableFilter_buttons_logNameFile,"getUserData");
+                    setAjaxError(err, tableFilter_buttons_logNameFile,"getUserData");
                 });
             }
     
@@ -14258,7 +14460,7 @@ function filterSubmitBtn (){
             } 
         });
         queryData.fail(function(err){
-            errors_setAjaxError(err, tableFilter_buttons_logNameFile,"createGetData");
+            setAjaxError(err, tableFilter_buttons_logNameFile,"createGetData");
         });
 
         
@@ -14379,7 +14581,7 @@ function filterLibraryBtn () {
                             });
 
                             putData.fail(function(err){
-                                errors_setAjaxError(err, tableFilter_buttons_logNameFile,"saveExistsTemplate => putUserprefsData");
+                                setAjaxError(err, tableFilter_buttons_logNameFile,"saveExistsTemplate => putUserprefsData");
                             });
 
                         }
@@ -14415,11 +14617,11 @@ function filterLibraryBtn () {
                         userData.name = data.json().content.first_name;
                         userData.username = data.json().content.username;
                         
-                        storageSetting_setStorageData("user", JSON.stringify(userData));
+                        setStorageData("user", JSON.stringify(userData));
                     });
 
                     whoamiData.fail(function(err){
-                        errors_setAjaxError(err, tableFilter_buttons_logNameFile,"saveTemplate => setDataStorage");
+                        setAjaxError(err, tableFilter_buttons_logNameFile,"saveTemplate => setDataStorage");
                     });
 
                 }
@@ -14446,7 +14648,7 @@ function filterLibraryBtn () {
                     });
 
                     userprefsPost.fail(function(err){
-                        errors_setAjaxError(err, tableFilter_buttons_logNameFile,"saveTemplate => saveNewTemplate");
+                        setAjaxError(err, tableFilter_buttons_logNameFile,"saveTemplate => saveNewTemplate");
                     });
 
                 }
@@ -14663,7 +14865,7 @@ function resetFilterBtn (){
         });
 
         queryData.fail(function(err){
-            errors_setAjaxError(err, tableFilter_buttons_logNameFile,"resetFilterBtn");
+            setAjaxError(err, tableFilter_buttons_logNameFile,"resetFilterBtn");
         });
     
     } catch(err) {
@@ -14932,6 +15134,7 @@ const viewTools = {
 
 
 
+
  
 // other blocks
 
@@ -14946,7 +15149,7 @@ const viewTools = {
 
 
 
-const common_logNameFile = "router => common";
+const routerConfig_common_logNameFile = "router => common";
 function createElements(specificElement){
 
     function createDashboards(){
@@ -14962,7 +15165,7 @@ function createElements(specificElement){
                 3);
             }
         } catch (err){
-            errors_setFunctionError(err,common_logNameFile,"createDashboards");
+            errors_setFunctionError(err,routerConfig_common_logNameFile,"createDashboards");
         }
     }
 
@@ -15000,7 +15203,7 @@ function createElements(specificElement){
                 5);
             }
         } catch (err){
-            errors_setFunctionError(err,common_logNameFile,"createTables")
+            errors_setFunctionError(err,routerConfig_common_logNameFile,"createTables")
         }
     }
 
@@ -15023,15 +15226,6 @@ function createElements(specificElement){
                                             view:"flexlayout",
                                             cols:[
                                                 table ("table-view"),
-                                                {   view:"resizer",
-                                                    class:"webix_resizers", 
-                                                    id:"propResize", 
-                                                    hidden:true
-                                                },
-                                                // { view:"resizer",class:"webix_resizers",},
-                                                // {id:"formsTools",cols:[
-                                                //     propertyTemplate("propTableView")
-                                                // ]},
                                         
                                             ]
                                         }
@@ -15039,10 +15233,9 @@ function createElements(specificElement){
                                 ]}, 
 
                                 { view:"resizer",id:"formsTools-resizer",hidden:true,class:"webix_resizers",},
+                                propertyTemplate("propTableView"),
                                 {id:"formsTools",hidden:true,rows:[
-                                    viewTools,
-                                    propertyTemplate("propTableView"),
-                                    
+                                    viewTools,                                
                                 ]},
                             ]},
                         
@@ -15054,7 +15247,7 @@ function createElements(specificElement){
                 6);
             }
         } catch (err){
-            errors_setFunctionError(err,common_logNameFile,"createForms")
+            errors_setFunctionError(err,routerConfig_common_logNameFile,"createForms")
         }
     }
 
@@ -15082,7 +15275,7 @@ function createElements(specificElement){
                 }
             }
         } catch (err){
-            errors_setFunctionError(err,common_logNameFile,"createTreeTempl")
+            errors_setFunctionError(err,routerConfig_common_logNameFile,"createTreeTempl")
         }
     }
 
@@ -15102,7 +15295,7 @@ function createElements(specificElement){
                 7);
             }
         } catch (err){
-            errors_setFunctionError(err,common_logNameFile,"createCp")
+            errors_setFunctionError(err,routerConfig_common_logNameFile,"createCp")
         }
     }
 
@@ -15122,7 +15315,7 @@ function createElements(specificElement){
                 8);
             }
         } catch (err){
-            errors_setFunctionError(err,common_logNameFile,"createUserprefs")
+            errors_setFunctionError(err,routerConfig_common_logNameFile,"createUserprefs")
         }
     }
 
@@ -15148,7 +15341,7 @@ function removeElements(){
                 parent.removeView(elem);
             }
         } catch (err){
-            setFunctionError(err,common_logNameFile,"removeElement (element: "+idElement+")")
+            setFunctionError(err,routerConfig_common_logNameFile,"removeElement (element: "+idElement+")")
         }
     }
     removeElement ("tables");
@@ -15181,7 +15374,7 @@ function getWorkspace (){
                     });
                 });
             } catch (err){
-                errors_setFunctionError(err,common_logNameFile,"generateChildsTree");
+                errors_setFunctionError(err,routerConfig_common_logNameFile,"generateChildsTree");
             }
             return childs;
         }
@@ -15211,7 +15404,7 @@ function getWorkspace (){
             
 
             } catch (err){
-                errors_setFunctionError(err,common_logNameFile,"generateParentTree");
+                errors_setFunctionError(err,routerConfig_common_logNameFile,"generateParentTree");
             }
             return menuItem;
         } 
@@ -15240,7 +15433,7 @@ function getWorkspace (){
 
               
             } catch (err){
-                errors_setFunctionError(err,common_logNameFile,"generateHeaderMenu");
+                errors_setFunctionError(err,routerConfig_common_logNameFile,"generateHeaderMenu");
             }
 
             return items;
@@ -15298,7 +15491,7 @@ function getWorkspace (){
 
                 });
             } catch (err){
-                errors_setFunctionError(err,common_logNameFile,"generateMenuTree");
+                errors_setFunctionError(err,routerConfig_common_logNameFile,"generateMenuTree");
             }
         }
 
@@ -15315,7 +15508,7 @@ function getWorkspace (){
                 $$("mainLayout").show();
             } catch (err){
                 window.alert("showMainContent: "+err+ " (Подробности: ошибка в отрисовке контента)");
-                errors_setFunctionError(err,common_logNameFile,"showMainContent");
+                errors_setFunctionError(err,routerConfig_common_logNameFile,"showMainContent");
             }
         }
 
@@ -15325,7 +15518,7 @@ function getWorkspace (){
             userStorageData.name     = STORAGE.whoami.content.first_name;
             userStorageData.username = STORAGE.whoami.content.username;
             
-            storageSetting_setStorageData("user", JSON.stringify(userStorageData));
+            setStorageData("user", JSON.stringify(userStorageData));
         }
 
         showMainContent();
@@ -15360,7 +15553,7 @@ function checkTreeOrder(){
             getWorkspace ();
         }
     } catch (err){
-        errors_setFunctionError(err,common_logNameFile,"checkTreeOrder");
+        errors_setFunctionError(err,routerConfig_common_logNameFile,"checkTreeOrder");
     }
 }
 
@@ -15370,7 +15563,7 @@ function closeTree(){
             $$("tree").closeAll();
         }
     } catch (err){
-        errors_setFunctionError(err,common_logNameFile,"closeTree");
+        errors_setFunctionError(err,routerConfig_common_logNameFile,"closeTree");
     }
     
 }
@@ -15389,11 +15582,13 @@ function hideAllElements (){
             }
         });
     } catch (err){
-        errors_setFunctionError(err,common_logNameFile,"hideAllElements");
+        errors_setFunctionError(err,routerConfig_common_logNameFile,"hideAllElements");
     }
   
      
 }
+
+
 
 
 ;// CONCATENATED MODULE: ./src/js/blocks/routerConfig/tree.js
@@ -15662,7 +15857,6 @@ function treeRouter(id){
     }
    
     checkTable();
-
    
 }
 
@@ -15704,7 +15898,7 @@ function indexRouter(){
     }
 
     async function getAuth () {
-
+     
         if (!STORAGE.whoami ){
             await getData("whoami"); 
         }
@@ -15875,7 +16069,7 @@ function getDataUserprefs(){
     });
 
     userprefsData.fail(function(err){
-        errors_setAjaxError(err, userprefs_logNameFile,"getDataUserprefs");
+        setAjaxError(err, userprefs_logNameFile,"getDataUserprefs");
     });
 }
 
@@ -16027,7 +16221,7 @@ function logoutRouter(){
     });
 
     logoutData.fail(function(err){
-        errors_setAjaxError(err, logout_logNameFile,"logoutData");
+        setAjaxError(err, logout_logNameFile,"logoutData");
     });  
 }
 
@@ -16047,7 +16241,7 @@ lib ();
 
 
 function router (){
-    let routes= new (Backbone.Router.extend({
+    let routes = new (Backbone.Router.extend({
     
         routes:{
             ""                : "index" ,
@@ -16103,134 +16297,129 @@ function router (){
 
 
 
+function createSentObj(){
+    const loginData = {};
+    const form      = $$("formAuth");
+    try{
+     
+        const userData  = form.getValues();
 
-function login () {
-    router();
-    
-    function getLogin(){
+        loginData.un    = userData.username;
+        loginData.np    = userData.password;
+        
+    } catch (err){
+        errors_setFunctionError(err,"login","createSentObj");
+    }
+
+    return loginData;
+}
+
+function postLoginData(){
+    const loginData = createSentObj();
+    const form      = $$("formAuth");
+
+    const postData  = webix.ajax().post("/init/default/login",loginData);
+
+    postData.then(function(data){
+        
+        if (data.json().err_type == "i"){
+
+            data = data.json().content;
+            const userData     = {};
        
-        let userData = $$("formAuth").getValues();
-        let loginData = {};
 
-        try {
-           
-            $$("formAuth").validate();
-            loginData.un = userData.username;
-            loginData.np = userData.password;
-
-            webix.ajax().post("/init/default/login",loginData,{
-                success:function(text, data, XmlHttpRequest){
- 
-                    webix.ajax("/init/default/api/whoami",{
-                        success:function(text, data, XmlHttpRequest){
-                            try {
-                   
-                                let userData = {};
-                                userData.id = data.json().content.id;
-                                userData.name = data.json().content.first_name;
-                                userData.username = data.json().content.username;
-                                
-                                storageSetting_setStorageData("user", JSON.stringify(userData));
+            userData.id        = data.id;
+            userData.name      = data.first_name;
+            userData.username  = data.username;
+            
+            setStorageData("user", JSON.stringify(userData));
 
 
-                                if ( $$('formAuth')){
-                                    $$('formAuth').clear();
-                                }
-                    
-                   
-                                Backbone.history.navigate("content", { trigger:true});
-                                window.location.reload();
-                            
+            if (form){
+                form.clear();
+            }
 
-                                
-                            } catch (error){
-                                console.log(error);
-                                catchErrorTemplate("007-005", error);
-                            }
-                        },
-                        error:function(text, data, XmlHttpRequest){
-                            if ($$("formAuth")&&$$("formAuth").isDirty()){
-                                $$("formAuth").markInvalid("username", "");
-                                $$("formAuth").markInvalid("password", "Неверный логин или пароль");
-                            }
+            Backbone.history.navigate("content", { trigger:true});
+            window.location.reload();
 
-                            ajaxErrorTemplate("007-006",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
-
-                        }
-                    }).then(function(data){
-                        // webix.ajax().get("/init/default/api/userprefs/", {
-                        //     success:function(text, data, XmlHttpRequest){
-                        //         console.log(14)
-                        //     },
-                        //     error:function(text, data, XmlHttpRequest){
-                        //         ajaxErrorTemplate("007-000",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
-                        //     }
-                        // }).catch(error => {
-                        //     console.log(error);
-                        //     ajaxErrorTemplate("007-000",error.status,error.statusText,error.responseURL);
-                        // });
-
-
-
-                    });
-                },
-                error:function(text, data, XmlHttpRequest){
-                    webix.message({type:"error",expire:3000, text:"Не удалось выполнить выход"});
-                    ajaxErrorTemplate("007-006",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
-                }
-            }).catch(error => {
-                console.log(error);
-                ajaxErrorTemplate("007-006",error.status,error.statusText,error.responseURL);
-            });
-        } catch (error){
-            console.log(error);
-            catchErrorTemplate("007-000", error);
-
+        } else {
+            if (form && form.isDirty()){
+                form.markInvalid("username", "");
+                form.markInvalid("password", "Неверный логин или пароль");
+            }
         }
 
-    }
-    
-    
-    return {
-        view:"form",
-        id:"formAuth",
-        width:250,
-        borderless:true,
-        elements: [
-            {   view:"text", 
-                label:"Логин", 
-                name:"username",
-                invalidMessage:"Поле должно быть заполнено",
-                on:{
-                    onItemClick:function(){
-                        $$('formAuth').clearValidation();
-                    }
-                }  
-            },
-                {view:"text", 
-                label:"Пароль", 
-                name:"password",
-                invalidMessage:"Поле должно быть заполнено",
-                type:"password",
-                on:{
-                    onItemClick:function(){
-                        $$('formAuth').clearValidation();
-                    }
-                } 
-            },
-            {   view:"button", 
-                value: "Войти", 
-                css:"webix_primary",
-                hotkey: "enter", 
-                align:"center", 
-                click:getLogin
-            }, 
+    });
+
+    postData.fail(function(err){
+        setAjaxError(err, "login","postLoginData");
+    });
+}
+
+function getLogin(){
+
+    const form = $$("formAuth");
+
+    form.validate();
+    postLoginData();
+
+}
+
+function login () {
+  
+    router();
+
+    const invalidMsgText = "Поле должно быть заполнено";
+
+    const login =  {   
+        view            : "text", 
+        label           : "Логин", 
+        name            : "username",
+        invalidMessage  : invalidMsgText,
+        on              : {
+            onItemClick:function(){
+                $$('formAuth').clearValidation();
+            }
+        }  
+    };
+
+    const pass =  {   
+        view            : "text", 
+        label           : "Пароль", 
+        name            : "password",
+        invalidMessage  : invalidMsgText,
+        type            : "password",
+        on              : {
+            onItemClick:function(){
+                $$('formAuth').clearValidation();
+            }
+        } 
+    };
+
+    const btnSubmit = {   
+        view    : "button", 
+        value   : "Войти", 
+        css     : "webix_primary",
+        hotkey  : "enter", 
+        align   : "center", 
+        click   :getLogin
+    };
+
+    const form = {
+        view        : "form",
+        id          : "formAuth",
+        width       : 250,
+        borderless  : true,
+        elements    : [
+            login,
+            pass,
+            btnSubmit, 
         ],
 
         rules:{
             
-            "username":webix.rules.isNotEmpty,
-            "password":webix.rules.isNotEmpty,
+            "username" : webix.rules.isNotEmpty,
+            "password" : webix.rules.isNotEmpty,
     
           },
     
@@ -16240,14 +16429,12 @@ function login () {
         }
     
     };
+    
+    
+    return form;
 
 }
-// $$("formAuth").getChildViews().forEach(function(el,i){
-//     if (el.config.view == "text"){
-//         $$(el.config.id).define("css",'webix_invalid')
-//         $$(el.config.id).refresh();
-//     }
-// });
+
 
 
 ;// CONCATENATED MODULE: ./src/js/blocks/checkFonts.js
@@ -16698,7 +16885,7 @@ function header() {
                                                             userData.name = data.json().content.first_name;
                                                             userData.username = data.json().content.username;
                                                             
-                                                            storageSetting_setStorageData("user", JSON.stringify(userData));
+                                                            setStorageData("user", JSON.stringify(userData));
                                                         },
                                                         error:function(text, data, XmlHttpRequest){
                                                             ajaxErrorTemplate("005-011",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
@@ -16878,24 +17065,28 @@ function onSelectChangeFunc(ids){
             }
         });
     }
-  
+    removeElem  ($$("propertyRefbtnsContainer"));
+    hideElem    ($$("tablePropBtnsSpace"));
+    hideElem    ($$("editTableFormProperty"));
+    
     setSearchInputState();
-    hideElem ($$("filterTableBarContainer"));
-
-    showElem ($$("filterEmptyTempalte"));
-    showElem ($$("EditEmptyTempalte"));
-
-    disableElem     ($$("btnFilterSubmit"));
-    disableElem     ($$("filterLibrarySaveBtn"));
-    disableElem     ($$("resetFilterBtn"));
     
-    setWidthEditForm    ();
-    
-    setStateFilterBtn   ();
-    
-    hideTreeTempl       ();
+    hideElem    ($$("filterTableBarContainer"));
 
-    hideNoneContent     ();
+    showElem    ($$("filterEmptyTempalte"));
+    showElem    ($$("EditEmptyTempalte"));
+
+    disableElem ($$("btnFilterSubmit"));
+    disableElem ($$("filterLibrarySaveBtn"));
+    disableElem ($$("resetFilterBtn"));
+    
+    setWidthEditForm  ();
+    
+    setStateFilterBtn ();
+    
+    hideTreeTempl     ();
+
+    hideNoneContent   ();
 
     function visibleTreeItem(idsUndefined){
 
@@ -17259,7 +17450,7 @@ function onItemClickFunc(id){
             });
 
             postData.fail(function(err){
-                errors_setAjaxError(err, "sidebar","onItemClick => postNewData");
+                setAjaxError(err, "sidebar","onItemClick => postNewData");
             });
 
         } else {
@@ -17290,7 +17481,7 @@ function onItemClickFunc(id){
                 });
 
                 putData.fail(function(err){
-                    errors_setAjaxError(err, "sidebar","onItemClick => putData");
+                    setAjaxError(err, "sidebar","onItemClick => putData");
                 });
 
             }
@@ -17322,7 +17513,7 @@ function onItemClickFunc(id){
                 setDirtyProperty ();
             }
 
-            if (result !== 0){
+            if (result == 1 || result == 2){
                 removeElem ($$("propertyRefbtnsContainer"));
             }
 
@@ -17351,12 +17542,10 @@ const onBeforeSelect_logNameFile = "treeSidebar => onBeforeSelect";
 function onBeforeSelectFunc(data){
 
     const tree          = $$("tree");
-   // const getItemParent = tree.getParentId(data);
     const selectItem    = tree.getItem(data);
     const filterForm    = $$("filterTableForm");
     const inputs        = $$("inputsFilter");
 
-    
     if (data.includes("q-none_data-tree_") || 
         data.includes("q-load_data-tree_") ||
         selectItem.webix_kids              ){
@@ -17417,9 +17606,27 @@ function onBeforeSelectFunc(data){
         showElem (dashContainer);
     }
 
+    function disableVisibleBtn(){
+        const viewBtn =  $$("table-view-visibleCols");
+        const btn     =  $$("table-visibleCols");
+        
+        function disableBtn(el){
+            if (el){
+                el.disable();
+            }
+        }
+
+        if ( viewBtn.isVisible() ){
+            disableBtn(viewBtn);
+        } else if ( btn.isVisible() ){
+            disableBtn(btn);
+        }
+      
+    }
+
     setBtnCssState();
     setFilterDefaultState();
-    removeElem ($$("propertyRefbtnsContainer"));
+
     hideElem   ($$("editTableFormProperty"));
 
     setFormToolsDefaultState();
@@ -17428,6 +17635,7 @@ function onBeforeSelectFunc(data){
 
     adaptiveViewEditTable();
 
+    disableVisibleBtn();
 
     async function getSingleTreeItem() {
 
@@ -17637,6 +17845,7 @@ function onAfterSelectFunc(id){
 
     getFields ();
     setAdaptiveState();
+
 }
 
 
@@ -17679,7 +17888,7 @@ function treeSidebar () {
             },
 
             onLoadError:function(xhr){
-                errors_setAjaxError(xhr, "sidebar","onLoadError");
+                setAjaxError(xhr, "sidebar","onLoadError");
             },
 
             onBeforeOpen:function (id){
@@ -17748,7 +17957,7 @@ function resetTimer (){
                             });
 
                             putData.fail(function(err){
-                                errors_setAjaxError(err, "autoLogout","putUserPrefs");
+                                setAjaxError(err, "autoLogout","putUserPrefs");
                             });
                         } 
                     });  
@@ -17776,7 +17985,7 @@ function resetTimer (){
                         });
 
                         whoamiData.fail(function(err){
-                            errors_setAjaxError(err, "autoLogout","getWhoamiData");
+                            setAjaxError(err, "autoLogout","getWhoamiData");
                         });
 
                     }
@@ -17798,7 +18007,7 @@ function resetTimer (){
                 });
 
                 postData.fail(function(err){
-                    errors_setAjaxError(err, "autoLogout","postUserPrefs");
+                    setAjaxError(err, "autoLogout","postUserPrefs");
                 });
 
             }
@@ -17819,7 +18028,7 @@ function resetTimer (){
         });
 
         userprefsData.fail(function(err){
-            errors_setAjaxError(err, "autoLogout","logout");
+            setAjaxError(err, "autoLogout","logout");
 
         });
       
@@ -18167,15 +18376,13 @@ function adaptivePoints (){
 }
 
 ;// CONCATENATED MODULE: ./src/js/app.js
-console.log("expa 1.0.42"); 
+console.log("expa 1.0.43"); 
 
 
 
 
 
 
-
-//import {treeSidebar} from "./components/sidebar.js";
 
 
 
@@ -18280,7 +18487,7 @@ try{
         }
 
 
-      adaptivePoints();
+        adaptivePoints();
 
         webix.editors.customDate = webix.extend({
         render:function(){

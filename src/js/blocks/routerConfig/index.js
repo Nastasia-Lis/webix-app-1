@@ -34,7 +34,7 @@ function indexRouter(){
     }
 
     async function getAuth () {
-
+     
         if (!STORAGE.whoami ){
             await getData("whoami"); 
         }

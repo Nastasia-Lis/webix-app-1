@@ -12,7 +12,7 @@ import {logoutRouter}       from "./logout.js";
 
 
 function router (){
-    let routes= new (Backbone.Router.extend({
+    let routes = new (Backbone.Router.extend({
     
         routes:{
             ""                : "index" ,

@@ -1,7 +1,8 @@
 
 // tree elements
-import  {dashboardLayout}           from "../../components/dashboard.js";
-import  {table, onFuncTable}        from "../../components/table.js";
+import {dashboardLayout}            from "../../components/dashboard.js";
+import {table}                      from "../../components/table/layout.js";
+import {onFuncTable}                from "../../components/table/onFuncs.js";
 import {authCpLayout}               from "../../components/authSettings.js";
 import {userprefsLayout}            from "../../components/userprefs.js";
 import {editTreeLayout,contextMenu} from "../../components/editTree.js";
@@ -96,15 +97,6 @@ function createElements(specificElement){
                                             view:"flexlayout",
                                             cols:[
                                                 table ("table-view"),
-                                                {   view:"resizer",
-                                                    class:"webix_resizers", 
-                                                    id:"propResize", 
-                                                    hidden:true
-                                                },
-                                                // { view:"resizer",class:"webix_resizers",},
-                                                // {id:"formsTools",cols:[
-                                                //     propertyTemplate("propTableView")
-                                                // ]},
                                         
                                             ]
                                         }
@@ -112,10 +104,9 @@ function createElements(specificElement){
                                 ]}, 
 
                                 { view:"resizer",id:"formsTools-resizer",hidden:true,class:"webix_resizers",},
+                                propertyTemplate("propTableView"),
                                 {id:"formsTools",hidden:true,rows:[
-                                    viewTools,
-                                    propertyTemplate("propTableView"),
-                                    
+                                    viewTools,                                
                                 ]},
                             ]},
                         
@@ -467,6 +458,8 @@ function hideAllElements (){
   
      
 }
+
+
 
 export {
     createElements,

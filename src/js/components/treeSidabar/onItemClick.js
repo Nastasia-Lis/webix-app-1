@@ -216,7 +216,7 @@ function onItemClickFunc(id){
                 setDirtyProperty ();
             }
 
-            if (result !== 0){
+            if (result == 1 || result == 2){
                 removeElem ($$("propertyRefbtnsContainer"));
             }
 

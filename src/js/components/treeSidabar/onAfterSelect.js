@@ -29,6 +29,7 @@ function onAfterSelectFunc(id){
 
     getFields ();
     setAdaptiveState();
+
 }
 
 export{

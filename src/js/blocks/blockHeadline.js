@@ -1,5 +1,6 @@
-import {setFunctionError} from "./errors.js";
-import {saveFavsClick} from "./favsLink.js";
+import {setFunctionError}           from "./errors.js";
+import {saveFavsClick}              from "./favsLink.js";
+import {prevBtnClick, nextBtnClick} from "./historyBtns.js";
 
 function setHeadlineBlock (idTemplate, title=null){
     let templateTitle;
@@ -47,13 +48,56 @@ function setHeadlineBlock (idTemplate, title=null){
         
     };
 
+    const prevBtn = {
+        view:"button", 
+        css:"webix-transparent-btn btn-history",
+        type:"icon",
+        icon:"icon-arrow-left",
+        width:50,
+        click:function(){
+            prevBtnClick();
+        },
+        on:{
+            onAfterRender: function () {
+                this.getInputNode().setAttribute("title","Вернуться назад");
+            },
+        }
+    
+        
+    };
+ 
+    const nextBtn = {
+        view:"button", 
+        css:"webix-transparent-btn btn-history",
+        type:"icon",
+        icon:"icon-arrow-right",
+        width:50,
+        click:function(){
+            nextBtnClick();
+        },
+        on:{
+            onAfterRender: function () {
+                this.getInputNode().setAttribute("title","Перейти вперёд");
+            },
+        }
+    
+        
+    };
+ 
+
+
     const headlineLayout = {
-        css:"webix_block-headline",cols:[
+        css:"webix_block-headline",
+        cols:[
             headline,
             {},
+            {cols:[
+                prevBtn,
+                nextBtn,
+            ]},
             favsBtn
         ]
-    }
+    };
 
     return headlineLayout;
 }

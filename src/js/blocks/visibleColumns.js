@@ -1,9 +1,14 @@
-import {setFunctionError, setAjaxError} from "./errors.js";
-import { setLogValue } from "./logBlock.js";
+import { setFunctionError, setAjaxError }   from "./errors.js";
+import { setLogValue }                      from "./logBlock.js";
+
+import { setStorageData }                   from "./storageSetting.js";
+
+
+import  {STORAGE,getData}                   from "./globalStorage.js";
 
 function  visibleColsButtonClick(idTable){
     const currTable  = $$(idTable);
-    const columns    = $$(idTable).getColumns(true);
+    let columns    = $$(idTable).getColumns(true);
 
     function createCheckboxes(){
         const checkboxes = [];
@@ -155,10 +160,27 @@ function  visibleColsButtonClick(idTable){
                     } 
                 });
 
-             
-                columns.forEach(function(col){
+               
+          
+                // currTable.config.backCols.forEach(function(el,i){
+                //     const found     = columns.find(element => element.id == el.id);
+                //     const currCols  = currTable.config.columns;
+                //     if( !found ){
+                //         console.log(currCols,"currCols1") 
+                //         currCols.splice(i,0,el);
+                //         currTable.refreshColumns();
+                //         console.log(currCols,"currCols2") 
+                //     }
                    
-                    if(col.id !== "css_class"){
+                // });
+
+               
+                 columns = currTable.getColumns(true);
+                // console.log(columns) 
+                columns.forEach(function(col){
+
+                    if(col.css !== "action-column" && !col.hiddenCustomAttr ){
+      
                         checkboxes.push({
                             view:"checkbox", 
                             id:col.id+"_checkbox-visible", 
@@ -174,8 +196,6 @@ function  visibleColsButtonClick(idTable){
                     }
                    
                 });
-
-                 
         
               
             } catch (err){
@@ -189,6 +209,8 @@ function  visibleColsButtonClick(idTable){
                 btnSubmit.disable();
             }
         }
+
+
         function getUserprefsValues(){
             const id          = currTable.config.idTable;
             const selectAll   = $$("selectAll");
@@ -198,7 +220,6 @@ function  visibleColsButtonClick(idTable){
 
             if (storageData){
                 storageData.forEach(function(el){
-                    console.log(el)
                     $$(el.id+"_checkbox-visible").setValue(el.value);
                     values.push(el.value);
                     disableSubmitBtn();
@@ -274,7 +295,6 @@ function  visibleColsButtonClick(idTable){
         };
 
         function saveExistsTemplate(sentObj,idPutData){
-            console.log(sentObj,idPutData)
             const putData = webix.ajax().put("/init/default/api/userprefs/"+idPutData, sentObj);
     
             putData.then(function(data){
@@ -414,17 +434,27 @@ function  visibleColsButtonClick(idTable){
         }
 
         function setStateCols(el){
+        
             try{
+       
                 if (el.value){
+               
                     if ( !( currTable.isColumnVisible(el.id) ) ){
+               
                         currTable.showColumn(el.id);
+                   
                     }
 
                 } else {
                     if ( currTable.isColumnVisible(el.id) ){
+                  
                         currTable.hideColumn(el.id);
                     }
                 }
+
+                currTable.refreshColumns();
+
+
             } catch (err){
                 setFunctionError(err,"toolbarTable","visibleColsSubmitClick => pushValuesChecks element: "+el);
             }
@@ -564,6 +594,7 @@ function toolbarVisibleColsBtn(idTable){
         type:"icon",
         id:idVisibleCols,
         //hidden:visible,
+        disabled:true,
         icon:"icon-columns",
         css:"webix_btn-download webix-transparent-btn",
         title:"текст",
