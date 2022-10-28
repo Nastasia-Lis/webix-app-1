@@ -1,5 +1,5 @@
-import {setFunctionError} from "./errors.js";
-
+import {setFunctionError, setAjaxError} from "./errors.js";
+import {setStorageData} from "./storageSetting.js";
 
 function getItemId (){
     let idTable;
@@ -41,6 +41,7 @@ function showElem (elem){
         setFunctionError(err,"commonFunctions","showElem element: "+elem);
     }
 }
+
 function removeElem (elem){
     try{
         if(elem){
@@ -83,11 +84,101 @@ function textInputClean(){
     }, { capture: true });
 }
 
+function getComboOptions (refTable){
+    const url       = "/init/default/api/"+refTable;
+
+    return new webix.DataCollection({url:{
+        $proxy:true,
+        load: function(){
+            return ( webix.ajax().get(url).then(function (data) {
+                        data = data.json().content;
+                        let dataArray=[];
+                        let keyArray;
+
+                        function stringOption(l,el){
+                            try{
+                                while (l <= Object.values(el).length){
+                                    if (typeof Object.values(el)[l] == "string"){
+                                        keyArray = Object.keys(el)[l];
+                                        break;
+                                    } 
+                                    l++;
+                                }
+                            } catch (err){  
+                                setFunctionError(err,"commonFunctions","getComboOptions => stringOption");
+                            }
+                        }
+
+                        function numOption(l,el){
+                            try{
+                                if (el[keyArray] == undefined){
+                                    while (l <= Object.values(el).length) {
+                                        if (typeof Object.values(el)[1] == "number"){
+                                            keyArray = Object.keys(el)[1];
+                                            break;
+                                        }
+                                        l++;
+                                    }
+                                }
+
+                                dataArray.push({ "id":el.id, "value":el[keyArray]});
+                            } catch (err){  
+                                setFunctionError(err,"commonFunctions","getComboOptions => numOption");
+                            }
+                        }
+
+                        function createComboValues(){
+                            try{
+                                data.forEach((el,i) =>{
+                                    let l = 0;
+                                    stringOption (l,el);
+                                    numOption    (l,el);
+                                
+                                });
+                            } catch (err){  
+                                setFunctionError(err,"commonFunctions","getComboOptions => createComboValues");
+                            }
+                        }
+                        createComboValues();
+                        return dataArray;
+                    
+                    }).catch(err => {
+                        setAjaxError(err, "commonFunctions","getComboOptions");
+                    })
+            );
+            
+        }
+    }});
+}
+
+
+
+function getUserData(){
+    const userprefsGetData = webix.ajax("/init/default/api/whoami");
+    userprefsGetData.then(function(data){
+        data = data.json().content;
+
+        const userData = {};
+    
+        userData.id       = data.id;
+        userData.name     = data.first_name;
+        userData.username = data.username;
+        
+        setStorageData("user", JSON.stringify(userData));
+    });
+    userprefsGetData.fail(function(err){
+        setAjaxError(err, "favsLink","btnSaveLpostContentinkClick => getUserData");
+    });
+}
+
+
 export {
     getItemId,
     hideElem,
     showElem,
     removeElem,
     disableElem,
-    textInputClean
+    textInputClean,
+    getComboOptions,
+    getUserData
 };

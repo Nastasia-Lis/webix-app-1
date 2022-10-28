@@ -1,9 +1,9 @@
-import {setFunctionError}   from "../errors.js";
-import {hideElem} from "../commonFunctions.js";
+import {setFunctionError}                                           from "../errors.js";
+import {hideElem}                                                   from "../commonFunctions.js";
 
-import {hideAllElements,checkTreeOrder,closeTree,createElements} from "./common.js";
+import {hideAllElements,checkTreeOrder,closeTree,createElements}    from "./common.js";
 
-import {getInfoEditTree} from "../content.js";
+import {getInfoEditTree}                                            from "../getContent/getInfoEditTree.js";
 
 
 const logNameFile = "router => experimental";

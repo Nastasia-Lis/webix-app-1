@@ -1,6 +1,7 @@
-import {hideElem,showElem} from "../commonFunctions.js";
+import {hideElem,showElem,getComboOptions} from "../commonFunctions.js";
 import {setAjaxError,setFunctionError} from "../errors.js";
-import {getComboOptions} from '../content.js';
+import {setLogValue} from "../logBlock.js";
+
 
 import {popupExec} from "../notifications.js";
 
@@ -159,26 +160,26 @@ function filterOperationsBtnData (typeField){
     return webix.once(function(){
         if (typeField == "combo" || typeField == "boolean" ){
             this.add( { value: '=', id:"operations_eql" });
-            this.add(  { value: '!=', id:"operations_notEqual" });
+            this.add( { value: '!=', id:"operations_notEqual" });
         } else if (typeField  == "text" ){
             this.add( { value: '=', id:"operations_eql" });
-            this.add(  { value: '!=', id:"operations_notEqual" });
+            this.add( { value: '!=', id:"operations_notEqual" });
             this.add( {value: 'содержит', id:"operations_contains"});
         } else if (typeField  == "date"){
             this.add( { value: '=', id:"operations_eql" });
-            this.add(  { value: '!=', id:"operations_notEqual" });
+            this.add( { value: '!=', id:"operations_notEqual" });
             this.add( { value: '<', id:"operations_less"  });
-            this.add(  { value: '>', id:"operations_more"  });
+            this.add( { value: '>', id:"operations_more"  });
             this.add( { value: '>=', id:"operations_mrEqual" });
-            this.add(  { value: '<=', id:"operations_lsEqual" });
+            this.add( { value: '<=', id:"operations_lsEqual" });
 
         } else if (typeField  == "integer"   ){
             this.add( { value: '=', id:"operations_eql" });
-            this.add(  { value: '!=', id:"operations_notEqual" });
+            this.add( { value: '!=', id:"operations_notEqual" });
             this.add( { value: '<', id:"operations_less"  });
-            this.add(  { value: '>', id:"operations_more"  });
+            this.add( { value: '>', id:"operations_more"  });
             this.add( { value: '>=', id:"operations_mrEqual" });
-            this.add(  { value: '<=', id:"operations_lsEqual" });
+            this.add( { value: '<=', id:"operations_lsEqual" });
             this.add( {value: 'содержит', id:"operations_contains"});
 
         }   
@@ -245,13 +246,151 @@ function filterFieldsFunctions (el,typeField){
         }
     };
 
+    const contextBtn = {   
+        view:"button",
+        id:el.id+"_contextMenuFilter",
+        type:"icon",
+        css:"webix_filterBtns",
+        icon: 'wxi-dots',
+        inputHeight : 38,
+        width       : 40,
+        popup: {
+            view: 'contextmenu',
+            css:"webix_contextmenu",
+            data: [
+                {   id:"add",   
+                    value:"Добавить поле", 
+                    icon: "icon-plus",
+                    submenu:[      
+                        { id:"add_and", value: 'и'  },
+                        { id:"add_or" , value: 'или'},
+                    ]},
+                {id:"remove", value:"Удалить поле", icon: "icon-trash"}
+            ],
+            on:{
+                onMenuItemClick:function(id, e, node){
+
+                    function popupSuccess(idBtnDel){
+            
+                        function hideHtmlContainer(inputName){
+                            const inputs = document.querySelectorAll(".webix_filter-inputs");
+                            let counter  = 0;
+        
+                            inputs.forEach(function(elem,i){
+                                
+                                const viewAttr  = elem.getAttribute("view_id");
+        
+                                const hideClass = "webix_hide-content";
+                                const showClass = "webix_show-content";
+        
+        
+                                if (viewAttr == inputName){
+                                    if ( !(elem.classList.contains( hideClass )) ){
+                                        elem.classList.add( hideClass );
+                                 
+                                    }
+        
+                                    if ( elem.classList.contains( showClass ) ){
+                                        elem.classList.remove( showClass );
+                                    }
+                                }
+                 
+                                if ( elem.classList.contains( showClass ) ){
+                                    counter++;
+                                }
+        
+                            });
+        
+                            if ( !counter ){
+                                showElem($$("filterEmptyTempalte"));
+                            }
+                        }
+        
+                            const container          = idBtnDel          .getParentView();
+                     
+                            const parentContainer    = container         .getParentView();
+                            const mainInput          = parentContainer   .getChildViews();
+
+                            const allInputsContainer = parentContainer   .getParentView();
+                            const allInputs          = allInputsContainer.getChildViews();
+              
+
+                            function hideMainInput(){
+                                try{
+                                    mainInput.forEach(function(el){
+                                        const id = el.config.id;
+                                        hideElem(el);
+                                        
+                                        if ( !(id.includes( "_container-btns" )) ){
+                                            el.setValue("");
+                                            hideHtmlContainer( id + "_rows" );
+                                        }
+                                    });
+                                }catch(err){ 
+                                    setFunctionError(err,logNameFile,"contextBtn remove => hideMainInput");
+                                }
+                            }
+
+                            function hideChilds(){
+                                const childsArr = [];
+                                allInputs.forEach(function(el){
+                                    const id = el.config.id;
+                                    if(id.includes("-container-child-")){
+                                        childsArr.push($$(id));
+
+                                    }
+                                });
+
+                                childsArr.forEach(function(el){
+                                    const parent = el.getParentView();
+                                    parent.removeView(el);
+                                });
+                            }
+                            
+                            hideMainInput();
+                            hideChilds();
+
+                            setLogValue("success","Поле удалено"); 
+                   
+                    }
+
+                    if ( id == "add_and" || id == "add_or" ){
+                        createChildFields (id,el);
+                    } else if (id.includes("remove")){
+                        const idBtnDel = $$(this.config.master);
+
+                        popupExec("Поле фильтра будет удалено").then(
+                            function(){
+                                popupSuccess(idBtnDel);
+                                
+                            }
+                        );
+                    }
+                
+
+        
+                },
+             
+            }
+        },
+
+        on:{
+            onAfterRender: function () {
+                this.getInputNode().setAttribute("title","Другие операции");
+            },
+        }
+  
+    };
+
     const btns = {
         id:el.id+"_filter_container-btns",
         css:{"margin-top":"27px!important"},
         hidden:true, 
         cols:[
             btnOperation,
-            btnAdd,
+           // btnAdd,
+           // btnDel
+           contextBtn
         ]
     };
 
@@ -517,7 +656,7 @@ function createFilterElements (parentElement, viewPosition=1) {
     }
 
     function generateElements(){
-        const columnsData = $$("table").getColumns();
+        const columnsData = $$("table").getColumns(true);
         let inputsArray   = [];
         try{
             columnsData.forEach((el,i) => {
@@ -538,7 +677,7 @@ function createFilterElements (parentElement, viewPosition=1) {
                 const idContainerRows = el.id+"_filter"+"_rows";
                 const idContainer     = el.id+"_container";
                 const cssContainer    = el.id+" webix_filter-inputs";
-
+     
                 function pushData (element, btns){
                     const data  =  {   
                         id:idContainerRows,
@@ -548,7 +687,7 @@ function createFilterElements (parentElement, viewPosition=1) {
                                 padding:5,
                                 cols:[
                                     element,
-                                    btns
+                                    btns,
                                 ]
                             }
                         ]
@@ -640,15 +779,18 @@ function createFilterElements (parentElement, viewPosition=1) {
                     inputsArray.push(
                         pushData ( 
                             createText ("int"),
-                            filterFieldsFunctions (el,"integer")
+                            filterFieldsFunctions (el,"integer"),
+                         
                         )
                     );
                 }
                 else{
+
                     inputsArray.push(
                         pushData ( 
                             createText ("text"),
-                            filterFieldsFunctions (el,"text")
+                            filterFieldsFunctions (el,"text"),
+                   
                         )
                     );
                 }
@@ -802,13 +944,14 @@ function toolbarFilterBtn(idTable,visible){
         css:"webix_btn-filter webix-transparent-btn ",
         disabled:true,
         title:"текст",
+        hotkey:"ctrl+shift+f",
         height:42,
         click:function(){
             filterBtnClick(idTable,idBtnEdit);
         },
         on: {
             onAfterRender: function () {
-                this.getInputNode().setAttribute("title","Показать/скрыть фильтры");
+                this.getInputNode().setAttribute("title","Показать/скрыть фильтры (Ctrl+Shift+F)");
             }
         } 
     };

@@ -1,8 +1,7 @@
 import {setFunctionError} from "../errors.js";
 import  {STORAGE,getData} from "../globalStorage.js";
 import {modalBox} from "../notifications.js";
-import {getComboOptions} from '../content.js';
-import {hideElem, showElem} from "../commonFunctions.js";
+import {hideElem, showElem,getComboOptions} from "../commonFunctions.js";
 
 import {saveItem,saveNewItem} from "./buttons.js";
 
@@ -723,7 +722,6 @@ function createEditFields (parentElement) {
                     const formatData = webix.Date.dateToStr("%d.%m.%y %H:%i:%s");
 
                     let defVal;
-            
                     if (el.default === "now" && el.type == "datetime"){
                         defVal = formatData(new Date());
 

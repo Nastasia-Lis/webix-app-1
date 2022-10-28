@@ -260,6 +260,11 @@ select:focus{
     border: 1px solid var(--primary)!important;
 }
 
+::placeholder {
+    color: #858585 !important;
+}
+  
+
 input, select,
 .webix_inp_static {
     border-radius: 4px!important;
@@ -307,7 +312,7 @@ label, button{
     }
 
     &_popup-prev-href{
-        padding: 10px!important;
+        padding: 20px!important;
     }
 
 
@@ -985,3 +990,61 @@ label, button{
 }.popup_time-timeFormHead .webix_template{
     padding: 0px!important;
 }
+
+
+
+
+/// context menu
+.webix_view.webix_menu .webix_list_item .webix_submenu_icon{
+    font-size: 0!important;
+    width: 0px!important;
+}
+
+
+
+// trash btn transparent 
+
+.webix-trash-btn-color .webix_button .webix_icon_btn {
+    color:var(--danger)!important;
+}
+
+
+
+
+/// list filter
+
+.list-filter-borders{
+    background-color:var(--bg)!important;
+    border-radius: 0px 0px 6px 6px;
+}
+.list-filter-empty{
+    background-color:var(--bg)!important;
+}
+.list-filter-headline{
+    background-color:var(--gray-light)!important;
+    border-radius: 6px 6px 0px 0px;
+    font-weight: 600!important;
+    margin-top: 10px!important;
+    padding: 7px 0px 10px 0px!important;
+}
+
+ 
+.list-filter-move-btns .icon-arrow-right{
+    font-size: 11px!important;
+}
+.list-filter-move-btns .icon-arrow-left{
+    font-size: 11px!important;
+}
+
+.list-filter-head .webix_template{
+    padding: 7px 0px 0px 2px!important;
+}
+
+
+
+
+
+.webix_el_checkbox .webix_label_right{
+    padding-top:6px!important;
+}
+

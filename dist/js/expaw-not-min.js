@@ -5,7 +5,7 @@ var __webpack_exports__ = {};
 ;// CONCATENATED MODULE: ./src/js/blocks/storageSetting.js
 
 
-function setStorageData (name, value){
+function storageSetting_setStorageData (name, value){
     if (typeof(Storage) !== 'undefined') {
         localStorage.setItem(name, value);
     } 
@@ -28,96 +28,134 @@ function setLoginActionPref(userLocation, userprefsWorkspace){
 }
 
 
+
 function moveUser(){
     const localPath = "/index.html/content";
     const expaPath  = "/init/default/spaw/content";
 
-    if (window.location.pathname == localPath || window.location.pathname == expaPath){
+    if ( window.location.pathname == localPath || window.location.pathname == expaPath ){
   
         const userprefsWorkspace = webix.storage.local.get("userprefsWorkspaceForm");
         const userLocation       = webix.storage.local.get("userLocationHref");
 
-        const url = new URL(userLocation.href);
+        const url = new URL( userLocation.href );
  
         if (userprefsWorkspace                    && 
             userprefsWorkspace.LoginActionOpt     && 
             url.origin == window.location.origin  &&
             !(url.pathname.includes("logout")     )){
             
-            setLoginActionPref(userLocation,userprefsWorkspace);
+            setLoginActionPref( userLocation, userprefsWorkspace );
         }
     }
 }
 
-function setUserPrefs (){
+
+function setLogPref(){
+    const userprefsWorkspace = webix.storage.local.get("userprefsWorkspaceForm");
+    const logLayout          = $$("logLayout");
+    const logBtn             = $$("webix_log-btn");
+
+    function hideLog(){
+        logLayout.config.height = 5;
+        logBtn.config.icon ="icon-eye";
+    }
+
+    function showLog(){
+        logLayout.config.height = 90;
+        logBtn.config.icon ="icon-eye-slash";
+    }
     
+    try{
+        if (userprefsWorkspace){
+ 
+            if (userprefsWorkspace.logBlockOpt !== undefined ){
+
+                if (userprefsWorkspace.logBlockOpt=="2"){
+                    hideLog();
+
+                } else if(userprefsWorkspace.logBlockOpt=="1"){
+                    showLog();
+                }
+
+                logLayout.resize();
+                logBtn.refresh();
+            }
+
+
+        }
+    } catch(err){
+        errors_setFunctionError(err,"storageSettings","userprefsWorkspace");
+    }
+}
+
+
+
+function setUserPrefs (){
+ 
     const userprefsData = webix.ajax("/init/default/api/userprefs/");
    
-    userprefsData.then(function(data){
-        const user = webix.storage.local.get("user");
-        data = data.json().content;
+    userprefsData.then( function (data) {
+        let user = webix.storage.local.get("user");
+        data       = data.json().content;
         
         function setDataToStorage(){
+ 
             try{
                 data.forEach(function(el,i){
                     if (el.owner == user.id && !(el.name.includes("fav-link_"))){
-                        setStorageData (el.name, el.prefs);
+                        storageSetting_setStorageData (el.name, el.prefs);
                     }
+               
                 });
             } catch(err){
                 errors_setFunctionError(err,"storageSettings","setDataToStorage");
             }
         }
 
-        if (user){
-            setDataToStorage();
-            moveUser();
+        
+        async function setPrefs(){
+         
+            if (!(Object.keys(user).length)){
+                const userprefsGetData = webix.ajax("/init/default/api/whoami");
+                userprefsGetData.then(function(data){
+                    data = data.json().content;
+
+                    let userData = {};
+                
+                    userData.id       = data.id;
+                    userData.name     = data.first_name;
+                    userData.username = data.username;
+                    
+                    storageSetting_setStorageData("user", JSON.stringify(userData));
+                });
+                userprefsGetData.then(function(data){
+                    user = webix.storage.local.get("user");
+                    setDataToStorage ();
+                    moveUser         ();
+                    setLogPref       ();
+                });
+
+                userprefsGetData.fail(function(err){
+                    errors_setAjaxError(err, "favsLink", "btnSaveLpostContentinkClick => getUserData");
+                });
+    
+            } else {
+ 
+                setDataToStorage();
+                moveUser        ();
+            }
+
+        
           
         }
+        setPrefs();
+    }).then(function(){
+        setLogPref();
     });
     userprefsData.fail(function(err){
-        setAjaxError(err, "storageSettings","setUserPrefs");
+        errors_setAjaxError(err, "storageSettings","setUserPrefs");
     });
-
-
-    function setLogPref(){
-        const userprefsWorkspace = webix.storage.local.get("userprefsWorkspaceForm");
-        const logLayout          = $$("logLayout");
-        const logBtn             = $$("webix_log-btn");
-
-        function hideLog(){
-            logLayout.config.height = 5;
-            logBtn.config.icon ="icon-eye";
-        }
-
-        function showLog(){
-            logLayout.config.height = 90;
-            logBtn.config.icon ="icon-eye-slash";
-        }
-        
-        try{
-            if (userprefsWorkspace){
-     
-                if (userprefsWorkspace.logBlockOpt !== undefined ){
-
-                    if (userprefsWorkspace.logBlockOpt=="2"){
-                        hideLog();
-    
-                    } else if(userprefsWorkspace.logBlockOpt=="1"){
-                        showLog();
-                    }
-
-                    logLayout.resize();
-                    logBtn.refresh();
-                }
-    
-    
-            }
-        } catch(err){
-            errors_setFunctionError(err,"storageSettings","userprefsWorkspace");
-        }
-    }
-    setLogPref();
 
 }
 
@@ -170,7 +208,7 @@ function getData (fileName){
                 }
                 return STORAGE[fileName];
             }).catch(err => {
-                setAjaxError(err, "globalStorage","getData");
+                errors_setAjaxError(err, "globalStorage","getData");
                 checkNotAuth (err);
             }
         );
@@ -199,7 +237,7 @@ function createCurrDate(){
 }
 
 
-function logBlock_setLogValue (typeNotify,notifyText,specificSrc) {
+function setLogValue (typeNotify,notifyText,specificSrc) {
 
     const currentDate = createCurrDate();
 
@@ -231,7 +269,7 @@ function logBlock_setLogValue (typeNotify,notifyText,specificSrc) {
         }
 
         if (srcTable == "version"){
-            name = 'Expa v1.0.43';
+            name = 'Expa v1.0.44';
 
         } else if (srcTable == "cp") {
             name = 'Смена пароля';
@@ -322,7 +360,7 @@ function logBlock_setLogValue (typeNotify,notifyText,specificSrc) {
                     btn.config.icon ="icon-eye-slash";
                     btn.refresh();
 
-                    setStorageData("LogVisible", JSON.stringify("show"));
+                    storageSetting_setStorageData("LogVisible", JSON.stringify("show"));
                 }
             } catch (err){
                 errors_setFunctionError(err,"logBlock","openLog");
@@ -352,7 +390,7 @@ const logBlock = {
     on: {
         onAfterLoad:function(){
             try {
-                logBlock_setLogValue ("success","Интерфейс загружен","version");
+                setLogValue ("success","Интерфейс загружен","version");
             } catch (err){
                 errors_setFunctionError(err,"logBlock","logBlock onAfterLoad");
             }
@@ -424,9 +462,9 @@ function catchErrorTemplate (code,error,otherType=false) {
         notifyCounter = 0;
 
         if (!otherType){
-            return logBlock_setLogValue("error","ОШИБКА "+code+": "+error.stack);
+            return setLogValue("error","ОШИБКА "+code+": "+error.stack);
         } else {
-            return logBlock_setLogValue("error","ОШИБКА "+code+": "+error);
+            return setLogValue("error","ОШИБКА "+code+": "+error);
         }
     } catch (err){
         console.log(err);
@@ -440,7 +478,7 @@ function ajaxErrorTemplate (code, status,statusText,responseURL){
    
     notifyCounter = 0;
     let errorMsg = "СТАТУС: "+status+" "+statusText+"."+" ПОДРОБНОСТИ: "+responseURL;
-    return logBlock_setLogValue("error","ОШИБКА "+code+": "+errorMsg,);
+    return setLogValue("error","ОШИБКА "+code+": "+errorMsg,);
 
 }
 
@@ -450,18 +488,18 @@ function ajaxErrorTemplate (code, status,statusText,responseURL){
 ;// CONCATENATED MODULE: ./src/js/blocks/errors.js
 
 
-function setAjaxError(err,file,func){
+function errors_setAjaxError(err,file,func){
     if (err.status === 400 ||  err.status === 401 || err.status === 404){
-        logBlock_setLogValue("error", file+" function "+func+": "+err.status+" "+err.statusText+" "+err.responseURL+" ("+err.responseText+") ");
+        setLogValue("error", file+" function "+func+": "+err.status+" "+err.statusText+" "+err.responseURL+" ("+err.responseText+") ");
     } else {
-        logBlock_setLogValue("error", file+" function "+func+": "+err.status+" "+err.statusText+" "+err.responseURL+" ("+err.responseText+") ","version");
+        setLogValue("error", file+" function "+func+": "+err.status+" "+err.statusText+" "+err.responseURL+" ("+err.responseText+") ","version");
         window.alert("Ошибка. Статус: " + err.status+". Отсутствует соединение с сервером.");
     }
 }
 
 function errors_setFunctionError(err,file,func){
     console.log(err);
-    logBlock_setLogValue("error", file+" function "+func+": "+err);
+    setLogValue("error", file+" function "+func+": "+err);
 }
 
 
@@ -509,6 +547,7 @@ function showElem (elem){
         errors_setFunctionError(err,"commonFunctions","showElem element: "+elem);
     }
 }
+
 function removeElem (elem){
     try{
         if(elem){
@@ -550,6 +589,94 @@ function textInputClean(){
       mdView = null;
     }, { capture: true });
 }
+
+function getComboOptions (refTable){
+    const url       = "/init/default/api/"+refTable;
+
+    return new webix.DataCollection({url:{
+        $proxy:true,
+        load: function(){
+            return ( webix.ajax().get(url).then(function (data) {
+                        data = data.json().content;
+                        let dataArray=[];
+                        let keyArray;
+
+                        function stringOption(l,el){
+                            try{
+                                while (l <= Object.values(el).length){
+                                    if (typeof Object.values(el)[l] == "string"){
+                                        keyArray = Object.keys(el)[l];
+                                        break;
+                                    } 
+                                    l++;
+                                }
+                            } catch (err){  
+                                errors_setFunctionError(err,"commonFunctions","getComboOptions => stringOption");
+                            }
+                        }
+
+                        function numOption(l,el){
+                            try{
+                                if (el[keyArray] == undefined){
+                                    while (l <= Object.values(el).length) {
+                                        if (typeof Object.values(el)[1] == "number"){
+                                            keyArray = Object.keys(el)[1];
+                                            break;
+                                        }
+                                        l++;
+                                    }
+                                }
+
+                                dataArray.push({ "id":el.id, "value":el[keyArray]});
+                            } catch (err){  
+                                errors_setFunctionError(err,"commonFunctions","getComboOptions => numOption");
+                            }
+                        }
+
+                        function createComboValues(){
+                            try{
+                                data.forEach((el,i) =>{
+                                    let l = 0;
+                                    stringOption (l,el);
+                                    numOption    (l,el);
+                                
+                                });
+                            } catch (err){  
+                                errors_setFunctionError(err,"commonFunctions","getComboOptions => createComboValues");
+                            }
+                        }
+                        createComboValues();
+                        return dataArray;
+                    
+                    }).catch(err => {
+                        errors_setAjaxError(err, "commonFunctions","getComboOptions");
+                    })
+            );
+            
+        }
+    }});
+}
+
+
+
+function getUserData(){
+    const userprefsGetData = webix.ajax("/init/default/api/whoami");
+    userprefsGetData.then(function(data){
+        data = data.json().content;
+
+        const userData = {};
+    
+        userData.id       = data.id;
+        userData.name     = data.first_name;
+        userData.username = data.username;
+        
+        setStorageData("user", JSON.stringify(userData));
+    });
+    userprefsGetData.fail(function(err){
+        setAjaxError(err, "favsLink","btnSaveLpostContentinkClick => getUserData");
+    });
+}
+
 
 
 ;// CONCATENATED MODULE: ./src/js/expalib.js
@@ -4799,14 +4926,14 @@ function trashBtn(config,idTable){
                 } catch (err){
                     errors_setFunctionError(err,logNameFile,"wxi-trash => delData");
                 }
-                logBlock_setLogValue("success","Данные успешно удалены");
+                setLogValue("success","Данные успешно удалены");
             } else {
-                logBlock_setLogValue("error",data.err);
+                setLogValue("error",data.err);
             }
         });
 
         delData.fail(function(err){
-            setAjaxError(err, logNameFile,"wxi-trash => delElem");
+            errors_setAjaxError(err, logNameFile,"wxi-trash => delElem");
         });
     }
 
@@ -4907,7 +5034,7 @@ function showPropBtn (cell){
         });
 
         getData.fail(function(err){
-            setAjaxError(err, logNameFile,"wxi-angle-down => getProp");
+            errors_setAjaxError(err, logNameFile,"wxi-angle-down => getProp");
         });
     }
 
@@ -4950,3006 +5077,6 @@ function table (idTable, onFunc, editableParam=false) {
         },
     };
 }
-
-
-;// CONCATENATED MODULE: ./src/js/blocks/favsLink.js
-
-
-
-
-
-
-
-function getUserData(){
-    const userprefsGetData = webix.ajax("/init/default/api/whoami");
-    userprefsGetData.then(function(data){
-        data = data.json().content;
-
-        let userData = {};
-    
-        userData.id       = data.id;
-        userData.name     = data.first_name;
-        userData.username = data.username;
-        
-        setStorageData("user", JSON.stringify(userData));
-        
-    });
-    userprefsGetData.fail(function(err){
-        setAjaxError(err, "favsLink","btnSaveLpostContentinkClick => getUserData");
-    });
-}
-
-
-
-function favsPopupCollectionClick (){
-    const getData = webix.ajax().get("/init/default/api/userprefs/");
-    
-    getData.then(function(data){
-        data = data.json().content;
-        const favCollection = [];
-
-        let user = webix.storage.local.get("user");
-
-        if (!user){
-            getUserData();
-            user = webix.storage.local.get("user");
-        }
-    
-        
-        function getFavsCollection(){
-            try{
-                data.forEach(function(el){
-                    if (el.name.includes("fav-link") && user.id == el.owner){
-                        favCollection.push(JSON.parse(el.prefs));
-                    }
-                });
-            } catch (err){
-                errors_setFunctionError(err,"favsLink","favsPopupCollectionClick => getFavsCollection");
-            }
-        }
-
-        function createOptions(){
-            const radio = $$("favCollectionLinks");
-            try{
-                if (favCollection.length){
-                    favCollection.forEach(function(el){
-                        radio.addOption(
-                            {   id:el.id,
-                                value:el.name,
-                                favLink: el.link
-                            }
-                        );
-                        radio.removeOption(
-                            "radioNoneContent"
-                        );
-                    });
-                }
-                $$("popupFavsLink").show();
-            } catch (err){
-                errors_setFunctionError(err,"favsLink","favsPopupCollectionClick => createOptions");
-            }
-         
-        }
-        
-        if (user){
-            getFavsCollection();
-            createOptions();
-        }
-   
-    
-    });
-
-    getData.fail(function(err){
-        setAjaxError(err, "favsLink","favsPopupCollectionClick getData");
-    });
-
-    
-}
-
-function favsPopupSubmitClick(){
-    try{
-        const radio  = $$("favCollectionLinks");
-        const value  = radio.getValue();
-        const option = radio.getOption(value);
-        window.location.replace(option.favLink);
-    } catch (err){
-        errors_setFunctionError(err,"favsLink","favsPopupSubmitClick");
-    }
-}
-
-function favsPopup(){
-
-    const popupHeadline = {   
-        template:"Избранное", 
-        width:250,
-        css:"popup_headline", 
-        borderless:true, 
-        height:20 
-    };
-
-    const btnClosePopup = {
-        view:"button",
-        id:"buttonClosePopup",
-        css:"popup_close-btn",
-        type:"icon",
-        width:35,
-        icon: 'wxi-close',
-        click:function(){
-            try{
-                if ($$("popupFavsLink")){
-                    $$("popupFavsLink").destructor();
-                }
-            } catch (err){
-                errors_setFunctionError(err,"favsLink","favsPopup click");
-            }
-        
-        }
-    };
-
-    const radioLinks = {
-        view:"radio", 
-        id:"favCollectionLinks",
-        vertical:true,
-        options:[
-            {   id:"radioNoneContent", disabled:true, value:"Здесь будут сохранены Ваши ссылки"}
-        ],
-        on:{
-            onChange:function(newValue, oldValue){
-                try{
-                    const submitBtn = $$("favLinkSubmit");
-                    if (newValue !== oldValue){
-                        if (submitBtn && !(submitBtn.isEnabled())){
-                            submitBtn.enable();
-                        }
-                    }
-                } catch (err){
-                    errors_setFunctionError(err,"favsLink","favsPopup => radioLinks");
-                }
-            }
-        }
-    };
-
-    const btnSaveLink = {
-        view:"button",
-        id:"favLinkSubmit", 
-        value:"Открыть ссылку", 
-        css:"webix_primary", 
-        disabled:true,
-        click:function(){
-            favsPopupSubmitClick();
-        }
- 
-    };
- 
-    webix.ui({
-        view:"popup",
-        id:"popupFavsLink",
-        css:"webix_popup-prev-href",
-        width:400,
-        minHeight:300,
-        escHide:true,
-        modal:true,
-        position:"center",
-        body:{
-            rows:[
-            {rows: [ 
-                { cols:[
-                    popupHeadline,
-                    {},
-                    btnClosePopup,
-                ]},
-                radioLinks,
-                {height:15},
-                btnSaveLink,
-            ]}]
-            
-        },
-
-    });
-    
-    favsPopupCollectionClick ();
-
-}
-
-
-function getCurrId(){
-    let id;
-    try{
-        const tree = $$("tree");
-        
-        if (tree && tree.getSelectedId()){
-            id = tree.getSelectedId();
-        } else {
-            const url = window.location.pathname;
-            const index =  window.location.pathname.lastIndexOf("/")+1;
-            id = url.slice(index);
-        
-        }
-    } catch (err){
-        errors_setFunctionError(err,"favsLink","getCurrId");
-    }
-    return id;
-}
-
-function saveFavsClick(){
-
-    async function getLinkName(){
-        
-        if (!STORAGE.fields){
-            await getData("fields"); 
-        }
-
-        function findName (id){
-            try{
-                const nameTemplate = $$("favNameLink");
-                STORAGE.tableNames.forEach(function(el,i){
-                    if (el.id == id){
-                        if(nameTemplate){
-                            nameTemplate.setValues(el.name);
-                        }
-                    }
-                    
-                });
-            } catch (err){
-                errors_setFunctionError(err,"favsLink","findName");
-            }
-        }
-        if (STORAGE.tableNames){
-            const id = getCurrId();
-            findName (id);
-        }
-      
-    }
-
-    function getLink(){
-        try{
-            const link = window.location.href;
-            const favTemplate = $$("favLink");
-            if (favTemplate){
-                favTemplate.setValues(link);
-            }
-        } catch (err){
-            errors_setFunctionError(err,"favsLink","getLink");
-        }
-    }
-
-    function destructPopupSave(){
-        try{
-            if ($$("popupFavsLinkSave")){
-                $$("popupFavsLinkSave").destructor();
-            }
-        } catch (err){
-            errors_setFunctionError(err,"favsLink","destrucPopupSave");
-        }
-    }
-     
-    function createTemplate(id, name,nonName){
-        return {   
-            id:id,
-            css:"popup_subtitle", 
-            borderless:true, 
-            height:20 ,
-            template: function(){
-                if (Object.keys($$(id).getValues()).length !==0){
-                    return "<div style='font-weight:600'>"+name+": </div>"+$$(id).getValues();
-                } else {
-                    return "<div style='font-weight:600'>"+name+": </div>"+name+" "+nonName;
-                }
-          
-            }
-        }
-    }
-
-    function btnSaveLinkClick(){
-   
-        let favNameLinkVal;
-        let favLinkVal ;
-        const namePref = getCurrId();
-        function getData(){
-            try{
-                favNameLinkVal = $$("favNameLink").getValues();
-                favLinkVal     = $$("favLink").getValues();
-            } catch (err){
-                errors_setFunctionError(err,"favsLink","btnSaveLinkClick => getData");
-            }
-        }
-
-
-        function postContent(){
-            let user = webix.storage.local.get("user");
-            let ownerData;
-
-
-            if (!user){
-                getUserData();
-                user = webix.storage.local.get("user");
-            }
-
-            if (user){
-                ownerData = user.id;
-
-                const postObj = {
-                    name:"fav-link_"+namePref,
-                    owner:ownerData,
-                    prefs:{
-                        name: favNameLinkVal,
-                        link: favLinkVal,
-                        id:namePref,
-                    }
-                };
-                const postData = webix.ajax().post("/init/default/api/userprefs/",postObj);
-
-                postData.then(function(data){
-                    data = data.json();
-            
-                    if (data.err_type == "i"){
-                        logBlock_setLogValue("success","Ссылка"+" «"+favNameLinkVal+"» "+" сохранёна в избранное");
-                    } else {
-                        errors_setFunctionError(data.err,"favsLink","btnSaveLinkClick => postContent msg" );
-                    }
-
-                    destructPopupSave();
-                });
-
-                postData.fail(function(err){
-                    setAjaxError(err, "favsLink","btnSaveLinkClick => postContent");
-                });
-            }
-        }
-
-
-        function getUserprefs(){
-            const getData = webix.ajax().get("/init/default/api/userprefs/");
-            getData.then(function(data){
-                data = data.json().content;
-                const favPrefs = [];
-
-                function getFavPrefs(){
-                    try{
-                        data.forEach(function(pref){
-            
-                            if (pref.name.includes("fav-link")){
-                                favPrefs.push(pref.name);
-                            }
-                    
-                        });
-                    } catch (err){
-                        errors_setFunctionError(err,"favsLink","getUserprefs => getFavPrefs");
-                    }
-                }
-
-                function getNotUniquePrefs (){
-                    try{
-                        let unique = true;
-                        if (favPrefs.length){
-                            favPrefs.forEach(function(el){
-                             
-                                if (el.includes(namePref)){
-                                    
-                                    const index = el.indexOf("_")+1;
-                                    const id = el.slice(index);
-                            
-                                    if (id == namePref && unique){
-                                        unique = false;
-                                        logBlock_setLogValue("success", "Такая ссылка уже есть в избранном");
-                                    } 
-                                } 
-                            });
-                        } 
-                        
-                        
-                        if (!(favPrefs.length) || unique) {
-                            postContent();
-                        } else if (!unique){
-                            destructPopupSave();
-                        }
-                    } catch (err){
-                        errors_setFunctionError(err,"favsLink","getUserprefs => getNotUniquePrefs");
-                    }
-                }
-      
-                getFavPrefs();
-                getNotUniquePrefs ();
-           
-            });
-            getData.fail(function(err){
-                setAjaxError(err, "favsLink","getUserprefs getData");
-            });
-            }
-
-
-       
-        getData();
-        getUserprefs();
-    }
-   
-    const popupHeadline = {   
-        template:"Сохранить ссылку", 
-        width:250,
-        css:"popup_headline", 
-        borderless:true, 
-        height:20 
-    };
-
-    const btnClosePopup = {
-        view:"button",
-        id:"buttonClosePopup",
-        css:"popup_close-btn",
-        type:"icon",
-        width:35,
-        icon: 'wxi-close',
-        click:function(){
-            destructPopupSave();
-        
-        }
-    };
-
-    
-    const btnSaveLink = {
-        view:"button", 
-        value:"Сохранить ссылку", 
-        css:"webix_primary", 
-        click:function(){
-            btnSaveLinkClick();
-        }
- 
-    };
-
-
-
-    webix.ui({
-        view:"popup",
-        id:"popupFavsLinkSave",
-        css:"popup_padding-container",
-        escHide:true,
-        width:500,
-        //height:300,
-        modal:true,
-        position:"center",
-        body:{
-            rows:[
-            {rows: [ 
-                { cols:[
-                    popupHeadline,
-                    {},
-                    btnClosePopup,
-                   
-                ]},
-                createTemplate("favNameLink","Имя","не указано"),
-                {height:5},
-                createTemplate("favLink","Ссылка","не указана"),
-                {height:10},
-                btnSaveLink,
-                {}
-                //{height:10}
-            ]}]
-            
-        },
-
-    }).show();
-
-    getLinkName();
-    getLink();
-}
-
-
-
-
-;// CONCATENATED MODULE: ./src/js/blocks/historyBtns.js
-function prevBtnClick (){
-    history.back();
-}
-
-function nextBtnClick (){
-    history.forward();
-}   
-
-
-;// CONCATENATED MODULE: ./src/js/blocks/blockHeadline.js
-
-
-
-
-function setHeadlineBlock (idTemplate, title=null){
-    let templateTitle;
-    try{
-        if(title){
-            templateTitle = title;
-        } else {
-            templateTitle = function(){
-                if (Object.keys($$(idTemplate).getValues()).length !==0){
-                    return $$(idTemplate).getValues();
-                } else {
-                    return "Имя не указано";
-                }
-            };
-        }
-    } catch (err){
-        errors_setFunctionError(err,"blockHeadline","setHeadlineBlock");
-    }
-
-    const headline = {   
-        view:"template",
-        id:idTemplate,
-        borderless:true,
-        css:"webix_block-headline",
-        height:34,
-        template:templateTitle,
-    };
-
-
-    const favsBtn = {
-        view:"button", 
-        css:"webix-transparent-btn",
-        type:"icon",
-        icon:"icon-star",
-        width:50,
-        click:function(){
-            saveFavsClick();
-        },
-        on:{
-            onAfterRender: function () {
-                this.getInputNode().setAttribute("title","Добавить ссылку в избранное");
-            },
-        }
-    
-        
-    };
-
-    const prevBtn = {
-        view:"button", 
-        css:"webix-transparent-btn btn-history",
-        type:"icon",
-        icon:"icon-arrow-left",
-        width:50,
-        click:function(){
-            prevBtnClick();
-        },
-        on:{
-            onAfterRender: function () {
-                this.getInputNode().setAttribute("title","Вернуться назад");
-            },
-        }
-    
-        
-    };
- 
-    const nextBtn = {
-        view:"button", 
-        css:"webix-transparent-btn btn-history",
-        type:"icon",
-        icon:"icon-arrow-right",
-        width:50,
-        click:function(){
-            nextBtnClick();
-        },
-        on:{
-            onAfterRender: function () {
-                this.getInputNode().setAttribute("title","Перейти вперёд");
-            },
-        }
-    
-        
-    };
- 
-
-
-    const headlineLayout = {
-        css:"webix_block-headline",
-        cols:[
-            headline,
-            {},
-            {cols:[
-                prevBtn,
-                nextBtn,
-            ]},
-            favsBtn
-        ]
-    };
-
-    return headlineLayout;
-}
-
-
-;// CONCATENATED MODULE: ./src/js/blocks/content.js
-
-
-
-
-
-
-
-function content_hideElem(elem){
-    try{
-        if (elem && elem.isVisible()){
-            elem.hide();
-        }
-    } catch (err){
-        errors_setFunctionError(err,"content","hideElem");
-    }
-}
-
-function content_showElem (elem){
-    try{
-        if (elem && !(elem.isVisible())){
-            elem.show();
-        }
-    } catch (err){
-        errors_setFunctionError(err,"content","showElem");
-    }
-}
-
-function submitBtn (idElements, url, verb, rtype){
-
-    let valuesArray = [];
-
-    function refreshButton(){
-
-        function createQuery(){
-            try{
-                idElements.forEach((el,i) => {
-                    if (el.id.includes("customCombo")){
-                        valuesArray.push(el.name+"="+$$(el.id).getText());
-                    } else if (el.id.includes("customInputs")) {
-                    
-                        valuesArray.push(el.name+"="+$$(el.id).getValue());
-                    } else if (el.id.includes("customDatepicker")) {
-                        valuesArray.push(el.name+"="+$$(el.id).getValue());
-                    }    
-                });
-            } catch (err){  
-                errors_setFunctionError(err,"content","refreshButton => createQuery");
-            }
-        }
-  
-        createQuery();
-
-        const getData = webix.ajax(url+"?"+valuesArray.join("&"));
-        
-        getData.then(function(data){
-            function setTableState(){
-                data = data.json().content;
-                try{
-                    $$("table-view").clearAll();
-                    if (data.length !== 0){
-                        $$("table-view").hideOverlay("Ничего не найдено");
-                        $$("table-view").parse(data);
-                        logBlock_setLogValue("success","Данные обновлены");
-                    } else {
-                        $$("table-view").showOverlay("Ничего не найдено");
-                    }
-                } catch (err){  
-                    errors_setFunctionError(err,"content","refreshButton => setTableState");
-                }
-            }
-
-            function setTableCounter(){
-                let prevCountRows;
-                let findElementView = $$("table-view-findElements");
-                try{
-                    prevCountRows = $$("table-view").count();
-                    findElementView.setValues(prevCountRows.toString());
-                } catch (err){  
-                    errors_setFunctionError(err,"content","refreshButton => setTableCounter");
-                }
-            }
-            if (data.json().err_type == "i"){
-                setTableState();
-                setTableCounter();
-            } else {
-                errors_setFunctionError(data.err,"content","refreshButton");
-            }
-        });
-        getData.fail(function(err){
-            setAjaxError(err, "content","refreshButton");
-        });
-    }
-
-    function downloadButton(){
-
-        webix.ajax().response("blob").get(url, function(text, blob, xhr) {
-            try {
-                webix.html.download(blob, "table.docx");
-            } catch (err){
-                errors_setFunctionError(err,"content","downloadButton")
-            } 
-        }).catch(err => {
-            setAjaxError(err, "content","downloadButton");
-        });
-    }
-
-    function postButton(){
-
-        async function uploadData(formData,link){
-            fetch(link, {
-                method: "POST", 
-                body: formData
-            })  
-
-            .then((response) => response.json())
-            .then(function(data){
-                const loadEl = $$("templateLoad");
-       
-                if (data.err_type == "i"){
-                    loadEl.setValues("Файл загружен");
-                    logBlock_setLogValue("success","Файл успешно загружен");
-                } else {
-                    loadEl.setValues("Ошибка");
-                    logBlock_setLogValue("error",data.err);
-                }
-            });
-
-        }
-
-        function addLoadEl(container){
-            container.addView({
-                id:"templateLoad",
-                template: function(){
-                    if (Object.keys($$("templateLoad").getValues()).length !==0){
-                        return $$("templateLoad").getValues();
-                    } else {
-                        return "Загрузка ...";
-                    }
-                },
-                borderless:true,
-            });
-        }
-        try{
-       
-            idElements.forEach((el,i) => {
-                if (el.id.includes("customUploader")){
-                
-                    let value = Object.values($$(el.id).files.data.pull)[0];
-                    let link = $$(el.id).config.upload;
-
-                    let formData = new FormData();  
-                    let container = $$(el.id).getParentView();
-                    addLoadEl(container);
-
-                    formData.append("file", value.file);
-
-                    uploadData(formData,link);
-                   
-                }
-            });
-        } catch (err){  
-            errors_setFunctionError(err,"content","postButton");
-        } 
-    }
-
-    if (verb=="get"){ 
-        if(rtype=="refresh"){
-            refreshButton();
-        } else if (rtype=="download"){
-            downloadButton();
-        } 
-    } else if (verb=="post"){
-        postButton();
-    } 
-    
-}
-
-function getComboOptions (refTable){
-    const url = "/init/default/api/"+refTable;
-    return new webix.DataCollection({url:{
-        $proxy:true,
-        load: function(){
-            return ( webix.ajax().get(url).then(function (data) {
-                        data = data.json().content;
-                        let dataArray=[];
-                        let keyArray;
-
-                        function stringOption(l,el){
-                            try{
-                                while (l <= Object.values(el).length){
-                                    if (typeof Object.values(el)[l] == "string"){
-                                        keyArray = Object.keys(el)[l];
-                                        break;
-                                    } 
-                                    l++;
-                                }
-                            } catch (err){  
-                                errors_setFunctionError(err,"content","getComboOptions => stringOption");
-                            }
-                        }
-
-                        function numOption(l,el){
-                            try{
-                                if (el[keyArray] == undefined){
-                                    while (l <= Object.values(el).length) {
-                                        if (typeof Object.values(el)[1] == "number"){
-                                            keyArray = Object.keys(el)[1];
-                                            break;
-                                        }
-                                        l++;
-                                    }
-                                }
-
-                                dataArray.push({ "id":el.id, "value":el[keyArray]});
-                            } catch (err){  
-                                errors_setFunctionError(err,"content","getComboOptions => numOption");
-                            }
-                        }
-
-                        function createComboValues(){
-                            try{
-                                data.forEach((el,i) =>{
-                                    let l = 0;
-                                    stringOption (l,el);
-                                    numOption    (l,el);
-                                
-                                });
-                            } catch (err){  
-                                errors_setFunctionError(err,"content","getComboOptions => createComboValues");
-                            }
-                        }
-                        createComboValues();
-                        return dataArray;
-                    
-                    }).catch(err => {
-                        setAjaxError(err, "content","getComboOptions");
-                    })
-            );
-            
-        }
-    }});
-}
-
-
-
-
-function getInfoTable (idCurrTable,idsParam) {
-   
-    let idSearch,
-        idFindElem,
-        filterBar,
-        itemTreeId,
-        titem
-    ;
-
-    function getValsTable (){
-        itemTreeId = idsParam;
-        titem = $$("tree").getItem(idsParam);
-
-        if (!titem){
-            titem = idsParam;
-        }
-
-        if (idCurrTable.includes("view")){
-            try{ 
-                idSearch = "table-view-search";
-                idFindElem = "table-view-findElements";
-                filterBar = $$("table-view-filterId").getParentView();
-            } catch (err){  
-                errors_setFunctionError(err,"content","getValsTable");
-            }
-        } else {
-            try{
-                idSearch = "table-search";
-                idFindElem = "table-findElements";
-                filterBar = $$("table-filterId").getParentView();
-            } catch (err){  
-                errors_setFunctionError(err,"content","getValsTable");
-            }
-        }
-    }
-
-    function preparationTable (){
-        try{
-            $$(idCurrTable).clearAll();
-
-            if (idCurrTable == "table-view"){
-                if ($$("contextActionsPopup")){
-                    $$("contextActionsPopup").destructor();
-                }
-
-                if ($$("contextActionsBtnAdaptive")){
-                    filterBar.removeView($$("contextActionsBtnAdaptive"))
-                }
-                if ($$( "customInputs" )){
-                    $$( "customInputs" ).getParentView().removeView($$( "customInputs" ))
-                }
-
-                if ($$("customInputsMain")){
-                    $$("customInputsMain").getParentView().removeView($$( "customInputsMain" ))
-                }
-            
-            }
-        } catch (err){  
-            errors_setFunctionError(err,"content","preparationTable");
-        }
-    }
-
-
-    function createExperementalElement (){
-        STORAGE.fields.content.treeTemplate={
-            "fields": {
-                "id": {
-                    "type": "id",
-                    "unique": false,
-                    "notnull": false,
-                    "length": 512,
-                    "label": "Id",
-                    "comment": null,
-                    "default": "None"
-                },
-                "pid": {
-                    "type": "reference trees",
-                    "unique": false,
-                    "notnull": false,
-                    "length": 512,
-                    "label": "Родитель",
-                    "comment": null,
-                    "default": "None"
-                },
-                "owner": {
-                    "type": "reference auth_user",
-                    "unique": false,
-                    "notnull": false,
-                    "length": 512,
-                    "label": "Владелец",
-                    "comment": null,
-                    "default": "None"
-                },
-                "ttype": {
-                    "type": "integer",
-                    "unique": false,
-                    "notnull": false,
-                    "length": 512,
-                    "label": "Тип",
-                    "comment": "Тип записи|1=системная;2=пользовательская|Перечисление",
-                    "default": "1"
-                },
-                "name": {
-                    "type": "string",
-                    "unique": false,
-                    "notnull": false,
-                    "length": 100,
-                    "label": "Наименование",
-                    "comment": null,
-                    "default": ""
-                },
-                "descr": {
-                    "type": "string",
-                    "unique": false,
-                    "notnull": false,
-                    "length": 1000,
-                    "label": "Описание",
-                    "comment": null,
-                    "default": ""
-                },
-                "value": {
-                    "type": "string",
-                    "unique": false,
-                    "notnull": false,
-                    "length": 1000,
-                    "label": "Значение",
-                    "comment": null,
-                    "default": ""
-                },
-                "cdt": {
-                    "type": "datetime",
-                    "unique": false,
-                    "notnull": false,
-                    "length": 512,
-                    "label": "Создано",
-                    "comment": null,
-                    "default": "now"
-                }
-            },
-            "singular": "Классификатор-пример",
-            "ref_name": "name",
-            "plural": "Классификаторы-пример",
-            "type": "treeConf"
-            
-        };
-    }
-
-    function createTableCols (){
-  
-        const dataContent   = STORAGE.fields.content;
-        const data          = dataContent[idsParam];
-        const dataFields    = data.fields;
-        const colsName      = Object.keys(data.fields);
-        const columnsData   = [];
-      
-
-        let fieldType;
-
-        function refreshCols(columnsData){
-            const table = $$(idCurrTable);
-            if(table){
-                table.refreshColumns(columnsData);
-            }
-        }
-
-        try{
-            colsName.forEach(function(data) {
-                fieldType = dataFields[data].type;
-         
-            
-                function createReferenceCol (){
-                    try{
-                        let findTableId = fieldType.slice(10);
-                        dataFields[data].editor = "combo";
-                        dataFields[data].collection = getComboOptions (findTableId);
-                        dataFields[data].template = function(obj, common, val, config){
-                            let item = config.collection.getItem(obj[config.id]);
-                            return item ? item.value : "";
-                        };
-                    }catch (err){
-                        errors_setFunctionError(err,"content","createTableCols => createReferenceCol")
-                    }
-                }
-
-                function createDatetimeCol  (){
-                    try{
-                        dataFields[data].format = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
-                        dataFields[data].editor = "date";
-                    }catch (err){
-                        errors_setFunctionError(err,"content","createTableCols => createDatetimeCol")
-                    }
-                }
-                
-                function createTextCol      (){
-                    try{
-                        dataFields[data].editor = "text";
-                        dataFields[data].sort = "string";
-                    }catch (err){
-                        errors_setFunctionError(err,"content","createTableCols => createTextCol")
-                    }
-                }
-                function createIntegerCol   (){
-                    try{
-                        dataFields[data].editor = "text";
-                        dataFields[data].sort = "int";
-                        dataFields[data].numberFormat="1 111";
-                    }catch (err){
-                        errors_setFunctionError(err,"content","createTableCols => createIntegerCol");
-                    }
-                }
-                function createBoolCol      (){
-                    try{
-                        dataFields[data].editor = "combo";
-                        dataFields[data].sort = "text";
-                        dataFields[data].collection = [
-                            {id:1, value: "Да"},
-                            {id:2, value: "Нет"}
-                        ];
-                    }catch (err){
-                        errors_setFunctionError(err,"content","createTableCols => createBoolCol");
-                    }
-                }
-
-
-                if (fieldType.includes("reference")){
-                    createReferenceCol();
-                } else if ( fieldType == "datetime"){
-                    createDatetimeCol ();
-                } else if ( fieldType == "boolean"){
-                    createBoolCol     ();
-                } else if ( fieldType == "integer"){
-                    createIntegerCol  ();
-                } else {
-                    createTextCol     ();
-                }
-
-
-                function setIdCol       (){
-                    dataFields[data].id = data;
-                }
-
-                function setFillCOl     (){
-                    dataFields[data].fillspace = true;
-                }
-
-                function setHeaderCol   (){
-                    dataFields[data].header = dataFields[data]["label"];
-              
-                }
-
-                // function setHiddenAttr (){
-                //     if(dataFields[data].hidden && dataFields[data].hidden == true && !(dataFields[data].visibleCol) ){
-                //         dataFields[data].hiddenCustomAttr = true;
-                //     }
-                // }
-
-                function userPrefsId    (){
-                    const setting = webix.storage.local.get("userprefsOtherForm");
-                    if(setting && setting.visibleIdOpt=="2"){
-                        dataFields[data].hidden = true;
-                    }
-                }  
-
-            
-
-                function pushColsData(){ 
-               
-                    try{        
-                        if (dataFields[data].label){
-                            columnsData.push(dataFields[data]);
-                        }
-        
-                    } catch (err){
-                        errors_setFunctionError(err,"content","createTableCols => pushColsData");
-                    }
-             
-                }
-
-            
-                setIdCol    ();
-                setFillCOl  ();
-                setHeaderCol();
-
-                if(dataFields[data].id == "id"){
-                    userPrefsId();
-                }
-               
-                pushColsData();
-        
-            });
-            refreshCols(columnsData);
-
-
- 
-        } catch (err){
-            errors_setFunctionError(err,"content","createTableCols");
-        }
-
-
-        return columnsData;
-    }
-
-   
-
-    function createDetailAction (columnsData){
-        let idCol;
-        let actionKey;
-        let checkAction     = false;
-
-        const dataContent   = STORAGE.fields.content;
-        const data          = dataContent[idsParam];
-   
-        columnsData.forEach(function(field,i){
-            if( field.type  == "action" && data.actions[field.id].rtype == "detail"){
-                checkAction = true;
-                idCol       = i;
-                actionKey   = field.id;
-            } 
-        });
-        
-        if (actionKey !== undefined){
-            const urlFieldAction = data.actions[actionKey].url;
-        
-            if (checkAction){
-                const columns = $$(idCurrTable).config.columns;
-                columns.splice(0,0,{ 
-                    id      :"action-first"+idCol, 
-                    maxWidth:130, 
-                    src     :urlFieldAction, 
-                    css     :"action-column",
-                    label   :"Подробнее",
-                    header  :"Подробнее", 
-                    template:"<span class='webix_icon wxi-angle-down'></span> "
-                });
-                $$(idCurrTable).refreshColumns();
-            }
-        }
-    
-
-    }
-
-    function createDynamicElems (){
-        let dataContent = STORAGE.fields.content;
-        let data = dataContent[idsParam];  
-        let dataInputsArray = data.inputs;
-      
-        function generateCustomInputs (){  
-            let customInputs = [];
-            let objInuts = Object.keys(data.inputs);
-
-            function createTextInput    (el,i){
-                return {   
-                    view            :"text",
-                    placeholder     :dataInputsArray[el].label, 
-                    id              : "customInputs"+i,
-                    height          :48,
-                    labelPosition   :"top",
-                    on              : {
-                        onAfterRender: function () {
-                            this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
-                        },
-                        onChange:function(){
-                            let inputs = $$("customInputs").getChildViews();
-                            inputs.forEach(function(el,i){
-                                if (el.config.view == "button" && !($$(el.config.id).isEnabled())){
-                                    $$(el.config.id).enable();
-                                }
-                            });
-    
-                        }
-                    }
-                }
-            }
-    
-            function getOptionData      (dataInputsArray,el){
-                const url = "/init/default/api/"+dataInputsArray[el].apiname;
-                return new webix.DataCollection({url:{
-                    $proxy:true,
-                    load: function(){
-                        return ( webix.ajax().get(url).then(function (data) {   
-                                
-                                let dataSrc = data.json().content;
-                                let dataOptions=[];
-                                let optionElement;
-
-                                function dataTemplate(i,valueElem){
-                                   let template = {id:i+1, value:valueElem};
-                                   return template;
-                                }
-                 
-                                function createOptions(){
-                                    try{
-                                        if (dataSrc[0].name !== undefined){
-                                            
-                                            dataSrc.forEach(function(data, i) {
-                                                optionElement = dataTemplate(i,data.name);
-                                                dataOptions.push(optionElement);
-                                            });
-                                        
-                                        } else {
-                                            dataSrc.forEach(function (data, i) {
-                                                optionElement = dataTemplate(i,data);
-                                                dataOptions.push(optionElement);
-                                            });
-        
-                                        }
-                                   
-                                    } catch (err){
-                                        errors_setFunctionError(err,"content","generateCustomInputs => getOptionData")
-                                    } 
-                                }
-                                createOptions();
-                                return dataOptions;
-                                }).catch(err => {
-                                    console.log(err);
-                                    setAjaxError(err, "content","generateCustomInputs => getOptionData");
-                                })
-                            );
-                        
-                    
-                        
-                    }
-                }});
-            }
-    
-            function createSelectInput  (el,i){
-            
-                return   {   
-                    view:"combo",
-                    height:48,
-                    id: "customCombo"+i,
-                    placeholder:dataInputsArray[el].label, 
-                    labelPosition:"top", 
-                    options:{
-                        data:getOptionData (dataInputsArray,el)
-                    },
-                  
-                    on: {
-                        onAfterRender: function () {
-                    
-                            this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
-                        },
-                    }               
-                };
-            }
-    
-            function createDeleteAction (i){
-                let countCols = $$(idCurrTable).getColumns().length;
-                let columns = $$(idCurrTable).config.columns;
-   
-                try{
-                    columns.splice(countCols,0,{ 
-                        id:"action"+i, 
-                        header:"Действие",
-                        label:"Действие",
-                        css:"action-column",
-                        maxWidth:100, 
-                        template:"{common.trashIcon()}"
-                    });
-        
-                    $$(idCurrTable).refreshColumns();
-                } catch (err){
-                    errors_setFunctionError(err,"content","generateCustomInputs => createDeleteAction")
-                } 
-
-            }
-
-            function getInputsId        (element){
-                let parent = element.getParentView();
-                let childs = parent.getChildViews();
-                let idElements = [];
-                try{
-                    childs.forEach((el,i) => {
-                        if (el.config.id !== undefined){
-                            if (el.config.view=="text"){
-                                idElements.push({id:el.config.id, name:"substr"});
-                            } 
-                            else if (el.config.view=="combo") {
-                                idElements.push({id:el.config.id, name:"valtype"});
-                            } else if (el.config.view=="uploader"){
-                                idElements.push({id:el.config.id});
-                            } else if (el.config.view=="datepicker"){
-                                idElements.push({id:el.config.id});
-                            }
-                        }
-
-                    });
-                } catch (err){
-                    errors_setFunctionError(err,"content","generateCustomInputs => getInputsId");
-                } 
-                return idElements;
-            }
-    
-            function createDeleteBtn    (el,findAction,i){
-                return {   
-                    view:"button", 
-                    id:"customBtnDel"+i,
-                    css:"webix_danger", 
-                    type:"icon", 
-                    disabled:true,
-                    icon:"icon-trash",
-                    inputWidth:55,
-                    inputHeight:35,
-                  ///  height:35,
-                    value:dataInputsArray[el].label,
-                    click:function (id) {
-                        let idElements = getInputsId (this);
-                        submitBtn(idElements,findAction.url,"delete");
-                    },
-                    on: {
-                        onAfterRender: function () {
-                            this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
-                        },
-                    },
-                };
-            }
-    
-            function createCustomBtn    (el,findAction,i){
-                return {   
-                    view:"button", 
-                    css:"webix_primary", 
-                    id:"customBtn"+i,
-                    inputHeight:35,
-                    value:dataInputsArray[el].label,
-                    click:function (id) {
-                        let idElements = getInputsId (this);
-                        if (findAction.verb== "GET"){
-                            if ( findAction.rtype== "refresh") {
-                                submitBtn(idElements,findAction.url, "get", "refresh");
-                            } else if (findAction.rtype== "download") {
-                                submitBtn(idElements,findAction.url, "get", "download");
-                            }
-                            
-                        } else if (findAction.verb == "POST"){
-                            submitBtn(idElements,findAction.url,"post");
-                            $$("customBtn"+i).disable();
-                        } 
-                        else if (findAction.verb == "download"){
-                            submitBtn(idElements,findAction.url, "get", "download",id);
-                        }
-    
-    
-                        if ($$("contextActionsPopup")){
-                            $$("contextActionsPopup").hide();
-                        }
-                    
-                    },
-                    on: {
-                        onAfterRender: function () {
-                            this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
-                        },
-                    },
-                };
-            }
-    
-            function createUpload       (el,i){
-                return  {   
-                    view: "uploader", 
-                    value: "Upload file", 
-                    id:"customUploader"+i,
-                    height:48,
-                    autosend:false,
-                    upload: data.actions.submit.url,
-                    label:dataInputsArray[el].label, 
-                    labelPosition:"top",
-                    on: {
-                        onAfterRender: function () {
-                            this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
-
-                            const parent = this.getParentView()
-                            const childs = parent.getChildViews()
-
-                            childs.forEach(function(el,i){
-                                if (el.config.id.includes("customBtn")){
-                                    el.disable();
-                                }
-                            });
-                        },
-                        onBeforeFileAdd:function(){
-                            const loadEl = $$("templateLoad");
-                            if (loadEl){
-                                loadEl.getParentView().removeView(loadEl);
-                            }
-                        },
-                        onAfterFileAdd:function(file){
-                            const parent = this.getParentView()
-                            const childs = parent.getChildViews()
-
-                            childs.forEach(function(el,i){
-                                if (el.config.id.includes("customBtn")){
-                                    el.enable();
-                                }
-                            });
-                        }
-
-                    }
-                };
-            }
-    
-            function createDatepicker   (el,i){
-                return {   
-                    view: "datepicker",
-                    format: "%d.%m.%Y %H:%i:%s",
-                    placeholder:dataInputsArray[el].label,  
-                    id:"customDatepicker"+i, 
-                    timepicker: true,
-                    labelPosition:"top",
-                    height:48,
-                    on: {
-                        onAfterRender: function () {
-                            this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
-                        },
-                        onChange:function(){
-                            try{
-                                let inputs = $$("customInputs").getChildViews();
-                                inputs.forEach(function(el,i){
-                                    if (el.config.view == "button" && !($$(el.config.id).isEnabled())){
-                                        $$(el.config.id).enable();
-                                    }
-                                });
-                            } catch (err){
-                                errors_setFunctionError(err,"content","generateCustomInputs => createDatepicker onChange");
-                            } 
-    
-                        }
-                    }
-                };
-            }
-            
-            function createCheckbox     (el,i){
-                return {   
-                    view:"checkbox", 
-                    id:"customСheckbox"+i, 
-                    css:"webix_checkbox-style",
-                    labelRight:dataInputsArray[el].label, 
-                    on: {
-                        onAfterRender: function () {
-                            this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
-                        },
-    
-                        onChange:function(){
-                            try{
-                                let inputs = $$("customInputs").getChildViews();
-                                inputs.forEach(function(el,i){
-                                    if (el.config.view == "button" && !($$(el.config.id).isEnabled())){
-                                        $$(el.config.id).enable();
-                                    }
-                                });
-                            } catch (err){
-                                errors_setFunctionError(err,"content","generateCustomInputs => createCheckbox onChange");
-                            } 
-                        }
-                    }
-                };
-            }
-
-
-            objInuts.forEach((el,i) => {
-
-                if (dataInputsArray[el].type == "string"){
-                    customInputs.push(
-                        createTextInput(el,i)
-                    );
-                } else if (dataInputsArray[el].type == "apiselect") {
-                   
-                    customInputs.push(
-                        createSelectInput(el,i)
-                    );
-
-                } else if (dataInputsArray[el].type == "submit" || dataInputsArray[el].type == "button") {
-
-                    let actionType = dataInputsArray[el].action;
-                    let findAction = data.actions[actionType];
-                
-                    if (findAction.verb == "DELETE" && actionType !== "submit"){
-                        createDeleteAction (i);
-                    } else if (findAction.verb == "DELETE") {
-                        customInputs.push(
-                            createDeleteBtn(el, findAction,i)
-                        );
-                    } else {
-                        customInputs.push(
-                            createCustomBtn(el, findAction,i)
-                                
-                        );
-                    }
-                } else if (dataInputsArray[el].type == "upload"){
-                    customInputs.push(
-                        createUpload(el,i)
-                    );
-                } else if (dataInputsArray[el].type == "datetime"){
-                    customInputs.push(
-                        createDatepicker(el,i)
-                    );
-                }else if (dataInputsArray[el].type == "checkbox"){
-                
-                    customInputs.push(
-                        createCheckbox(el,i)
-                    );
-
-                } 
-            });
-     
-
-            return customInputs;
-        }
-
-        function adaptiveCustomInputs (){
-
-            function maxInputsSize (customInputs){
-      
-                let inpObj = {
-                    id:"customInputs",
-                    css:"webix_custom-inp", 
-                    rows:[
-                        {height:20},
-                        {rows:customInputs}
-                    ],
-                    width:350,
-                };
-
-           
-                function addInputs(){
-                   
-                    try{
-                        $$("viewToolsContainer").addView( inpObj,0);
-                  
-                    } catch (err){
-                        errors_setFunctionError(err,"content","adaptiveCustomInputs => addInputs");
-                    } 
-                }
-                addInputs();
-
-            }
-
-            function removeContextBtn(){
-                try{
-                    if ($$("contextActionsBtn")){
-                        $$(filterBar.config.id).removeView($$("contextActionsBtn"));
-                    }
-                } catch (err){
-                    errors_setFunctionError(err,"content","adaptiveCustomInputs => removeContextBtn");
-                } 
-            }
-            removeContextBtn();
-           // const tools = $$("viewTools");
-           const tools = $$("formsTools");
-           
-            function viewToolsBtnClick(){
-                const btnClass          = document.querySelector(".webix_btn-filter");
-                const primaryBtnClass   = "webix-transparent-btn--primary";
-                const secondaryBtnClass = "webix-transparent-btn";
-                const formResizer       = $$("formsTools-resizer");
-                const formsTools        = $$("viewTools");
-                function toolMinAdaptive(){
-                    content_hideElem($$("formsContainer"));
-                    content_hideElem($$("tree"));
-                    content_showElem($$("table-backFormsBtnFilter"));
-                    content_hideElem(formResizer);
-                    tools.config.width = window.innerWidth-45;
-                    tools.resize();
-                }
-            
-
-                function toolMaxAdaptive(){
-                  
-                    if         (btnClass.classList.contains(primaryBtnClass)){
-
-                        btnClass.classList.add(secondaryBtnClass);
-                        btnClass.classList.remove(primaryBtnClass);
-                        content_hideElem(tools);
-                        content_hideElem(formResizer);
-                        
-
-                    } else if (btnClass.classList.contains(secondaryBtnClass)){
-
-                        btnClass.classList.add(primaryBtnClass);
-                        btnClass.classList.remove(secondaryBtnClass);
-                        content_showElem(tools);
-                        content_showElem(formResizer);
-                        content_showElem(formsTools);
-                    }
-                }
-      
-                content_hideElem($$("propTableView"));
-                const contaierWidth = $$("formsContainer").$width;
-         
-                toolMaxAdaptive();
-                if(!(btnClass.classList.contains(secondaryBtnClass))){
-                    if (contaierWidth < 850  ){
-                        content_hideElem($$("tree"));
-                        if (contaierWidth  < 850 ){
-                            toolMinAdaptive();
-                        }
-                    } else {
-                    content_hideElem($$("table-backFormsBtnFilter"));
-                    tools.config.width = 350;
-                    tools.resize();
-                    }
-                    content_showElem(formResizer);
-                } else {
-                    content_hideElem(tools);
-                    content_hideElem(formResizer);
-                    content_hideElem($$("table-backFormsBtnFilter"));
-                    content_showElem($$("formsContainer"));
-                }
-
-            }
-
-            
-            if (data.inputs){  
-                let customInputs;
-           
-                customInputs = generateCustomInputs ();
-            
-                const filterBar = $$("table-view-filterId").getParentView();
-                const btnTools = 
-                {   view:"button",
-                    width: 50, 
-                    type:"icon",
-                    id:"viewToolsBtn",
-                    icon:"icon-filter",
-                    css:"webix_btn-filter webix-transparent-btn",
-                    title:"текст",
-                    height:42,
-                    click:function(){
-                        viewToolsBtnClick();
-                    },
-                    on: {
-                        onAfterRender: function () {
-                            this.getInputNode().setAttribute("title","Показать/скрыть доступные дейсвтия");
-                        }
-                    } 
-                };
-                
-                if( !$$("viewToolsBtn") ){
-                    filterBar.addView(btnTools,2);
-                } else {
-                    content_showElem(  $$("viewToolsBtn"));
-                }
-             
-
-                maxInputsSize (customInputs);
-
-            } else {
-              
-                content_hideElem(tools);
-                content_hideElem($$("viewToolsBtn"));
-              
-            }
-        }
-        
-        adaptiveCustomInputs ();
-
-    }
-
-   
-   
-    function createTableRows (){
-        let dataContent = STORAGE.fields.content;
-        let data = dataContent[idsParam];
-        
-        function getItemData (table){
-
-            function setTableState(){
-                try{
-                    if (table == "table"){
-                        if(!($$("table-newAddBtnId").isEnabled())){
-                            $$("table-newAddBtnId").enable();
-                        }
-                        if(!($$("table-filterId").isEnabled())){
-                            $$("table-filterId").enable();
-                        }
-                        if(!($$("table-exportBtn").isEnabled())){
-                            $$("table-exportBtn").enable();
-                        }
-                    }
-                } catch (err){
-                    errors_setFunctionError(err,"content","createTableRows => setTableState")
-                }
-            }
-
-            function datePrefs (data){
-                let dateFormat;
-
-                const columns = $$(table).getColumns();
-                let dateCols = [];
-
-                function searchDateCols (){
-                    try{
-                        columns.forEach(function(col,i){
-
-                            if (col.type == "datetime"){
-                                dateCols.push(col.id);
-                            }
-                        });
-                    } catch (err){
-                        errors_setFunctionError(err,"content","createTableRows => searchDateCols")
-                    }
-                }
-                searchDateCols ();
-            
-                data.forEach(function(el,i){
-
-                    function dateFormatting (elType){
-                      
-                        if (el[elType]){
-                            dateFormat = new Date(el[elType]);
-                            el[elType] = dateFormat;
-                            
-                        }
-                    }
-
-                    function setDateFormatting (){
-                        dateCols.forEach(function(el,i){
-                            dateFormatting (el);
-                        });
-                    }
-
-                    setDateFormatting ();
-                 
-                });
-            }
-
-            function parseRowData (data){
-               
-                const idCurrView= $$(idCurrTable);
-          
-                function getUserPrefs(){
-      
-                    const idCurrView= $$(idCurrTable);
-               
-                    try{
-                        const currFieldTable = idCurrView.config.idTable;
-                        const storageData = webix.storage.local.get("visibleColsPrefs_"+currFieldTable);
-                    
-                        if(storageData){
-
-                            storageData.forEach(function(el){
-        
-                                if(!el.value){
-                                    const colIndex = idCurrView.getColumnIndex(el.id);
-                                    if(idCurrView.isColumnVisible(el.id) && colIndex !== -1){
-                                        idCurrView.hideColumn(el.id);
-                                    }
-                                 
-                                } else {
-                                    if( !( idCurrView.isColumnVisible(el.id) ) ){
-                                        idCurrView.showColumn(el.id);
-                                    }
-                                }
-
-                            });
-         
-                        }
-            
-                    } catch (err){
-                        errors_setFunctionError(err,"table","onAfterLoad => getUserPrefs");
-                    }
-                }
-
-                function enableVisibleBtn(){
-                    const viewBtn =  $$("table-view-visibleCols");
-                    const btn     =  $$("table-visibleCols");
-                    
-              
-
-                    
-                    function disableBtn(el){
-                        if (el){
-                            el.enable();
-                        }
-                    }
-            
-                    if ( viewBtn.isVisible() ){
-                        disableBtn(viewBtn);
-                    } else if ( btn.isVisible() ){
-                        disableBtn(btn);
-                    }
-                  
-                }
-
-                try{
-                    if (data.length !== 0){
-                        idCurrView.hideOverlay("Ничего не найдено");
-                        idCurrView.parse(data);
-                    } else {
-                        idCurrView.showOverlay("Ничего не найдено");
-                        idCurrView.clearAll();
-                    }
-
-                    
-              
-                    getUserPrefs();
-                    setTimeout(() => {
-                        enableVisibleBtn();
-                    }, 1000);
-               
-                } catch (err){
-                    errors_setFunctionError(err,"content","createTableRows => parseRowData");
-                }
-            }
-
-
-            function setCounterVal (){
-                let prevCountRows ;
-                try{
-                    prevCountRows = $$(idCurrTable).count();
-                    $$(idFindElem).setValues(prevCountRows.toString());
-                    if(idCurrTable == "table"){
-                        $$("table-findElements").setValues(prevCountRows.toString());
-                    }
-                } catch (err){
-                    errors_setFunctionError(err,"content","createTableRows => setCounterVal");
-                }
-            }
-
-            function clearTable(){
-                $$(table).clearAll();
-            }
-
-            $$(table).load({
-                $proxy:true,
-                load:function(view, params){
-                    return webix.ajax().get("/init/default/api/"+itemTreeId,{
-                        success:function(text, data, XmlHttpRequest){
-                            data = data.json().content;
-                            $$(table).config.idTable = itemTreeId;
-
-                            try {
-                                clearTable    ();
-                                setTableState ();
-                                datePrefs     (data);
-                                parseRowData  (data);
-                                setCounterVal ();
-                            
-                            } catch (err){
-                                errors_setFunctionError(err,"content","getItemData => table load");
-                            } 
-                    
-                        },
-                        error:function(text, data, XmlHttpRequest){    
-                            function tableErrorState (){
-                                let prevCountRows = "-";
-                                try {
-                                    $$(idFindElem).setValues(prevCountRows.toString());
-                                    $$("table-findElements").setValues(prevCountRows.toString());
-                                    if($$("table-newAddBtnId").isEnabled()){
-                                        $$("table-newAddBtnId").disable();
-                                    }
-                                    if($$("table-filterId")){
-                                        $$("table-filterId").disable();
-                                    }
-
-                                    if($$("table-exportBtn")){
-                                        $$("table-exportBtn").disable();
-                                    }
-                              
-                                } catch (err){
-                                    errors_setFunctionError(err,"content","tableErrorState")
-
-                                }
-                            }
-
-                            function notAuthPopup(){
-
-                                const popupHeadline = {   
-                                    template:"Вы не авторизованы", 
-                                    width:250,
-                                    css:"webix_template-not-found", 
-                                    borderless:true, 
-                                    height:20 
-                                };
-                                const btnClosePopup = {
-                                    view:"button",
-                                    id:"buttonClosePopup",
-                                    css:"popup_close-btn",
-                                    type:"icon",
-                                    width:35,
-                                   
-                                    icon: 'wxi-close',
-                                    click:function(){
-                                        try{
-                                            if ($$("popupNotAuth")){
-                                                $$("popupNotAuth").destructor();
-                                            }
-                                        } catch (err){
-                                            errors_setFunctionError(err,"content","notAuthPopup btnClosePopup click");
-                                        }
-                                    
-                                    }
-                                };
-                
-                                const popupSubtitle = {   
-                                    template:"Войдите в систему, чтобы продолжить.",
-                                    css:"webix_template-not-found-descr", 
-                                    borderless:true, 
-                                    height:35 
-                                };
-                
-                                const mainBtnPopup = {
-                                    view:"button",
-                                    css:"webix_btn-go-login",
-                                    height:46,
-                                    value:"Войти",
-                                    click:function(){
-                                        function destructPopup(){
-                                            try{
-                                                if ($$("popupNotAuth")){
-                                                    $$("popupNotAuth").destructor();
-                                                }
-                                            } catch (err){
-                                                errors_setFunctionError(err,"content","notAuthPopup destructPopup");
-                                            }
-                                        }
-                                        function navigate(){
-                                            try{
-                                                Backbone.history.navigate("/", { trigger:true});
-                                                window.location.reload();
-                                            } catch (err){
-                                                errors_setFunctionError(err,"content","notAuthPopup navigate");
-                                            }
-                                        }
-                                        destructPopup();
-                                        navigate();
-                                     
-                                   
-                                    }
-                                };
-                
-                                webix.ui({
-                                    view:"popup",
-                                    id:"popupNotAuth",
-                                    css:"webix_popup-prev-href",
-                                    width:340,
-                                    height:125,
-                                    modal:true,
-                                    position:"center",
-                                    body:{
-                                        rows:[
-                                        {rows: [ 
-                                            { cols:[
-                                                popupHeadline,
-                                                {},
-                                                btnClosePopup,
-                                            ]},
-                                            popupSubtitle,
-                                            mainBtnPopup,
-                                            {height:20}
-                                        ]}]
-                                        
-                                    },
-                
-                                }).show();
-                            }
-
-                            tableErrorState ();
-  
-                            if (XmlHttpRequest.status == 401){
-                        
-                                if (!($$("popupNotAuth"))){
-                                    notAuthPopup();
-                                }
-                          
-                            }
-                        }, 
-            
-                    });
-                }
-            })
-            .finally(function(){
-              
-                function getUserPrefs(){
-      
-                    const idCurrView= $$(idCurrTable);
-            
-                    try{
-                        const currFieldTable = idCurrView.config.idTable;
-                        const storageData = webix.storage.local.get("visibleColsPrefs_"+currFieldTable);
-                    
-                        if(storageData){
-                            storageData.forEach(function(el){
-                                if(!el.value ){
-                                    if(idCurrView.isColumnVisible(el.id)){
-                                        idCurrView.hideColumn(el.id);
-                                    }
-                                 
-                                } else {
-                                    if( !( idCurrView.isColumnVisible(el.id) ) ){
-                                        idCurrView.showColumn(el.id);
-                                    }
-                                }
-                            });
-                        }
-            
-                    } catch (err){
-                        errors_setFunctionError(err,"table","onAfterLoad => getUserPrefs");
-                    }
-                }
-             
-            });
-        }
-
-        function setDataRows (){
-            if(data.type == "dbtable"){
-                getItemData ("table");
-            } else if (data.type == "tform"){
-                getItemData ("table-view");
-            }
-        }
-
-        function autorefreshProperty (){
-            if (data.autorefresh){
-    
-                let userprefsOther = webix.storage.local.get("userprefsOtherForm");
-
-                if (userprefsOther && userprefsOther.autorefCounterOpt !== undefined){
-                    if (userprefsOther.autorefCounterOpt >= 15000){
-    
-                        setInterval(function(){
-                            if(data.type == "dbtable"){
-                                getItemData ("table");
-                            } else if (data.type == "tform"){
-                                getItemData ("table-view");
-                            }
-                        }, userprefsOther.autorefCounterOpt );
-                    } else {
-                        setInterval(function(){
-                            if(data.type == "dbtable"){
-                                getItemData ("table");
-                            } else if (data.type == "tform"){
-                                getItemData ("table-view");
-                            }
-                        }, 120000);
-                    }
-                }
-            } 
-        }
-
-        setDataRows ();
-        autorefreshProperty ();
-
-                
-    }
-    
-
-    async function generateTable (){ // SINGLE ELS
-
-        if (!STORAGE.fields){
-            await getData("fields"); 
-        }
-
-        if (STORAGE.fields){
-            createExperementalElement ();
-            let columnsData = createTableCols ();
-            createDetailAction (columnsData);
-            createDynamicElems ();
-            createTableRows ();
-
-        }
-    } 
-
-    getValsTable ();
-   
-    if (titem == undefined) {
-        logBlock_setLogValue("error","Данные не найдены");
-    } else {
-        preparationTable ();
-        generateTable ();
-    } 
-
-}
-
-
-
-function getInfoDashboard (idsParam,single=false){
-    let itemTreeId;
-
-    if (idsParam){
-        itemTreeId = idsParam;
-    } else if ($$("tree").getSelectedItem()){
-        itemTreeId = $$("tree").getSelectedItem().id;
-    }
-
-    function removeScroll(){
-        try{
-            let elem = $$("dashBodyScroll");
-            let parent;
-            if (elem){
-                parent = elem.getParentView();
-                if (elem){
-                    parent.removeView(elem);
-                }
-            }
-        } catch (err){  
-            errors_setFunctionError(err,"content","getInfoDashboard => removeScroll");
-        }
-    }
-  
-    function getAjax(url,inputsArray, action=false) {
-        const getData =  webix.ajax().get(url);
-        
-        getData.then(function(data){
-
-            let dashLayout=[{type:"wide",rows:[]}];
-            let dataCharts = data.json().charts;
-            let titleTemplate = {};
-
-            function removeItems(){
-                let element;
-                let parent;
-
-                function setVars(elem){
-                    try{
-                        if (elem){
-                            element = elem;
-                            parent = element.getParentView();
-                            
-                            try{
-                                if (element){
-                                    parent.removeView(element);
-                                } 
-                            } catch (err){
-                                errors_setFunctionError(err,"content","getAjax => setVars");
-                            } 
-                        }
-                    } catch (err){  
-                        errors_setFunctionError(err,"content","getInfoDashboard => setVars");
-                    }
-                }
-
-                setVars($$("dashboardInfoContainerInner"));
-                setVars($$("dash-template"));
-                setVars($$("dashboard-tool-main"));
-                setVars($$("dashboard-tool-adaptive"));
-             
-            }
-
-
-            removeScroll();
-            
-            if (!action){ //не с помощью кнопки фильтра
-                removeItems ();
-            }
-
-            function addErrorView(){
-                try{
-                    $$("dashboardTool").addView({
-                        view:"scrollview",
-                        id:"dashboard-tool-main",
-                        borderless:true,
-                        css:{"margin":"20px!important","height":"50px!important"},
-                        body: {
-                            view:"flexlayout",
-                            padding:20,
-                            rows:[]
-                        }
-                    },0);
-                
-
-            
-                    $$("dashboardTool").addView({
-                        rows:[{
-                            template:"",
-                            id:"dash-template",
-                            css:"webix_style-template-count webix-block-title",
-                            borderless:false,
-                            height:40,
-                        }]
-                    },1);
-                    
-
-                    const charts =  {
-                        id:"dashboard-charts",
-                        borderless:true,
-                        body: {
-                            view:"flexlayout",
-                            rows:[]
-                        }
-                    };
-
-                    $$("dashboardInfoContainer").addView(
-                        {
-                            view:"scrollview", 
-                            scroll:"auto",
-                            id:"dashBodyScroll",
-                            borderless:true, 
-                            body:{
-                                id:"dashboardBody",
-                                css:"dashboardBody",
-                                cols:[
-                                    charts
-                                ]
-                            }
-                        }
-                    );
-                } catch (err){  
-                    errors_setFunctionError(err,"content","getInfoDashboard => addErrorView");
-                }
-                
-            }
-
-            function addSuccessView(){
-                function createCharts(){
-                    try{
-                        dataCharts.forEach(function(el,i){
-                            titleTemplate = el.title;
-                            delete el.title;
-                            el.borderless = true;
-                            el.minWidth = 250;
-                        
-                            dashLayout[0].rows.push({
-                                css:"webix_dash-chart-headline",
-                                rows:[ 
-                                    {   template:titleTemplate,
-                                        borderless:true,
-                                        css:{  
-                                                "font-weight":"400!important", 
-                                                "font-size":"17px!important"
-                                            }, 
-                                        height:35
-                                    },
-                                    el
-                                ]
-                            });
-                        
-                        });
-                    } catch (err){  
-                        errors_setFunctionError(err,"content","getInfoDashboard => createCharts");
-                    }
-                }
-
-                async function setTableName() {
-                    try{
-                        if (!STORAGE.tableNames){
-                            await getData("fields"); 
-                        }
-
-                        if (STORAGE.tableNames){
-                            STORAGE.tableNames.forEach(function(el,i){
-                                if (el.id == itemTreeId){
-                                    $$("dash-template").setValues(el.name.toString());
-                                }
-                            });
-                        }
-                    } catch (err){  
-                        errors_setFunctionError(err,"content","getInfoDashboard => setTableName");
-                    }
-                }
-
-                function createSpace(){
-                    function backBtnClick (){
-                        const dashTool = $$("dashboard-tool-main");
-
-                        content_hideElem(dashTool);
-                        content_showElem($$("dashboardInfoContainer"));
-                    }
-
-                    function createMainView(){
-
-                        const headline = {  
-                            template:"Фильтр",height:30, 
-                            css:"webix_dash-filter-headline",
-                            borderless:true
-                        };
-
-                        
-                        const filterBackBtn = { 
-                            view:"button", 
-                            id:"dash-backDashBtn",
-                            type:"icon",
-                            icon:"icon-arrow-right",
-                            value:"Вернуться к дашбордам",
-                            hidden:true,  
-                            height:15,
-                            hotkey: "esc",
-                            minWidth:50,
-                            width:55,
-                            
-                            click:function(){
-                                backBtnClick();
-                            },
-                            
-                            on: {
-                                onAfterRender: function () {
-                                    this.getInputNode().setAttribute("title","Вернуться к дашбордам");
-                                }
-                            } 
-                        };
-                        const mainView = {
-                            id:"dashboard-tool-main",
-                            padding:20,
-                            hidden:true,
-                            minWidth:250,
-                            rows:[
-                                {   id:"dashboardToolHeadContainer",
-                                    cols:[
-                                        headline,
-                                        filterBackBtn,
-                                    ]
-                                },
-                                
-                                { rows:inputsArray}
-                            ], 
-                        };
-
-                        try{
-                            $$("dashboardTool").addView( mainView );
-                        } catch (err){  
-                            errors_setFunctionError(err,"content","getInfoDashboard => createMainView");
-                        }
-                    }
-
-                    createMainView();
-          
-                  
-                    function createFilterBtn(){
-                
-                        function filterBtnClick (){
-                            const dashTool = $$("dashboard-tool-main");
-
-                            function filterMinAdaptive(){
-                               /// hideElem($$("tableContainer"));
-                                content_hideElem($$("tree"));
-                                content_hideElem($$("dashboardInfoContainer"));
-
-                                content_showElem(dashTool);
-                                content_showElem($$("dash-backDashBtn"));
-                            
-                                dashTool.config.width = window.innerWidth-45;
-                                dashTool.resize();
-                            }
-
-                            function filterMaxAdaptive(){
-                                if (dashTool.isVisible()){
-                                    content_hideElem(dashTool);
-                                } else {
-                                    content_showElem(dashTool);
-                                }
-                              
-                              
-                            }
-                       
-                            filterMaxAdaptive();
-                            if ($$("dashboardContainer").$width < 850){
-                           
-                                content_hideElem($$("tree"));
-                                if ($$("dashboardContainer").$width  < 850 ){
-                                    filterMinAdaptive();
-                                }
-                            } else {
-                                content_hideElem($$("dash-backDashBtn"));
-                                if (dashTool.config.width !== 350){
-                                    dashTool.config.width = 350;
-                                    dashTool.resize();
-                                }
-                            }
-
-
-                        }
-
-                        const filterBtn = {
-                            view:"button", 
-                            id:"dashFilterBtn", 
-                            css:"webix-transparent-btn",
-                            type:"icon",
-                            icon:"icon-filter",
-                            width:50,
-                            click:function(){
-                                filterBtnClick();
-                            },
-                            on:{
-                                onAfterRender: function () {
-                                    this.getInputNode().setAttribute("title","Показать/скрыть фильтры");
-                                },
-                            }
-                        
-                            
-                        };
-                
-                        const container     = $$("dash-template").getParentView();
-                        const containerView = $$(container.config.id);
-                         
-                        if (!$$("dashFilterBtn")){
-                            containerView.addView(
-                                
-                                {   id:"dashboard-tool-btn",
-                                    cols:[
-                                        filterBtn
-                                    ]
-                                }
-                            ,2);
-                        }
-                      
-                    }
-
-                    function createDashInfo(){
-                        const template = setHeadlineBlock("dash-template");
-                 
-                       
-                        const dashCharts = {
-                            id:"dashboard-charts",
-                            view:"flexlayout",
-                            css:"webix_dash-charts-flex",
-                            rows:dashLayout,
-                        };
-
-                        const content = {
-                            view:"scrollview", 
-                            scroll:"y",
-                            id:"dashBodyScroll",
-                            borderless:true, 
-                            body:{
-                                id:"dashboardBody",
-                                css:"dashboardBody",
-                                cols:[
-                                    dashCharts
-                                ]
-                            }
-                        };
-
-                        try{
-
-                            $$("dashboardInfoContainer").addView(
-                                {   id:"dashboardInfoContainerInner",
-                                    rows:[
-                                        template,
-                                        content
-                                    ]
-                                }
-                            );
-                        } catch (err){  
-                            errors_setFunctionError(err,"content","getInfoDashboard => createDashInfo");
-                        } 
-
-                        setTableName();
-                            
-                    }
-                    createDashInfo();
-
-                    createFilterBtn()
-                }
-
-                function updateDash(){
-                    const dashCharts =  {
-                        id:"dashboard-charts",
-                        view:"flexlayout",
-                        css:"webix_dash-charts-flex",
-                        rows:dashLayout,
-                    };
-
-                    try{
-                        $$("dashboardInfoContainerInner").addView(
-                            {
-                                view:"scrollview", 
-                                scroll:"y",
-                                id:"dashBodyScroll",
-                                borderless:true, 
-                                body:{
-                                    id:"dashboardBody",
-                                    css:"dashboardBody",
-                                    cols:[
-                                        dashCharts
-                                    ]
-                                }
-                            }
-                
-                        );
-                    } catch (err){  
-                        errors_setFunctionError(err,"content","getInfoDashboard => updateDash");
-                    }
-                }
-                
-                createCharts();
-
-                if (!action){
-                    createSpace();
-                } else {
-                    updateDash();
-                }
-                
-            }
-
-           
-            if (dataCharts == undefined){
-                addErrorView();
-                logBlock_setLogValue("error","Ошибка при загрузке данных");
-            } else {
-                addSuccessView();
-            }
-
-            function setScrollHeight(){
-                try{
-                    if ($$("webix_log-btn").config.icon =="icon-eye"){
-                        $$("logLayout").config.height = 90;
-                        $$("logLayout").resize();
-                        $$("logLayout").config.height = 5;
-                        $$("logLayout").resize();
-                    } else {
-                        $$("logLayout").config.height = 5;
-                        $$("logLayout").resize();
-                        $$("logLayout").config.height = 90;
-                        $$("logLayout").resize();
-                    }
-                } catch (err){  
-                    errors_setFunctionError(err,"content","getInfoDashboard => setScrollHeight");
-                }
-            }
-
-            setScrollHeight();
-
-            if (url.includes("?")||url.includes("sdt")&&url.includes("edt")){
-                logBlock_setLogValue("success", "Данные обновлены");
-            } 
-          
-        });
-       
-        getData.fail(function(err){
-            setAjaxError(err, "content","getInfoDashboard => getAjax");
-        });
-        
-
-    }
-
-    async function getFieldsData (){
-        if (!STORAGE.fields){
-            await getData("fields"); 
-        }
-        function createDashSpace (){
-         
-            let actionType ;
-            let findAction;
-            let singleItemContent;
-            let fields = STORAGE.fields.content;
-            let inputsArray= [];
-         
-            function createFilterElems (inputs,el){
-               
-                function createDate(type,input){
-                    let dateTemplate = {
-                        view: "datepicker",
-                        format:"%d.%m.%y",
-                        editable:true,
-                        value :new Date(),
-                        placeholder:input.label,
-                        height:48,
-                        on: {
-                            onAfterRender: function () {
-                                this.getInputNode().setAttribute("title",input.comment);
-                            },
-                        }
-                    };
-
-                    if (type == "first"){
-                        let dateFirst = dateTemplate;
-                        dateFirst.id = "dashDatepicker_"+"sdt";
-                        return dateFirst;
-                    } else if (type == "last"){
-                        let dateLast = dateTemplate;
-                        dateLast.id = "dashDatepicker_"+"edt";
-                        return dateLast;
-                    }
-
-                }
-
-                function createTime (type){
-                    let timeTemplate =  {   
-                        view: "datepicker",
-                        format:"%H:%i:%s",
-                        placeholder:"Время",
-                        height:48,
-                        editable:true,
-                        value :"00:00:00",
-                        type:"time",
-                        seconds: true,
-                        suggest:{
-                            type:"timeboard",
-                            hotkey: "enter",
-                            body:{
-                                button:true,
-                                seconds: true,
-                                value :"00:00:00",
-                                twelve :false,
-                                height :110,
-                                
-                            },
-                        },
-                        on: {
-                            onAfterRender: function () {
-                                this.getInputNode().setAttribute("title","Часы, минуты, секунды");
-                                
-                            },
-                        }
-                    };
-
-
-                    if (type == "first"){
-                        let timeFirst = timeTemplate;
-                        timeFirst.id = "dashDatepicker_"+"sdt"+"-time";
-                        return timeFirst;
-                    } else if (type == "last"){
-                        let timeLast = timeTemplate;
-                        timeLast.id = "dashDatepicker_"+"edt"+"-time"; 
-                        return timeLast;
-                    }
-                }
-
-                function createBtn (input, i){
-
-                    function clickBtn(){
-                        let dateArray = [];
-                        let getUrl;
-                        let compareDates=[];
-                        let postFormatData = webix.Date.dateToStr("%d.%m.%y");
-                        let postformatTime = webix.Date.dateToStr("%H:%i:%s");
-                    
-                        let sdtDate = "";
-                        let edtDate = "";
-
-                        let validateEmpty = true;
-
-                        function getDataInputs(){
-                            function enumerationElements(el){
-                                try{
-                                    $$(el.id).getChildViews().forEach(function(elem,i){
-
-                                        function createTime(type){
-                                            if ($$(elem.config.id).getValue()!==null){
-                                                let value = $$(elem.config.id).getValue();
-                                                if (type == "sdt"){
-                                                    sdtDate=sdtDate.concat(" "+postformatTime(value));
-                                                } else if (type == "edt"){
-                                                    edtDate=edtDate.concat(" "+postformatTime(value));
-                                                }
-                                        
-                                            } else {
-                                                validateEmpty=false;
-                                            }
-                                        }
-
-                                        function createDate(type){
-                                            if ($$(elem.config.id).getValue()!==null){
-                                                let value = $$(elem.config.id).getValue();
-
-                                                if (type == "sdt"){
-                                                    sdtDate = postFormatData(value); 
-                                                } else if ( type ==  "edt"){
-                                                    edtDate = postFormatData(value);
-                                                }
-                                            
-                                            } else {
-                                                validateEmpty=false;
-                                            }
-                                        }
-                                        
-                                        if (elem.config.id.includes("sdt")){
-
-                                            if (elem.config.id.includes("time")){
-                                                createTime("sdt");
-                                            } else {
-                                                createDate("sdt");
-                                            }
-                                        } else if (elem.config.id.includes("edt")){
-                                        
-                                            if (elem.config.id.includes("time")){
-                                                createTime("edt");
-                                            } else {
-                                                createDate("edt");
-                                            }
-                                        
-                                            
-                                        }
-                                    });
-                                } catch (err){  
-                                    errors_setFunctionError(err,"content","getInfoDashboard => enumerationElements");
-                                }
-                            }
-
-                            function setInputs(){
-                                try{
-                                    inputsArray.forEach(function(el,i){
-                                        if (el.id.includes("container")){
-                                            enumerationElements(el);
-                                        }
-                                    });
-                                } catch (err){  
-                                    errors_setFunctionError(err,"content","getInfoDashboard => setInputs");
-                                }
-                            }
-
-                            function createQuery(){
-                                dateArray.push("sdt"+"="+sdtDate);
-                                dateArray.push("edt"+"="+edtDate);
-                             
-                                compareDates.push(sdtDate); 
-                                compareDates.push(edtDate);
-                            }
-
-                            setInputs();
-                            createQuery();
-                        }
-
-                        function sentQuery (){
-
-                            function removeCharts(){
-                                try{
-                                    let charts = $$("dashboard-charts");
-                                    if (charts){
-                                        $$("dashboardBody").removeView(charts);
-                                    }
-                                } catch (err){  
-                                    errors_setFunctionError(err,"content","getInfoDashboard => removeCharts");
-                                }
-                            }
-
-                            function setStateBtn(){
-                                try{
-                                    $$("dashBtn"+i).disable();
-                                    setInterval(function () {
-                                        $$("dashBtn"+i).enable();
-                                    }, 1000);
-                                } catch (err){  
-                                    errors_setFunctionError(err,"content","getInfoDashboard => setStateBtn");
-                                }
-                            }
-
-                            if (validateEmpty){
-
-                                let compareFormatData = webix.Date.dateToStr("%Y/%m/%d %H:%i:%s");
-                                let dateStart = compareFormatData(compareDates[0]);
-                                let dateEnd = compareFormatData(compareDates[1]);
-                                
-                                if (!(webix.filters.date.greater(dateStart,dateEnd)) ||
-                                    compareDates[0]==compareDates[1]                 ){  
-                                    getUrl = findAction.url+"?"+dateArray.join("&");
-                                    removeCharts();
-                                    getAjax(getUrl, inputsArray, true);
-                                    setStateBtn();
-
-                                } else {
-                                    logBlock_setLogValue("error", "Начало периода больше, чем конец");
-                                }
-                            } else {
-                                logBlock_setLogValue("error", "Не все поля заполнены");
-                            }
-                        }
-
-                        getDataInputs();
-                        sentQuery ();
-                    }
-
-                    const btnFilter = {   
-                        rows: [
-                            {height:10},
-                            {   view:"button", 
-                                css:"webix_primary", 
-                                id:"dashBtn"+i,
-                                inputHeight:48,
-                                height:48, 
-                                minWidth:100,
-                                maxWidth:200,
-                                value:input.label,
-                                click:function () {
-                                clickBtn();
-                                },
-                                on: {
-                                    onAfterRender: function () {
-                                        this.getInputNode().setAttribute("title",input.comment);
-                                    },
-                                },
-
-                            },
-                            {}
-                        ]
-                    };
-
-                    return  btnFilter;
-                }
-
-                function createFilter (el){
-             
-                    Object.values(inputs).forEach(function(input,i){
-                        function createInputs(){
-                            try{
-                                inputsArray.push(
-
-                                    {width:200,id:"datepicker-container"+"sdt",rows:[ 
-
-                                        {   template:"Начиная с:",
-                                            height:30, 
-                                            borderless:true,
-                                            css:"webix_template-datepicker"
-                                        },
-                                        createDate("first",input),
-                                        {height:10},
-                                        createTime ("first"),
-
-
-                                        {height:20},
-
-                                        {   template:"Заканчивая:",
-                                            height:30,
-                                            borderless:true, 
-                                            css:"webix_template-datepicker"
-                                        },
-                                        createDate("last",input),
-                                        {height:10},
-                                        createTime ("last"),
-
-                                    ]}
-                                );
-                            } catch (err){  
-                                errors_setFunctionError(err,"content","getInfoDashboard => createInputs");
-                            }
-                        }
-
-                        if (input.type == "datetime"&& input.order == 3){ //------------------ order
-                            let key = Object.keys(inputs)[i]; // заменены на sdt и edt
-                            createInputs();
-                        } else if (input.type == "submit"){
-                            actionType = input.action;
-                            findAction = el.actions[actionType];
-                        
-                            inputsArray.push(
-                                createBtn (input, i)
-                            );
-                        }
-
-
-                    });
-                }
- 
-                createFilter (el);
-
-                return inputsArray;
-              
-            }
-     
-            function autorefresh (el) {
-                if (el.autorefresh){
-                    let userprefsOther = webix.storage.local.get("userprefsOtherForm");
-                    try{
-                        if (userprefsOther.autorefCounterOpt !== undefined){
-                            if (userprefsOther.autorefCounterOpt >= 15000){
-                                setInterval(function(){
-                                    getAjax(singleItemContent.actions.submit.url, inputsArray);
-                                },  userprefsOther.autorefCounterOpt );
-                
-                            } else {
-                                setInterval(function(){
-                                    getAjax(singleItemContent.actions.submit.url, inputsArray);
-                                }, 50000);
-                            }
-                        }
-
-                    } catch (err){  
-                        errors_setFunctionError(err,"content","getInfoDashboard => autorefresh");
-                    }
-                }
-            }
-     
-            Object.values(fields).forEach(function(el,i){
-
-                if (el.type == "dashboard" && Object.keys(fields)[i] == itemTreeId) {
-                    let inputs = el.inputs;
-                
-                    getAjax(el.actions.submit.url, createFilterElems (inputs,el));
-                    autorefresh (el);  
-                }
-            });
-        }
-
-        if (STORAGE.fields){
-            createDashSpace ();
-        }
-
-    }
-
-    removeScroll();
-
-    if(!($$("dashBodyScroll"))){
-        getFieldsData ();
-    }  
-    
-}
-
-
-function getInfoEditTree() {
-    const treeEdit = $$("treeEdit");
-    
-    treeEdit.clearAll();
-
-    const url = "/init/default/api/"+"trees";
-    
-    const getData = webix.ajax().get(url);
-    
-    getData.then(function(data){
-
-        data = data.json().content;
-        data[0].pid = 0;
-        
-
-        let map = {}, 
-            treeStruct = [],
-            treeData = []
-        ;
-
-        function pushTreeData(){
-            try{
-                data.forEach(function(el,i){
-                    if (el.pid == 0){
-                        treeData.push({id:el.id, open:true, value:el.name, pid:el.pid, data:[]});
-                    } else {
-                        treeData.push({id:el.id, value:el.name, pid:el.pid, data:[]});
-                    }
-                });
-            } catch (err) {
-                errors_setFunctionError(err,"content","pushTreeData")
-            }
-        }
-
-        function createStruct(){
-            try{
-                treeData.forEach(function(el,i){
-
-                    map[el.id] = i; 
-
-                    if (el.pid !== 0 && el.pid !== el.id && el.pid!==null) {
-                        treeData[map[el.pid]].data.push(el);
-                    } else {
-                        treeStruct.push(el);
-                    }
-                });
-            } catch (err) {
-                errors_setFunctionError(err,"content","createStruct")
-            }
-        }
-
-        pushTreeData();
-        createStruct();
-
-        treeEdit.parse(treeStruct);
-
-    });
-
-    getData.fail(function(err){
-        setAjaxError(err, "content","getInfoEditTree");
-    });
-
-  
-}
-
 
 
 ;// CONCATENATED MODULE: ./src/js/blocks/tableEditForm/property.js
@@ -8308,7 +5435,7 @@ function setLogError (){
                 }
             });
 
-            logBlock_setLogValue("error",el.textError+" (Поле: "+nameEl+")");
+            setLogValue("error",el.textError+" (Поле: "+nameEl+")");
         });
 
     } catch (err){
@@ -8407,14 +5534,30 @@ function addNewStateSpace(){
 }
 
 
+function dateFormatting(arr){
+    const vals          = Object.values(arr);
+    const keys          = Object.keys(arr);
+    const formattingArr = arr;
+
+    keys.forEach(function(el,i){
+        const prop       = $$("editTableFormProperty");
+        const item       = prop.getItem(el);
+        const formatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
+
+        if ( item.type == "customDate" ){
+            formattingArr[el] = formatData(vals[i]);
+        }
+    });
+    return formattingArr;
+}
+
+
 function saveItem(addBtnClick=false, refBtnClick=false){    
   
     try{    
         
         const itemData = $$("editTableFormProperty").getValues();   
         const currId   = getItemId ();
-       
-      // getCurrId  ();
        
         if (!(validateProfForm().length)){
 
@@ -8426,8 +5569,11 @@ function saveItem(addBtnClick=false, refBtnClick=false){
                 const addBtn     = $$("table-newAddBtnId");
                 const emptyTempl = $$("EditEmptyTempalte");
                 const container  = $$("tableContainer");
+                const uniqueVals = uniqueData (itemData);
+                const sentObj    = dateFormatting(uniqueVals);
+ 
 
-                const putData    = webix.ajax().put(link, uniqueData (itemData));
+                const putData    = webix.ajax().put(link, sentObj);
 
                 putData.then(function(data){
                     data = data.json();
@@ -8455,14 +5601,14 @@ function saveItem(addBtnClick=false, refBtnClick=false){
                             editForm.hide();
                         }
  
-                        logBlock_setLogValue("success","Данные сохранены",currId);
+                        setLogValue("success","Данные сохранены",currId);
 
                     } else {
-                        logBlock_setLogValue("error",buttons_logNameFile+" function saveItem: "+data.err);
+                        setLogValue("error",buttons_logNameFile+" function saveItem: "+data.err);
                     }
                 });
                 putData.fail(function(err){
-                    setAjaxError(err, buttons_logNameFile,"saveItem");
+                    errors_setAjaxError(err, buttons_logNameFile,"saveItem");
                 });
             }    
 
@@ -8554,7 +5700,6 @@ function addItem () {
 
 }
 
-
 function removeNullFields(arr){
     const vals    = Object.values(arr);
     const keys    = Object.keys(arr);
@@ -8562,11 +5707,9 @@ function removeNullFields(arr){
 
     vals.forEach(function(el,i){
         if (el){
-
             sentObj[keys[i]]= el;
-            
-
         }
+        dateFormatting(arr);
     });
 
     return sentObj;
@@ -8577,10 +5720,13 @@ function saveNewItem (){
  
     if (!(validateProfForm().length)){
 
-        const editForm  = $$("table-editForm");
-        const property  = $$("editTableFormProperty");
-        const newValues = property.getValues();
-        const sentVals  = removeNullFields(newValues);
+        const editForm     = $$("table-editForm");
+        const property     = $$("editTableFormProperty");
+        const newValues    = property.getValues();
+        const notNullVals  = removeNullFields(newValues);
+        const sentVals     = dateFormatting(notNullVals);
+
+    console.log(sentVals)
 
         const postData  = webix.ajax().post("/init/default/api/"+currId, sentVals);
       
@@ -8620,10 +5766,10 @@ function saveNewItem (){
                     } catch (err){
                         errors_setFunctionError(err,buttons_logNameFile,"saveNewItem");
                     }
-                    logBlock_setLogValue("success","Данные успешно добавлены",currId);
+                    setLogValue("success","Данные успешно добавлены",currId);
                 } else {
                     console.log(data);
-                    logBlock_setLogValue("error",buttons_logNameFile+" function saveNewItem: "+data.err);
+                    setLogValue("error",buttons_logNameFile+" function saveNewItem: "+data.err);
                 }
             } else {
 
@@ -8633,11 +5779,11 @@ function saveNewItem (){
                     msg +=err+" (Поле: "+Object.keys(errs)[i] +"); ";
                 });
 
-                logBlock_setLogValue("error","editTableForm function saveNewItem: "+msg);
+                setLogValue("error","editTableForm function saveNewItem: "+msg);
             }
         });
         postData.fail(function(err){
-            setAjaxError(err, "tableEditForm => btns","saveNewItem");
+            errors_setAjaxError(err, "tableEditForm => btns","saveNewItem");
         });
     
 
@@ -8682,13 +5828,13 @@ function removeItem() {
                             $$("table-editForm").hide();
                         }
 
-                        logBlock_setLogValue("success","Данные успешно удалены");
+                        setLogValue("success","Данные успешно удалены");
                     } else {
-                        logBlock_setLogValue("error","editTableForm function removeItem: "+data.err);
+                        setLogValue("error","editTableForm function removeItem: "+data.err);
                     }
                 });
                 removeData.fail(function(err){
-                    setAjaxError(err, buttons_logNameFile,"removeItem");
+                    errors_setAjaxError(err, buttons_logNameFile,"removeItem");
                 });
      
         });
@@ -8868,7 +6014,6 @@ const editFormBtns = {
 
 
 ;// CONCATENATED MODULE: ./src/js/blocks/tableEditForm/states.js
-
 
 
 
@@ -9593,7 +6738,6 @@ function createEditFields (parentElement) {
                     const formatData = webix.Date.dateToStr("%d.%m.%y %H:%i:%s");
 
                     let defVal;
-            
                     if (el.default === "now" && el.type == "datetime"){
                         defVal = formatData(new Date());
 
@@ -9863,7 +7007,7 @@ function validateError (){
         } catch (err){ 
             errors_setFunctionError(err,common_logNameFile,"validateError")
         }
-        logBlock_setLogValue("error",el.textError+" (Поле: "+nameEl+")");
+        setLogValue("error",el.textError+" (Поле: "+nameEl+")");
     });
 }
 
@@ -9918,7 +7062,7 @@ function putData (nextItem, valuesProp, currId, editInForm=false){
                 data = data.json();
                 if (data.err_type == "i"){
 
-                    logBlock_setLogValue("success","Данные сохранены");
+                    setLogValue("success","Данные сохранены");
                     table.updateItem(valuesProp.id, valuesProp);
                     removeElem($$("propertyRefbtnsContainer"));
 
@@ -9927,12 +7071,12 @@ function putData (nextItem, valuesProp, currId, editInForm=false){
                         table.select(nextItem);
                     }
                 } if (data.err_type == "e"){
-                    logBlock_setLogValue("error",data.error);
+                    setLogValue("error",data.error);
                 }
             });
 
             putData.fail(function(err){
-                setAjaxError(err, common_logNameFile,"putData");
+                errors_setAjaxError(err, common_logNameFile,"putData");
             });
         
         }
@@ -10092,7 +7236,7 @@ const onFuncTable = {
                         toEditForm(nextItem);
                         removeElem($$("propertyRefbtnsContainer"));
                         table.select(nextItem);
-                        logBlock_setLogValue("success","Данные успешно добавлены");
+                        setLogValue("success","Данные успешно добавлены");
                     } else {
 
                         const errs = data.content.errors;
@@ -10101,13 +7245,13 @@ const onFuncTable = {
                             msg +=err+" (Поле: "+Object.keys(errs)[i] +"); ";
                         });
 
-                        logBlock_setLogValue("error",msg);
+                        setLogValue("error",msg);
                     }
                     
                 });
 
                 postData.fail(function(err){
-                    setAjaxError(err, onFuncs_logNameFile,"onBeforeSelect => postNewData");
+                    errors_setAjaxError(err, onFuncs_logNameFile,"onBeforeSelect => postNewData");
                 });
  
             } else {
@@ -10230,9 +7374,9 @@ function doAuthCp (){
                 data = data.json();
                 
                 if (data.err_type == "i"){
-                    logBlock_setLogValue("success",data.err);
+                    setLogValue("success",data.err);
                 } else {
-                    logBlock_setLogValue("error","authSettings function doAuthCp: "+data.err,"cp");
+                    setLogValue("error","authSettings function doAuthCp: "+data.err,"cp");
 
                 }
 
@@ -10240,7 +7384,7 @@ function doAuthCp (){
             });
             
             postData.fail(function(err){
-                setAjaxError(err, "authSettings","doAuthCp post");
+                errors_setAjaxError(err, "authSettings","doAuthCp post");
             });
 
         }
@@ -10325,12 +7469,12 @@ const authCp = {
         $obj:function(data){
             
             if (data.newPass != data.repeatPass){
-                logBlock_setLogValue("error","Новый пароль не совпадает с повтором");
+                setLogValue("error","Новый пароль не совпадает с повтором");
             return false;
             }
 
             if (data.newPass == data.oldPass && $$("cp-form").isDirty() ){
-                logBlock_setLogValue("error","Новый пароль должен отличаться от старого");
+                setLogValue("error","Новый пароль должен отличаться от старого");
                 return false;
             }
             return true;
@@ -10370,7 +7514,7 @@ function saveSettings (){
             data = data.json().content;
 
             if (data.err_type == "e"){
-                logBlock_setLogValue("error",data.error);
+                setLogValue("error",data.error);
             }
 
             let settingExists = false;
@@ -10389,11 +7533,11 @@ function saveSettings (){
                 putData.then(function(data){
                     data = data.json();
                     if (data.err_type == "i"){
-                        setStorageData (tabbarVal, JSON.stringify(form.getValues()));
-                        logBlock_setLogValue("success","Настройки сохранены");
+                        storageSetting_setStorageData (tabbarVal, JSON.stringify(form.getValues()));
+                        setLogValue("success","Настройки сохранены");
 
                     } if (data.err_type == "e"){
-                        logBlock_setLogValue("error",data.error);
+                        setLogValue("error",data.error);
                     }
 
                     const name         = $$("userprefsTabbar").getValue();
@@ -10403,7 +7547,7 @@ function saveSettings (){
                 });
 
                 putData.fail(function(err){
-                    setAjaxError(err, "userprefs","putPrefs");
+                    errors_setAjaxError(err, "userprefs","putPrefs");
                 });
             }
      
@@ -10436,11 +7580,11 @@ function saveSettings (){
                     userData.name     = data.first_name;
                     userData.username = data.username;
                     
-                    setStorageData("user", JSON.stringify(userData));
+                    storageSetting_setStorageData("user", JSON.stringify(userData));
                 });
 
                 getData.fail(function(err){  
-                    setAjaxError(err, "userprefs","getOwnerData");
+                    errors_setAjaxError(err, "userprefs","getOwnerData");
                 });
             }
 
@@ -10454,10 +7598,10 @@ function saveSettings (){
                     data = data.json();
 
                     if (data.err_type == "i"){
-                        logBlock_setLogValue("success","Настройки сохранены");
+                        setLogValue("success","Настройки сохранены");
 
                     } else if (data.err_type == "e"){
-                        logBlock_setLogValue("error",data.error);
+                        setLogValue("error",data.error);
                     }
 
                     const tabbarVal         = $$("userprefsTabbar").getValue();
@@ -10467,7 +7611,7 @@ function saveSettings (){
                 });
 
                 postData.fail(function(err){
-                    setAjaxError(err, "userprefs","postPrefs");
+                    errors_setAjaxError(err, "userprefs","postPrefs");
                 });
             }
 
@@ -10487,14 +7631,14 @@ function saveSettings (){
 
         });
         getData.fail(function(err){
-            setAjaxError(err, "userprefs","getUserprefsData");
+            errors_setAjaxError(err, "userprefs","getUserprefsData");
         });
     }
 
     if ( form.isDirty() ){
         getUserprefsData();
     } else {
-        logBlock_setLogValue("debug","Сохранять нечего");
+        setLogValue("debug","Сохранять нечего");
     }
 }
 
@@ -11019,7 +8163,7 @@ function contextMenu (){
                                         
                                         tree.open(titem.id);
                                     
-                                        logBlock_setLogValue("success","Данные сохранены");
+                                        setLogValue("success","Данные сохранены");
                                     } else {
                                         errors_setFunctionError( data.err,"editTree","case add post msg");
                                     }
@@ -11029,7 +8173,7 @@ function contextMenu (){
                             });
 
                             postData.fail(function(err){
-                                setAjaxError(err, "editTree","case add");
+                                errors_setAjaxError(err, "editTree","case add");
                             });
 
 
@@ -11053,7 +8197,7 @@ function contextMenu (){
                                     if (data.err_type == "i"){
                                         titem.value = text;
                                         tree.updateItem(titem.id, titem);
-                                        logBlock_setLogValue("success","Данные изменены");
+                                        setLogValue("success","Данные изменены");
                                     } else {
                                         errors_setFunctionError( data.err,"editTree","case rename put msg");
                                     }
@@ -11063,7 +8207,7 @@ function contextMenu (){
                             });
 
                             putData.fail(function(err){
-                                setAjaxError(err, "editTree","case rename");
+                                errors_setAjaxError(err, "editTree","case rename");
                             });
                         }
                         break;
@@ -11077,7 +8221,7 @@ function contextMenu (){
                                 data = data.json();
                                 if (data.err_type == "i"){
                                     tree.remove(titem.id);
-                                    logBlock_setLogValue("success","Данные удалены");
+                                    setLogValue("success","Данные удалены");
                                 } else {
                                     errors_setFunctionError( data.err,"editTree","case delete del msg");
                                 }
@@ -11087,7 +8231,7 @@ function contextMenu (){
                         });
 
                         delData.fail(function(err){
-                            setAjaxError(err, "editTree","case delete");
+                            errors_setAjaxError(err, "editTree","case delete");
                         });
 
                         break;
@@ -11161,20 +8305,20 @@ function editTreeLayout () {
                     postData.then(function(data){
                         data = data.json();
                         if (data.err_type == "i"){
-                            logBlock_setLogValue("success","Данные изменены");
+                            setLogValue("success","Данные изменены");
                         } else {
                             errors_setFunctionError(data.err,"editTree","tree onAfterEditStop postData msg");
                         }
                     });
 
                     postData.fail(function(err){
-                        setAjaxError(err, "editTree","tree onAfterEditStop postData");
+                        errors_setAjaxError(err, "editTree","tree onAfterEditStop postData");
                     });
 
 
                 }
             } catch (err){
-                setAjaxError(err, "editTree","tree onAfterEditStop");
+                errors_setAjaxError(err, "editTree","tree onAfterEditStop");
             }
         },
         }
@@ -11206,7 +8350,620 @@ webix.UIManager.addHotKey("Ctrl+Shift+E", function() {
 });
 
 
+;// CONCATENATED MODULE: ./src/js/blocks/favsLink.js
+
+
+
+
+
+
+
+function favsLink_getUserData(){
+    const userprefsGetData = webix.ajax("/init/default/api/whoami");
+    userprefsGetData.then(function(data){
+        data = data.json().content;
+
+        let userData = {};
+    
+        userData.id       = data.id;
+        userData.name     = data.first_name;
+        userData.username = data.username;
+        
+        storageSetting_setStorageData("user", JSON.stringify(userData));
+        
+    });
+    userprefsGetData.fail(function(err){
+        errors_setAjaxError(err, "favsLink","btnSaveLpostContentinkClick => getUserData");
+    });
+}
+
+
+
+function favsPopupCollectionClick (){
+    const getData = webix.ajax().get("/init/default/api/userprefs/");
+    
+    getData.then(function(data){
+        data = data.json().content;
+        const favCollection = [];
+
+        let user = webix.storage.local.get("user");
+
+        if (!user){
+            favsLink_getUserData();
+            user = webix.storage.local.get("user");
+        }
+    
+        
+        function getFavsCollection(){
+            try{
+                data.forEach(function(el){
+                    if (el.name.includes("fav-link") && user.id == el.owner){
+                        favCollection.push(JSON.parse(el.prefs));
+                    }
+                });
+            } catch (err){
+                errors_setFunctionError(err,"favsLink","favsPopupCollectionClick => getFavsCollection");
+            }
+        }
+
+        function createOptions(){
+            const radio = $$("favCollectionLinks");
+            try{
+                if (favCollection.length){
+                    favCollection.forEach(function(el){
+                        radio.addOption(
+                            {   id:el.id,
+                                value:el.name,
+                                favLink: el.link
+                            }
+                        );
+                        radio.removeOption(
+                            "radioNoneContent"
+                        );
+                    });
+                }
+                $$("popupFavsLink").show();
+            } catch (err){
+                errors_setFunctionError(err,"favsLink","favsPopupCollectionClick => createOptions");
+            }
+         
+        }
+        
+        if (user){
+            getFavsCollection();
+            createOptions();
+        }
+   
+    
+    });
+
+    getData.fail(function(err){
+        errors_setAjaxError(err, "favsLink","favsPopupCollectionClick getData");
+    });
+
+    
+}
+
+function favsPopupSubmitClick(){
+    try{
+        const radio  = $$("favCollectionLinks");
+        const value  = radio.getValue();
+        const option = radio.getOption(value);
+        window.location.replace(option.favLink);
+    } catch (err){
+        errors_setFunctionError(err,"favsLink","favsPopupSubmitClick");
+    }
+}
+
+function favsPopup(){
+
+    const popupHeadline = {   
+        template:"Избранное", 
+        width:250,
+        css:"popup_headline", 
+        borderless:true, 
+        height:20 
+    };
+
+    const btnClosePopup = {
+        view:"button",
+        id:"buttonClosePopup",
+        css:"popup_close-btn",
+        type:"icon",
+        width:35,
+        hotkey :"esc",
+        icon: 'wxi-close',
+        click:function(){
+            try{
+                if ($$("popupFavsLink")){
+                    $$("popupFavsLink").destructor();
+                }
+            } catch (err){
+                errors_setFunctionError(err,"favsLink","favsPopup click");
+            }
+        
+        }
+    };
+
+    const radioLinks = {
+        view:"radio", 
+        id:"favCollectionLinks",
+        vertical:true,
+        options:[
+            {   id:"radioNoneContent", disabled:true, value:"Здесь будут сохранены Ваши ссылки"}
+        ],
+        on:{
+            onChange:function(newValue, oldValue){
+                try{
+                    const submitBtn = $$("favLinkSubmit");
+                    if (newValue !== oldValue){
+                        if (submitBtn && !(submitBtn.isEnabled())){
+                            submitBtn.enable();
+                        }
+                    }
+                } catch (err){
+                    errors_setFunctionError(err,"favsLink","favsPopup => radioLinks");
+                }
+            }
+        }
+    };
+
+    const btnSaveLink = {
+        view:"button",
+        id:"favLinkSubmit", 
+        value:"Открыть ссылку", 
+        css:"webix_primary", 
+        disabled:true,
+        click:function(){
+            favsPopupSubmitClick();
+        }
+ 
+    };
+ 
+    webix.ui({
+        view:"popup",
+        id:"popupFavsLink",
+        css:"webix_popup-prev-href",
+        width:400,
+        minHeight:300,
+        escHide:true,
+        modal:true,
+        position:"center",
+        body:{
+            rows:[
+            {rows: [ 
+                { cols:[
+                    popupHeadline,
+                    {},
+                    btnClosePopup,
+                ]},
+                radioLinks,
+                {height:15},
+                btnSaveLink,
+            ]}]
+            
+        },
+
+    });
+    
+    favsPopupCollectionClick ();
+
+}
+
+
+function getCurrId(){
+    let id;
+    try{
+        const tree = $$("tree");
+        
+        if (tree && tree.getSelectedId()){
+            id = tree.getSelectedId();
+        } else {
+            const url = window.location.pathname;
+            const index =  window.location.pathname.lastIndexOf("/")+1;
+            id = url.slice(index);
+        
+        }
+    } catch (err){
+        errors_setFunctionError(err,"favsLink","getCurrId");
+    }
+    return id;
+}
+
+function saveFavsClick(){
+
+    async function getLinkName(){
+        
+        if (!STORAGE.fields){
+            await getData("fields"); 
+        }
+
+        function findName (id){
+            try{
+                const nameTemplate = $$("favNameLink");
+                STORAGE.tableNames.forEach(function(el,i){
+                    if (el.id == id){
+                        if(nameTemplate){
+                            nameTemplate.setValues(el.name);
+                        }
+                    }
+                    
+                });
+            } catch (err){
+                errors_setFunctionError(err,"favsLink","findName");
+            }
+        }
+        if (STORAGE.tableNames){
+            const id = getCurrId();
+            findName (id);
+        }
+      
+    }
+
+    function getLink(){
+        try{
+            const link = window.location.href;
+            const favTemplate = $$("favLink");
+            if (favTemplate){
+                favTemplate.setValues(link);
+            }
+        } catch (err){
+            errors_setFunctionError(err,"favsLink","getLink");
+        }
+    }
+
+    function destructPopupSave(){
+        try{
+            if ($$("popupFavsLinkSave")){
+                $$("popupFavsLinkSave").destructor();
+            }
+        } catch (err){
+            errors_setFunctionError(err,"favsLink","destrucPopupSave");
+        }
+    }
+     
+    function createTemplate(id, name,nonName){
+        return {   
+            id:id,
+            css:"popup_subtitle", 
+            borderless:true, 
+            height:20 ,
+            template: function(){
+                if (Object.keys($$(id).getValues()).length !==0){
+                    return "<div style='font-weight:600'>"+name+": </div>"+$$(id).getValues();
+                } else {
+                    return "<div style='font-weight:600'>"+name+": </div>"+name+" "+nonName;
+                }
+          
+            }
+        }
+    }
+
+    function btnSaveLinkClick(){
+   
+        let favNameLinkVal;
+        let favLinkVal ;
+        const namePref = getCurrId();
+        function getData(){
+            try{
+                favNameLinkVal = $$("favNameLink").getValues();
+                favLinkVal     = $$("favLink").getValues();
+            } catch (err){
+                errors_setFunctionError(err,"favsLink","btnSaveLinkClick => getData");
+            }
+        }
+
+
+        function postContent(){
+            let user = webix.storage.local.get("user");
+            let ownerData;
+
+
+            if (!user){
+                favsLink_getUserData();
+                user = webix.storage.local.get("user");
+            }
+
+            if (user){
+                ownerData = user.id;
+
+                const postObj = {
+                    name:"fav-link_"+namePref,
+                    owner:ownerData,
+                    prefs:{
+                        name: favNameLinkVal,
+                        link: favLinkVal,
+                        id:namePref,
+                    }
+                };
+                const postData = webix.ajax().post("/init/default/api/userprefs/",postObj);
+
+                postData.then(function(data){
+                    data = data.json();
+            
+                    if (data.err_type == "i"){
+                        setLogValue("success","Ссылка"+" «"+favNameLinkVal+"» "+" сохранёна в избранное");
+                    } else {
+                        errors_setFunctionError(data.err,"favsLink","btnSaveLinkClick => postContent msg" );
+                    }
+
+                    destructPopupSave();
+                });
+
+                postData.fail(function(err){
+                    errors_setAjaxError(err, "favsLink","btnSaveLinkClick => postContent");
+                });
+            }
+        }
+
+
+        function getUserprefs(){
+            const getData = webix.ajax().get("/init/default/api/userprefs/");
+            getData.then(function(data){
+                data = data.json().content;
+                const favPrefs = [];
+
+                function getFavPrefs(){
+                    try{
+                        data.forEach(function(pref){
+            
+                            if (pref.name.includes("fav-link")){
+                                favPrefs.push(pref.name);
+                            }
+                    
+                        });
+                    } catch (err){
+                        errors_setFunctionError(err,"favsLink","getUserprefs => getFavPrefs");
+                    }
+                }
+
+                function getNotUniquePrefs (){
+                    try{
+                        let unique = true;
+                        if (favPrefs.length){
+                            favPrefs.forEach(function(el){
+                             
+                                if (el.includes(namePref)){
+                                    
+                                    const index = el.indexOf("_")+1;
+                                    const id = el.slice(index);
+                            
+                                    if (id == namePref && unique){
+                                        unique = false;
+                                        setLogValue("success", "Такая ссылка уже есть в избранном");
+                                    } 
+                                } 
+                            });
+                        } 
+                        
+                        
+                        if (!(favPrefs.length) || unique) {
+                            postContent();
+                        } else if (!unique){
+                            destructPopupSave();
+                        }
+                    } catch (err){
+                        errors_setFunctionError(err,"favsLink","getUserprefs => getNotUniquePrefs");
+                    }
+                }
+      
+                getFavPrefs();
+                getNotUniquePrefs ();
+           
+            });
+            getData.fail(function(err){
+                errors_setAjaxError(err, "favsLink","getUserprefs getData");
+            });
+            }
+
+
+       
+        getData();
+        getUserprefs();
+    }
+   
+    const popupHeadline = {   
+        template:"Сохранить ссылку", 
+        width:250,
+        css:"popup_headline", 
+        borderless:true, 
+        height:20 
+    };
+
+    const btnClosePopup = {
+        view:"button",
+        id:"buttonClosePopup",
+        css:"popup_close-btn",
+        type:"icon",
+        hotkey :"esc",
+        width:35,
+        icon: 'wxi-close',
+        click:function(){
+            destructPopupSave();
+        
+        }
+    };
+
+    
+    const btnSaveLink = {
+        view:"button", 
+        value:"Сохранить ссылку", 
+        css:"webix_primary", 
+        click:function(){
+            btnSaveLinkClick();
+        }
+ 
+    };
+
+
+
+    webix.ui({
+        view:"popup",
+        id:"popupFavsLinkSave",
+        css:"popup_padding-container",
+        escHide:true,
+        width:500,
+        //height:300,
+        modal:true,
+        position:"center",
+        body:{
+            rows:[
+            {rows: [ 
+                { cols:[
+                    popupHeadline,
+                    {},
+                    btnClosePopup,
+                   
+                ]},
+                createTemplate("favNameLink","Имя","не указано"),
+                {height:5},
+                createTemplate("favLink","Ссылка","не указана"),
+                {height:10},
+                btnSaveLink,
+                {}
+                //{height:10}
+            ]}]
+            
+        },
+
+    }).show();
+
+    getLinkName();
+    getLink();
+}
+
+
+
+
+;// CONCATENATED MODULE: ./src/js/blocks/historyBtns.js
+function prevBtnClick (){
+    history.back();
+}
+
+function nextBtnClick (){
+    history.forward();
+}   
+
+function backButtonBrowserLogic (){
+    window.addEventListener('popstate', function(event) {
+        window.location.replace(window.location.href);
+        window.location.reload();
+        
+    });
+}
+
+
+;// CONCATENATED MODULE: ./src/js/blocks/blockHeadline.js
+
+
+
+
+function setHeadlineBlock (idTemplate, title=null){
+    let templateTitle;
+    try{
+        if(title){
+            templateTitle = title;
+        } else {
+            templateTitle = function(){
+                if (Object.keys($$(idTemplate).getValues()).length !==0){
+                    return $$(idTemplate).getValues();
+                } else {
+                    return "Имя не указано";
+                }
+            };
+        }
+    } catch (err){
+        errors_setFunctionError(err,"blockHeadline","setHeadlineBlock");
+    }
+
+    const headline = {   
+        view:"template",
+        id:idTemplate,
+        borderless:true,
+        css:"webix_block-headline",
+        height:34,
+        template:templateTitle,
+    };
+
+
+    const favsBtn = {
+        view:"button", 
+        css:"webix-transparent-btn",
+        type:"icon",
+        icon:"icon-star",
+        hotkey :"ctrl+shift+l",
+        width:50,
+        click:function(){
+            saveFavsClick();
+        },
+        on:{
+            onAfterRender: function () {
+                this.getInputNode().setAttribute("title","Добавить ссылку в избранное (Ctrl+Shift+L)");
+            },
+        }
+    
+        
+    };
+
+    const prevBtn = {
+        view:"button", 
+        css:"webix-transparent-btn btn-history",
+        type:"icon",
+        icon:"icon-arrow-left",
+        width:50,
+        hotkey  :"ctrl+shift+p",
+        click:function(){
+            prevBtnClick();
+        },
+        on:{
+            onAfterRender: function () {
+                this.getInputNode().setAttribute("title","Вернуться назад (Ctrl+Shift+P)");
+            },
+        }
+    
+        
+    };
+ 
+    const nextBtn = {
+        view:"button", 
+        css:"webix-transparent-btn btn-history",
+        type:"icon",
+        icon:"icon-arrow-right",
+        width:50,
+        hotkey  :"ctrl+shift+b",
+        click:function(){
+            nextBtnClick();
+        },
+        on:{
+            onAfterRender: function () {
+                this.getInputNode().setAttribute("title","Перейти вперёд (Ctrl+Shift+B)");
+            },
+        }
+    
+        
+    };
+ 
+
+
+    const headlineLayout = {
+        css:"webix_block-headline",
+        cols:[
+            headline,
+            {},
+            {cols:[
+                prevBtn,
+                nextBtn,
+            ]},
+            favsBtn
+        ]
+    };
+
+    return headlineLayout;
+}
+
+
 ;// CONCATENATED MODULE: ./src/js/blocks/tableFilter/toolbarBtn.js
+
 
 
 
@@ -11368,26 +9125,26 @@ function filterOperationsBtnData (typeField){
     return webix.once(function(){
         if (typeField == "combo" || typeField == "boolean" ){
             this.add( { value: '=', id:"operations_eql" });
-            this.add(  { value: '!=', id:"operations_notEqual" });
+            this.add( { value: '!=', id:"operations_notEqual" });
         } else if (typeField  == "text" ){
             this.add( { value: '=', id:"operations_eql" });
-            this.add(  { value: '!=', id:"operations_notEqual" });
+            this.add( { value: '!=', id:"operations_notEqual" });
             this.add( {value: 'содержит', id:"operations_contains"});
         } else if (typeField  == "date"){
             this.add( { value: '=', id:"operations_eql" });
-            this.add(  { value: '!=', id:"operations_notEqual" });
+            this.add( { value: '!=', id:"operations_notEqual" });
             this.add( { value: '<', id:"operations_less"  });
-            this.add(  { value: '>', id:"operations_more"  });
+            this.add( { value: '>', id:"operations_more"  });
             this.add( { value: '>=', id:"operations_mrEqual" });
-            this.add(  { value: '<=', id:"operations_lsEqual" });
+            this.add( { value: '<=', id:"operations_lsEqual" });
 
         } else if (typeField  == "integer"   ){
             this.add( { value: '=', id:"operations_eql" });
-            this.add(  { value: '!=', id:"operations_notEqual" });
+            this.add( { value: '!=', id:"operations_notEqual" });
             this.add( { value: '<', id:"operations_less"  });
-            this.add(  { value: '>', id:"operations_more"  });
+            this.add( { value: '>', id:"operations_more"  });
             this.add( { value: '>=', id:"operations_mrEqual" });
-            this.add(  { value: '<=', id:"operations_lsEqual" });
+            this.add( { value: '<=', id:"operations_lsEqual" });
             this.add( {value: 'содержит', id:"operations_contains"});
 
         }   
@@ -11454,13 +9211,151 @@ function filterFieldsFunctions (el,typeField){
         }
     };
 
+    const contextBtn = {   
+        view:"button",
+        id:el.id+"_contextMenuFilter",
+        type:"icon",
+        css:"webix_filterBtns",
+        icon: 'wxi-dots',
+        inputHeight : 38,
+        width       : 40,
+        popup: {
+            view: 'contextmenu',
+            css:"webix_contextmenu",
+            data: [
+                {   id:"add",   
+                    value:"Добавить поле", 
+                    icon: "icon-plus",
+                    submenu:[      
+                        { id:"add_and", value: 'и'  },
+                        { id:"add_or" , value: 'или'},
+                    ]},
+                {id:"remove", value:"Удалить поле", icon: "icon-trash"}
+            ],
+            on:{
+                onMenuItemClick:function(id, e, node){
+
+                    function popupSuccess(idBtnDel){
+            
+                        function hideHtmlContainer(inputName){
+                            const inputs = document.querySelectorAll(".webix_filter-inputs");
+                            let counter  = 0;
+        
+                            inputs.forEach(function(elem,i){
+                                
+                                const viewAttr  = elem.getAttribute("view_id");
+        
+                                const hideClass = "webix_hide-content";
+                                const showClass = "webix_show-content";
+        
+        
+                                if (viewAttr == inputName){
+                                    if ( !(elem.classList.contains( hideClass )) ){
+                                        elem.classList.add( hideClass );
+                                 
+                                    }
+        
+                                    if ( elem.classList.contains( showClass ) ){
+                                        elem.classList.remove( showClass );
+                                    }
+                                }
+                 
+                                if ( elem.classList.contains( showClass ) ){
+                                    counter++;
+                                }
+        
+                            });
+        
+                            if ( !counter ){
+                                showElem($$("filterEmptyTempalte"));
+                            }
+                        }
+        
+                            const container          = idBtnDel          .getParentView();
+                     
+                            const parentContainer    = container         .getParentView();
+                            const mainInput          = parentContainer   .getChildViews();
+
+                            const allInputsContainer = parentContainer   .getParentView();
+                            const allInputs          = allInputsContainer.getChildViews();
+              
+
+                            function hideMainInput(){
+                                try{
+                                    mainInput.forEach(function(el){
+                                        const id = el.config.id;
+                                        hideElem(el);
+                                        
+                                        if ( !(id.includes( "_container-btns" )) ){
+                                            el.setValue("");
+                                            hideHtmlContainer( id + "_rows" );
+                                        }
+                                    });
+                                }catch(err){ 
+                                    errors_setFunctionError(err,toolbarBtn_logNameFile,"contextBtn remove => hideMainInput");
+                                }
+                            }
+
+                            function hideChilds(){
+                                const childsArr = [];
+                                allInputs.forEach(function(el){
+                                    const id = el.config.id;
+                                    if(id.includes("-container-child-")){
+                                        childsArr.push($$(id));
+
+                                    }
+                                });
+
+                                childsArr.forEach(function(el){
+                                    const parent = el.getParentView();
+                                    parent.removeView(el);
+                                });
+                            }
+                            
+                            hideMainInput();
+                            hideChilds();
+
+                            setLogValue("success","Поле удалено"); 
+                   
+                    }
+
+                    if ( id == "add_and" || id == "add_or" ){
+                        createChildFields (id,el);
+                    } else if (id.includes("remove")){
+                        const idBtnDel = $$(this.config.master);
+
+                        popupExec("Поле фильтра будет удалено").then(
+                            function(){
+                                popupSuccess(idBtnDel);
+                                
+                            }
+                        );
+                    }
+                
+
+        
+                },
+             
+            }
+        },
+
+        on:{
+            onAfterRender: function () {
+                this.getInputNode().setAttribute("title","Другие операции");
+            },
+        }
+  
+    };
+
     const btns = {
         id:el.id+"_filter_container-btns",
         css:{"margin-top":"27px!important"},
         hidden:true, 
         cols:[
             btnOperation,
-            btnAdd,
+           // btnAdd,
+           // btnDel
+           contextBtn
         ]
     };
 
@@ -11726,7 +9621,7 @@ function createFilterElements (parentElement, viewPosition=1) {
     }
 
     function generateElements(){
-        const columnsData = $$("table").getColumns();
+        const columnsData = $$("table").getColumns(true);
         let inputsArray   = [];
         try{
             columnsData.forEach((el,i) => {
@@ -11747,7 +9642,7 @@ function createFilterElements (parentElement, viewPosition=1) {
                 const idContainerRows = el.id+"_filter"+"_rows";
                 const idContainer     = el.id+"_container";
                 const cssContainer    = el.id+" webix_filter-inputs";
-
+     
                 function pushData (element, btns){
                     const data  =  {   
                         id:idContainerRows,
@@ -11757,7 +9652,7 @@ function createFilterElements (parentElement, viewPosition=1) {
                                 padding:5,
                                 cols:[
                                     element,
-                                    btns
+                                    btns,
                                 ]
                             }
                         ]
@@ -11849,15 +9744,18 @@ function createFilterElements (parentElement, viewPosition=1) {
                     inputsArray.push(
                         pushData ( 
                             createText ("int"),
-                            filterFieldsFunctions (el,"integer")
+                            filterFieldsFunctions (el,"integer"),
+                         
                         )
                     );
                 }
                 else{
+
                     inputsArray.push(
                         pushData ( 
                             createText ("text"),
-                            filterFieldsFunctions (el,"text")
+                            filterFieldsFunctions (el,"text"),
+                   
                         )
                     );
                 }
@@ -12011,13 +9909,14 @@ function toolbarFilterBtn(idTable,visible){
         css:"webix_btn-filter webix-transparent-btn ",
         disabled:true,
         title:"текст",
+        hotkey:"ctrl+shift+f",
         height:42,
         click:function(){
             filterBtnClick(idTable,idBtnEdit);
         },
         on: {
             onAfterRender: function () {
-                this.getInputNode().setAttribute("title","Показать/скрыть фильтры");
+                this.getInputNode().setAttribute("title","Показать/скрыть фильтры (Ctrl+Shift+F)");
             }
         } 
     };
@@ -12110,10 +10009,11 @@ function toolbarEditButton (idTable){
         view:"button",
         maxWidth:200, 
         value:"<span class='webix_icon icon-pencil'></span><span style='padding-left: 5px'>"+
-            "Редактор таблицы</span>",
+            "Редактор записи</span>",
         id:idBtnEdit,
         css:"webix_btn-edit",
         title:"текст",
+        hotkey:"ctrl+shift+x",
         height:42,
         click:function(){
             editBtnClick(idBtnEdit);
@@ -12127,7 +10027,7 @@ function toolbarEditButton (idTable){
                 } catch (err) {   
                     errors_setFunctionError(err,tableEditForm_toolbarBtn_logNameFile,"btn edit onAfterRender");
                 }
-                this.getInputNode().setAttribute("title","Редактировать таблицу");
+                this.getInputNode().setAttribute("title","Редактировать запись (Ctrl+Shift+X)");
             }
         } 
     };
@@ -12141,582 +10041,840 @@ function toolbarEditButton (idTable){
 
 
 
+function searchColsListPress (){
+    const list      = $$("visibleList");
+    const search    = $$("searchColsList");
+    const value     = search.getValue().toLowerCase();
+    let counter     = 0;
+    try{
+    
+        list.filter(function(obj){
+            const condition = obj.label.toLowerCase().indexOf(value) !== -1;
 
-
-function  visibleColsButtonClick(idTable){
-    const currTable  = $$(idTable);
-    let columns    = $$(idTable).getColumns(true);
-
-    function createCheckboxes(){
-        const checkboxes = [];
-        const btnSubmit  = $$("visibleColsSubmit");
-        function disableBtn(){
-          
-            try{
-                if (btnSubmit && btnSubmit.isEnabled()){
-                    btnSubmit.disable();
-                }
-            } catch (err){
-                errors_setFunctionError(err,"toolbarTable","createCheckboxes => disableBtn");
+            if (condition){
+                counter ++;
             }
-        
+    
+            return condition;
+        });
+
+        if (counter == 0){
+           showElem($$("visibleColsEmptyTempalte"));
+        } else {
+            hideElem($$("visibleColsEmptyTempalte"));
         }
 
-        
-        function enableBtn(){
-            const btnSubmit  = $$("visibleColsSubmit");
-            try{
-                if (btnSubmit && !(btnSubmit.isEnabled())){
-                    btnSubmit.enable();
-                }
-            } catch (err){
-                errors_setFunctionError(err,"toolbarTable","createCheckboxes => enableBtn");
-            }
-        }
+    
+     
+       //visibleColsEmptyTempalteSelected
+      
+    } catch(err){
+        errors_setFunctionError(err,"visibleColumns","searchColsListPress");
+    }
 
-        function checkboxOnChange(newValue,oldValue,col){
-            const id          = col.id+"_checkbox-visible";
-            const parent      = $$(id).getParentView();
-            const parentView  = $$(parent.config.id);
-            const checkboxes  = parentView.getChildViews();
-            const valuesArray = [];
-          
-            function findCheckedElem(){
-                let nullCounter  = false;
-                try{
+}
+
+function destructPopup(){
+    try{
+        const popup = $$("popupVisibleCols");
+        if (popup){
+            popup.destructor();
+        }
+    } catch (err){
+        errors_setFunctionError(err,"visibleColumns","destructPopup");
+    }
+}
+
+function setBtnSubmitState(state){
+    const btnSubmit  = $$("visibleColsSubmit");
+    const check      = btnSubmit.isEnabled();
+
+    if (state == "enable" && !(check) ){
+        btnSubmit.enable();
+    } else if ( state == "disable" && check ){
+        btnSubmit.disable();
+    }
+}
+
+
+function getTable(){
+    const tableTempl     = $$("table");
+    const tableTemplView = $$("table-view");
+    let table;
+
+    if ( tableTempl.isVisible() ){
+        table = tableTempl;
+    } else if ( tableTemplView.isVisible() ){
+        table = tableTemplView;
+    }
+
+    return table;
+}
+
+
+function clearBtnColsClick (){
+    const table = getTable();
+    const cols  = table.getColumns(true);
+
+    function showCols(){
+        try{
+            cols.forEach(function(el,i){
+                
+                if( !( table.isColumnVisible(el.id) ) ){
+                    table.showColumn(el.id);
+                }
+                
+            });
+        } catch(err){
+            errors_setFunctionError(err,"visibleColumns","clearBtnColsClick => showCols");
+        }
+    }
+    modalBox(   "Будут установлены стандартные настройки", 
+            "Вы уверены?", 
+            ["Отмена", "Сохранить изменения"]
+    )
+    .then(function(result){
+
+        if (result == 1){
+            showCols();
+            destructPopup();
+            setLogValue   ("success","Рабочая область таблицы обновлена");
+        }
+    });
+}
+
+function setUpdateCols(sentVals){
+    const table   = getTable();
+    const columns = table.getColumns(true);
+    
+    function findUniqueCols(col){
+        let result = false;
+
+        sentVals.values.forEach(function(el){
+            if (el.column == col){
+                result = true;
+            }
+
+        });
+        
+        return result;
+    }
+
+    function setVisibleState(){
+        try{
+            columns.forEach(function(el,i){
+                
+                if (findUniqueCols(el.id)){
+                    if( !( table.isColumnVisible(el.id) ) ){
+                        table.showColumn(el.id);
+                    }
+                } else {
+                    const colIndex = table.getColumnIndex(el.id);
+                    if(table.isColumnVisible(el.id) && colIndex !== -1){
+                        table.hideColumn(el.id);
+                    }
+                }
+            });
+        } catch(err){
+            errors_setFunctionError(err,"visibleColumns","setUpdateCols => setVisibleState");
+        }
+    }
+
+    function moveListItem(){
+        sentVals.values.forEach(function(el){
+            table.moveColumn(el.column, el.position);
+                
+        });  
+    }
+
+
+    setVisibleState ();
+    moveListItem    ();
+
+}
+
+function postPrefsValues(values){
+    const id            = getItemId();
+    const sentVals      = {
+        values       : values, 
+        tableIdPrefs : id
+    };
+
+    const sentObj = {
+        name:"visibleColsPrefs_"+id,
+        prefs:sentVals,
+    };
+
+    function saveExistsTemplate(sentObj,idPutData){
+        const url     = "/init/default/api/userprefs/"+idPutData;
+        const putData = webix.ajax().put(url, sentObj);
+
+        putData.then(function(data){
+            data = data.json();
              
-                    checkboxes.forEach(function(el){
-                        const value = $$(el.config.id).getValue();
-                        valuesArray.push(value);
-                        if (value === 1 && !nullCounter){
-                            nullCounter = true;
-                        }
-                    });  
-                } catch (err){
-                    errors_setFunctionError(err,"toolbarTable","createCheckboxes => findCheckedElem");
-                }
-                return nullCounter;
-            }
-     
-
-            function setSelectAllState (){
-                try{
-                    const selectAll   = $$("selectAll");
-                    const selecAllVal = selectAll.getValue();
-                    let   found;
-      
-                    checkboxes.forEach(function(el){
-                        const value = $$(el.config.id).getValue();
-                        if(el.config.id !== "selectAll"){
-                            valuesArray.push(value);
-                        }
-                    
-                    });
-            
-                    found = valuesArray.find(element => element === 0);
-                    if (found === undefined){
-                        selectAll.setValue(1);
-                    }
-
-                    if (newValue == 0 && selecAllVal){
-                        selectAll.setValue(0);
-                    }
-
-                } catch (err){
-                    errors_setFunctionError(err,"toolbarTable","checkboxOnChange => setSelectAllState");
-                }
-            }
-            
-    
-            if (newValue !== oldValue){
-                enableBtn();
-                const nullCounter = findCheckedElem();
-   
-            
-                if (!nullCounter){
-                    disableBtn();
-                }
-           }
-            // else {
-            //     const nullCounter = findCheckedElem();
-   
-            
-            //     if (!nullCounter){
-            //         disableBtn();
-            //     }
-            // }
-
-            setSelectAllState ();
-        }
-
-
-        function checkboxSelectAllLogic (newValue){
-            try{
-
-                const checkbox   = $$("selectAll");
-                const parent     = checkbox.getParentView();
-                const parentView = $$(parent.config.id).getChildViews();
-
-                parentView.forEach(function(el){
-                    if (el.config.id !== "selectAll"){
-                        $$(el.config.id).setValue(newValue);
-                    }
-                });
-   
-            } catch (err){
-                errors_setFunctionError(err,"toolbarTable","createCheckboxes => checkboxSelectAllLogic");
-            }
-        }
-    
-        function getCheckboxArray(){
-
-            try{
-                checkboxes.push({
-                    view:"checkbox", 
-                    id:"selectAll",
-                    name:"selectAll",
-                    labelRight:"Выбрать всё",
-                    labelWidth:0,
-                    on:{
-                        onChange:function(newValue, oldValue, config){
-                         
-                            if(config){
-                                checkboxSelectAllLogic (newValue);
-                            } 
-                            // else {
-                            //     if (!newValue){
-                         
-                            //         disableBtn();
-                            //     } else {
-                            //         enableBtn();
-                            //     }
-                            // }
-                       
-
-                        }
-                    } 
-                });
-
-               
-          
-                // currTable.config.backCols.forEach(function(el,i){
-                //     const found     = columns.find(element => element.id == el.id);
-                //     const currCols  = currTable.config.columns;
-                //     if( !found ){
-                //         console.log(currCols,"currCols1") 
-                //         currCols.splice(i,0,el);
-                //         currTable.refreshColumns();
-                //         console.log(currCols,"currCols2") 
-                //     }
-                   
-                // });
-
-               
-                 columns = currTable.getColumns(true);
-                // console.log(columns) 
-                columns.forEach(function(col){
-
-                    if(col.css !== "action-column" && !col.hiddenCustomAttr ){
-      
-                        checkboxes.push({
-                            view:"checkbox", 
-                            id:col.id+"_checkbox-visible", 
-                            labelRight:col.label, 
-                            labelWidth:0,
-                            name:col.id,
-                            on:{
-                                onChange:function(newValue,oldValue){
-                                    checkboxOnChange(newValue,oldValue,col);
-                                }
-                            } 
-                        });
-                    }
-                   
-                });
-        
-              
-            } catch (err){
-                errors_setFunctionError(err,"toolbarTable","getCheckboxArray");
-            }
-        }
-
-        function disableSubmitBtn(){
-            const btnSubmit = $$("visibleColsSubmit");
-            if (btnSubmit){
-                btnSubmit.disable();
-            }
-        }
-
-
-        function getUserprefsValues(){
-            const id          = currTable.config.idTable;
-            const selectAll   = $$("selectAll");
-            const storageData = webix.storage.local.get("visibleColsPrefs_"+id);
-            const values      = [];
-
-
-            if (storageData){
-                storageData.forEach(function(el){
-                    $$(el.id+"_checkbox-visible").setValue(el.value);
-                    values.push(el.value);
-                    disableSubmitBtn();
-                });
-
-                const found = values.find(element => element === 0);
-
-                if (found === undefined){
-                    selectAll.setValue(1);
-                }
+            if (data.err_type !== "i"){
+                setLogValue("error","toolbarTable function saveExistsTemplate putData: "+ data.err);
             } else {
-                const parent = selectAll.getParentView();
-                const childs = parent.getChildViews();
-
-                childs.forEach(function(el){
-                    $$(el.config.id).setValue(1);
-                });
+                setLogValue   ("success","Рабочая область таблицы обновлена");
+                storageSetting_setStorageData("visibleColsPrefs_"+id, JSON.stringify(sentObj.prefs));
+                setUpdateCols (sentVals);
             }
 
-        }
+           
+        });
 
-        function addCheckboxes(){
-            try{
-                $$("checkboxContent").addView({
-                    id:"checkboxContainer",
-                    rows:checkboxes,
-                });
-                getUserprefsValues();
-            } catch (err){
-                errors_setFunctionError(err,"toolbarTable","createCheckboxes => addCheckboxes");
-            }
-        }
+        putData.fail(function(err){
+            errors_setAjaxError(err, "visibleColumns","saveExistsTemplate => putUserprefsData");
+        });
 
-        function hideEmptyTemplate(){
-            try{
-                if ($$("visibleColsEmptyTempalte")){
-                    $$("visibleColsEmptyTempalte").hide();
-                }
-            } catch (err){
-                errors_setFunctionError(err,"toolbarTable","createCheckboxes => hideEmptyTemplate");
-            }
-        }
+        destructPopup();
+    } 
 
-        function showPopup(){
-            try{
-                if ($$("popupVisibleCols")){
-                    $$("popupVisibleCols").show();
-                }
-            } catch (err){
-                errors_setFunctionError(err,"toolbarTable","createCheckboxes => showPopup");
-            }
-        }
-
-        getCheckboxArray();
-
-
-        if (checkboxes){
-            addCheckboxes();
-            hideEmptyTemplate();
+    function saveNewTemplate(){
+        const ownerId = webix.storage.local.get("user").id;
+        const url     = "/init/default/api/userprefs/";
         
-        } 
-        showPopup();
+        if (ownerId){
+            sentObj.owner = ownerId;
+        }
 
+        const userprefsPost = webix.ajax().post(url,sentObj);
+        
+        userprefsPost.then(function(data){
+            data = data.json();
+ 
+            if (data.err_type !== "i"){
+                errors_setFunctionError(data.err,"filterTableForm","tabbarClick")
+            } else {
+                setLogValue   ("success","Рабочая область таблицы обновлена");
+                storageSetting_setStorageData("visibleColsPrefs_"+id, JSON.stringify(sentObj.prefs));
+                setUpdateCols (sentVals);
+            }
+        });
+
+        userprefsPost.fail(function(err){
+            errors_setAjaxError(err, "visibleColumns","saveTemplate");
+        });
+
+        destructPopup();
     }
 
-    function postPrefsValues(values){
-   
-        const id            =   currTable.config.idTable;
-        values.tableIdPrefs = id;
-        let sentObj = {
-            name:"visibleColsPrefs_"+id,
-            prefs:values,
-        };
-
-        function saveExistsTemplate(sentObj,idPutData){
-            const putData = webix.ajax().put("/init/default/api/userprefs/"+idPutData, sentObj);
-    
-            putData.then(function(data){
-                data = data.json();
-                 
-                if (data.err_type !== "i"){
-                    logBlock_setLogValue("error","toolbarTable function saveExistsTemplate putData: "+ data.err);
-                } else {
-                    setStorageData("visibleColsPrefs_"+id, JSON.stringify(sentObj.prefs));
-                }
-            });
-
-            putData.fail(function(err){
-                setAjaxError(err, "toolbarTable","saveExistsTemplate => putUserprefsData");
-            });
-        } 
-
-        function setDataStorage(){
-            const whoamiData = webix.ajax("/init/default/api/whoami");
-            whoamiData.then(function(data){
-                sentObj.owner = data.json().content.id;
-
-                let userData = {};
-                userData.id = data.json().content.id;
-                userData.name = data.json().content.first_name;
-                userData.username = data.json().content.username;
-                
-                setStorageData("user", JSON.stringify(userData));
-            });
-
-            whoamiData.fail(function(err){
-                setAjaxError(err, "filterTableForm","saveTemplate => setDataStorage");
-            });
-
-        }
-
-        function saveNewTemplate(){
-            let ownerId = webix.storage.local.get("user").id;
-            if (ownerId){
-                sentObj.owner = ownerId;
-            } else {
-                setDataStorage();
-                
-            }
-
-            const userprefsPost = webix.ajax().post("/init/default/api/userprefs/",sentObj);
-            
-            userprefsPost.then(function(data){
-                data = data.json();
+    function getUserprefsData(){
      
-                if (data.err_type !== "i"){
-                    errors_setFunctionError(data.err,"filterTableForm","tabbarClick")
-                } else {
-                    setStorageData("visibleColsPrefs_"+id, JSON.stringify(sentObj.prefs));
-                }
-            });
-
-            userprefsPost.fail(function(err){
-                setAjaxError(err, "toolbarTable","saveTemplate");
-            });
-
-        }
-
-        function getUserprefsData(){
-         
-            const getData = webix.ajax().get("/init/default/api/userprefs");
-            let settingExists = false;
-            let idPutData;
-        
-            getData.then(function(data){
-                data = data.json().content;
-                try{
-                    data.forEach(function(el){
-                        
-                        if (el.name == "visibleColsPrefs_"+id && !settingExists){
-                            idPutData = el.id
-                            settingExists = true;
+        const getData = webix.ajax().get("/init/default/api/userprefs");
+        let settingExists = false;
+        let idPutData;
+    
+        getData.then(function(data){
+            data = data.json().content;
+            try{
+                data.forEach(function(el){
                     
-                        }
-                    });
-                } catch (err){
-                    errors_setFunctionError(err,"toolbarTable","getUserprefsData getData");
-                }
-            });
-
-            getData.then(function(){
-         
-                if (!settingExists){
-                    saveNewTemplate();
-                } else {
-                    saveExistsTemplate(sentObj,idPutData);
-                }
-            });
-
-
-            getData.fail(function(err){
-                setAjaxError(err, "toolbarTable","getUserprefsData");
-            });
-
-            return settingExists;
-
-        }
-        getUserprefsData();
-
-    }
-
-    function visibleColsSubmitClick (){
-        const checkboxContainer = $$("checkboxContainer");
-        const checkboxes        = checkboxContainer.getChildViews();
-        const checkboxesId      = [];
-        const colsId            = [];
-        
-        function pushChecksId (){
-            try{
-                checkboxes.forEach(function(el){
-                    if (el.config.id !== "selectAll"){
-                        checkboxesId.push(el.config.id);
+                    if (el.name == "visibleColsPrefs_"+id && !settingExists){
+                        idPutData = el.id
+                        settingExists = true;
+                
                     }
-            
                 });
             } catch (err){
-                errors_setFunctionError(err,"toolbarTable","visibleColsSubmitClick => pushChecksId");
+                errors_setFunctionError(err,"visibleColumns","getUserprefsData getData");
             }
-        }
+        });
 
-        function pushValuesChecks(){
-            try{
-                checkboxesId.forEach(function(el){
-                    const value = $$(el).getValue();
-                    const index = el.indexOf("_checkbox-visible");
-                    const idCol = el.slice(0,index);
-                    colsId.push({id:idCol, value:value});
-                });
-            } catch (err){
-                errors_setFunctionError(err,"toolbarTable","visibleColsSubmitClick => pushValuesChecks");
+        getData.then(function(){
+     
+            if (!settingExists){
+                saveNewTemplate();
+            } else {
+                saveExistsTemplate(sentObj,idPutData);
             }
-        }
-
-        function setStateCols(el){
-        
-            try{
-       
-                if (el.value){
-               
-                    if ( !( currTable.isColumnVisible(el.id) ) ){
-               
-                        currTable.showColumn(el.id);
-                   
-                    }
-
-                } else {
-                    if ( currTable.isColumnVisible(el.id) ){
-                  
-                        currTable.hideColumn(el.id);
-                    }
-                }
-
-                currTable.refreshColumns();
-
-
-            } catch (err){
-                errors_setFunctionError(err,"toolbarTable","visibleColsSubmitClick => pushValuesChecks element: "+el);
-            }
-        }
-
-        function destructPopup(){
-            try{
-                if ($$("popupVisibleCols")){
-                    $$("popupVisibleCols").destructor();
-                }
-            } catch (err){
-                errors_setFunctionError(err,"toolbarTable","visibleColsSubmitClick => destructPopup");
-            }
-        }
-
-        pushChecksId ();
-
-        if (checkboxesId){
-           pushValuesChecks();
-           postPrefsValues(colsId);
-        }
-
-      
-
-        colsId.forEach(function(el){
-            setStateCols(el);
         });
 
 
-        destructPopup();
-        
-        logBlock_setLogValue("success", "Таблица обновлена");
+        getData.fail(function(err){
+            errors_setAjaxError(err, "toolbarTable","getUserprefsData");
+        });
+
+        return settingExists;
+
+    }
+    getUserprefsData();
+
+}
+
+
+function visibleColsSubmitClick (){
+
+    const list      = $$("visibleListSelected");
+    const listPull  = list.data.pull;
+    const listItems = Object.values(listPull);
+    const values    = [];
+
+    try{
+        listItems.forEach(function(el,i){
+            const positionElem = list.getIndexById(el.id);
+            values.push({column:el.column, position:positionElem});
+
+        });
+    } catch (err){
+        errors_setFunctionError(err,"visibleColumns","visibleColsSubmitClick");
     }
 
+    postPrefsValues(values);
+}
+
+function createMsg(){
+    if(!($$("visibleColsMsg")) ){
+        webix.message({
+            id:"visibleColsMsg",
+            type:"debug", 
+            text:"Элемент не выбран",
+        });
+    }
+}
+
+function colsMove(action){
+    const list        = $$("visibleListSelected");
+    const listElement = list.getSelectedId();
+
+    if( listElement ){
+        if (action == "up"){
+            list.moveUp(listElement,1);
+            setBtnSubmitState("enable");
+        } else if (action == "down"){
+            list.moveDown(listElement,1);
+            setBtnSubmitState("enable");
+        }   
+    } else {
+        createMsg();
+    }
+}
+
+function colsPopupSelect(action){
+
+    const list                  = $$("visibleList");
+    const listSelect            = $$("visibleListSelected");
+    const emptyTemplateSelected = $$("visibleColsEmptyTempalteSelected");
+    const emptyTemplate         = $$("visibleColsEmptyTempalte");
+
+    function showEmptyElem(list,emptyEl,btn){
+        const listPull      = Object.values(list.data.pull);
+        if ( !(listPull.length) ){
+            showElem(emptyEl);
+
+            if( btn && btn.isEnabled() ){
+                btn.disable();
+            } 
+
+            setBtnSubmitState("disable");
+
+        }
+    }
+
+    function hideEmptyElem(type){
+
+        if ( type == "available" ){
+            const pull = Object.values(list.data.pull);
+ 
+            if ( pull.length ){
+                hideElem(emptyTemplateSelected);
+                setBtnSubmitState("enable");
+            } 
+             
+        } else if ( type == "selected"  ){
+            const pull = Object.values(listSelect.data.pull);
+        
+            if ( pull.length ){
+                hideElem(emptyTemplate);
+                setBtnSubmitState("enable");
+                
+            } 
+        }  
+    }
+
+
+    if ( action == "add"){
+        const selectedItem  = list.getSelectedItem();
+        const selectedId    = list.getSelectedId  ();
+        if (selectedItem){
+            listSelect.add(selectedItem);
+            list.remove(selectedId);
+            showEmptyElem(list,emptyTemplate, $$("addColsBtn"));
+            hideEmptyElem("available");
+            setBtnSubmitState("enable");
+        } else {
+            createMsg();
+        }
+
+      
+
+    } else if ( action == "remove" ){
+        const selectedItem  = listSelect.getSelectedItem();
+        const selectedId    = listSelect.getSelectedId();
+    
+        if (selectedItem){
+            list.add(selectedItem);
+            listSelect.remove(selectedId);
+
+            showEmptyElem(listSelect,emptyTemplateSelected, $$("removeColsBtn"));
+            hideEmptyElem("selected");
+        } else {
+            createMsg();
+        }
+    }
+
+
+}
+
+
+function createSpace(){
+    const table    = getTable();
+    const list     = $$("visibleList");
+    const listPull = Object.values(list.data.pull);
+    const cols     = table.getColumns(); 
+    
+    function findRemoveEl(elem){
+        let check = false;
+
+        cols.forEach(function(item,i){
+            
+            if (elem == item.id){
+                check = true;
+            }
+
+        });
+        return check;
+    }
+
+    
+    function removeListItem(){
+
+        try{
+            listPull.forEach(function(el,i){
+            
+                if (findRemoveEl(el.column)){
+                list.remove(el.id);
+                }
+
+            });
+        } catch (err){
+            errors_setFunctionError(err,"visibleColumns","createSpace => removeListItem");
+        }  
+    }
+
+    function addListSelectedItem(){
+        const viewList = $$("visibleListSelected");
+        const emptyEl  = $$("visibleColsEmptyTempalteSelected");
+        
+        if (cols.length){
+            hideElem(emptyEl);
+        }
+        try{
+            cols.forEach(function(col,i){
+                viewList.add({
+                    column  :col.id,
+                    label   :col.label,
+                });
+            });
+        } catch (err){
+            errors_setFunctionError(err,"visibleColumns","createSpace => addListSelectedItem");
+        } 
+    }
+
+    if (listPull.length !== cols.length){
+        removeListItem();
+        addListSelectedItem();
+    }
+
+
+}
+
+function  visibleColsButtonClick(idTable){
+    const currTable  = $$(idTable);
+    let columns      = $$(idTable).getColumns(true);
+
+    
+
+    function createCheckboxes(){
+
+        function createListItems(){
+
+            try{
+
+                columns = currTable.getColumns(true);
+                const sortCols = _.sortBy(columns,"label");
+
+                sortCols.forEach(function(col){
+
+                    if(col.css !== "action-column" && !col.hiddenCustomAttr ){
+                      
+                        $$("visibleList").add({
+                            column  :col.id,
+                            label   :col.label,
+                        });
+                     
+                    }
+                   
+                });
+
+            } catch (err){
+                errors_setFunctionError(err,"visibleColumns","getCheckboxArray");
+            }
+        }
+
+        createListItems();
+        hideElem($$("visibleColsEmptyTempalte"));
+        showElem($$("popupVisibleCols"));
+
+    }
 
     function createPopup(){
 
         const popupHeadline = {   
-            template:"Видимость колонок", 
-            width:250,
-            css:"popup_headline", 
-            borderless:true, 
-            height:20 
+            template    : "Видимость колонок", 
+            width       : 250,
+            css         : "popup_headline list-filter-head", 
+            borderless  : true, 
+            height      : 20 
         };
 
         const btnClosePopup = {
-            view:"button",
-            id:"buttonClosePopup",
-            css:"popup_close-btn",
-            type:"icon",
-            width:35,
-            icon: 'wxi-close',
-            click:function(){
-                try{
-                    if ($$("popupVisibleCols")){
-                        $$("popupVisibleCols").destructor();
-                    }
-                } catch (err){
-                    errors_setFunctionError(err,"toolbarTable","popupVisibleCols click");
+            view        : "button",
+            id          : "buttonClosePopup",
+            css         : "popup_close-btn",
+            type        : "icon",
+            hotkey      : "esc", 
+            width       : 35,
+            icon        : 'wxi-close',
+            click       : function(){
+                destructPopup();
+            },
+            on          : {
+                onAfterRender: function () {
+                    this.getInputNode().setAttribute("title","Закрыть окно (Esc)");
                 }
-            
-            }
+            } 
         };
 
+        function generateEmptyTemplate(id,text){
+            return {   
+                id        : id,
+                css       : "webix_empty-template list-filter-empty",
+                template  : text, 
+                borderless: true
+            };
+        }
 
-        const emptyTmplate = {   
-            id:"visibleColsEmptyTempalte",
-            css:"webix_empty-template",
-            template:"В данной таблице колонки отсутствуют", 
-            borderless:true
-        };
+
+        function genetateScrollView(idCheckboxes,inner){
+            return {
+                view        : "scrollview",
+                css         : "webix_multivew-cell",
+                borderless  : true,
+                scroll      : false,
+                body        : { 
+                    id  : idCheckboxes,
+                    rows: inner
+                }
+            };
+        }
 
 
         const btnSaveState = {
-            view:"button",
-            id:"visibleColsSubmit", 
-            value:"Сохранить состояние", 
-            css:"webix_primary", 
-            disabled:true,
-            click:function(){
+            view    : "button",
+            id      : "visibleColsSubmit", 
+            value   : "Сохранить состояние", 
+            css     : "webix_primary",
+            hotkey  : "shift+s", 
+            disabled: true,
+            click   : function(){
                 visibleColsSubmitClick();
-            }
+            },
+            on      : {
+                onAfterRender: function () {
+                    this.getInputNode().setAttribute("title","Изменить отображение колонок в таблице (Shift+S)");
+                }
+            } 
     
         };
 
-        const scrollView = {
-            view:"scrollview",
-            borderless:true, 
-            css:"webix_multivew-cell",
-            scroll:"y", 
-            body:{ 
-                id:"checkboxContent",
-                rows:[ emptyTmplate]
+
+
+        const scrollView = [
+            {   template    : "Доступные колонки", 
+                css         : "list-filter-headline",
+                height      : 25, 
+                borderless  : true
+            },
+            generateEmptyTemplate(
+                "visibleColsEmptyTempalte",
+                "Нет доступных колонок"
+            ),
+
+            {
+                view      : "list", 
+                id        : "visibleList",
+                template  : "#label#",
+                select    : true,
+                css       : "list-filter-borders",
+                borderless: true,
+                data      : [],
+                on        : {
+                    onAfterAdd:function(){
+                        const btnAdd    = $$("addColsBtn");
+
+                        function enableBtn(){
+                            if ( btnAdd && !(btnAdd.isEnabled()) ){
+                                btnAdd.enable();
+                            }
+                        }
+
+                        enableBtn();
+  
+                    },
+                    onAfterDelete:function(id){
+                        const prevItem =  this.getNextId(id);
+                        if(prevItem){
+                            this.select(prevItem);
+                        }
+                    },
+                }
+            }
+            
+        ];
+   
+        const scrollViewSelected = [
+            {   template    : "Выбранные колонки",
+                css         : "list-filter-headline",
+                height      : 25, 
+                borderless  : true,
+             
+            },
+            generateEmptyTemplate(
+                "visibleColsEmptyTempalteSelected",
+                "Выберите колонки из доступных"
+            ),
+
+            {
+                view      : "list", 
+                id        : "visibleListSelected",
+                template  : "#label#",
+                css       : "list-filter-borders",
+                select    : true,
+                borderless: true,
+                data      : [],
+                on        : {
+                    onAfterAdd : function(){
+                        const btnRemove    = $$("removeColsBtn");
+
+                        function enableBtn(){
+                            if ( btnRemove && !(btnRemove.isEnabled()) ){
+                                btnRemove.enable();
+                            }
+                        }
+
+                        enableBtn();
+                    },
+                    onAfterDelete : function(id){
+                        const prevItem = this.getNextId(id);
+                        if(prevItem){
+                            this.select(prevItem);
+                        }
+                    },
+                
+                }
+            }
+
+        ];
+  
+
+        const moveBtns = {
+            rows:[
+
+                {   
+                    view    : "button",
+                    width   : 50, 
+                    type    : "icon",
+                    id      : "addColsBtn",
+                    css     : "list-filter-move-btns",
+                    disabled: true,
+                    icon    : "icon-arrow-right",
+                    hotkey  : "shift+a", 
+                    height  : 30,
+                    click   : function(){
+                       colsPopupSelect("add");
+                    },
+                    on: {
+                        onAfterRender : function () {
+                            this.getInputNode().setAttribute("title","Добавить выбранные колонки (Shift+A)");
+                        }
+                    } 
+                },
+                {   
+                    view    : "button",
+                    width   : 50, 
+                    type    : "icon",
+                    id      : "removeColsBtn",
+                    css     : "list-filter-move-btns",
+                    disabled: true,
+                    icon    : "icon-arrow-left",
+                    hotkey  : "shift+d",
+                    height  : 30,
+                    click   : function(){
+                        colsPopupSelect("remove");
+                    },
+                    on: {
+                        onAfterRender : function () {
+                            this.getInputNode().setAttribute("title","Убрать выбранные колонки (Shift+D)");
+                        }
+                    } 
+                },
+              
+            ]
+        };
+
+        const moveSelcted =  {
+            cols:[
+                {   
+                    view    : "button",
+                    width   : 50, 
+                    type    : "icon",
+                    id      : "moveSelctedUp",
+                    icon    : "icon-arrow-up",
+                    hotkey  : "shift+u",
+                    css     : "webix-transparent-btn",
+                    height  : 42,
+                    click   : function(){
+                        colsMove("up");
+                    },
+                    on      : {
+                        onAfterRender: function () {
+                            this.getInputNode().setAttribute("title","Поднять выбраную колонку вверх (Shift+U)");
+                        }
+                    } 
+                },
+                {   
+                    view    : "button",
+                    width   : 50, 
+                    type    : "icon",
+                    id      : "moveSelctedDown",
+                    icon    : "icon-arrow-down",
+                    css     : "webix-transparent-btn",
+                    hotkey  : "shift+w",
+                    height  : 42,
+                    click   : function(){
+                        colsMove("down");
+                    },
+                    on      : {
+                        onAfterRender: function () {
+                            this.getInputNode().setAttribute("title","Опустить выбраную колонку вниз (Shift+W)");
+                        }
+                    } 
+                },
+                {},
+            ]
+        };
+
+        const clearBtn = {   
+            view    : "button",
+            width   : 50, 
+            type    : "icon",
+            id      : "clearBtnCols",
+            icon    : "icon-trash",
+            hotkey  : "shift+r",
+            css     : "webix-transparent-btn webix-trash-btn-color",
+            height  : 42,
+            click   : function(){
+                clearBtnColsClick();
+            },
+            on: {
+                onAfterRender : function () {
+                    this.getInputNode().setAttribute("title","Установить стандартные настройки (Shift+R)");
+                }
+            } 
+        };
+
+        const search = {   
+            view        : "search", 
+            id          : "searchColsList",
+            placeholder : "Поиск (Shift+F)", 
+            css         : "searchTable",
+            height      : 42, 
+            //width       : 276,
+            hotkey      : "shift+f", 
+            on          : {
+                onTimedKeyPress : function(){
+                    searchColsListPress();
+                }
             }
         };
     
         webix.ui({
-            view:"popup",
-            id:"popupVisibleCols",
-            css:"webix_popup-prev-href",
-            width:400,
-          //  minHeight:300,
-            maxHeight:400,
-            modal:true,
-          
-            escHide:true,
-            position:"center",
-            body:{
-                rows:[
-                {rows: [ 
+            view        : "popup",
+            id          : "popupVisibleCols",
+            css         : "webix_popup-prev-href",
+            width       : 600,
+            maxHeight   : 400,
+            modal       : true,
+            escHide     : true,
+            position    : "center",
+            body        : {
+
+                rows:[ 
                     { cols:[
+
                         popupHeadline,
                         {},
                         btnClosePopup,
+              
                     ]},
-                    scrollView,
-                    //{id:"checkboxContent", scroll:true,rows:[emptyTmplate]},
-                    {height:15},
+
+                    {height:5},
+
+                    { cols:[
+                        {
+                            rows:[
+                                search,
+
+                                genetateScrollView(
+                                    
+                                    "listContent",
+                                    scrollView
+                                ),
+                            ]
+                        },
+                        {width:10},
+                        { rows:[
+                            {height:45},
+                            {},
+                            moveBtns,
+                            {}
+                        ]},
+                        {width:10},
+                        { rows:[
+                        
+                            {cols:[
+                                moveSelcted,
+                                clearBtn,
+                            ]},
+                            genetateScrollView(
+                                "listSelectedContent",
+                                scrollViewSelected
+                            ),
+                        ]},
+                    ]},
+
+                    {height:20},
+
                     btnSaveState,
-                ]}]
-                
+
+                ]
             },
+            
 
         });
         createCheckboxes();
+        createSpace();
     }
 
     createPopup();
@@ -12726,22 +10884,22 @@ function  visibleColsButtonClick(idTable){
 function toolbarVisibleColsBtn(idTable){
     const idVisibleCols = idTable+"-visibleCols";
     return {   
-        view:"button",
-        width: 50, 
-        type:"icon",
-        id:idVisibleCols,
-        //hidden:visible,
-        disabled:true,
-        icon:"icon-columns",
-        css:"webix_btn-download webix-transparent-btn",
-        title:"текст",
-        height:42,
-        click:function(){
+        view    : "button",
+        width   : 50, 
+        type    : "icon",
+        id      : idVisibleCols,
+        disabled: true,
+        icon    : "icon-columns",
+        css     : "webix_btn-download webix-transparent-btn",
+        title   : "текст",
+        height  : 42,
+        hotkey  :"ctrl+shift+c",
+        click   : function(){
             visibleColsButtonClick(idTable);
         },
         on: {
-            onAfterRender: function () {
-                this.getInputNode().setAttribute("title","Показать/скрыть колонки");
+            onAfterRender : function () {
+                this.getInputNode().setAttribute("title","Показать/скрыть колонки (Ctrl+Shift+C)");
             }
         } 
     };
@@ -12769,7 +10927,7 @@ function exportToExcel(idTable){
         filterHTML:true,
         styles:true
         });
-        logBlock_setLogValue("success","Таблица сохранена");
+        setLogValue("success","Таблица сохранена");
     } catch (err) {   
         errors_setFunctionError(err,"toolbarTable","exportToExcel");
     }
@@ -12787,12 +10945,13 @@ function toolbarDownloadButton(idTable,visible){
         css:"webix_btn-download webix-transparent-btn",
         title:"текст",
         height:42,
+        hotkey  :"ctrl+shift+y",
         click:function(){
             exportToExcel(idTable);
         },
         on: {
             onAfterRender: function () {
-                this.getInputNode().setAttribute("title","Экспорт таблицы");
+                this.getInputNode().setAttribute("title","Экспорт таблицы (Ctrl+Shift+Y)");
             }
         } 
     };
@@ -12862,24 +11021,24 @@ function tableToolbar (idTable,visible=false) {
 
 
 const editForm = {
-    view:"form", 
-    id:"table-editForm",
-    hidden:true,
-    css:"webix_form-edit",
-    minHeight:350,
-    borderless:true,
-    scroll:true,
-    elements:[
+    view        : "form", 
+    id          : "table-editForm",
+    hidden      : true,
+    css         : "webix_form-edit",
+    minHeight   : 350,
+    borderless  : true,
+    scroll      : true,
+    elements    : [
         editFormBtns,
         propertyLayout,  
     ],
    
-    rules:{
+    rules       : {
         $all:webix.rules.isNotEmpty
     },
 
 
-    ready:function(){
+    ready       : function(){
         this.validate();
     },
 
@@ -12888,9 +11047,11 @@ const editForm = {
 
 
 function editTableBar (){
-    return {id:"editTableBarContainer",rows:[
-        editForm
-    ]};
+    // return {id:"editTableBarContainer",rows:[
+    //     editForm
+    // ]};
+
+    return editForm;
 }
 
 
@@ -13165,7 +11326,8 @@ function popupSubmitBtn (){
                         }
 
                         function createChilds(){
-                            let columnsData = $$("table").getColumns();
+                            const columnsData = $$("table").getColumns();
+           
                             try{ 
                                 columnsData.forEach(function(col,i){
                                     if (el.parentField.id.includes(col.id)){
@@ -13232,7 +11394,7 @@ function popupSubmitBtn (){
 
             //if (dataErr.err_type == "i"){
             dataEnumeration();
-            logBlock_setLogValue("success","Рабочая область фильтра обновлена");
+            setLogValue("success","Рабочая область фильтра обновлена");
     
                
             // } else {
@@ -13242,7 +11404,7 @@ function popupSubmitBtn (){
         });
 
         userprefsData.fail(function(err){
-            setAjaxError(err, popup_logNameFile,"getLibraryData");
+            errors_setAjaxError(err, popup_logNameFile,"getLibraryData");
         });
 
 
@@ -13323,7 +11485,7 @@ function popupSubmitBtn (){
             enableLibrarySaveBtn();
             createWorkspaceCheckbox ();
 
-            let visibleElements = visibleCounter();
+            const visibleElements = visibleCounter();
 
             if (!(visibleElements)){
                 showEmptyTempalte();
@@ -13337,13 +11499,13 @@ function popupSubmitBtn (){
             errors_setFunctionError(err,popup_logNameFile,"function getCheckboxData");
         }
       
-        logBlock_setLogValue("success","Рабочая область фильтра обновлена");
+        setLogValue("success","Рабочая область фильтра обновлена");
     }
 
 
 
     try{                                             
-        let tabbarValue = $$("filterPopupTabbar").getValue();
+        const tabbarValue = $$("filterPopupTabbar").getValue();
 
         if (tabbarValue =="editFormPopupLib"){
             getLibraryData();
@@ -13404,17 +11566,17 @@ function tabbarClick (id){
             errors_setFunctionError(err,popup_logNameFile,"btnSubmitState");
         }
     }
-    function visibleClearBtn (param){
-        if($$("popupFilterClearBtn") && 
-        $$("popupFilterClearBtn").isVisible()){
-            if (param){
-                $$("popupFilterClearBtn").show();
-            } else {
-                $$("popupFilterClearBtn").hide();
-            }
+    // function visibleClearBtn (param){
+    //     if($$("popupFilterClearBtn") && 
+    //     $$("popupFilterClearBtn").isVisible()){
+    //         if (param){
+    //             $$("popupFilterClearBtn").show();
+    //         } else {
+    //             $$("popupFilterClearBtn").hide();
+    //         }
     
-        }
-    }
+    //     }
+    // }
 
     function visibleRemoveBtn (param){
         if ($$("editFormPopupLibRemoveBtn") && 
@@ -13439,7 +11601,7 @@ function tabbarClick (id){
         }
 
         try{
-            visibleClearBtn (false);
+           // visibleClearBtn (false);
             setStateSubmitBtn ();
             visibleRemoveBtn (true);
         }catch(err){
@@ -13474,7 +11636,7 @@ function tabbarClick (id){
 
         try{
             countChecked();
-            visibleClearBtn (true);
+          //  visibleClearBtn (true);
             visibleRemoveBtn (false);
             setStateSubmitBtn();
         }catch(err){
@@ -13589,7 +11751,7 @@ const tabLib = {
 
 };
 
-const popup_submitBtn =  {   
+const submitBtn =  {   
     view:"button",
     id:"popupFilterSubmitBtn",
     height:48,
@@ -13606,21 +11768,21 @@ const popup_submitBtn =  {
     click:popupSubmitBtn
 };
 
-const cleanBtn = {   
-    view:"button",
-    id:"popupFilterClearBtn",
-    width:110,
-    height:48,
-    css:"webix_secondary",
-    disabled:true,
-    value:"Сбросить", 
-    on: {
-        onAfterRender: function () {
-            this.getInputNode().setAttribute("title","Все фильтры будут очищены и удалены");
-        },
-    },
-    click:clearPopupBtn
-};
+// const cleanBtn = {   
+//     view:"button",
+//     id:"popupFilterClearBtn",
+//     width:110,
+//     height:48,
+//     css:"webix_secondary",
+//     disabled:true,
+//     value:"Сбросить", 
+//     on: {
+//         onAfterRender: function () {
+//             this.getInputNode().setAttribute("title","Все фильтры будут очищены и удалены");
+//         },
+//     },
+//     click:clearPopupBtn
+// };
 
 const removeBtn = {   
     view:"button",
@@ -13669,15 +11831,15 @@ const removeBtn = {
                             }
 
                             if (data.err_type !== "e"&&data.err_type !== "x"){
-                                logBlock_setLogValue("success","Шаблон « "+radioValue.value+" » удален");
+                                setLogValue("success","Шаблон « "+radioValue.value+" » удален");
                                 removeOptionState ();
                             } else {
-                                logBlock_setLogValue("error", popup_logNameFile+" function userprefsData: "+data.err);
+                                setLogValue("error", popup_logNameFile+" function userprefsData: "+data.err);
                             }
 
                         });
                         deleteTemplate.fail(function(err){
-                            setAjaxError(err, popup_logNameFile,"getLibraryData");
+                            errors_setAjaxError(err, popup_logNameFile,"getLibraryData");
                         });
                     }
 
@@ -13731,9 +11893,9 @@ const editFormPopup = {
     
             {height:20},
             {cols:[
-                popup_submitBtn,
+                submitBtn,
                 {width:5},
-                cleanBtn,
+               // cleanBtn,
                 removeBtn,
             ]},
         ]},
@@ -13791,7 +11953,7 @@ function getUserprefsData (){
         PREFS_STORAGE.userprefs = data.json();
         return PREFS_STORAGE.userprefs;
     }).fail(err => {
-        setAjaxError(err, tableFilter_buttons_logNameFile,"getUserprefsData");
+        errors_setAjaxError(err, tableFilter_buttons_logNameFile,"getUserprefsData");
     }
 );
 }
@@ -13808,7 +11970,7 @@ function editFiltersBtn (){
         userprefsGetData.then(function(data){
             function getUserData (){
                     
-                let whoamiData = webix.ajax("/init/default/api/whoami");
+                const whoamiData = webix.ajax("/init/default/api/whoami");
     
                 whoamiData.then(function(data){
                     data = data.json().content;
@@ -13820,7 +11982,7 @@ function editFiltersBtn (){
                         userData.name     = data.first_name;
                         userData.username = data.username;
                         
-                        setStorageData("user", JSON.stringify(userData));
+                        storageSetting_setStorageData("user", JSON.stringify(userData));
                     }
     
                     function getStorageData (){
@@ -13834,14 +11996,14 @@ function editFiltersBtn (){
                     }
         
                     if (data.err_type == "e"){
-                        logBlock_setLogValue("error",data.error);
+                        setLogValue("error",data.error);
                     } else {
-                        logBlock_setLogValue("success","Рабочая область фильтра обновлена");
+                        setLogValue("success","Рабочая область фильтра обновлена");
                     }
                 });
         
                 whoamiData.fail(function(err){
-                    setAjaxError(err, tableFilter_buttons_logNameFile,"getUserData");
+                    errors_setAjaxError(err, tableFilter_buttons_logNameFile,"getUserData");
                 });
             }
     
@@ -13851,7 +12013,7 @@ function editFiltersBtn (){
                     const lib        = $$("filterEditLib");
                     const oldOptions = [];
     
-                    if (lib.config.options.length !== 0){
+                    if (lib && lib.config.options.length !== 0){
                         lib.config.options.forEach(function(el){
                             oldOptions.push(el.id);
                         });
@@ -13895,39 +12057,23 @@ function editFiltersBtn (){
                 );
             }
     
-            function counterVisibleElements (){
-                let visibleElements=0;
-                let filterElements = $$("filterTableForm").elements;
-                try{
-                    Object.values(filterElements).forEach(function(el,i){
-                        if (!(el.config.hidden)){
-                            visibleElements++;
-                        }
+            // function counterVisibleElements (){
+            //     let visibleElements=0;
+            //     let filterElements = $$("filterTableForm").elements;
+            //     try{
+            //         Object.values(filterElements).forEach(function(el,i){
+            //             if (!(el.config.hidden)){
+            //                 visibleElements++;
+            //             }
                         
-                    });
-                } catch (err){
-                    errors_setFunctionError(err,tableFilter_buttons_logNameFile,"function counterVisibleElements");
-                }
-                return visibleElements;
-            }
+            //         });
+            //     } catch (err){
+            //         setFunctionError(err,logNameFile,"function counterVisibleElements");
+            //     }
+            //     return visibleElements;
+            // }
            
-            function setBtnState(){
-                try{
-                    if (!(counterVisibleElements())){
-                        if ($$("filterEmptyTempalte") && !($$("filterEmptyTempalte").isVisible())){
-                            if($$("popupFilterClearBtn").isEnabled()){
-                                $$("popupFilterClearBtn").disable();
-                            }
-                        } 
-                    } else {
-                        if($$("popupFilterClearBtn") && !($$("popupFilterClearBtn").isEnabled())){
-                            $$("popupFilterClearBtn").enable();
-                        }
-                    }
-                } catch (err){
-                    errors_setFunctionError(err,tableFilter_buttons_logNameFile,"function setBtnState");
-                }
-            }
+
 
             let user = webix.storage.local.get("user");
             try{
@@ -13941,7 +12087,7 @@ function editFiltersBtn (){
                     if ($$("filterEditLib") && $$("filterEditLib").data.options.length == 0 ){
                         setEmptyOption();
                     }
-                    setBtnState();
+             
                 }
             } catch (err){
                 errors_setFunctionError(err,tableFilter_buttons_logNameFile,"function userprefsData");
@@ -13950,7 +12096,7 @@ function editFiltersBtn (){
         });
         userprefsGetData.fail(function(err){
             console.log(err);
-            logBlock_setLogValue("error", "tableFilter => buttons function userprefsData: "+err.status+" "+err.statusText+" "+err.responseURL);
+            setLogValue("error", "tableFilter => buttons function userprefsData: "+err.status+" "+err.statusText+" "+err.responseURL);
         });
        
 
@@ -14006,22 +12152,24 @@ function editFiltersBtn (){
         name:"selectAll",
         on:{
             onChange:function(){
-                function setStateSubmitBtn(){
-                    try{
-                        if ($$("selectAll").getValue()){
-                            if(!($$("popupFilterSubmitBtn").isEnabled())){
-                                stateSubmitBtn(true);
-                            }
+                stateSubmitBtn(true);
+                // function setStateSubmitBtn(){
+                //     try{
+                //         if ($$("selectAll").getValue()){
+                //             if(!($$("popupFilterSubmitBtn").isEnabled())){
+                //                 stateSubmitBtn(true);
+                //             }
 
-                        } else {
-                            if($$("popupFilterSubmitBtn").isEnabled()){
-                                stateSubmitBtn(false);
-                            }
-                        }
-                    } catch (err){
-                        errors_setFunctionError(err,tableFilter_buttons_logNameFile,"function checkbox:onchange => setStateSubmitBtn");
-                    }
-                }
+                //         } 
+                //         //else {
+                //             // if($$("popupFilterSubmitBtn").isEnabled()){
+                //             //     stateSubmitBtn(false);
+                //             // }
+                //       //  }
+                //     } catch (err){
+                //         setFunctionError(err,logNameFile,"function checkbox:onchange => setStateSubmitBtn");
+                //     }
+                // }
 
                 function setValueCheckbox(){
                     let checkboxes = $$("editFormPopupScrollContent").getChildViews();
@@ -14042,8 +12190,7 @@ function editFiltersBtn (){
                         errors_setFunctionError(err,tableFilter_buttons_logNameFile,"function checkbox:onchange => setValueCheckbox");
                     }
                 }
-              
-                setStateSubmitBtn();
+
                 setValueCheckbox(); 
             
 
@@ -14056,13 +12203,13 @@ function editFiltersBtn (){
  
     function getAllCheckboxes(){
         let checkboxes = [];
-        let filterTableElements  = $$("filterTableForm").elements;
+        const filterTableElements  = $$("filterTableForm").elements;
         try{
             Object.values(filterTableElements).forEach(function(el,i){
-                checkboxes.push({id:el.config.id, label:el.config.label})
+                checkboxes.push({ id:el.config.id, label:el.config.label })
             });
         }catch (err){
-            errors_setFunctionError(err,tableFilter_buttons_logNameFile,"function editFiltersBtn => getAllCheckboxes");
+            errors_setFunctionError( err, tableFilter_buttons_logNameFile, "function editFiltersBtn => getAllCheckboxes" );
         }
      
         return checkboxes;
@@ -14097,19 +12244,21 @@ function editFiltersBtn (){
         }
 
         function setStateBtnSubmit(){
-            try{
-                if (btnState > 0) {
-                    if(!($$("popupFilterSubmitBtn").isEnabled())){
-                        stateSubmitBtn(true);
-                    }
-                } else {
-                    if($$("popupFilterSubmitBtn").isEnabled()){
-                        stateSubmitBtn(false);
-                    }
-                }
-            } catch (err){
-                errors_setFunctionError(err,tableFilter_buttons_logNameFile,"function checkboxOnChange => setStateBtnSubmit");
-            }
+            stateSubmitBtn(true);
+            // try{
+            //     if (btnState > 0) {
+            //         if(!($$("popupFilterSubmitBtn").isEnabled())){
+            //             stateSubmitBtn(true);
+            //         }
+            //     } 
+            //     else {
+            //         if($$("popupFilterSubmitBtn").isEnabled()){
+            //             stateSubmitBtn(false);
+            //         }
+            //     }
+            // } catch (err){
+            //     setFunctionError(err,logNameFile,"function checkboxOnChange => setStateBtnSubmit");
+            // }
         }
         function setSelectAllState(){
             try{
@@ -14250,7 +12399,7 @@ function filterSubmitBtn (){
 
         
         function templateChilds(operation){
-            return "+"+condition+"+"+filterEl+operation+value;
+            return "+"+condition+"+"+itemTreeId+"."+filterEl+operation+value;
         }
 
         try {
@@ -14346,7 +12495,7 @@ function filterSubmitBtn (){
 
             filterEl = el;
             value = values[el];
-            function formattingDateValue(){1
+            function formattingDateValue(){
                 if ($$(el).config.view == "datepicker"){
                     value = postFormatData(value);
                 }
@@ -14377,19 +12526,19 @@ function filterSubmitBtn (){
                         
                         
                         if (firstItem > 0){
-                            getOperationVal (value,filterEl,el,"and","parent",true);
+                            getOperationVal ("'"+value+"'",filterEl,el,"and","parent",true);
                         }else {
-                            getOperationVal (value,filterEl,el,"and","parent");
+                            getOperationVal ("'"+value+"'",filterEl,el,"and","parent");
                         }
 
                         firstItem++;
                         
                     } else if (el.includes("child")){
                         if (el.includes("operAnd")){
-                            getOperationVal (value,filterEl,el,"and","child");
+                            getOperationVal ("'"+value+"'",filterEl,el,"and","child");
 
                         } else if (el.includes("operOr")){
-                            getOperationVal (value,filterEl,el,"or","child");
+                            getOperationVal ("'"+value+"'",filterEl,el,"or","child");
                         }
                     }
                 } catch (err){
@@ -14415,7 +12564,8 @@ function filterSubmitBtn (){
     if ($$("filterTableForm").validate()){
      
         createGetData();
-        const queryData = webix.ajax("/init/default/api/smarts?query="+query.join(""));
+
+        const queryData = webix.ajax("/init/default/api/smarts?query=" + query.join("") );
 
         queryData.then(function(data){
             let notifyType = data.json().err_type;
@@ -14453,19 +12603,19 @@ function filterSubmitBtn (){
                 setCounterValue();
                 hideFilterPopup();
         
-                logBlock_setLogValue("success","Фильтры успшено применены");
+                setLogValue("success","Фильтры успшено применены");
             
             } else {
-                logBlock_setLogValue("error",notifyMsg);
+                setLogValue("error",notifyMsg);
             } 
         });
         queryData.fail(function(err){
-            setAjaxError(err, tableFilter_buttons_logNameFile,"createGetData");
+            errors_setAjaxError(err, tableFilter_buttons_logNameFile,"createGetData");
         });
 
         
     } else {
-        logBlock_setLogValue("error","Не все поля формы заполнены");
+        setLogValue("error","Не все поля формы заполнены");
     }
   
 
@@ -14574,14 +12724,14 @@ function filterLibraryBtn () {
                             putData.then(function(data){
                                 data = data.json();
                                 if (data.err_type == "i"){
-                                    logBlock_setLogValue("success","Шаблон"+" «"+nameTemplate+"» "+" сохранён в библиотеку");
+                                    setLogValue("success","Шаблон"+" «"+nameTemplate+"» "+" сохранён в библиотеку");
                                 } else {
-                                    logBlock_setLogValue("error","tableFilter => buttons function modalBoxExists: "+ data.err);
+                                    setLogValue("error","tableFilter => buttons function modalBoxExists: "+ data.err);
                                 }
                             });
 
                             putData.fail(function(err){
-                                setAjaxError(err, tableFilter_buttons_logNameFile,"saveExistsTemplate => putUserprefsData");
+                                errors_setAjaxError(err, tableFilter_buttons_logNameFile,"saveExistsTemplate => putUserprefsData");
                             });
 
                         }
@@ -14617,11 +12767,11 @@ function filterLibraryBtn () {
                         userData.name = data.json().content.first_name;
                         userData.username = data.json().content.username;
                         
-                        setStorageData("user", JSON.stringify(userData));
+                        storageSetting_setStorageData("user", JSON.stringify(userData));
                     });
 
                     whoamiData.fail(function(err){
-                        setAjaxError(err, tableFilter_buttons_logNameFile,"saveTemplate => setDataStorage");
+                        errors_setAjaxError(err, tableFilter_buttons_logNameFile,"saveTemplate => setDataStorage");
                     });
 
                 }
@@ -14641,14 +12791,14 @@ function filterLibraryBtn () {
                         data = data.json();
     
                         if (data.err_type == "i"){
-                            logBlock_setLogValue("success","Шаблон"+" «"+nameTemplate+"» "+" сохранён в библиотеку");
+                            setLogValue("success","Шаблон"+" «"+nameTemplate+"» "+" сохранён в библиотеку");
                         } else {
-                            logBlock_setLogValue("error",data.error);
+                            setLogValue("error",data.error);
                         }
                     });
 
                     userprefsPost.fail(function(err){
-                        setAjaxError(err, tableFilter_buttons_logNameFile,"saveTemplate => saveNewTemplate");
+                        errors_setAjaxError(err, tableFilter_buttons_logNameFile,"saveTemplate => saveNewTemplate");
                     });
 
                 }
@@ -14720,14 +12870,14 @@ function buttons_backTableBtnClick() {
   
 }
 
-function resetFilterBtn (){
+function buttons_resetFilterBtn (){
     try {
 
         const itemTreeId = getItemId ();
 
         const queryData = webix.ajax("/init/default/api/smarts?query="+itemTreeId+".id >= 0");
         queryData.then(function(data){
-            let dataErr =  data.json();
+            const dataErr =  data.json();
           
             data = data.json().content;
                 
@@ -14748,8 +12898,8 @@ function resetFilterBtn (){
 
             function setFilterCounterVal(){
                 try{
-                    let filterCountRows = $$("table").count();
-                    let value = filterCountRows.toString();
+                    const filterCountRows = $$("table").count();
+                    const value           = filterCountRows.toString();
                     $$("table-idFilterElements").setValues(value);
                 } catch (err){
                     errors_setFunctionError(err,tableFilter_buttons_logNameFile,"function setFilterCounterVal");
@@ -14763,10 +12913,10 @@ function resetFilterBtn (){
             }
 
             function hideInputsContainer(){
-                let inputs = document.querySelectorAll(".webix_filter-inputs");
+                const inputs = document.querySelectorAll(".webix_filter-inputs");
                 try{
                     inputs.forEach(function(elem,i){
-                        if (!(elem.classList.contains("webix_hide-content"))){
+                        if ( !(elem.classList.contains("webix_hide-content")) ){
                             elem.classList.add("webix_hide-content");
                         }
                     });
@@ -14781,7 +12931,7 @@ function resetFilterBtn (){
                 
       
                 inputsContainer.forEach(function(el,i){
-                    let inputId = el._collection[0].cols[0].id;
+                    const inputId = el._collection[0].cols[0].id;
                     
                     function removeParentInput(){
                         $$(inputId).hide();
@@ -14813,7 +12963,7 @@ function resetFilterBtn (){
                     }
 
                 });
-
+               
                 function removeChilds(){
                     try{
                         childs.forEach(function(idChild,i){
@@ -14858,14 +13008,14 @@ function resetFilterBtn (){
                     errors_setFunctionError(err,tableFilter_buttons_logNameFile,"function resetFilterBtn");
                 }
             
-                logBlock_setLogValue("success", "Фильтры очищены");
+                setLogValue("success", "Фильтры очищены");
             } else {
-                logBlock_setLogValue("error", "tableFilter => buttons function resetFilterBtn ajax: "+dataErr.err);
+                setLogValue("error", "tableFilter => buttons function resetFilterBtn ajax: "+dataErr.err);
             }
         });
 
         queryData.fail(function(err){
-            setAjaxError(err, tableFilter_buttons_logNameFile,"resetFilterBtn");
+            errors_setAjaxError(err, tableFilter_buttons_logNameFile,"resetFilterBtn");
         });
     
     } catch(err) {
@@ -14886,7 +13036,7 @@ function buttonsFormFilter (name) {
         css:"webix_danger", 
         type:"icon", 
         icon:"icon-trash", 
-        click:resetFilterBtn,
+        click:buttons_resetFilterBtn,
         on: {
             onAfterRender: function () {
                 this.getInputNode().setAttribute("title", "Сбросить фильтры");
@@ -15178,20 +13328,25 @@ function createElements(specificElement){
                         hidden:true, 
                         view:"scrollview", 
                         body: { 
-                            view:"flexlayout", 
+                            view:"flexlayout",
+                            id:"flexlayoutTable", 
                             cols:[
                                                         
                                 {   id:"tableContainer",
                                     rows:[
                                         tableToolbar ("table"),
-                                        { view:"resizer",class:"webix_resizers",},
+                                        { view:"resizer",class:"webix_resizers"},
                                         table ("table", onFuncTable,true)
                                     ]
                                 },
                             
-                                {  view:"resizer",class:"webix_resizers"},
                                 
-                                editTableBar(),filterForm(),
+                               {  view:"resizer",class:"webix_resizers", id:"tableBarResizer" },
+                          
+                                editTableBar(),
+                                filterForm(),
+                               
+                             
                                 
                                 
                             ]
@@ -15518,7 +13673,7 @@ function getWorkspace (){
             userStorageData.name     = STORAGE.whoami.content.first_name;
             userStorageData.username = STORAGE.whoami.content.username;
             
-            setStorageData("user", JSON.stringify(userStorageData));
+            storageSetting_setStorageData("user", JSON.stringify(userStorageData));
         }
 
         showMainContent();
@@ -15591,10 +13746,2431 @@ function hideAllElements (){
 
 
 
+;// CONCATENATED MODULE: ./src/js/blocks/getContent/getInfoTable.js
+
+
+
+
+
+
+
+
+
+
+const getInfoTable_logNameFile = "getContent => getInfoTable";
+
+function getInfoTable_submitBtn (idElements, url, verb, rtype){
+
+    const valuesArray = [];
+
+    function refreshButton(){
+
+        function createQuery(){
+            try{
+                idElements.forEach((el,i) => {
+                    const val = $$(el.id).getValue();
+
+                    if (el.id.includes("customCombo")){
+                        const textVal = $$(el.id).getText();
+                        valuesArray.push (el.name + "=" + textVal);
+
+                    } else if ( el.id.includes("customInputs")     || 
+                                el.id.includes("customDatepicker") ){
+                        valuesArray.push ( el.name + "=" + val );
+
+                    }   
+                });
+            } catch (err){  
+                errors_setFunctionError(err,getInfoTable_logNameFile,"refreshButton => createQuery");
+            }
+        }
+  
+        createQuery();
+
+        const getData = webix.ajax( url + "?" + valuesArray.join("&") );
+        
+        getData.then(function(data){
+            const tableView = $$("table-view");
+            
+            function setTableState(){
+                data = data.json().content;
+                try{
+                    tableView.clearAll();
+
+                    if (data.length !== 0){
+                        tableView.hideOverlay("Ничего не найдено");
+                        tableView.parse(data);
+                        setLogValue("success","Данные обновлены");
+
+                    } else {
+                        tableView.showOverlay("Ничего не найдено");
+
+                    }
+                } catch (err){  
+                    errors_setFunctionError(err,getInfoTable_logNameFile,"refreshButton => setTableState");
+                }
+            }
+
+            function setTableCounter(){
+                try{
+                    const findElementView = $$("table-view-findElements");
+                    const prevCountRows   = tableView.count().toString();
+
+                    findElementView.setValues(prevCountRows);
+                } catch (err){  
+                    errors_setFunctionError(err,getInfoTable_logNameFile,"refreshButton => setTableCounter");
+                }
+            }
+            if (data.json().err_type == "i"){
+                setTableState();
+                setTableCounter();
+
+            } else {
+                errors_setFunctionError(data.err,getInfoTable_logNameFile,"refreshButton");
+            }
+        });
+        getData.fail(function(err){
+            errors_setAjaxError(err, getInfoTable_logNameFile,"refreshButton");
+        });
+    }
+
+    function downloadButton(){
+
+        webix.ajax().response("blob").get(url, function(text, blob, xhr) {
+            try {
+                webix.html.download(blob, "table.docx");
+            } catch (err){
+                errors_setFunctionError(err,getInfoTable_logNameFile,"downloadButton");
+            } 
+        }).catch(err => {
+            errors_setAjaxError(err, getInfoTable_logNameFile,"downloadButton");
+        });
+    }
+
+    function postButton(){
+
+        async function uploadData(formData,link){
+            fetch(link, {
+                method  : "POST", 
+                body    : formData
+            })  
+   
+            .then(( response ) => response.json())
+            .then(function( data ){
+                const loadEl = $$("templateLoad");
+       
+                if ( data.err_type == "i" ){
+                    loadEl.setValues( "Файл загружен" );
+                    setLogValue( "success","Файл успешно загружен" );
+
+                } else {
+                    loadEl.setValues( "Ошибка" );
+                    setLogValue( "error", data.err );
+                }
+            })
+            
+            .catch(function(err){
+                errors_setFunctionError(err,getInfoTable_logNameFile,"uploadData");
+            });
+
+        }
+
+        function addLoadEl(container){
+            container.addView({
+                id:"templateLoad",
+                template: function(){
+                    const value      = $$("templateLoad").getValues();
+                    const valsLength = Object.keys( value ).length;
+
+                    if ( valsLength !==0 ){
+                        return value;
+                    } else {
+                        return "Загрузка ...";
+                    }
+                },
+                borderless:true,
+            });
+        }
+        try{
+       
+            idElements.forEach((el,i) => {
+                if (el.id.includes("customUploader")){
+                
+                    let value = Object.values($$(el.id).files.data.pull)[0];
+                    let link = $$(el.id).config.upload;
+
+                    let formData = new FormData();  
+                    let container = $$(el.id).getParentView();
+                    addLoadEl(container);
+
+                    formData.append("file", value.file);
+
+                    uploadData(formData,link);
+                   
+                }
+            });
+        } catch (err){  
+            errors_setFunctionError(err,getInfoTable_logNameFile,"postButton");
+        } 
+    }
+
+    if (verb=="get"){ 
+        if(rtype=="refresh"){
+            refreshButton();
+        } else if (rtype=="download"){
+            downloadButton();
+        } 
+    } else if (verb=="post"){
+        postButton();
+    } 
+    
+}
+
+function getInfoTable (idCurrTable,idsParam) {
+   
+    let idFindElem,
+        filterBar,
+        itemTreeId,
+        titem
+    ;
+
+    function getValsTable (){
+        itemTreeId = idsParam;
+        titem = $$("tree").getItem(idsParam);
+
+        if (!titem){
+            titem = idsParam;
+        }
+
+ 
+        if (idCurrTable.includes("view")){
+            try{ 
+               // idSearch  = "table-view-search";
+                idFindElem  = "table-view-findElements";
+                filterBar   = $$("table-view-filterId").getParentView();
+            } catch (err){  
+                errors_setFunctionError(err,getInfoTable_logNameFile,"getValsTable");
+            }
+        } else {
+            try{
+              //  idSearch  = "table-search";
+                idFindElem  = "table-findElements";
+                filterBar   = $$("table-filterId").getParentView();
+            } catch (err){  
+                errors_setFunctionError(err,getInfoTable_logNameFile,"getValsTable");
+            }
+        }
+    }
+
+    function preparationTable (){
+        try{
+            $$(idCurrTable).clearAll();
+
+            if (idCurrTable == "table-view"){
+                if ($$("contextActionsPopup")){
+                    $$("contextActionsPopup").destructor();
+                }
+
+                if ($$("contextActionsBtnAdaptive")){
+                    filterBar.removeView($$("contextActionsBtnAdaptive"))
+                }
+                if ($$( "customInputs" )){
+                    $$( "customInputs" ).getParentView().removeView($$( "customInputs" ))
+                }
+
+                if ($$("customInputsMain")){
+                    $$("customInputsMain").getParentView().removeView($$( "customInputsMain" ))
+                }
+            
+            }
+        } catch (err){  
+            errors_setFunctionError(err,getInfoTable_logNameFile,"preparationTable");
+        }
+    }
+
+
+    function createExperementalElement (){
+        STORAGE.fields.content.treeTemplate={
+            "fields": {
+                "id": {
+                    "type": "id",
+                    "unique": false,
+                    "notnull": false,
+                    "length": 512,
+                    "label": "Id",
+                    "comment": null,
+                    "default": "None"
+                },
+                "pid": {
+                    "type": "reference trees",
+                    "unique": false,
+                    "notnull": false,
+                    "length": 512,
+                    "label": "Родитель",
+                    "comment": null,
+                    "default": "None"
+                },
+                "owner": {
+                    "type": "reference auth_user",
+                    "unique": false,
+                    "notnull": false,
+                    "length": 512,
+                    "label": "Владелец",
+                    "comment": null,
+                    "default": "None"
+                },
+                "ttype": {
+                    "type": "integer",
+                    "unique": false,
+                    "notnull": false,
+                    "length": 512,
+                    "label": "Тип",
+                    "comment": "Тип записи|1=системная;2=пользовательская|Перечисление",
+                    "default": "1"
+                },
+                "name": {
+                    "type": "string",
+                    "unique": false,
+                    "notnull": false,
+                    "length": 100,
+                    "label": "Наименование",
+                    "comment": null,
+                    "default": ""
+                },
+                "descr": {
+                    "type": "string",
+                    "unique": false,
+                    "notnull": false,
+                    "length": 1000,
+                    "label": "Описание",
+                    "comment": null,
+                    "default": ""
+                },
+                "value": {
+                    "type": "string",
+                    "unique": false,
+                    "notnull": false,
+                    "length": 1000,
+                    "label": "Значение",
+                    "comment": null,
+                    "default": ""
+                },
+                "cdt": {
+                    "type": "datetime",
+                    "unique": false,
+                    "notnull": false,
+                    "length": 512,
+                    "label": "Создано",
+                    "comment": null,
+                    "default": "now"
+                }
+            },
+            "singular": "Классификатор-пример",
+            "ref_name": "name",
+            "plural": "Классификаторы-пример",
+            "type": "treeConf"
+            
+        };
+    }
+
+    function createTableCols (){
+  
+        const dataContent   = STORAGE.fields.content;
+        const data          = dataContent[idsParam];
+        const dataFields    = data.fields;
+        const colsName      = Object.keys(data.fields);
+        const columnsData   = [];
+      
+ 
+        let fieldType;
+        const table = $$(idCurrTable);
+        function refreshCols(columnsData){
+      
+            if(table){
+                table.refreshColumns(columnsData);
+            }
+        }
+
+        function getUserPrefs(){
+
+            const storageData = webix.storage.local.get("visibleColsPrefs_"+idsParam);
+            
+            function findUniqueCols(col){
+                let result = false;
+
+                storageData.values.forEach(function(el){
+            
+                    if (el.column == col){
+                        result = true;
+                    }
+
+                });
+                return result;
+            }
+
+    
+            if( storageData ){
+
+                const allCols = table.getColumns(true);
+
+                allCols.forEach(function(el,i){
+
+                    if (findUniqueCols(el.id)){
+                        if( !( table.isColumnVisible(el.id) ) ){
+                            table.showColumn(el.id);
+                        }
+                    } else {
+                        const colIndex = table.getColumnIndex(el.id);
+                        if(table.isColumnVisible(el.id) && colIndex !== -1){
+                            table.hideColumn(el.id);
+                        }
+                    }
+                        
+                });
+
+                storageData.values.forEach(function(el){
+                    table.moveColumn(el.column,el.position);
+                        
+                });
+
+            }
+    
+
+        }
+
+        try{
+            colsName.forEach(function(data) {
+                fieldType = dataFields[data].type;
+
+                function createReferenceCol (){
+                    try{
+                        const findTableId           = fieldType.slice(10);
+                        dataFields[data].editor     = "combo";
+                        dataFields[data].collection = getComboOptions (findTableId);
+                        dataFields[data].template   = function(obj, common, val, config){
+                            const item = config.collection.getItem(obj[config.id]);
+                            return item ? item.value : "";
+                        };
+                    }catch (err){
+                        errors_setFunctionError(err, getInfoTable_logNameFile, "createTableCols => createReferenceCol")
+                    }
+                }
+
+                function createDatetimeCol  (){
+                    try{
+                        dataFields[data].format = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
+                        dataFields[data].editor = "date";
+                    }catch (err){
+                        errors_setFunctionError(err, getInfoTable_logNameFile, "createTableCols => createDatetimeCol")
+                    }
+                }
+                
+                function createTextCol      (){
+                    try{
+                        dataFields[data].editor = "text";
+                        dataFields[data].sort   = "string";
+                    }catch (err){
+                        errors_setFunctionError(err,getInfoTable_logNameFile,"createTableCols => createTextCol")
+                    }
+                }
+                function createIntegerCol   (){
+                    try{
+                        dataFields[data].editor         = "text";
+                        dataFields[data].sort           = "int";
+                        dataFields[data].numberFormat   = "1 111";
+                    }catch (err){
+                        errors_setFunctionError(err,getInfoTable_logNameFile,"createTableCols => createIntegerCol");
+                    }
+                }
+                function createBoolCol      (){
+                    try{
+                        dataFields[data].editor     = "combo";
+                        dataFields[data].sort       = "text";
+                        dataFields[data].collection = [
+                            {id : 1, value : "Да" },
+                            {id : 2, value : "Нет"}
+                        ];
+                    }catch (err){
+                        errors_setFunctionError(err,getInfoTable_logNameFile,"createTableCols => createBoolCol");
+                    }
+                }
+
+
+                if (fieldType.includes("reference")){
+                    createReferenceCol();
+                } else if ( fieldType == "datetime"){
+                    createDatetimeCol ();
+                } else if ( fieldType == "boolean"){
+                    createBoolCol     ();
+                } else if ( fieldType == "integer"){
+                    createIntegerCol  ();
+                } else {
+                    createTextCol     ();
+                }
+
+
+                function setIdCol       (){
+                    dataFields[data].id         = data;
+                }
+
+                function setFillCOl     (){
+                    dataFields[data].fillspace  = true;
+                }
+
+                function setHeaderCol   (){
+                    dataFields[data].header     = dataFields[data]["label"];
+              
+                }
+
+                function userPrefsId    (){
+                    const setting = webix.storage.local.get("userprefsOtherForm");
+
+                    if( setting && setting.visibleIdOpt == "2" ){
+                        dataFields[data].hidden = true;
+                    }
+                }  
+
+           
+
+
+                function pushColsData(){ 
+               
+                    try{        
+                        if (dataFields[data].label){
+                            columnsData.push(dataFields[data]);
+                        }
+        
+                    } catch (err){
+                        errors_setFunctionError(err,getInfoTable_logNameFile,"createTableCols => pushColsData");
+                    }
+             
+                }
+
+            
+                setIdCol    ();
+                setFillCOl  ();
+                setHeaderCol();
+
+                if(dataFields[data].id == "id"){
+                    userPrefsId();
+                }
+               
+                pushColsData();
+        
+            });
+
+            refreshCols(columnsData);
+
+            getUserPrefs();
+ 
+        } catch (err){
+            errors_setFunctionError(err,getInfoTable_logNameFile,"createTableCols");
+        }
+
+
+        return columnsData;
+    }
+
+   
+
+    function createDetailAction (columnsData){
+        let idCol;
+        let actionKey;
+        let checkAction     = false;
+
+        const dataContent   = STORAGE.fields.content;
+        const data          = dataContent[idsParam];
+        const table         = $$(idCurrTable);
+
+        columnsData.forEach(function(field,i){
+            if( field.type  == "action" && data.actions[field.id].rtype == "detail"){
+                checkAction = true;
+                idCol       = i;
+                actionKey   = field.id;
+            } 
+        });
+        
+        if (actionKey !== undefined){
+            const urlFieldAction = data.actions[actionKey].url;
+        
+            if (checkAction){
+                const columns = table.config.columns;
+                columns.splice(0,0,{ 
+                    id      :"action-first"+idCol, 
+                    maxWidth:130, 
+                    src     :urlFieldAction, 
+                    css     :"action-column",
+                    label   :"Подробнее",
+                    header  :"Подробнее", 
+                    template:"<span class='webix_icon wxi-angle-down'></span> "
+                });
+
+                table.refreshColumns();
+            }
+        }
+    
+
+    }
+
+    function createDynamicElems (){
+        const dataContent       = STORAGE.fields.content;
+        const data              = dataContent[idsParam];  
+        const dataInputsArray   = data.inputs;
+      
+        function generateCustomInputs (){  
+            const customInputs  = [];
+            const objInuts      = Object.keys(data.inputs);
+
+            function createTextInput    (el,i){
+                return {   
+                    view            : "text",
+                    placeholder     : dataInputsArray[el].label, 
+                    id              : "customInputs"+i,
+                    height          : 48,
+                    labelPosition   : "top",
+                    on              : {
+                        onAfterRender: function () {
+                            this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
+                        },
+                        onChange:function(){
+                            const inputs = $$("customInputs").getChildViews();
+
+                            inputs.forEach(function(el,i){
+                                const view = el.config.view;
+                                const btn  = $$(el.config.id);
+
+                                if (view == "button" && !( btn.isEnabled() )){
+                                    btn.enable();
+                                }
+                            });
+    
+                        }
+                    }
+                }
+            }
+    
+            function getOptionData      (dataInputsArray,el){
+                const url = "/init/default/api/" + dataInputsArray[el].apiname;
+
+                return new webix.DataCollection({url:{
+                    $proxy:true,
+                    load: function(){
+                        return ( webix.ajax().get(url).then(function (data) {   
+                                
+                            const dataSrc     = data.json().content;
+                            const dataOptions = [];
+                            let optionElement;
+
+                            function dataTemplate(i,valueElem){
+                            const template = { 
+                                    id    : i + 1, 
+                                    value : valueElem
+                                };
+                            return template;
+                            }
+            
+                            function createOptions(){
+                                try{
+                                    if ( dataSrc[0].name !== undefined ){
+                                        
+                                        dataSrc.forEach(function(data, i) {
+                                            optionElement = dataTemplate(i,data.name);
+                                            dataOptions.push(optionElement);
+                                        });
+                                    
+                                    } else {
+                                        dataSrc.forEach(function (data, i) {
+                                            optionElement = dataTemplate(i,data);
+                                            dataOptions.push(optionElement);
+                                        });
+    
+                                    }
+                            
+                                } catch (err){
+                                    errors_setFunctionError(err,getInfoTable_logNameFile,"generateCustomInputs => getOptionData")
+                                } 
+                            }
+
+                            createOptions();
+
+                            return dataOptions;
+
+                        }).catch(err => {
+                            console.log(err);
+                            errors_setAjaxError(err,getInfoTable_logNameFile,"generateCustomInputs => getOptionData");
+                            
+                        }));
+                        
+                    
+                        
+                    }
+                }});
+            }
+    
+            function createSelectInput  (el,i){
+            
+                return   {   
+                    view          : "combo",
+                    height        : 48,
+                    id            : "customCombo"+i,
+                    placeholder   : dataInputsArray[el].label, 
+                    labelPosition : "top", 
+                    options       : {
+                        data : getOptionData ( dataInputsArray, el )
+                    },
+                    on: {
+                        onAfterRender: function () {
+                            this.getInputNode().setAttribute( "title", dataInputsArray[el].comment );
+                        },
+                    }               
+                };
+            }
+    
+            function createDeleteAction (i){
+                const table     = $$(idCurrTable);
+                const countCols = table.getColumns().length;
+                const columns   = table.config.columns;
+   
+                try{
+                    columns.splice (countCols, 0 ,{ 
+                        id      : "action"+i, 
+                        header  : "Действие",
+                        label   : "Действие",
+                        css     : "action-column",
+                        maxWidth: 100, 
+                        template: "{common.trashIcon()}"
+                    });
+        
+                    table.refreshColumns();
+
+                } catch (err){
+                    errors_setFunctionError(err,getInfoTable_logNameFile,"generateCustomInputs => createDeleteAction")
+                } 
+
+            }
+
+            function getInputsId        (element){
+                const parent     = element.getParentView();
+                const childs     = parent .getChildViews();
+                const idElements = [];
+
+                try{
+                    childs.forEach((el,i) => {
+                        const view = el.config.view;
+                        const id   = el.config.id;
+                        if ( id !== undefined ){
+                            if ( view == "text" ){
+                                idElements.push({
+                                    id  : id, 
+                                    name: "substr"
+                                });
+
+                            } else if ( view == "combo"){
+                                idElements.push({
+                                    id  : id, 
+                                    name: "valtype"
+                                });
+                            } else if ( view == "uploader"    || 
+                                        view == "datepicker"  ){
+                                idElements.push({ 
+                                    id : id 
+                                });
+                            }
+                        }
+
+                    });
+                } catch (err){
+                    errors_setFunctionError(err,getInfoTable_logNameFile,"generateCustomInputs => getInputsId");
+                } 
+                return idElements;
+            }
+    
+            function createDeleteBtn    (el,findAction,i){
+                return {   
+                    view        : "button", 
+                    id          : "customBtnDel"+i,
+                    css         : "webix_danger", 
+                    type        : "icon", 
+                    disabled    : true,
+                    icon        : "icon-trash",
+                    inputWidth  : 55,
+                    inputHeight : 35,
+                    value       : dataInputsArray[el].label,
+                    click       : function (id) {
+                        const idElements = getInputsId (this);
+                        getInfoTable_submitBtn( idElements, findAction.url, "delete" );
+                    },
+                    on          : {
+                        onAfterRender: function () {
+                            this.getInputNode().setAttribute( "title", dataInputsArray[el].comment );
+                        },
+                    },
+                };
+            }
+    
+            function createCustomBtn    (el,findAction,i){
+                return {   
+                    view        : "button", 
+                    css         : "webix_primary", 
+                    id          : "customBtn"+i,
+                    inputHeight : 35,
+                    value       : dataInputsArray[el].label,
+                    click       : function (id) {
+                        const idElements = getInputsId (this);
+                        const btn        =  $$("contextActionsPopup");
+
+                        if (findAction.verb== "GET"){
+                            if ( findAction.rtype == "refresh") {
+                                getInfoTable_submitBtn( idElements, findAction.url, "get", "refresh" );
+                            } else if (findAction.rtype == "download") {
+                                getInfoTable_submitBtn( idElements, findAction.url, "get", "download");
+                            }
+                            
+                        } else if ( findAction.verb == "POST" ){
+                            getInfoTable_submitBtn( idElements, findAction.url, "post" );
+                            $$("customBtn" + i ).disable();
+                        } 
+                        else if (findAction.verb == "download"){
+                            getInfoTable_submitBtn( idElements, findAction.url, "get", "download", id );
+                        }
+                            
+                        if (btn){
+                            btn.hide();
+                        }
+                    
+                    },
+                    on: {
+                        onAfterRender: function () {
+                            this.getInputNode().setAttribute( "title", dataInputsArray[el].comment );
+                        },
+                    },
+                };
+            }
+    
+            function createUpload       (el,i){
+                return  {   
+                    view         : "uploader", 
+                    value        : "Upload file", 
+                    id           : "customUploader"+i,
+                    height       : 48,
+                    autosend     : false,
+                    upload       : data.actions.submit.url,
+                    label        : dataInputsArray[el].label, 
+                    labelPosition: "top",
+                    on: {
+                        onAfterRender: function () {
+                            this.getInputNode().setAttribute( "title", dataInputsArray[el].comment );
+
+                            const parent = this  .getParentView();
+                            const childs = parent.getChildViews();
+
+                            childs.forEach(function(el,i){
+                                if (el.config.id.includes("customBtn")){
+                                    el.disable();
+                                }
+                            });
+                        },
+                        onBeforeFileAdd:function(){
+                            const loadEl = $$("templateLoad");
+                            if (loadEl){
+                                loadEl.getParentView().removeView(loadEl);
+                            }
+                        },
+                        onAfterFileAdd:function(file){
+                            const parent = this  .getParentView();
+                            const childs = parent.getChildViews();
+
+                            childs.forEach(function(el,i){
+                                if (el.config.id.includes("customBtn")){
+                                    el.enable();
+                                }
+                            });
+                        }
+
+                    }
+                };
+            }
+    
+            function createDatepicker   (el,i){
+                return {   
+                    view         : "datepicker",
+                    format       : "%d.%m.%Y %H:%i:%s",
+                    placeholder  :dataInputsArray[el].label,  
+                    id           :"customDatepicker"+i, 
+                    timepicker   : true,
+                    labelPosition:"top",
+                    height       :48,
+                    on           : {
+                        onAfterRender: function () {
+                            this.getInputNode().setAttribute( "title", dataInputsArray[el].comment );
+                        },
+                        onChange:function(){
+                            try{
+                                const inputs = $$("customInputs").getChildViews();
+                                inputs.forEach(function(el,i){
+                                    const btn  = $$(el.config.id);
+                                    const view = el.config.view;
+                                    if ( view == "button" && !(btn.isEnabled()) ){
+                                        btn.enable();
+                                    }
+                                });
+                            } catch (err){
+                                errors_setFunctionError(err,getInfoTable_logNameFile,"generateCustomInputs => createDatepicker onChange");
+                            } 
+    
+                        }
+                    }
+                };
+            }
+            
+            function createCheckbox     (el,i){
+                return {   
+                    view       : "checkbox", 
+                    id         : "customСheckbox"+i, 
+                    css        : "webix_checkbox-style",
+                    labelRight : dataInputsArray[el].label, 
+                    on         : {
+                        onAfterRender: function () {
+                            this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
+                        },
+    
+                        onChange:function(){
+                            try{
+                                const inputs = $$("customInputs").getChildViews();
+                                inputs.forEach(function(el,i){
+                                    const view = el.config.view;
+                                    const btn  = $$(el.config.id);
+                                    if (view == "button" && !(btn.isEnabled())){
+                                        btn.enable();
+                                    }
+                                });
+                            } catch (err){
+                                errors_setFunctionError(err,getInfoTable_logNameFile,"generateCustomInputs => createCheckbox onChange");
+                            } 
+                        }
+                    }
+                };
+            }
+
+
+            objInuts.forEach((el,i) => {
+
+                if ( dataInputsArray[el].type == "string" ){
+                    customInputs.push(
+                        createTextInput(el,i)
+                    );
+                } else if ( dataInputsArray[el].type == "apiselect" ) {
+                   
+                    customInputs.push(
+                        createSelectInput(el,i)
+                    );
+
+                } else if ( dataInputsArray[el].type == "submit" || 
+                            dataInputsArray[el].type == "button" ){
+
+                    const actionType = dataInputsArray[el].action;
+                    const findAction = data.actions[actionType];
+                
+                    if ( findAction.verb == "DELETE" && actionType !== "submit" ){
+                        createDeleteAction (i);
+                    } else if ( findAction.verb == "DELETE" ) {
+                        customInputs.push(
+                            createDeleteBtn(el, findAction,i)
+                        );
+                    } else {
+                        customInputs.push(
+                            createCustomBtn(el, findAction,i)
+                                
+                        );
+                    }
+                } else if ( dataInputsArray[el].type == "upload" ){
+                    customInputs.push(
+                        createUpload(el,i)
+                    );
+                } else if ( dataInputsArray[el].type == "datetime" ){
+                    customInputs.push(
+                        createDatepicker(el,i)
+                    );
+                }else if ( dataInputsArray[el].type == "checkbox" ){
+                    customInputs.push(
+                        createCheckbox(el,i)
+                    );
+
+                } 
+            });
+     
+
+            return customInputs;
+        }
+
+        function adaptiveCustomInputs (){
+
+            function maxInputsSize (customInputs){
+      
+                let inpObj = {
+                    id  : "customInputs",
+                    css : "webix_custom-inp", 
+                    rows: [
+                        { height : 20 },
+                        { rows : customInputs }
+                    ],
+                    width:350,
+                };
+
+           
+                function addInputs(){
+                   
+                    try{
+                        $$("viewToolsContainer").addView( inpObj,0 );
+                  
+                    } catch (err){
+                        errors_setFunctionError(err,getInfoTable_logNameFile,"adaptiveCustomInputs => addInputs");
+                    } 
+                }
+                addInputs();
+
+            }
+
+            function removeContextBtn(){
+                try{
+                    const btn = $$("contextActionsBtn");
+                    if (btn){
+                        $$(filterBar.config.id).removeView(btn);
+                    }
+                } catch (err){
+                    errors_setFunctionError(err,getInfoTable_logNameFile,"adaptiveCustomInputs => removeContextBtn");
+                } 
+            }
+            removeContextBtn();
+
+           const tools = $$("formsTools");
+           
+            function viewToolsBtnClick(){
+                const btnClass          = document.querySelector(".webix_btn-filter");
+                const primaryBtnClass   = "webix-transparent-btn--primary";
+                const secondaryBtnClass = "webix-transparent-btn";
+                const formResizer       = $$("formsTools-resizer");
+                const formsTools        = $$("viewTools");
+                
+                function toolMinAdaptive(){
+                    hideElem($$("formsContainer"));
+                    hideElem($$("tree"));
+                    showElem($$("table-backFormsBtnFilter"));
+                    hideElem(formResizer);
+                    tools.config.width = window.innerWidth-45;
+                    tools.resize();
+                }
+            
+
+                function toolMaxAdaptive(){
+                  
+                    if         (btnClass.classList.contains(primaryBtnClass)){
+
+                        btnClass.classList.add(secondaryBtnClass);
+                        btnClass.classList.remove(primaryBtnClass);
+                        hideElem(tools);
+                        hideElem(formResizer);
+                        
+
+                    } else if (btnClass.classList.contains(secondaryBtnClass)){
+
+                        btnClass.classList.add(primaryBtnClass);
+                        btnClass.classList.remove(secondaryBtnClass);
+                        showElem(tools);
+                        showElem(formResizer);
+                        showElem(formsTools);
+                    }
+                }
+      
+                hideElem($$("propTableView"));
+                const contaierWidth = $$("formsContainer").$width;
+         
+                toolMaxAdaptive();
+                if(!(btnClass.classList.contains(secondaryBtnClass))){
+                    if (contaierWidth < 850  ){
+                        hideElem($$("tree"));
+                        if (contaierWidth  < 850 ){
+                            toolMinAdaptive();
+                        }
+                    } else {
+                    hideElem($$("table-backFormsBtnFilter"));
+                    tools.config.width = 350;
+                    tools.resize();
+                    }
+                    showElem(formResizer);
+                } else {
+                    hideElem(tools);
+                    hideElem(formResizer);
+                    hideElem($$("table-backFormsBtnFilter"));
+                    showElem($$("formsContainer"));
+                }
+
+            }
+
+            const viewToolsBtn  = $$("viewToolsBtn");
+            if (data.inputs){  
+                let customInputs;
+           
+                customInputs        = generateCustomInputs ();
+                const filterBar     = $$("table-view-filterId").getParentView();
+
+                const btnTools = {   
+                    view    : "button",
+                    width   : 50, 
+                    type    : "icon",
+                    id      : "viewToolsBtn",
+                    icon    : "icon-filter",
+                    css     : "webix_btn-filter webix-transparent-btn",
+                    title   : "текст",
+                    height  : 42,
+                    click   : function(){
+                        viewToolsBtnClick();
+                    },
+                    on: {
+                        onAfterRender: function () {
+                            this.getInputNode().setAttribute("title","Показать/скрыть доступные дейсвтия");
+                        }
+                    } 
+                };
+                
+                if( !viewToolsBtn ){
+                    filterBar.addView( btnTools, 2 );
+                } else {
+                    showElem( viewToolsBtn );
+                }
+
+                maxInputsSize ( customInputs );
+
+            } else {
+              
+                hideElem( tools );
+                hideElem( viewToolsBtn );
+              
+            }
+        }
+        
+        adaptiveCustomInputs ();
+
+    }
+
+
+    function createTableRows (){
+        const dataContent  = STORAGE.fields.content;
+        const data         = dataContent[idsParam];
+    
+   
+        function getItemData (table){
+
+            function setTableState(){
+                function enableBtn(btn){
+                    try{
+                        if(!(btn.isEnabled())){
+                            btn.enable();
+                        }
+                    } catch (err){
+                        errors_setFunctionError(err,getInfoTable_logNameFile,"createTableRows => setTableState")
+                    }
+                }
+             
+                if (table == "table"){
+                    enableBtn ($$("table-newAddBtnId"));
+                    enableBtn ($$("table-filterId"   ));
+                    enableBtn ($$("table-exportBtn"  ));
+
+                }
+          
+            }
+
+            function datePrefs (data){
+                let dateFormat;
+
+                const columns  = $$(table).getColumns();
+                const dateCols = [];
+
+                function searchDateCols (){
+                    try{
+                        columns.forEach(function(col,i){
+                            if ( col.type == "datetime" ){
+                                dateCols.push( col.id );
+                            }
+                        });
+                    } catch (err){
+                        errors_setFunctionError(err,getInfoTable_logNameFile,"createTableRows => searchDateCols")
+                    }
+                }
+                searchDateCols ();
+            
+                data.forEach(function(el,i){
+
+                    function dateFormatting ( elType ){
+                    
+                        if ( el[elType] ){
+                            dateFormat = new Date( el[elType] );
+                            el[elType] = dateFormat;
+                            
+                        }
+                    }
+
+                    function setDateFormatting (){
+                        dateCols.forEach(function(el,i){
+                            dateFormatting (el);
+                        });
+                    }
+
+                    setDateFormatting ();
+                 
+                });
+            }
+
+            function parseRowData (data){
+               
+                const idCurrView= $$(idCurrTable);
+              
+                function enableVisibleBtn(){
+                    const viewBtn =  $$("table-view-visibleCols");
+                    const btn     =  $$("table-visibleCols");
+
+                    
+                    function disableBtn(el){
+                        if (el){
+                            el.enable();
+                        }
+                    }
+            
+                    if ( viewBtn.isVisible() ){
+                        disableBtn (viewBtn);
+                    } else if ( btn.isVisible() ){
+                        disableBtn (btn);
+                    }
+                  
+                }
+
+                function formattingBoolVals(){
+                    const cols     = idCurrView.getColumns();
+                    const boolsArr = [];
+
+                    const boolKeys = [];
+
+                    cols.forEach(function(el,i){
+                        if (el.type == "boolean"){
+                            boolsArr.push(el.id);
+                        }
+                    });
+
+                    function findBool(key){
+                        let check = false;
+                        boolsArr.forEach(function(el,i){
+                            if (el == key){
+                                check = true;
+                            } 
+                        });
+
+                        return check;
+                    }
+
+                    
+                    function findKey(element){
+                        Object.keys(element).forEach(function(key,i){
+                            if(findBool(key)){
+                                boolKeys.push(key);
+                            }
+                        });
+                    }
+
+                    data.forEach(function(el,i){
+                       findKey(el);
+                    });
+
+
+                    function returnVal(element){
+                        boolKeys.forEach(function(el,i){
+
+                            if ( element[el] == "0" ){
+                                element[el] = 2;
+                            } 
+                        });
+       
+                    }
+
+            
+                    data.forEach(function(el,i){
+                        returnVal(el);
+                    });
+
+                }
+                formattingBoolVals();
+          
+                try{
+               
+                    if (data.length !== 0){
+                        idCurrView.hideOverlay("Ничего не найдено");
+                        idCurrView.parse(data);
+                    } else {
+                        idCurrView.showOverlay("Ничего не найдено");
+                        idCurrView.clearAll();
+                    }
+
+                    setTimeout(() => {
+                        enableVisibleBtn();
+                    }, 1000);
+               
+                } catch (err){
+                    errors_setFunctionError(err,getInfoTable_logNameFile,"createTableRows => parseRowData");
+                }
+            }
+
+
+            function setCounterVal (){
+                try{
+                    const prevCountRows = $$(idCurrTable).count().toString();
+                    $$(idFindElem).setValues(prevCountRows);
+                    
+                    if(idCurrTable == "table"){
+                        $$("table-findElements").setValues(prevCountRows);
+                    }
+                } catch (err){
+                    errors_setFunctionError(err,getInfoTable_logNameFile,"createTableRows => setCounterVal");
+                }
+            }
+
+            const tableElem = $$(table);
+
+            function clearTable(){
+                tableElem.clearAll();
+            }
+
+            tableElem.load({
+                $proxy : true,
+                load   : function(view, params){
+                    return webix.ajax().get( "/init/default/api/" + itemTreeId, {
+                        success:function(text, data, XmlHttpRequest){
+                            data                     = data.json().content;
+                            tableElem.config.idTable = itemTreeId;
+
+                            try {
+                                clearTable    ();
+                                setTableState ();
+                                datePrefs     (data);
+                                parseRowData  (data);
+                                setCounterVal ();
+                            
+                            } catch (err){
+                                errors_setFunctionError(err,getInfoTable_logNameFile,"getItemData => table load");
+                            } 
+                    
+                        },
+                        error:function(text, data, XmlHttpRequest){    
+                            function tableErrorState (){
+                                const prevCountRows = "-";
+                                function disableBtn(btn){
+                                    if(btn){
+                                        btn.disable();
+                                    }
+                                }
+                                try {
+                                    $$(idFindElem)          .setValues(prevCountRows.toString());
+                                    $$("table-findElements").setValues(prevCountRows.toString());
+            
+                                    disableBtn ($$("table-newAddBtnId"));
+                                    disableBtn ($$("table-filterId"   ));
+                                    disableBtn ($$("table-exportBtn"  ));
+                             
+      
+                              
+                                } catch (err){
+                                    errors_setFunctionError(err,getInfoTable_logNameFile,"tableErrorState");
+
+                                }
+                            }
+
+                            function notAuthPopup(){
+                    
+                                function destructPopup(){
+                                    try{
+                                        const popup = $$("popupNotAuth");
+                                        if (popup){
+                                            popup.destructor();
+                                        }
+                                    } catch (err){
+                                        errors_setFunctionError(err,getInfoTable_logNameFile,"notAuthPopup btnClosePopup click");
+                                    }
+                                }
+                                const popupHeadline = {   
+                                    template    : "Вы не авторизованы", 
+                                    width       : 250,
+                                    css         : "webix_template-not-found", 
+                                    borderless  : true, 
+                                    height      : 20 
+                                };
+                                const btnClosePopup = {
+                                    view  : "button",
+                                    id    : "buttonClosePopup",
+                                    css   : "popup_close-btn",
+                                    type  : "icon",
+                                    width : 35,
+                                    icon: 'wxi-close',
+                                    click:function(){
+                                        destructPopup();
+                                    }
+                                };
+                
+                                const popupSubtitle = {   
+                                    template    : "Войдите в систему, чтобы продолжить.",
+                                    css         : "webix_template-not-found-descr", 
+                                    borderless  : true, 
+                                    height      : 35 
+                                };
+                
+                                const mainBtnPopup = {
+                                    view    : "button",
+                                    css     : "webix_btn-go-login",
+                                    height  : 46,
+                                    value   : "Войти",
+                                    click   : function(){
+                                        function navigate(){
+                                            try{
+                                                Backbone.history.navigate("/", { trigger:true});
+                                                window.location.reload();
+                                            } catch (err){
+                                                errors_setFunctionError(err,getInfoTable_logNameFile,"notAuthPopup navigate");
+                                            }
+                                        }
+                                        destructPopup();
+                                        navigate();
+                                     
+                                   
+                                    }
+                                };
+                
+                                webix.ui({
+                                    view    : "popup",
+                                    id      : "popupNotAuth",
+                                    css     : "webix_popup-prev-href",
+                                    width   : 340,
+                                    height  : 125,
+                                    modal   : true,
+                                    position: "center",
+                                    body    : {
+                                        rows: [
+                                        {rows: [ 
+                                            { cols: [
+                                                popupHeadline,
+                                                {},
+                                                btnClosePopup,
+                                            ]},
+                                            popupSubtitle,
+                                            mainBtnPopup,
+                                            { height : 20 }
+                                        ]}]
+                                        
+                                    },
+                
+                                }).show();
+                            }
+
+                            tableErrorState ();
+  
+                            if (XmlHttpRequest.status == 401){
+                        
+                                if (!($$("popupNotAuth"))){
+                                    notAuthPopup();
+                                }
+                          
+                            }
+                        }, 
+            
+                    });
+                }
+            });
+        }
+
+        function setDataRows (){
+            if(data.type == "dbtable"){
+                getItemData ("table");
+            } else if (data.type == "tform"){
+                getItemData ("table-view");
+            }
+        }
+
+        function autorefreshProperty (){
+            if (data.autorefresh){
+    
+                const userprefsOther = webix.storage.local.get("userprefsOtherForm");
+                const counter        = userprefsOther.autorefCounterOpt;
+
+                if ( userprefsOther && counter !== undefined ){
+                    if ( counter >= 15000 ){
+    
+                        setInterval(function(){
+                            if( data.type == "dbtable" ){
+                                getItemData ("table");
+                            } else if ( data.type == "tform" ){
+                                getItemData ("table-view");
+                            }
+                        }, counter );
+                    } else {
+                        setInterval(function(){
+                            if( data.type == "dbtable" ){
+                                getItemData ("table");
+                            } else if ( data.type == "tform" ){
+                                getItemData ("table-view");
+                            }
+                        }, 120000);
+                    }
+                }
+            } 
+        }
+
+        setDataRows ();
+        autorefreshProperty ();
+
+                
+    }
+
+
+    async function generateTable (){ // SINGLE ELS
+
+        if (!STORAGE.fields){
+            await getData("fields"); 
+       
+        }
+
+        if (STORAGE.fields){
+            createExperementalElement ();
+            const columnsData = createTableCols ();
+
+            createDetailAction (columnsData);
+            createDynamicElems ();
+            createTableRows ();
+           
+        }
+    } 
+
+    getValsTable ();
+   
+    if (titem == undefined) {
+        setLogValue("error","Данные не найдены");
+    } else {
+        preparationTable ();
+        generateTable ();
+    } 
+
+}
+
+
+;// CONCATENATED MODULE: ./src/js/blocks/getContent/getInfoDashboard.js
+
+
+
+
+
+
+
+
+
+const getInfoDashboard_logNameFile = "getContent => getInfoDashboard";
+
+function getDashId ( idsParam ){
+    const tree = $$("tree");
+    let itemTreeId;
+
+    if (idsParam){
+        itemTreeId = idsParam;
+    } else if (tree.getSelectedItem()){
+        itemTreeId = tree.getSelectedItem().id;
+    }
+
+    return itemTreeId;
+}
+
+function removeScroll (){
+    try{
+        const elem = $$("dashBodyScroll");
+        if (elem){
+            const parent = elem.getParentView();
+            if (elem){
+                parent.removeView(elem);
+            }
+        }
+    } catch (err){  
+        errors_setFunctionError(err,getInfoDashboard_logNameFile,"removeScroll");
+    }
+}
+
+function addErrorView(){
+          
+    function createTools(){
+        const dashboardTool = $$("dashboardTool");
+
+        const tools = {
+            view:"scrollview",
+            id:"dashboard-tool-main",
+            borderless:true,
+            css:{"margin":"20px!important","height":"50px!important"},
+            body: {
+                view:"flexlayout",
+                padding:20,
+                rows:[]
+            }
+        };
+
+        const headline = {
+            rows:[{
+                template:"",
+                id:"dash-template",
+                css:"webix_style-template-count webix-block-title",
+                borderless:false,
+                height:40,
+            }]
+        };
+
+        dashboardTool.addView({
+            rows:[
+                tools,
+                headline
+            ]
+        },0);
+    }
+
+    function createBody(){
+        const container = $$("dashboardInfoContainer");
+        const charts =  {
+            id:"dashboard-charts",
+            borderless:true,
+            body: {
+                view:"flexlayout",
+                rows:[]
+            }
+        };
+
+        const dashBody =   {
+            view:"scrollview", 
+            scroll:"auto",
+            id:"dashBodyScroll",
+            borderless:true, 
+            body:{
+                id:"dashboardBody",
+                css:"dashboardBody",
+                cols:[
+                    charts
+                ]
+            }
+        };
+
+        container.addView(dashBody);
+    }
+   
+    createTools();
+    createBody();    
+}
+
+async function setTableName(idsParam) {
+    const itemTreeId = getDashId(idsParam);
+    try{
+        if (!STORAGE.tableNames){
+            await getData("fields"); 
+        }
+
+        if (STORAGE.tableNames){
+            STORAGE.tableNames.forEach(function(el,i){
+                if (el.id == itemTreeId){
+                    const template  = $$("dash-template");
+                    const value     = el.name.toString();
+                    template.setValues(value);
+                }
+            });
+        }
+    } catch (err){  
+        errors_setFunctionError(err,getInfoDashboard_logNameFile,"setTableName");
+    }
+}
+
+function removeItems (){
+
+    function setVars(elem){
+   
+        if (elem){
+            try{
+                const parent = elem.getParentView();
+                if (elem){
+                    parent.removeView(elem);
+                } 
+            } catch (err){
+                errors_setFunctionError(err,getInfoDashboard_logNameFile,"getAjax => setVars");
+            } 
+        }
+     
+    }
+
+    setVars ($$("dashboardInfoContainerInner")  );
+    setVars ($$("dash-template")                );
+    setVars ($$("dashboard-tool-main")          );
+    setVars ($$("dashboard-tool-adaptive")      );
+ 
+}
+
+const dashLayout = [
+    {   type : "wide",
+        rows : []
+    }
+];
+
+function createCharts(dataCharts){
+    try{
+        dataCharts.forEach(function(el,i){
+            const titleTemplate = el.title;
+
+            delete el.title;
+
+            el.borderless       = true;
+            el.minWidth         = 250;
+
+            const headline = {   
+                template    : titleTemplate,
+                borderless  : true,
+                height      : 35,
+                css         : {  
+                    "font-weight" : "400!important", 
+                    "font-size"   : "17px!important"
+                }, 
+            };
+        
+            dashLayout[0].rows.push({
+                css : "webix_dash-chart-headline",
+                rows: [ 
+                    headline,
+                    el
+                ]
+            });
+        
+        });
+    } catch (err){  
+        errors_setFunctionError(err,getInfoDashboard_logNameFile,"createCharts");
+    }
+}
+
+
+function getInfoDashboard_createSpace(inputsArray,idsParam){
+
+    function backBtnClick (){
+        const dashTool = $$("dashboard-tool-main");
+
+        hideElem    (dashTool);
+        showElem    ($$("dashboardInfoContainer"));
+    }
+
+    function createMainView(){
+
+        const headline = {  
+            template    : "Фильтр",
+            height      : 30, 
+            css         : "webix_dash-filter-headline",
+            borderless  : true
+        };
+
+        
+        const filterBackBtn = { 
+            view    : "button", 
+            id      : "dash-backDashBtn",
+            type    : "icon",
+            icon    : "icon-arrow-right",
+            value   : "Вернуться к дашбордам",
+            hidden  : true,  
+            height  : 15,
+            hotkey  : "esc",
+            minWidth: 50,
+            width   : 55,
+            
+            click:function(){
+                backBtnClick();
+            },
+            
+            on: {
+                onAfterRender: function () {
+                    this.getInputNode().setAttribute("title","Вернуться к дашбордам");
+                }
+            } 
+        };
+        const mainView = {
+            id      : "dashboard-tool-main",
+            padding : 20,
+            hidden  : true,
+            minWidth: 250,
+            rows    : [
+                {   id  : "dashboardToolHeadContainer",
+                    cols: [
+                        headline,
+                        filterBackBtn,
+                    ]
+                },
+                
+                { rows:inputsArray }
+            ], 
+        };
+
+        try{
+            $$("dashboardTool").addView( mainView );
+        } catch (err){  
+            errors_setFunctionError(err, getInfoDashboard_logNameFile, "createMainView");
+        }
+    }
+
+    createMainView();
+
+  
+    function createFilterBtn(){
+
+        function filterBtnClick (){
+            const dashTool           = $$("dashboard-tool-main");
+            const container          = $$("dashboardContainer" );
+            const tree               = $$("tree");
+            const backBtn            = $$("dash-backDashBtn");
+
+            function filterMinAdaptive(){
+
+                hideElem (tree);
+                hideElem ($$("dashboardInfoContainer"));
+
+                showElem (dashTool);
+                showElem (backBtn);
+            
+                dashTool.config.width = window.innerWidth-45;
+                dashTool.resize();
+            }
+
+            function filterMaxAdaptive(){
+                if (dashTool.isVisible()){
+                    hideElem(dashTool);
+                } else {
+                    showElem(dashTool);
+                }
+            }
+       
+            filterMaxAdaptive();
+
+
+            if (container.$width < 850){
+           
+                hideElem(tree);
+
+                if (container.$width  < 850 ){
+                    filterMinAdaptive();
+                }
+
+            } else {
+                hideElem(backBtn);
+
+                if (dashTool.config.width !== 350){
+                    dashTool.config.width  = 350;
+                    dashTool.resize();
+                }
+            }
+
+
+        }
+
+        const filterBtn = {
+            view    : "button", 
+            id      : "dashFilterBtn", 
+            css     : "webix-transparent-btn",
+            type    : "icon",
+            icon    : "icon-filter",
+            width   : 50,
+            click   : function() {
+                filterBtnClick();
+            },
+            on      : {
+                onAfterRender: function () {
+                    this.getInputNode().setAttribute("title","Показать/скрыть фильтры");
+                },
+            }
+        
+            
+        };
+
+        const container     = $$("dash-template").getParentView();
+        const containerView = $$(container.config.id);
+         
+        if (!$$("dashFilterBtn")){
+
+            containerView.addView(
+                {   id  : "dashboard-tool-btn",
+                    cols: [
+                        filterBtn
+                    ]
+                }
+            ,2);
+        }
+      
+    }
+
+    function createDashInfo(){
+        const template  = setHeadlineBlock("dash-template");
+        const container = $$("dashboardInfoContainer");
+
+        const dashCharts = {
+            id  : "dashboard-charts",
+            view: "flexlayout",
+            css : "webix_dash-charts-flex",
+            rows: dashLayout,
+        };
+
+        const content = {
+            view        : "scrollview", 
+            scroll      : "y",
+            id          : "dashBodyScroll",
+            borderless  : true, 
+            body        : {
+                id  : "dashboardBody",
+                css : "dashboardBody",
+                cols: [
+                    dashCharts
+                ]
+            }
+        };
+
+        const inner =  {   
+            id  : "dashboardInfoContainerInner",
+            rows: [
+                template,
+                content
+            ]
+        };
+
+        try{
+            container.addView(inner);
+        } catch (err){  
+            errors_setFunctionError(err,getInfoDashboard_logNameFile,"createDashInfo");
+        } 
+
+        setTableName( idsParam );
+            
+    }
+    createDashInfo ();
+
+    createFilterBtn();
+}
+
+function updateDash(){
+
+    const inner = $$("dashboardInfoContainerInner");
+
+    const dashCharts = {
+        id  : "dashboard-charts",
+        view: "flexlayout",
+        css : "webix_dash-charts-flex",
+        rows: dashLayout,
+    };
+
+    const dashBody = {
+        view        : "scrollview", 
+        scroll      : "y",
+        id          : "dashBodyScroll",
+        borderless  : true, 
+        body        : {
+            id  : "dashboardBody",
+            css : "dashboardBody",
+            cols: [
+                dashCharts
+            ]
+        }
+    };
+
+    try{
+        inner.addView(dashBody);
+    } catch (err){  
+        errors_setFunctionError(err,getInfoDashboard_logNameFile,"updateDash");
+    }
+}
+
+function getAjax ( url, inputsArray, idsParam, action=false ) {
+  
+    const getData = webix.ajax().get(url);
+    
+    getData.then(function(data){
+
+        const dataCharts    = data.json().charts;
+
+        removeScroll();
+        
+        if ( !action ){ //не с помощью кнопки фильтра
+            removeItems ();
+        }
+      
+        function addSuccessView (){
+
+            createCharts( dataCharts );
+
+            if (!action){
+                getInfoDashboard_createSpace( inputsArray,idsParam );
+            } else {
+                updateDash();
+            }
+            
+        }
+
+        if (dataCharts == undefined){
+            addErrorView  ();
+            setLogValue   ("error","Ошибка при загрузке данных");
+        } else {
+            addSuccessView();
+        }
+
+        function setScrollHeight(){
+            const log    = $$("logLayout");
+            const logBth = $$("webix_log-btn");
+            
+            function setLogHeight(height){
+                log.config.height = height;
+                log.resize();
+            }
+
+            try{
+                if ( logBth.config.icon == "icon-eye" ){
+                    setLogHeight(90);
+                    setLogHeight(5);
+                } else {
+                    setLogHeight(5);
+                    setLogHeight(90);
+                }
+            } catch (err){  
+                errors_setFunctionError(err,getInfoDashboard_logNameFile,"setScrollHeight");
+            }
+        }
+
+        setScrollHeight();
+
+        if ( url.includes("?") || url.includes("sdt") && url.includes("edt") ){
+            setLogValue("success", "Данные обновлены");
+        } 
+      
+    });
+   
+    getData.fail(function(err){
+        errors_setAjaxError(err, getInfoDashboard_logNameFile,"getAjax");
+    });
+    
+}
+
+async function getFieldsData ( idsParam ){
+    
+    if (!STORAGE.fields){
+        await getData("fields"); 
+    }
+
+    function createDashSpace (){
+     
+        let findAction;
+        let singleItemContent;
+        let fields = STORAGE.fields.content;
+        let inputsArray= [];
+     
+        function createFilterElems (inputs,el){
+           
+            function createDate(type,input){
+                const dateTemplate = {
+                    view        : "datepicker",
+                    format      : "%d.%m.%y",
+                    editable    : true,
+                    value       : new Date(),
+                    placeholder : input.label,
+                    height      : 48,
+                    on          : {
+                        onAfterRender : function () {
+                            this.getInputNode().setAttribute("title",input.comment);
+                        },
+                    }
+                };
+
+                if (type == "first"){
+                    const dateFirst = dateTemplate;
+                    dateFirst.id    = "dashDatepicker_"+"sdt";
+                    return dateFirst;
+                } else if (type == "last"){
+                    const dateLast  = dateTemplate;
+                    dateLast.id     = "dashDatepicker_"+"edt";
+                    return dateLast;
+                }
+
+            }
+
+            function createTime (type){
+                let timeTemplate =  {   
+                    view        : "datepicker",
+                    format      : "%H:%i:%s",
+                    placeholder : "Время",
+                    height      : 48,
+                    editable    : true,
+                    value       : "00:00:00",
+                    type        : "time",
+                    seconds     : true,
+                    suggest     : {
+
+                        type    : "timeboard",
+                        hotkey  : "enter",
+                        body    : {
+                            button  : true,
+                            seconds : true,
+                            value   : "00:00:00",
+                            twelve  : false,
+                            height  : 110, 
+                        },
+                    },
+                    on: {
+                        onAfterRender: function () {
+                            this.getInputNode().setAttribute("title","Часы, минуты, секунды");
+                            
+                        },
+                    }
+                };
+
+
+                if (type == "first"){
+                    const timeFirst = timeTemplate;
+                    timeFirst.id    = "dashDatepicker_"+"sdt"+"-time";
+                    return timeFirst;
+                } else if (type == "last"){
+                    const timeLast = timeTemplate;
+                    timeLast.id    = "dashDatepicker_"+"edt"+"-time"; 
+                    return timeLast;
+                }
+            }
+
+            function createBtn (input, i){
+
+                function clickBtn(){
+                    const dateArray     = [];
+                    const compareDates  = [];
+
+                    let sdtDate         = "";
+                    let edtDate         = "";
+                    let validateEmpty   = true;
+
+                    function enumerationElements(el){
+                   
+                        const childs         = $$(el.id).getChildViews();
+                        const postformatTime = webix.Date.dateToStr("%H:%i:%s");
+
+                        childs.forEach(function(elem,i){
+
+                            function createTime(type){
+                                const value = $$(elem.config.id).getValue();
+                                try{
+                                    if (value.getValue()!==null){
+
+                                        if (type == "sdt"){
+                                            sdtDate = sdtDate.concat( " " + postformatTime(value) );
+                                        } else if (type == "edt"){
+                                            edtDate = edtDate.concat( " " + postformatTime(value) );
+                                        }
+                                
+                                    } else {
+                                        validateEmpty = false;
+                                    }
+                                } catch (err){  
+                                    errors_setFunctionError(err,getInfoDashboard_logNameFile,"createTime");
+                                }
+                            }
+
+                            function createDate(type){
+                                try{
+                                    if ( $$(elem.config.id).getValue() !== null ){
+
+                                        const value          = $$(elem.config.id).getValue();
+                                        const postFormatData = webix.Date.dateToStr("%d.%m.%y");
+
+                                        if (type == "sdt"){
+                                            sdtDate = postFormatData(value); 
+                                        } else if ( type ==  "edt"){
+                                            edtDate = postFormatData(value);
+                                        }
+                                    
+                                    } else {
+                                        validateEmpty=false;
+                                    }
+                                } catch (err){  
+                                    errors_setFunctionError(err,getInfoDashboard_logNameFile,"createDate");
+                                }
+                            }
+                            
+                            if (elem.config.id.includes("sdt")){
+
+                                if (elem.config.id.includes("time")){
+                                    createTime("sdt");
+                                } else {
+                                    createDate("sdt");
+                                }
+                            } else if (elem.config.id.includes("edt")){
+                            
+                                if (elem.config.id.includes("time")){
+                                    createTime("edt");
+                                } else {
+                                    createDate("edt");
+                                }
+                            
+                                
+                            }
+                        });
+                   
+                    }
+
+                    function setInputs(){
+                        try{
+                            inputsArray.forEach(function(el,i){
+                                if ( el.id.includes("container") ){
+                                    enumerationElements(el);
+                                }
+                            });
+                        } catch (err){  
+                            errors_setFunctionError(err,getInfoDashboard_logNameFile,"setInputs");
+                        }
+                    }
+
+                    function createQuery(){
+                        dateArray.push( "sdt" + "=" + sdtDate );
+                        dateArray.push( "edt" + "=" + edtDate );
+                     
+                        compareDates.push( sdtDate ); 
+                        compareDates.push( edtDate );
+                    }
+
+                    function getDataInputs(){
+                        setInputs   ();
+                        createQuery ();
+                    }
+
+                    function sentQuery (){
+
+                        function removeCharts(){
+                            try{
+                                const charts = $$("dashboard-charts");
+                                const body   = $$("dashboardBody");
+                                if (charts){
+                                    body.removeView(charts);
+                                }
+                            } catch (err){  
+                                errors_setFunctionError(err,getInfoDashboard_logNameFile,"removeCharts");
+                            }
+                        }
+
+                        function setStateBtn(){
+                            try{
+                                const btn = $$("dashBtn"+i);
+                                btn.disable();
+                                setInterval(function () {
+                                    btn.enable();
+                                }, 1000);
+                            } catch (err){  
+                                errors_setFunctionError(err,getInfoDashboard_logNameFile,"setStateBtn");
+                            }
+                        }
+
+                        if (validateEmpty){
+
+                            const compareFormatData = webix.Date.dateToStr ("%Y/%m/%d %H:%i:%s");
+                            const start             = compareFormatData    (compareDates[0]);
+                            const end               = compareFormatData    (compareDates[1]);
+
+                            const compareValue      = webix.filters.date.greater(start,end);
+                            
+                            if ( !(compareValue) || compareDates[0] == compareDates[1] ){
+
+                                const getUrl = findAction.url+"?"+dateArray.join("&");
+                                removeCharts();
+                                getAjax(getUrl, inputsArray,idsParam, true);
+                                setStateBtn();
+
+                            } else {
+                                setLogValue("error", "Начало периода больше, чем конец");
+                            }
+                        } else {
+                            setLogValue("error", "Не все поля заполнены");
+                        }
+                    }
+            
+                    getDataInputs();
+                    sentQuery ();
+                }
+
+
+                
+
+                const btnFilter = {   
+                    rows: [
+                        { height:10 },
+                        {   view        :"button", 
+                            css         :"webix_primary", 
+                            id          :"dashBtn"+i,
+                            inputHeight :48,
+                            height      :48, 
+                            minWidth    :100,
+                            maxWidth    :200,
+                            value       :input.label,
+                            click       :function () {
+                                clickBtn();
+                            },
+                            on          : {
+                                onAfterRender: function () {
+                                    this.getInputNode().setAttribute("title",input.comment);
+                                },
+                            },
+
+                        },
+                        {}
+                    ]
+                };
+
+                return  btnFilter;
+            }
+
+            function createHead(text){
+                return {   
+                    template:text,
+                    height:30, 
+                    borderless:true,
+                    css:"webix_template-datepicker"
+                };
+            }
+            
+            function createFilter (el){
+
+        
+         
+                Object.values(inputs).forEach(function(input,i){
+                    function createInputs(){
+
+                        const inputs = {   
+                            width   : 200,
+                            id      : "datepicker-container"+"sdt",
+                            rows    : [ 
+
+                                createHead ( "Начиная с:"  ),
+                                createDate ( "first",input ),
+
+                                { height:10 },
+
+                                createTime ("first"),
+
+
+                                { height:20 },
+
+
+                                createHead ( "Заканчивая:" ),
+                                createDate ( "last", input ),
+
+                                { height:10 },
+
+                                createTime ("last"),
+
+                            ]
+                        };
+                 
+                        try{
+                            inputsArray.push( inputs );
+                        } catch (err){  
+                            errors_setFunctionError(err,getInfoDashboard_logNameFile,"createInputs");
+                        }
+                    }
+
+                    if (input.type == "datetime"&& input.order == 3){ //-------------- order
+                        let key = Object.keys(inputs)[i]; // заменены на sdt и edt
+                        createInputs();
+
+                    } else if (input.type == "submit"){
+
+                        const actionType    = input.action;
+                        findAction          = el.actions[actionType];
+                    
+                        inputsArray.push(
+                            createBtn (input, i)
+                        );
+
+                    }
+
+
+                });
+            }
+
+            createFilter (el);
+
+            return inputsArray;
+          
+        }
+ 
+        function autorefresh (el) {
+            if (el.autorefresh){
+
+                const userprefsOther = webix.storage.local.get("userprefsOtherForm");
+                const counter        = userprefsOther.autorefCounterOpt;
+
+                const url            = singleItemContent.actions.submit.url;
+
+                try{
+                    if ( counter !== undefined ){
+
+                        if ( counter >= 15000 ){
+                            setInterval(function(){
+                                getAjax(url, inputsArray, idsParam);
+                            },  counter );
+            
+                        } else {
+                            setInterval(function(){
+                                getAjax(url, inputsArray, idsParam);
+                            }, 50000);
+                        }
+                    }
+
+                } catch (err){  
+                    errors_setFunctionError(err,getInfoDashboard_logNameFile,"autorefresh");
+                }
+            }
+        }
+
+
+        const itemTreeId = getDashId(idsParam);
+        const fieldsVals = Object.values(fields);
+        
+        fieldsVals.forEach(function(el,i){
+
+            const fieldId = Object.keys(fields)[i];
+
+            if (el.type == "dashboard" && fieldId == itemTreeId) {
+      
+                const url    = el.actions.submit.url;
+                const inputs = createFilterElems (el.inputs,el);
+
+                getAjax(url, inputs,idsParam);
+                autorefresh (el);  
+            }
+        });
+    }
+
+    if (STORAGE.fields){
+        createDashSpace ();
+    }
+
+}
+
+
+
+function getInfoDashboard ( idsParam ){
+
+    removeScroll();
+
+    if(!($$("dashBodyScroll"))){
+        getFieldsData (idsParam);
+    }  
+    
+}
+
+
 ;// CONCATENATED MODULE: ./src/js/blocks/routerConfig/tree.js
 
 
 
+
+
+//import {getInfoTable,getInfoDashboard} from "../content.js";
 
 
 
@@ -15722,7 +16298,8 @@ function treeRouter(id){
             }
         }
     
-    
+
+
         function createElem(){
             try{
                 Object.values(fieldsData).forEach(function(field,i){
@@ -15733,17 +16310,22 @@ function treeRouter(id){
                         if (field.type == "dbtable" || 
                             field.type == "tform"   || 
                             field.type == "dashboard"){
-                            
+                        
+                               // console.log(webix.storage.local.get("visibleColsPrefs_"+"hattrs"),'SSSS')
                                 hideElem($$("webix__none-content"));
     
                             if (field.type == "dbtable"){
                                 showElem("tables");
                                 getInfoTable ("table", id);
-                        
+               
+                      
                                 
                             } else if (field.type == "tform"){
                                 showElem("forms");
                                 getInfoTable ("table-view", id);
+                                // const idField = $$("table-view").config.idTable;
+                                // const storageData = webix.storage.local.get("visibleColsPrefs_"+idField);
+                                // getUserPrefs("table-view",storageData)
     
                             } else if (field.type == "dashboard"){
                                 showElem("dashboards");
@@ -15758,6 +16340,8 @@ function treeRouter(id){
             }
         }
         createElem();
+
+
     
         if (!checkFound){
             showNotFoundPopup ();
@@ -15801,7 +16385,8 @@ function treeRouter(id){
     }
     
     async function getTableData (){
-    
+        
+      
     
         if (!STORAGE.fields){
             await getData("fields"); 
@@ -15810,12 +16395,14 @@ function treeRouter(id){
         if (STORAGE.fields){
             showTableData ();
             setTableName ();
+
+
         }
     }
     
     async function createTable (){
         await getWorkspace ();
-     
+
         try{   
             const tree = $$("tree");
             tree.attachEvent("onAfterLoad", function () {
@@ -15837,7 +16424,7 @@ function treeRouter(id){
                     showTableData ();
                     setTableName ();
                 } 
-            
+                    
             });
         } catch (err){
             errors_setFunctionError(err,tree_logNameFile,"createTable");
@@ -15849,11 +16436,13 @@ function treeRouter(id){
             const tree = $$("tree");
             if (tree.data.order.length == 0){
                 createTable ();
+                
             }
         } catch (err){
             errors_setFunctionError(err,tree_logNameFile,"checkTable");
     
-        }
+        }    
+      
     }
    
     checkTable();
@@ -16069,7 +16658,7 @@ function getDataUserprefs(){
     });
 
     userprefsData.fail(function(err){
-        setAjaxError(err, userprefs_logNameFile,"getDataUserprefs");
+        errors_setAjaxError(err, userprefs_logNameFile,"getDataUserprefs");
     });
 }
 
@@ -16106,6 +16695,91 @@ function userprefsRouter(){
     userprefs_hideNoneContent();
 
     userprefs_removeNullContent();
+}
+
+
+;// CONCATENATED MODULE: ./src/js/blocks/getContent/getInfoEditTree.js
+
+
+const getInfoEditTree_logNameFile = "getContent => getInfoEditTree";
+
+
+function getInfoEditTree() {
+    const treeEdit  = $$("treeEdit");
+    const url       = "/init/default/api/"+"trees";
+    const getData   = webix.ajax().get(url);
+
+    treeEdit.clearAll();
+
+    getData.then(function(data){
+
+        data = data.json().content;
+        data[0].pid = 0;
+        
+
+        const map = {}, 
+            treeStruct = [],
+            treeData   = []
+        ;
+        
+        function createTreeItem(el){
+            return {
+                id    :el.id, 
+                value :el.name, 
+                pid   :el.pid, 
+                data  :[]
+            };
+        }
+
+        function pushTreeData(){
+            try{
+                data.forEach(function(el,i){
+                    if (el.pid == 0){
+                        const rootElement = createTreeItem(el);
+
+                        rootElement.open  = true;
+                        treeData.push ( rootElement );
+
+                    } else {
+                        const element = createTreeItem(el);
+
+                        treeData.push (element );
+                    }
+                });
+            } catch (err) {
+                errors_setFunctionError(err,getInfoEditTree_logNameFile,"pushTreeData");
+            }
+        }
+
+        function createStruct(){
+            try{
+                treeData.forEach(function(el,i){
+
+                    map[el.id] = i; 
+
+                    if ( el.pid !== 0 && el.pid !== el.id && el.pid !== null ) {
+                        treeData[map[el.pid]].data.push(el);
+                    } else {
+                        treeStruct.push(el);
+                    }
+                });
+            } catch (err) {
+                errors_setFunctionError(err,getInfoEditTree_logNameFile,"createStruct")
+            }
+        }
+
+        pushTreeData();
+        createStruct();
+
+        treeEdit.parse(treeStruct);
+
+    });
+
+    getData.fail(function(err){
+        errors_setAjaxError(err, "content","getInfoEditTree");
+    });
+
+  
 }
 
 
@@ -16221,7 +16895,7 @@ function logoutRouter(){
     });
 
     logoutData.fail(function(err){
-        setAjaxError(err, logout_logNameFile,"logoutData");
+        errors_setAjaxError(err, logout_logNameFile,"logoutData");
     });  
 }
 
@@ -16332,7 +17006,7 @@ function postLoginData(){
             userData.name      = data.first_name;
             userData.username  = data.username;
             
-            setStorageData("user", JSON.stringify(userData));
+            storageSetting_setStorageData("user", JSON.stringify(userData));
 
 
             if (form){
@@ -16352,7 +17026,7 @@ function postLoginData(){
     });
 
     postData.fail(function(err){
-        setAjaxError(err, "login","postLoginData");
+        errors_setAjaxError(err, "login","postLoginData");
     });
 }
 
@@ -16435,6 +17109,18 @@ function login () {
 
 }
 
+const auth = {
+    hidden  : true, 
+    id      : "userAuth", 
+    cols    : [
+        {
+            view    : "align", 
+            align   : "middle,center",
+            body    : login()
+        },
+
+    ]
+}; 
 
 
 ;// CONCATENATED MODULE: ./src/js/blocks/checkFonts.js
@@ -16454,7 +17140,7 @@ function checkFonts (){
         });
 
         if (!check){
-            logBlock_setLogValue("success","Не удалось загрузить шрифт иконок", 'expa');
+            setLogValue("success","Не удалось загрузить шрифт иконок", 'expa');
         }
 
 
@@ -16590,9 +17276,10 @@ function header() {
             
             {},
             {view:"search", 
-                placeholder:"Поиск", 
+                placeholder:"Поиск (Shift+F)", 
                 css:"searchTable",
                 height:42, 
+                hotkey :"shift+f",
                 maxWidth:250, 
                 minWidth:40, 
             },
@@ -16603,6 +17290,7 @@ function header() {
                 height:42, 
                 badge:0,
                 width: 50,
+                hotkey :"ctrl+m",
                 css:"webix_log-btn",
                 click:function (){
                     if (this.getValue() == 1){
@@ -16613,8 +17301,10 @@ function header() {
                 },
                 on: {
                     onAfterRender: function () {
-                        this.getInputNode().setAttribute("title","Показать/скрыть системные сообщения");
+                        this.getInputNode().setAttribute("title","Показать/скрыть системные сообщения (Ctrl+M)");
+                         
                     },
+
                     onChange:function(newValue, oldValue, config){
 
                         let lastItemList = $$("logBlock-list").getLastId();
@@ -16740,10 +17430,10 @@ function header() {
                                                                 success:function(text, data, XmlHttpRequest){
                                                                     data = data.json()
                                                                     if (data.err_type == "i"){
-                                                                        logBlock_setLogValue("success",data.err);
+                                                                        setLogValue("success",data.err);
                                                                     
                                                                     } else if (data.err_type == "e"){
-                                                                        logBlock_setLogValue("error",data.err);
+                                                                        setLogValue("error",data.err);
                                                                     }
                                                                 },
                                                                 error:function(text, data, XmlHttpRequest){
@@ -16764,7 +17454,7 @@ function header() {
                                                             Backbone.history.navigate("logout", { trigger:true});
                                                         
                                                         }else {
-                                                            logBlock_setLogValue("error","Заполните пустые поля");
+                                                            setLogValue("error","Заполните пустые поля");
                                                             return false;
                                                         }
                                                     } 
@@ -16824,7 +17514,7 @@ function header() {
                                 success:function(text, data, XmlHttpRequest){
                                     data = data.json().content;
                                     if (data.err_type == "e"){
-                                        logBlock_setLogValue("error",data.error);
+                                        setLogValue("error",data.error);
                                     }
 
                                     if (window.location.pathname !== "/index.html/content" &&  window.location.pathname!=="/init/default/spaw/content"){
@@ -16847,7 +17537,7 @@ function header() {
                                                         success:function(text, data, XmlHttpRequest){
                                                             data = data.json();
                                                             if (data.err_type == "e"){
-                                                                logBlock_setLogValue("error",data.error);
+                                                                setLogValue("error",data.error);
                                                             }
                                                         
                                                         },
@@ -16885,7 +17575,7 @@ function header() {
                                                             userData.name = data.json().content.first_name;
                                                             userData.username = data.json().content.username;
                                                             
-                                                            setStorageData("user", JSON.stringify(userData));
+                                                            storageSetting_setStorageData("user", JSON.stringify(userData));
                                                         },
                                                         error:function(text, data, XmlHttpRequest){
                                                             ajaxErrorTemplate("005-011",XmlHttpRequest.status,XmlHttpRequest.statusText,XmlHttpRequest.responseURL);
@@ -16901,7 +17591,7 @@ function header() {
                                                         data = data.json();
                                 
                                                         if (data.err_type == "e"){
-                                                            logBlock_setLogValue("error",data.error);
+                                                            setLogValue("error",data.error);
                                                         }
                                                         
                                                     },
@@ -16961,6 +17651,9 @@ function setStateFilterBtn(){
 
 ;// CONCATENATED MODULE: ./src/js/components/treeSidabar/onSelectChange.js
  
+//import {getInfoTable,getInfoDashboard}              from "../../blocks/content.js";
+
+
 
  
 
@@ -17374,7 +18067,7 @@ function onItemClickFunc(id){
                     }
                 });
 
-                logBlock_setLogValue("error",el.textError+" (Поле: "+nameEl+")");
+                setLogValue("error",el.textError+" (Поле: "+nameEl+")");
             });
         } catch (err){
             errors_setFunctionError(err,onItemClick_logNameFile,"validateError");
@@ -17432,7 +18125,7 @@ function onItemClickFunc(id){
                     setDirtyProperty ();
                     removeElem ($$("propertyRefbtnsContainer"));
                     selectTree(id);
-                    logBlock_setLogValue("success","Данные успешно добавлены",currId);
+                    setLogValue("success","Данные успешно добавлены",currId);
                 } else {
 
                     const errs   = data.content.errors;
@@ -17441,7 +18134,7 @@ function onItemClickFunc(id){
                         msg +=err+" (Поле: "+Object.keys(errs)[i] +"); ";
                     });
 
-                    logBlock_setLogValue("error",msg);
+                    setLogValue("error",msg);
                 }
 
                 if(data.err_type !== "i"){
@@ -17450,7 +18143,7 @@ function onItemClickFunc(id){
             });
 
             postData.fail(function(err){
-                setAjaxError(err, "sidebar","onItemClick => postNewData");
+                errors_setAjaxError(err, "sidebar","onItemClick => postNewData");
             });
 
         } else {
@@ -17473,7 +18166,7 @@ function onItemClickFunc(id){
                         setDirtyProperty ();
                         removeElem ($$("propertyRefbtnsContainer"));
                         selectTree(id);
-                        logBlock_setLogValue("success","Данные успешно добавлены",currId);
+                        setLogValue("success","Данные успешно добавлены",currId);
                 
                     } else {
                         errors_setFunctionError(data.err,"sidebar","onItemClick => putData")
@@ -17481,7 +18174,7 @@ function onItemClickFunc(id){
                 });
 
                 putData.fail(function(err){
-                    setAjaxError(err, "sidebar","onItemClick => putData");
+                    errors_setAjaxError(err, "sidebar","onItemClick => putData");
                 });
 
             }
@@ -17529,6 +18222,9 @@ function onItemClickFunc(id){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/treeSidabar/onBeforeSelect.js
+//import {getInfoTable,getInfoDashboard} from "../../blocks/content.js";
+
+
 
 
 
@@ -17584,18 +18280,30 @@ function onBeforeSelectFunc(data){
       
     }
     function setFormToolsDefaultState(){
-        const formsTools     = $$("viewTools");
+        const formsTools     = $$("formsTools");
         const formsContainer = $$("formsContainer");
-
+  
         hideElem (formsTools);
         showElem (formsContainer);
 
     }
 
     function adaptiveViewEditTable(){
-        hideElem($$("table-backTableBtn"));
-        hideElem($$("table-editForm"));
-        showElem($$("tableContainer"));
+
+        const container = $$("tableContainer");
+        const tables    = $$("tables");
+        
+        hideElem  ($$("editTableBarContainer"));
+        hideElem  ($$("table-backTableBtn"));
+        hideElem  ($$("table-editForm"));
+        showElem  ($$("tableContainer"));
+
+        if(tables.$width - container.$width > 9){
+           // $$("flexlayoutTable").config.width = tables.$width - 9;
+            $$("tableContainer").resize();
+            //tables.resize();
+        }
+
     }
 
     function adaptiveViewDashFilter(){
@@ -17845,7 +18553,6 @@ function onAfterSelectFunc(id){
 
     getFields ();
     setAdaptiveState();
-
 }
 
 
@@ -17888,7 +18595,7 @@ function treeSidebar () {
             },
 
             onLoadError:function(xhr){
-                setAjaxError(xhr, "sidebar","onLoadError");
+                errors_setAjaxError(xhr, "sidebar","onLoadError");
             },
 
             onBeforeOpen:function (id){
@@ -17952,12 +18659,12 @@ function resetTimer (){
                             putData.then(function(data){
                                 data = data.json();
                                 if (data.err_type !== "i"){
-                                    logBlock_setLogValue("error",data.err);
+                                    setLogValue("error",data.err);
                                 }
                             });
 
                             putData.fail(function(err){
-                                setAjaxError(err, "autoLogout","putUserPrefs");
+                                errors_setAjaxError(err, "autoLogout","putUserPrefs");
                             });
                         } 
                     });  
@@ -17985,7 +18692,7 @@ function resetTimer (){
                         });
 
                         whoamiData.fail(function(err){
-                            setAjaxError(err, "autoLogout","getWhoamiData");
+                            errors_setAjaxError(err, "autoLogout","getWhoamiData");
                         });
 
                     }
@@ -18007,7 +18714,7 @@ function resetTimer (){
                 });
 
                 postData.fail(function(err){
-                    setAjaxError(err, "autoLogout","postUserPrefs");
+                    errors_setAjaxError(err, "autoLogout","postUserPrefs");
                 });
 
             }
@@ -18028,7 +18735,7 @@ function resetTimer (){
         });
 
         userprefsData.fail(function(err){
-            setAjaxError(err, "autoLogout","logout");
+            errors_setAjaxError(err, "autoLogout","logout");
 
         });
       
@@ -18375,8 +19082,56 @@ function adaptivePoints (){
 
 }
 
+;// CONCATENATED MODULE: ./src/js/blocks/webixGlobalPrefs.js
+
+function createCustomEditor(){
+    webix.editors.customDate = webix.extend({
+        render:function(){
+            return webix.html.create("div", {
+            "class":"webix_dt_editor"
+            }, "<input class='webix_custom-date-editor' id='custom-date-editor' type='text'>");
+    }}, webix.editors.text);
+    
+}
+
+function setDateFormat(){
+    webix.i18n.setLocale("ru-RU");   
+    webix.i18n.parseFormat = "%d.%m.%Y %H:%i:%s";
+    webix.i18n.setLocale();
+    webix.Date.startOnMonday = true;
+}
+
+function setMsgPosition(){
+    webix.message.position = "bottom";
+}
+
+function protoUIEdittree () {
+    webix.protoUI({
+        name:"edittree"
+    }, webix.EditAbility, webix.ui.tree);
+}
+
+
+function webixGlobalPrefs (){
+    createCustomEditor  ();
+    setDateFormat       ();
+    setMsgPosition      ();
+}
+
+
+
+;// CONCATENATED MODULE: ./src/js/blocks/routerConfig/routerStart.js
+function setRouterStart(){
+    if (window.location.host.includes("localhost:3000")){
+        Backbone.history.start({pushState: true, root: '/index.html/'});
+    } else {
+        Backbone.history.start({pushState: true, root: '/init/default/spaw/'});
+    }
+}
+
+
 ;// CONCATENATED MODULE: ./src/js/app.js
-console.log("expa 1.0.43"); 
+console.log("expa 1.0.44"); 
 
 
 
@@ -18392,128 +19147,115 @@ console.log("expa 1.0.43");
 
 
 
+
+
+
+const emptySpace = {
+    view    : "align", 
+    align   : "middle,center",
+    id      : "webix__none-content",
+    body    : {  
+        borderless  : true, 
+        template    : "Выберите элемент дерева", 
+        height      : 50, 
+        width       : 210,
+        css         : {
+            "color"    :"#858585",
+            "font-size":"14px!important"
+        }
+    }
+
+};
+
+const container = {   
+    id  : "container",
+    cols: [
+        emptySpace,
+    ]
+};
+
+const adaptive = {   
+    id  : "adaptive",
+    rows: []
+};
+
+const sideMenuResizer = {   
+    id  : "sideMenuResizer",
+    view: "resizer",
+    css : "webix_resizer-hide",
+};
+
+const logResizer = {
+    view : "resizer", 
+    id : "log-resizer"
+};
+
+const mainLayout = {   
+    hidden  : true, 
+    id      : "mainLayout",
+    rows    : [
+    
+        {   id  : "mainContent",
+            css : "webix_mainContent",
+                                            
+            cols: [
+                { rows  : [
+                    header(),
+                    adaptive,
+                
+                    {cols : [
+                        treeSidebar(), 
+                        sideMenuResizer,
+                        container,
+                    ]}
+                ]}, 
+
+            ]
+        },
+        logResizer,
+        logLayout
+
+    ]
+};
 
 try{
 
-    webix.ready(function(){
-        webix.protoUI({
-            name:"edittree"
-        }, webix.EditAbility, webix.ui.tree);
+    webix.ready (function(){
 
-     
+        protoUIEdittree();
 
         webix.ui({
-            view:"scrollview",
-                    type:"clean",
-                    id:"layout", 
-                    css:"layoutContainer",
-                    scroll:"y", 
-                    body:{
-                        cells: [ 
-                            {},
-                            {hidden:true, id: "userAuth", 
-                            cols: [
-                                {
-                                    view:"align", 
-                                    align:"middle,center",
-                                    body:login()
-                                },
+            view    : "scrollview",
+            type    : "clean",
+            id      : "layout", 
+            css     : "layoutContainer",
+            scroll  : "y", 
+            body    : {
 
-                            ]},
-                            {hidden:true, id:"mainLayout", rows: [
-                                
-                        
-                                {   id:"mainContent",
-                                    css:"webix_mainContent",
-                                                                    
-                                cols:[
-                                        { rows:[
-                                            header(),
-                                            {   id:"adaptive",
-                                                rows:[]
-                                            },
-                                        
-                                        {cols:[
-                                               treeSidebar(), 
-                                               {id:"sideMenuResizer",view:"resizer",css:"webix_resizer-hide",},
-                                            {id:"container",cols:[
+                cells : [ 
+                    {},
+                    auth,
+                    mainLayout
+                ],
 
-                                                {
-                                                    view:"align", 
-                                                    align:"middle,center",
-                                                    id:"webix__none-content",
-                                                    body:{  
-                                                        borderless:true, 
-                                                        template:"Выберите элемент дерева", 
-                                                        height:50, 
-                                                        width:210,
-                                                        css:{"color":"#858585","font-size":"14px!important"}
-                                                    }
-                                                
-                                                },
-                                    
-                                            ]},
-                                            ]}
-                                        ]}, 
-
-
-
-                                    ]
-                                },
-                                {view:"resizer", id:"log-resizer"},
-                                logLayout
-                    
-                            ]}
-                        ],
-                    },
+            },
 
         });
+        setUserPrefs            ();
+        resizeAdaptive          ();
+        setRouterStart          ();
+        adaptivePoints          ();
+        textInputClean          ();
 
-
-        resizeAdaptive();
-
-
-        if (window.location.host.includes("localhost:3000")){
-            Backbone.history.start({pushState: true, root: '/index.html/'});
-        } else {
-            Backbone.history.start({pushState: true, root: '/init/default/spaw/'});
-        }
-
-        function backButtonLogic (){
-            window.addEventListener('popstate', function(event) {
-                window.location.replace(window.location.href);
-                window.location.reload();
-            });
-        }
-
-
-        adaptivePoints();
-
-        webix.editors.customDate = webix.extend({
-        render:function(){
-          return webix.html.create("div", {
-            "class":"webix_dt_editor"
-          }, "<input class='webix_custom-date-editor' id='custom-date-editor' type='text'>");
-        }}, webix.editors.text);
-
-        textInputClean();
-
-        setUserPrefs();
-
-        backButtonLogic ();
-        resetTimer();
-        webix.message.position = "bottom";
-        webix.i18n.setLocale("ru-RU");   
-        webix.i18n.parseFormat = "%d.%m.%Y %H:%i:%s";
-        webix.i18n.setLocale();
-        webix.Date.startOnMonday = true;
-
+        backButtonBrowserLogic  ();
+        resetTimer              ();
+        webixGlobalPrefs        ();
+        
     });
 
-} catch(error){
-    console.log(error);
-    alert("Ошибка при выполнении"+" "+ error);
-    catchErrorTemplate("007-005", error);
+} catch(err){
+    alert("Ошибка при выполнении "+ err);
+    errors_setFunctionError(err,"app","layout");
 }
 
 /******/ })()

@@ -49,20 +49,25 @@ function createElements(specificElement){
                         hidden:true, 
                         view:"scrollview", 
                         body: { 
-                            view:"flexlayout", 
+                            view:"flexlayout",
+                            id:"flexlayoutTable", 
                             cols:[
                                                         
                                 {   id:"tableContainer",
                                     rows:[
                                         tableToolbar ("table"),
-                                        { view:"resizer",class:"webix_resizers",},
+                                        { view:"resizer",class:"webix_resizers"},
                                         table ("table", onFuncTable,true)
                                     ]
                                 },
                             
-                                {  view:"resizer",class:"webix_resizers"},
                                 
-                                editTableBar(),filterForm(),
+                               {  view:"resizer",class:"webix_resizers", id:"tableBarResizer" },
+                          
+                                editTableBar(),
+                                filterForm(),
+                               
+                             
                                 
                                 
                             ]

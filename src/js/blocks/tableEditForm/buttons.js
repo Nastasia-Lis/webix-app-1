@@ -51,14 +51,30 @@ function addNewStateSpace(){
 }
 
 
+function dateFormatting(arr){
+    const vals          = Object.values(arr);
+    const keys          = Object.keys(arr);
+    const formattingArr = arr;
+
+    keys.forEach(function(el,i){
+        const prop       = $$("editTableFormProperty");
+        const item       = prop.getItem(el);
+        const formatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
+
+        if ( item.type == "customDate" ){
+            formattingArr[el] = formatData(vals[i]);
+        }
+    });
+    return formattingArr;
+}
+
+
 function saveItem(addBtnClick=false, refBtnClick=false){    
   
     try{    
         
         const itemData = $$("editTableFormProperty").getValues();   
         const currId   = getItemId ();
-       
-      // getCurrId  ();
        
         if (!(validateProfForm().length)){
 
@@ -70,8 +86,11 @@ function saveItem(addBtnClick=false, refBtnClick=false){
                 const addBtn     = $$("table-newAddBtnId");
                 const emptyTempl = $$("EditEmptyTempalte");
                 const container  = $$("tableContainer");
+                const uniqueVals = uniqueData (itemData);
+                const sentObj    = dateFormatting(uniqueVals);
+ 
 
-                const putData    = webix.ajax().put(link, uniqueData (itemData));
+                const putData    = webix.ajax().put(link, sentObj);
 
                 putData.then(function(data){
                     data = data.json();
@@ -198,7 +217,6 @@ function addItem () {
 
 }
 
-
 function removeNullFields(arr){
     const vals    = Object.values(arr);
     const keys    = Object.keys(arr);
@@ -206,11 +224,9 @@ function removeNullFields(arr){
 
     vals.forEach(function(el,i){
         if (el){
-
             sentObj[keys[i]]= el;
-            
-
         }
+        dateFormatting(arr);
     });
 
     return sentObj;
@@ -221,10 +237,13 @@ function saveNewItem (){
  
     if (!(validateProfForm().length)){
 
-        const editForm  = $$("table-editForm");
-        const property  = $$("editTableFormProperty");
-        const newValues = property.getValues();
-        const sentVals  = removeNullFields(newValues);
+        const editForm     = $$("table-editForm");
+        const property     = $$("editTableFormProperty");
+        const newValues    = property.getValues();
+        const notNullVals  = removeNullFields(newValues);
+        const sentVals     = dateFormatting(notNullVals);
+
+    console.log(sentVals)
 
         const postData  = webix.ajax().post("/init/default/api/"+currId, sentVals);
       

@@ -3,7 +3,10 @@ import {setFunctionError} from "../errors.js";
 import {STORAGE,getData} from "../globalStorage.js";
 import {hideElem} from "../commonFunctions.js";
 
-import {getInfoTable,getInfoDashboard} from "../content.js";
+//import {getInfoTable,getInfoDashboard} from "../content.js";
+
+import {getInfoTable} from "../getContent/getInfoTable.js";
+import {getInfoDashboard} from "../getContent/getInfoDashboard.js";
 
 import {getWorkspace} from "./common.js";
 
@@ -128,7 +131,8 @@ function treeRouter(id){
             }
         }
     
-    
+
+
         function createElem(){
             try{
                 Object.values(fieldsData).forEach(function(field,i){
@@ -139,17 +143,22 @@ function treeRouter(id){
                         if (field.type == "dbtable" || 
                             field.type == "tform"   || 
                             field.type == "dashboard"){
-                            
+                        
+                               // console.log(webix.storage.local.get("visibleColsPrefs_"+"hattrs"),'SSSS')
                                 hideElem($$("webix__none-content"));
     
                             if (field.type == "dbtable"){
                                 showElem("tables");
                                 getInfoTable ("table", id);
-                        
+               
+                      
                                 
                             } else if (field.type == "tform"){
                                 showElem("forms");
                                 getInfoTable ("table-view", id);
+                                // const idField = $$("table-view").config.idTable;
+                                // const storageData = webix.storage.local.get("visibleColsPrefs_"+idField);
+                                // getUserPrefs("table-view",storageData)
     
                             } else if (field.type == "dashboard"){
                                 showElem("dashboards");
@@ -164,6 +173,8 @@ function treeRouter(id){
             }
         }
         createElem();
+
+
     
         if (!checkFound){
             showNotFoundPopup ();
@@ -207,7 +218,8 @@ function treeRouter(id){
     }
     
     async function getTableData (){
-    
+        
+      
     
         if (!STORAGE.fields){
             await getData("fields"); 
@@ -216,12 +228,14 @@ function treeRouter(id){
         if (STORAGE.fields){
             showTableData ();
             setTableName ();
+
+
         }
     }
     
     async function createTable (){
         await getWorkspace ();
-     
+
         try{   
             const tree = $$("tree");
             tree.attachEvent("onAfterLoad", function () {
@@ -243,7 +257,7 @@ function treeRouter(id){
                     showTableData ();
                     setTableName ();
                 } 
-            
+                    
             });
         } catch (err){
             setFunctionError(err,logNameFile,"createTable");
@@ -255,11 +269,13 @@ function treeRouter(id){
             const tree = $$("tree");
             if (tree.data.order.length == 0){
                 createTable ();
+                
             }
         } catch (err){
             setFunctionError(err,logNameFile,"checkTable");
     
-        }
+        }    
+      
     }
    
     checkTable();

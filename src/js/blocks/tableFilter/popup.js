@@ -252,7 +252,8 @@ function popupSubmitBtn (){
                         }
 
                         function createChilds(){
-                            let columnsData = $$("table").getColumns();
+                            const columnsData = $$("table").getColumns();
+           
                             try{ 
                                 columnsData.forEach(function(col,i){
                                     if (el.parentField.id.includes(col.id)){
@@ -410,7 +411,7 @@ function popupSubmitBtn (){
             enableLibrarySaveBtn();
             createWorkspaceCheckbox ();
 
-            let visibleElements = visibleCounter();
+            const visibleElements = visibleCounter();
 
             if (!(visibleElements)){
                 showEmptyTempalte();
@@ -430,7 +431,7 @@ function popupSubmitBtn (){
 
 
     try{                                             
-        let tabbarValue = $$("filterPopupTabbar").getValue();
+        const tabbarValue = $$("filterPopupTabbar").getValue();
 
         if (tabbarValue =="editFormPopupLib"){
             getLibraryData();
@@ -491,17 +492,17 @@ function tabbarClick (id){
             setFunctionError(err,logNameFile,"btnSubmitState");
         }
     }
-    function visibleClearBtn (param){
-        if($$("popupFilterClearBtn") && 
-        $$("popupFilterClearBtn").isVisible()){
-            if (param){
-                $$("popupFilterClearBtn").show();
-            } else {
-                $$("popupFilterClearBtn").hide();
-            }
+    // function visibleClearBtn (param){
+    //     if($$("popupFilterClearBtn") && 
+    //     $$("popupFilterClearBtn").isVisible()){
+    //         if (param){
+    //             $$("popupFilterClearBtn").show();
+    //         } else {
+    //             $$("popupFilterClearBtn").hide();
+    //         }
     
-        }
-    }
+    //     }
+    // }
 
     function visibleRemoveBtn (param){
         if ($$("editFormPopupLibRemoveBtn") && 
@@ -526,7 +527,7 @@ function tabbarClick (id){
         }
 
         try{
-            visibleClearBtn (false);
+           // visibleClearBtn (false);
             setStateSubmitBtn ();
             visibleRemoveBtn (true);
         }catch(err){
@@ -561,7 +562,7 @@ function tabbarClick (id){
 
         try{
             countChecked();
-            visibleClearBtn (true);
+          //  visibleClearBtn (true);
             visibleRemoveBtn (false);
             setStateSubmitBtn();
         }catch(err){
@@ -693,21 +694,21 @@ const submitBtn =  {
     click:popupSubmitBtn
 };
 
-const cleanBtn = {   
-    view:"button",
-    id:"popupFilterClearBtn",
-    width:110,
-    height:48,
-    css:"webix_secondary",
-    disabled:true,
-    value:"Сбросить", 
-    on: {
-        onAfterRender: function () {
-            this.getInputNode().setAttribute("title","Все фильтры будут очищены и удалены");
-        },
-    },
-    click:clearPopupBtn
-};
+// const cleanBtn = {   
+//     view:"button",
+//     id:"popupFilterClearBtn",
+//     width:110,
+//     height:48,
+//     css:"webix_secondary",
+//     disabled:true,
+//     value:"Сбросить", 
+//     on: {
+//         onAfterRender: function () {
+//             this.getInputNode().setAttribute("title","Все фильтры будут очищены и удалены");
+//         },
+//     },
+//     click:clearPopupBtn
+// };
 
 const removeBtn = {   
     view:"button",
@@ -820,7 +821,7 @@ const editFormPopup = {
             {cols:[
                 submitBtn,
                 {width:5},
-                cleanBtn,
+               // cleanBtn,
                 removeBtn,
             ]},
         ]},

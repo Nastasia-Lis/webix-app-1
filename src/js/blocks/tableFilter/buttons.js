@@ -1,10 +1,10 @@
-import {setLogValue} from '../logBlock.js';
-import {getItemId} from "../commonFunctions.js";
-import {setFunctionError,setAjaxError} from "../errors.js";
-import {setStorageData} from "../storageSetting.js";
-import {modalBox} from "../notifications.js";
+import { setLogValue }                            from '../logBlock.js';
+import { getItemId }                              from "../commonFunctions.js";
+import { setFunctionError,setAjaxError }          from "../errors.js";
+import { setStorageData }                         from "../storageSetting.js";
+import { modalBox }                               from "../notifications.js";
 
-import {createFilterPopup,returnTemplateValue} from "./popup.js";
+import { createFilterPopup,returnTemplateValue }  from "./popup.js";
 
 const PREFS_STORAGE = {};  
 const logNameFile = "tableFilter => buttons";
@@ -33,7 +33,7 @@ function editFiltersBtn (){
         userprefsGetData.then(function(data){
             function getUserData (){
                     
-                let whoamiData = webix.ajax("/init/default/api/whoami");
+                const whoamiData = webix.ajax("/init/default/api/whoami");
     
                 whoamiData.then(function(data){
                     data = data.json().content;
@@ -76,7 +76,7 @@ function editFiltersBtn (){
                     const lib        = $$("filterEditLib");
                     const oldOptions = [];
     
-                    if (lib.config.options.length !== 0){
+                    if (lib && lib.config.options.length !== 0){
                         lib.config.options.forEach(function(el){
                             oldOptions.push(el.id);
                         });
@@ -120,39 +120,23 @@ function editFiltersBtn (){
                 );
             }
     
-            function counterVisibleElements (){
-                let visibleElements=0;
-                let filterElements = $$("filterTableForm").elements;
-                try{
-                    Object.values(filterElements).forEach(function(el,i){
-                        if (!(el.config.hidden)){
-                            visibleElements++;
-                        }
+            // function counterVisibleElements (){
+            //     let visibleElements=0;
+            //     let filterElements = $$("filterTableForm").elements;
+            //     try{
+            //         Object.values(filterElements).forEach(function(el,i){
+            //             if (!(el.config.hidden)){
+            //                 visibleElements++;
+            //             }
                         
-                    });
-                } catch (err){
-                    setFunctionError(err,logNameFile,"function counterVisibleElements");
-                }
-                return visibleElements;
-            }
+            //         });
+            //     } catch (err){
+            //         setFunctionError(err,logNameFile,"function counterVisibleElements");
+            //     }
+            //     return visibleElements;
+            // }
            
-            function setBtnState(){
-                try{
-                    if (!(counterVisibleElements())){
-                        if ($$("filterEmptyTempalte") && !($$("filterEmptyTempalte").isVisible())){
-                            if($$("popupFilterClearBtn").isEnabled()){
-                                $$("popupFilterClearBtn").disable();
-                            }
-                        } 
-                    } else {
-                        if($$("popupFilterClearBtn") && !($$("popupFilterClearBtn").isEnabled())){
-                            $$("popupFilterClearBtn").enable();
-                        }
-                    }
-                } catch (err){
-                    setFunctionError(err,logNameFile,"function setBtnState");
-                }
-            }
+
 
             let user = webix.storage.local.get("user");
             try{
@@ -166,7 +150,7 @@ function editFiltersBtn (){
                     if ($$("filterEditLib") && $$("filterEditLib").data.options.length == 0 ){
                         setEmptyOption();
                     }
-                    setBtnState();
+             
                 }
             } catch (err){
                 setFunctionError(err,logNameFile,"function userprefsData");
@@ -231,22 +215,24 @@ function editFiltersBtn (){
         name:"selectAll",
         on:{
             onChange:function(){
-                function setStateSubmitBtn(){
-                    try{
-                        if ($$("selectAll").getValue()){
-                            if(!($$("popupFilterSubmitBtn").isEnabled())){
-                                stateSubmitBtn(true);
-                            }
+                stateSubmitBtn(true);
+                // function setStateSubmitBtn(){
+                //     try{
+                //         if ($$("selectAll").getValue()){
+                //             if(!($$("popupFilterSubmitBtn").isEnabled())){
+                //                 stateSubmitBtn(true);
+                //             }
 
-                        } else {
-                            if($$("popupFilterSubmitBtn").isEnabled()){
-                                stateSubmitBtn(false);
-                            }
-                        }
-                    } catch (err){
-                        setFunctionError(err,logNameFile,"function checkbox:onchange => setStateSubmitBtn");
-                    }
-                }
+                //         } 
+                //         //else {
+                //             // if($$("popupFilterSubmitBtn").isEnabled()){
+                //             //     stateSubmitBtn(false);
+                //             // }
+                //       //  }
+                //     } catch (err){
+                //         setFunctionError(err,logNameFile,"function checkbox:onchange => setStateSubmitBtn");
+                //     }
+                // }
 
                 function setValueCheckbox(){
                     let checkboxes = $$("editFormPopupScrollContent").getChildViews();
@@ -267,8 +253,7 @@ function editFiltersBtn (){
                         setFunctionError(err,logNameFile,"function checkbox:onchange => setValueCheckbox");
                     }
                 }
-              
-                setStateSubmitBtn();
+
                 setValueCheckbox(); 
             
 
@@ -281,13 +266,13 @@ function editFiltersBtn (){
  
     function getAllCheckboxes(){
         let checkboxes = [];
-        let filterTableElements  = $$("filterTableForm").elements;
+        const filterTableElements  = $$("filterTableForm").elements;
         try{
             Object.values(filterTableElements).forEach(function(el,i){
-                checkboxes.push({id:el.config.id, label:el.config.label})
+                checkboxes.push({ id:el.config.id, label:el.config.label })
             });
         }catch (err){
-            setFunctionError(err,logNameFile,"function editFiltersBtn => getAllCheckboxes");
+            setFunctionError( err, logNameFile, "function editFiltersBtn => getAllCheckboxes" );
         }
      
         return checkboxes;
@@ -322,19 +307,21 @@ function editFiltersBtn (){
         }
 
         function setStateBtnSubmit(){
-            try{
-                if (btnState > 0) {
-                    if(!($$("popupFilterSubmitBtn").isEnabled())){
-                        stateSubmitBtn(true);
-                    }
-                } else {
-                    if($$("popupFilterSubmitBtn").isEnabled()){
-                        stateSubmitBtn(false);
-                    }
-                }
-            } catch (err){
-                setFunctionError(err,logNameFile,"function checkboxOnChange => setStateBtnSubmit");
-            }
+            stateSubmitBtn(true);
+            // try{
+            //     if (btnState > 0) {
+            //         if(!($$("popupFilterSubmitBtn").isEnabled())){
+            //             stateSubmitBtn(true);
+            //         }
+            //     } 
+            //     else {
+            //         if($$("popupFilterSubmitBtn").isEnabled()){
+            //             stateSubmitBtn(false);
+            //         }
+            //     }
+            // } catch (err){
+            //     setFunctionError(err,logNameFile,"function checkboxOnChange => setStateBtnSubmit");
+            // }
         }
         function setSelectAllState(){
             try{
@@ -475,7 +462,7 @@ function filterSubmitBtn (){
 
         
         function templateChilds(operation){
-            return "+"+condition+"+"+filterEl+operation+value;
+            return "+"+condition+"+"+itemTreeId+"."+filterEl+operation+value;
         }
 
         try {
@@ -571,7 +558,7 @@ function filterSubmitBtn (){
 
             filterEl = el;
             value = values[el];
-            function formattingDateValue(){1
+            function formattingDateValue(){
                 if ($$(el).config.view == "datepicker"){
                     value = postFormatData(value);
                 }
@@ -602,19 +589,19 @@ function filterSubmitBtn (){
                         
                         
                         if (firstItem > 0){
-                            getOperationVal (value,filterEl,el,"and","parent",true);
+                            getOperationVal ("'"+value+"'",filterEl,el,"and","parent",true);
                         }else {
-                            getOperationVal (value,filterEl,el,"and","parent");
+                            getOperationVal ("'"+value+"'",filterEl,el,"and","parent");
                         }
 
                         firstItem++;
                         
                     } else if (el.includes("child")){
                         if (el.includes("operAnd")){
-                            getOperationVal (value,filterEl,el,"and","child");
+                            getOperationVal ("'"+value+"'",filterEl,el,"and","child");
 
                         } else if (el.includes("operOr")){
-                            getOperationVal (value,filterEl,el,"or","child");
+                            getOperationVal ("'"+value+"'",filterEl,el,"or","child");
                         }
                     }
                 } catch (err){
@@ -640,7 +627,8 @@ function filterSubmitBtn (){
     if ($$("filterTableForm").validate()){
      
         createGetData();
-        const queryData = webix.ajax("/init/default/api/smarts?query="+query.join(""));
+
+        const queryData = webix.ajax("/init/default/api/smarts?query=" + query.join("") );
 
         queryData.then(function(data){
             let notifyType = data.json().err_type;
@@ -952,7 +940,7 @@ function resetFilterBtn (){
 
         const queryData = webix.ajax("/init/default/api/smarts?query="+itemTreeId+".id >= 0");
         queryData.then(function(data){
-            let dataErr =  data.json();
+            const dataErr =  data.json();
           
             data = data.json().content;
                 
@@ -973,8 +961,8 @@ function resetFilterBtn (){
 
             function setFilterCounterVal(){
                 try{
-                    let filterCountRows = $$("table").count();
-                    let value = filterCountRows.toString();
+                    const filterCountRows = $$("table").count();
+                    const value           = filterCountRows.toString();
                     $$("table-idFilterElements").setValues(value);
                 } catch (err){
                     setFunctionError(err,logNameFile,"function setFilterCounterVal");
@@ -988,10 +976,10 @@ function resetFilterBtn (){
             }
 
             function hideInputsContainer(){
-                let inputs = document.querySelectorAll(".webix_filter-inputs");
+                const inputs = document.querySelectorAll(".webix_filter-inputs");
                 try{
                     inputs.forEach(function(elem,i){
-                        if (!(elem.classList.contains("webix_hide-content"))){
+                        if ( !(elem.classList.contains("webix_hide-content")) ){
                             elem.classList.add("webix_hide-content");
                         }
                     });
@@ -1006,7 +994,7 @@ function resetFilterBtn (){
                 
       
                 inputsContainer.forEach(function(el,i){
-                    let inputId = el._collection[0].cols[0].id;
+                    const inputId = el._collection[0].cols[0].id;
                     
                     function removeParentInput(){
                         $$(inputId).hide();
@@ -1038,7 +1026,7 @@ function resetFilterBtn (){
                     }
 
                 });
-
+               
                 function removeChilds(){
                     try{
                         childs.forEach(function(idChild,i){

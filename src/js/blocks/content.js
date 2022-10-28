@@ -4,6 +4,7 @@ import  {STORAGE,getData} from "./globalStorage.js";
 import {setAjaxError,setFunctionError} from "./errors.js";
 
 import {setHeadlineBlock} from './blockHeadline.js';
+import {getComboOptions} from './commonFunctions.js';
 
 function hideElem(elem){
     try{
@@ -174,75 +175,6 @@ function submitBtn (idElements, url, verb, rtype){
     } 
     
 }
-
-function getComboOptions (refTable){
-    const url = "/init/default/api/"+refTable;
-    return new webix.DataCollection({url:{
-        $proxy:true,
-        load: function(){
-            return ( webix.ajax().get(url).then(function (data) {
-                        data = data.json().content;
-                        let dataArray=[];
-                        let keyArray;
-
-                        function stringOption(l,el){
-                            try{
-                                while (l <= Object.values(el).length){
-                                    if (typeof Object.values(el)[l] == "string"){
-                                        keyArray = Object.keys(el)[l];
-                                        break;
-                                    } 
-                                    l++;
-                                }
-                            } catch (err){  
-                                setFunctionError(err,"content","getComboOptions => stringOption");
-                            }
-                        }
-
-                        function numOption(l,el){
-                            try{
-                                if (el[keyArray] == undefined){
-                                    while (l <= Object.values(el).length) {
-                                        if (typeof Object.values(el)[1] == "number"){
-                                            keyArray = Object.keys(el)[1];
-                                            break;
-                                        }
-                                        l++;
-                                    }
-                                }
-
-                                dataArray.push({ "id":el.id, "value":el[keyArray]});
-                            } catch (err){  
-                                setFunctionError(err,"content","getComboOptions => numOption");
-                            }
-                        }
-
-                        function createComboValues(){
-                            try{
-                                data.forEach((el,i) =>{
-                                    let l = 0;
-                                    stringOption (l,el);
-                                    numOption    (l,el);
-                                
-                                });
-                            } catch (err){  
-                                setFunctionError(err,"content","getComboOptions => createComboValues");
-                            }
-                        }
-                        createComboValues();
-                        return dataArray;
-                    
-                    }).catch(err => {
-                        setAjaxError(err, "content","getComboOptions");
-                    })
-            );
-            
-        }
-    }});
-}
-
-
-
 
 function getInfoTable (idCurrTable,idsParam) {
    
@@ -1517,8 +1449,6 @@ function getInfoTable (idCurrTable,idsParam) {
 
 }
 
-
-
 function getInfoDashboard (idsParam,single=false){
     let itemTreeId;
 
@@ -2398,9 +2328,8 @@ function getInfoEditTree() {
 
 
 export {
-    submitBtn,
-    getComboOptions,
-    getInfoTable,
-    getInfoDashboard,
-    getInfoEditTree,
+   // submitBtn,
+    //getInfoTable,
+   // getInfoDashboard,
+   // getInfoEditTree,
 };

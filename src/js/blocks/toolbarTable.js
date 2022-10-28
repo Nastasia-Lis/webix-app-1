@@ -34,12 +34,13 @@ function toolbarDownloadButton(idTable,visible){
         css:"webix_btn-download webix-transparent-btn",
         title:"текст",
         height:42,
+        hotkey  :"ctrl+shift+y",
         click:function(){
             exportToExcel(idTable);
         },
         on: {
             onAfterRender: function () {
-                this.getInputNode().setAttribute("title","Экспорт таблицы");
+                this.getInputNode().setAttribute("title","Экспорт таблицы (Ctrl+Shift+Y)");
             }
         } 
     };

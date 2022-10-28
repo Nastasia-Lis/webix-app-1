@@ -10,7 +10,7 @@ import {setAjaxError,setFunctionError} from "../blocks/errors.js";
 import {favsPopup} from "../blocks/favsLink.js";
 import {checkFonts} from "../blocks/checkFonts.js";
 
-
+import {setUserPrefs}                       from "../blocks/storageSetting.js";
 let userLocation;
 let headerContextId;
 
@@ -124,9 +124,10 @@ function header() {
             
             {},
             {view:"search", 
-                placeholder:"Поиск", 
+                placeholder:"Поиск (Shift+F)", 
                 css:"searchTable",
                 height:42, 
+                hotkey :"shift+f",
                 maxWidth:250, 
                 minWidth:40, 
             },
@@ -137,6 +138,7 @@ function header() {
                 height:42, 
                 badge:0,
                 width: 50,
+                hotkey :"ctrl+m",
                 css:"webix_log-btn",
                 click:function (){
                     if (this.getValue() == 1){
@@ -147,8 +149,10 @@ function header() {
                 },
                 on: {
                     onAfterRender: function () {
-                        this.getInputNode().setAttribute("title","Показать/скрыть системные сообщения");
+                        this.getInputNode().setAttribute("title","Показать/скрыть системные сообщения (Ctrl+M)");
+                         
                     },
+
                     onChange:function(newValue, oldValue, config){
 
                         let lastItemList = $$("logBlock-list").getLastId();

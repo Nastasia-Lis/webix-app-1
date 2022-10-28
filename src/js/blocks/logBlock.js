@@ -1,7 +1,7 @@
-import {setStorageData} from "./storageSetting.js";
-import  {STORAGE,getData} from "./globalStorage.js";
+import {setStorageData}     from "./storageSetting.js";
+import {STORAGE,getData}    from "./globalStorage.js";
 
-import {setFunctionError} from "./errors.js";
+import {setFunctionError}   from "./errors.js";
 
 
 function createCurrDate(){
@@ -49,7 +49,7 @@ function setLogValue (typeNotify,notifyText,specificSrc) {
         }
 
         if (srcTable == "version"){
-            name = 'Expa v1.0.43';
+            name = 'Expa v1.0.44';
 
         } else if (srcTable == "cp") {
             name = 'Смена пароля';

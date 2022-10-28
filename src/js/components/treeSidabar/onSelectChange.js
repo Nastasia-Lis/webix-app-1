@@ -1,5 +1,8 @@
 import {setFunctionError}                           from "../../blocks/errors.js"; 
-import {getInfoTable,getInfoDashboard}              from "../../blocks/content.js";
+//import {getInfoTable,getInfoDashboard}              from "../../blocks/content.js";
+
+import {getInfoTable}                               from "../../blocks/getContent/getInfoTable.js";
+import {getInfoDashboard}                           from "../../blocks/getContent/getInfoDashboard.js";
  
 import {defaultStateForm}                           from "../../blocks/tableEditForm/states.js";
 

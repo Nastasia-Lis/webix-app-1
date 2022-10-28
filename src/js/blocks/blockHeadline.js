@@ -35,13 +35,14 @@ function setHeadlineBlock (idTemplate, title=null){
         css:"webix-transparent-btn",
         type:"icon",
         icon:"icon-star",
+        hotkey :"ctrl+shift+l",
         width:50,
         click:function(){
             saveFavsClick();
         },
         on:{
             onAfterRender: function () {
-                this.getInputNode().setAttribute("title","Добавить ссылку в избранное");
+                this.getInputNode().setAttribute("title","Добавить ссылку в избранное (Ctrl+Shift+L)");
             },
         }
     
@@ -54,12 +55,13 @@ function setHeadlineBlock (idTemplate, title=null){
         type:"icon",
         icon:"icon-arrow-left",
         width:50,
+        hotkey  :"ctrl+shift+p",
         click:function(){
             prevBtnClick();
         },
         on:{
             onAfterRender: function () {
-                this.getInputNode().setAttribute("title","Вернуться назад");
+                this.getInputNode().setAttribute("title","Вернуться назад (Ctrl+Shift+P)");
             },
         }
     
@@ -72,12 +74,13 @@ function setHeadlineBlock (idTemplate, title=null){
         type:"icon",
         icon:"icon-arrow-right",
         width:50,
+        hotkey  :"ctrl+shift+b",
         click:function(){
             nextBtnClick();
         },
         on:{
             onAfterRender: function () {
-                this.getInputNode().setAttribute("title","Перейти вперёд");
+                this.getInputNode().setAttribute("title","Перейти вперёд (Ctrl+Shift+B)");
             },
         }
     

@@ -143,9 +143,21 @@ function login () {
 
 }
 
+const auth = {
+    hidden  : true, 
+    id      : "userAuth", 
+    cols    : [
+        {
+            view    : "align", 
+            align   : "middle,center",
+            body    : login()
+        },
+
+    ]
+}; 
 
 export {
-    login,
     createElements,
-    removeElements
+    removeElements,
+    auth
 };

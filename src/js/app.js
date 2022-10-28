@@ -1,139 +1,126 @@
-console.log("expa 1.0.43"); 
+console.log("expa 1.0.44"); 
 
-import {textInputClean}                 from "./blocks/commonFunctions.js";
-import {login}                          from "./components/login.js";
-import {setUserPrefs}                   from "./blocks/storageSetting.js";
-import {header}                         from "./components/header.js";
+import {textInputClean}                     from "./blocks/commonFunctions.js";
+import {auth}                               from "./components/login.js";
+import {setUserPrefs}                       from "./blocks/storageSetting.js";
+import {header}                             from "./components/header.js";
 
-import {treeSidebar}                    from "./components/treeSidabar/layout.js";
+import {treeSidebar}                        from "./components/treeSidabar/layout.js";
 
-import {logLayout}                      from "./blocks/logBlock.js";
-import {resetTimer}                     from  "./blocks/autoLogout.js";
+import {logLayout}                          from "./blocks/logBlock.js";
+import {resetTimer}                         from  "./blocks/autoLogout.js";
 
-import {catchErrorTemplate}             from "./blocks/logBlock.js";
-import {resizeAdaptive,adaptivePoints}  from "./blocks/adaptive.js";
+import {setFunctionError}                   from "./blocks/errors.js";
+import {resizeAdaptive,adaptivePoints}      from "./blocks/adaptive.js";
+import {webixGlobalPrefs,protoUIEdittree}   from "./blocks/webixGlobalPrefs.js";
+import {setRouterStart}                     from "./blocks/routerConfig/routerStart.js";
+import {backButtonBrowserLogic}             from "./blocks/historyBtns.js";
 
 
+const emptySpace = {
+    view    : "align", 
+    align   : "middle,center",
+    id      : "webix__none-content",
+    body    : {  
+        borderless  : true, 
+        template    : "Выберите элемент дерева", 
+        height      : 50, 
+        width       : 210,
+        css         : {
+            "color"    :"#858585",
+            "font-size":"14px!important"
+        }
+    }
+
+};
+
+const container = {   
+    id  : "container",
+    cols: [
+        emptySpace,
+    ]
+};
+
+const adaptive = {   
+    id  : "adaptive",
+    rows: []
+};
+
+const sideMenuResizer = {   
+    id  : "sideMenuResizer",
+    view: "resizer",
+    css : "webix_resizer-hide",
+};
+
+const logResizer = {
+    view : "resizer", 
+    id : "log-resizer"
+};
+
+const mainLayout = {   
+    hidden  : true, 
+    id      : "mainLayout",
+    rows    : [
+    
+        {   id  : "mainContent",
+            css : "webix_mainContent",
+                                            
+            cols: [
+                { rows  : [
+                    header(),
+                    adaptive,
+                
+                    {cols : [
+                        treeSidebar(), 
+                        sideMenuResizer,
+                        container,
+                    ]}
+                ]}, 
+
+            ]
+        },
+        logResizer,
+        logLayout
+
+    ]
+};
 
 try{
 
-    webix.ready(function(){
-        webix.protoUI({
-            name:"edittree"
-        }, webix.EditAbility, webix.ui.tree);
+    webix.ready (function(){
 
-     
+        protoUIEdittree();
 
         webix.ui({
-            view:"scrollview",
-                    type:"clean",
-                    id:"layout", 
-                    css:"layoutContainer",
-                    scroll:"y", 
-                    body:{
-                        cells: [ 
-                            {},
-                            {hidden:true, id: "userAuth", 
-                            cols: [
-                                {
-                                    view:"align", 
-                                    align:"middle,center",
-                                    body:login()
-                                },
+            view    : "scrollview",
+            type    : "clean",
+            id      : "layout", 
+            css     : "layoutContainer",
+            scroll  : "y", 
+            body    : {
 
-                            ]},
-                            {hidden:true, id:"mainLayout", rows: [
-                                
-                        
-                                {   id:"mainContent",
-                                    css:"webix_mainContent",
-                                                                    
-                                cols:[
-                                        { rows:[
-                                            header(),
-                                            {   id:"adaptive",
-                                                rows:[]
-                                            },
-                                        
-                                        {cols:[
-                                               treeSidebar(), 
-                                               {id:"sideMenuResizer",view:"resizer",css:"webix_resizer-hide",},
-                                            {id:"container",cols:[
+                cells : [ 
+                    {},
+                    auth,
+                    mainLayout
+                ],
 
-                                                {
-                                                    view:"align", 
-                                                    align:"middle,center",
-                                                    id:"webix__none-content",
-                                                    body:{  
-                                                        borderless:true, 
-                                                        template:"Выберите элемент дерева", 
-                                                        height:50, 
-                                                        width:210,
-                                                        css:{"color":"#858585","font-size":"14px!important"}
-                                                    }
-                                                
-                                                },
-                                    
-                                            ]},
-                                            ]}
-                                        ]}, 
-
-
-
-                                    ]
-                                },
-                                {view:"resizer", id:"log-resizer"},
-                                logLayout
-                    
-                            ]}
-                        ],
-                    },
+            },
 
         });
+        setUserPrefs            ();
+        resizeAdaptive          ();
+        setRouterStart          ();
+        adaptivePoints          ();
+        textInputClean          ();
 
-
-        resizeAdaptive();
-
-
-        if (window.location.host.includes("localhost:3000")){
-            Backbone.history.start({pushState: true, root: '/index.html/'});
-        } else {
-            Backbone.history.start({pushState: true, root: '/init/default/spaw/'});
-        }
-
-        function backButtonLogic (){
-            window.addEventListener('popstate', function(event) {
-                window.location.replace(window.location.href);
-                window.location.reload();
-            });
-        }
-
-
-        adaptivePoints();
-
-        webix.editors.customDate = webix.extend({
-        render:function(){
-          return webix.html.create("div", {
-            "class":"webix_dt_editor"
-          }, "<input class='webix_custom-date-editor' id='custom-date-editor' type='text'>");
-        }}, webix.editors.text);
-
-        textInputClean();
-
-        setUserPrefs();
-
-        backButtonLogic ();
-        resetTimer();
-        webix.message.position = "bottom";
-        webix.i18n.setLocale("ru-RU");   
-        webix.i18n.parseFormat = "%d.%m.%Y %H:%i:%s";
-        webix.i18n.setLocale();
-        webix.Date.startOnMonday = true;
-
+        backButtonBrowserLogic  ();
+        resetTimer              ();
+        webixGlobalPrefs        ();
+        
     });
 
-} catch(error){
-    console.log(error);
-    alert("Ошибка при выполнении"+" "+ error);
-    catchErrorTemplate("007-005", error);
+} catch(err){
+    alert("Ошибка при выполнении "+ err);
+    setFunctionError(err,"app","layout");
 }

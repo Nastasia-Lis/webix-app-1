@@ -1,9 +1,12 @@
-import {getInfoTable,getInfoDashboard} from "../../blocks/content.js";
-import {STORAGE,getData} from "../../blocks/globalStorage.js";
+//import {getInfoTable,getInfoDashboard} from "../../blocks/content.js";
+import {getInfoTable}                               from "../../blocks/getContent/getInfoTable.js";
+import {getInfoDashboard}                           from "../../blocks/getContent/getInfoDashboard.js";
 
-import {setFunctionError} from "../../blocks/errors.js";
-import {setStateFilterBtn} from "./common.js";
-import {hideElem,showElem,removeElem} from "../../blocks/commonFunctions.js";
+import {STORAGE,getData}                            from "../../blocks/globalStorage.js";
+
+import {setFunctionError}                           from "../../blocks/errors.js";
+import {setStateFilterBtn}                          from "./common.js";
+import {hideElem,showElem,removeElem}               from "../../blocks/commonFunctions.js";
 
 
 const logNameFile = "treeSidebar => onBeforeSelect";
@@ -53,18 +56,30 @@ function onBeforeSelectFunc(data){
       
     }
     function setFormToolsDefaultState(){
-        const formsTools     = $$("viewTools");
+        const formsTools     = $$("formsTools");
         const formsContainer = $$("formsContainer");
-
+  
         hideElem (formsTools);
         showElem (formsContainer);
 
     }
 
     function adaptiveViewEditTable(){
-        hideElem($$("table-backTableBtn"));
-        hideElem($$("table-editForm"));
-        showElem($$("tableContainer"));
+
+        const container = $$("tableContainer");
+        const tables    = $$("tables");
+        
+        hideElem  ($$("editTableBarContainer"));
+        hideElem  ($$("table-backTableBtn"));
+        hideElem  ($$("table-editForm"));
+        showElem  ($$("tableContainer"));
+
+        if(tables.$width - container.$width > 9){
+           // $$("flexlayoutTable").config.width = tables.$width - 9;
+            $$("tableContainer").resize();
+            //tables.resize();
+        }
+
     }
 
     function adaptiveViewDashFilter(){

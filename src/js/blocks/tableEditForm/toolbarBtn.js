@@ -81,10 +81,11 @@ function toolbarEditButton (idTable){
         view:"button",
         maxWidth:200, 
         value:"<span class='webix_icon icon-pencil'></span><span style='padding-left: 5px'>"+
-            "Редактор таблицы</span>",
+            "Редактор записи</span>",
         id:idBtnEdit,
         css:"webix_btn-edit",
         title:"текст",
+        hotkey:"ctrl+shift+x",
         height:42,
         click:function(){
             editBtnClick(idBtnEdit);
@@ -98,7 +99,7 @@ function toolbarEditButton (idTable){
                 } catch (err) {   
                     setFunctionError(err,logNameFile,"btn edit onAfterRender");
                 }
-                this.getInputNode().setAttribute("title","Редактировать таблицу");
+                this.getInputNode().setAttribute("title","Редактировать запись (Ctrl+Shift+X)");
             }
         } 
     };

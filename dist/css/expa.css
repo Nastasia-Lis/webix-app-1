@@ -274,6 +274,18 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.icon-arrow-down:before {
+  content: "\e914";
+}
+
+.icon-arrow-up:before {
+  content: "\e915";
+}
+
+.icon-plus:before {
+  content: "\e913";
+}
+
 .icon-arrow-left:before {
   content: "\e912";
 }
@@ -642,6 +654,26 @@ select:focus {
   border: 1px solid var(--primary) !important;
 }
 
+::-webkit-input-placeholder {
+  color: #858585 !important;
+}
+
+::-moz-placeholder {
+  color: #858585 !important;
+}
+
+:-ms-input-placeholder {
+  color: #858585 !important;
+}
+
+::-ms-input-placeholder {
+  color: #858585 !important;
+}
+
+::placeholder {
+  color: #858585 !important;
+}
+
 input,
 select,
 .webix_inp_static {
@@ -688,7 +720,7 @@ button {
 }
 
 .webix_popup-prev-href {
-  padding: 10px !important;
+  padding: 20px !important;
 }
 
 .webix_win_body > .webix_view {
@@ -1330,4 +1362,46 @@ button {
 
 .popup_time-timeFormHead .webix_template {
   padding: 0px !important;
+}
+
+.webix_view.webix_menu .webix_list_item .webix_submenu_icon {
+  font-size: 0 !important;
+  width: 0px !important;
+}
+
+.webix-trash-btn-color .webix_button .webix_icon_btn {
+  color: var(--danger) !important;
+}
+
+.list-filter-borders {
+  background-color: var(--bg) !important;
+  border-radius: 0px 0px 6px 6px;
+}
+
+.list-filter-empty {
+  background-color: var(--bg) !important;
+}
+
+.list-filter-headline {
+  background-color: var(--gray-light) !important;
+  border-radius: 6px 6px 0px 0px;
+  font-weight: 600 !important;
+  margin-top: 10px !important;
+  padding: 7px 0px 10px 0px !important;
+}
+
+.list-filter-move-btns .icon-arrow-right {
+  font-size: 11px !important;
+}
+
+.list-filter-move-btns .icon-arrow-left {
+  font-size: 11px !important;
+}
+
+.list-filter-head .webix_template {
+  padding: 7px 0px 0px 2px !important;
+}
+
+.webix_el_checkbox .webix_label_right {
+  padding-top: 6px !important;
 }

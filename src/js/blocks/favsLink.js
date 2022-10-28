@@ -118,6 +118,7 @@ function favsPopup(){
         css:"popup_close-btn",
         type:"icon",
         width:35,
+        hotkey :"esc",
         icon: 'wxi-close',
         click:function(){
             try{
@@ -421,6 +422,7 @@ function saveFavsClick(){
         id:"buttonClosePopup",
         css:"popup_close-btn",
         type:"icon",
+        hotkey :"esc",
         width:35,
         icon: 'wxi-close',
         click:function(){
