@@ -107,14 +107,24 @@ function popupSubmitBtn (){
             }
         }
       
-        function removeChids(){
-            let countChild = $$(el+"_rows").getChildViews();
+        function removeChilds(){
+            const countChild = $$(el+"_rows").getChildViews();  
+            const childs     = [];
+    
             try{
+               
                 Object.values(countChild).forEach(function(elem,i){
+                  
                     if (elem.config.id.includes("child")){
-                        $$(el+"_rows").removeView($$(elem.config.id));
+                        childs.push($$(elem.config.id));
                     }
 
+                });
+ 
+                childs.forEach(function(el,i){
+                    const parent = el.getParentView();
+                    parent.removeView($$(el.config.id));
+ 
                 });
 
             } catch(err){
@@ -122,29 +132,56 @@ function popupSubmitBtn (){
             }
         }
 
-        if (condition){
-            try{
-                showHtmlEl();
-                showInputContainers();
-                enableResetBtn();
-                enableLibrarySaveBtn();
-                hideEmptyTemplate();
-            } catch(err){
-                setFunctionError(err,logNameFile,"function visibleField => showElements");
+        let checkChilds = false;
+        if (el!=="selectAll"){
+            const childs = $$(el+"_rows").getChildViews();
+            if (childs.length > 1){
+                checkChilds = true;
             }
+         
+        }
+ 
+        if ( !checkChilds ){
+            if (condition){
 
-        } else{
-            try{
+                try{
+                    showHtmlEl();
+                    showInputContainers();
+                    enableResetBtn();
+                    enableLibrarySaveBtn();
+                    hideEmptyTemplate();
+                } catch(err){
+                    setFunctionError(err,logNameFile,"function visibleField => showElements");
+                }
+
+            } else{
+                try{
+        
+                    if ($$(el).isVisible()){
+                        hideHtmlEl ();
+                    }
+
+                    if($$(el+"_rows")){
+                        removeChilds();
+                    }
+
+                    hideInputContainers ();
+
+                } catch(err){
+                    setFunctionError(err,logNameFile,"function visibleField => hideElements");
+                }
+            }
+        } else {
+            if ( !condition ){
                 if ($$(el).isVisible()){
                     hideHtmlEl ();
                 }
-                hideInputContainers ();
 
                 if($$(el+"_rows")){
-                    removeChids();
+                    removeChilds();
                 }
-            } catch(err){
-                setFunctionError(err,logNameFile,"function visibleField => hideElements");
+
+                hideInputContainers ();
             }
         }
     }
@@ -161,28 +198,31 @@ function popupSubmitBtn (){
             let dataErr = data.json();
             data = data.json().content;
       
-            const currId = getItemId ();
-
-        
+            const currId    = getItemId ();
+            const allInputs = $$("inputsFilter").getChildViews();
+       
             function hideFalseInputs(trueInputs){
-                const allInputs = $$("inputsFilter").getChildViews();
+              
                 
                 function findTrueInput(inp){
                     let findInput;
                     trueInputs.forEach(function(el,i){
-                   
+                     
                         if (inp.includes(el)){
                             findInput = el;
                         }
                         
                     });
-                    return findInput;
+
+
+                    return findInput+"_rows";
                 }
 
                 try{
                     allInputs.forEach(function(input,i){
-                        let trueInp =  findTrueInput(input.config.id);
-                        let id = input.config.id;
+             
+                        let trueInp = findTrueInput(input.config.id);
+                        let id      = input.config.id;
                         
                         function getElementHide(){
                             let indexHide = id.indexOf("_rows");
@@ -194,7 +234,7 @@ function popupSubmitBtn (){
                             return id.slice(0,indexHtml);
                         }
 
-                        if (!trueInp){
+                        if (input.config.id !== trueInp){
                             let elementHide = getElementHide();
                             let htmlClass = getHtmlClass(elementHide);
                             visibleField(0,htmlClass,elementHide);
@@ -205,26 +245,52 @@ function popupSubmitBtn (){
                     setFunctionError(err,logNameFile,"function hideFalseInputs");
                 }
             }
+
+            function removeChilds(){
+                const inputsInner = [];
+
+                allInputs.forEach(function(input,i){
+                    inputsInner.push(input.getChildViews());
+                });
+
+                function getChilds(el){
+                    el.forEach(function(child,i){
+                        if (child.config.id.includes("-child-")){
+                            const childView = $$(child.config.id);
+                            const parent = childView.getParentView();
+                            parent.removeView(childView);
+                        }
+                    });
+                }
+             
+                inputsInner.forEach(function(el,i){
+                    if (el.length > 1){
+                       getChilds(el);
+                    }
+                });
+            }
  
             function  createWorkspace(prefs){
+                removeChilds();
                 let trueInputs = [];
+
                 try{
                     prefs.collection.content.forEach(function(el,i){
-                        
+                     
                         function getHtmlArgument (){
-                            let indexHtml = el.parentField.id.indexOf("_filter");
+                            const indexHtml = el.parentField.id.indexOf("_filter");
                             return el.parentField.id.slice(0,indexHtml); 
                         }
 
                         function getIdElArgument (){
-                            let indexId = el.parentField.id.indexOf("_rows");
+                            const indexId = el.parentField.id.indexOf("_rows");
                             return el.parentField.id.slice(0,indexId);
                         }
 
                         function showParentInputs(){
-                            let htmlClass = getHtmlArgument ();
-                            let idEl = getIdElArgument ();
-                            
+                            const htmlClass = getHtmlArgument ();
+                            const idEl      = getIdElArgument ();
+                    
                             visibleField(1,htmlClass,idEl);
 
                             trueInputs.push(idEl);
@@ -252,18 +318,26 @@ function popupSubmitBtn (){
                         }
 
                         function createChilds(){
-                            const columnsData = $$("table").getColumns();
+                            const columnsData = $$("table").getColumns(true);
            
                             try{ 
                                 columnsData.forEach(function(col,i){
-                                    if (el.parentField.id.includes(col.id)){
+                                    if ( el.parentField.id == col.id+"_filter" ){
+                                      
                                         if (el.condition == "and"){
+                                     
                                             createChildFields ("and",col);
+            
                                             $$(el.childValue.id).setValue(el.childValue.value); 
+                                       
+                                       
                                         } else if (el.condition == "or"){
                                             createChildFields ("or",col);
+    
                                             $$(el.childValue.id).setValue(el.childValue.value); 
+                                         
                                         }
+                               
                                     }
                                 });
                             } catch(err){
@@ -275,16 +349,19 @@ function popupSubmitBtn (){
                         if (el.condition == "parent"){
                             
                             showParentInputs();
+            
                             setParentValues();
-                            removeLastChilds ();
+                          removeLastChilds ();
                         
                         }
-                        
+                  
+               
                         hideFalseInputs(trueInputs);
                         createChilds();
                     });
             
                     $$("filterTableForm").setValues(prefs.values);
+
                 } catch(err){
                     setFunctionError(err,logNameFile,"function createWorkspace");
                 }
@@ -341,8 +418,9 @@ function popupSubmitBtn (){
     function getCheckboxData(){
 
         function enableLibrarySaveBtn(){
-            if ($$("filterLibrarySaveBtn") && !($$("filterLibrarySaveBtn").isEnabled())){
-                $$("filterLibrarySaveBtn").enable();
+            const btn = $$("filterLibrarySaveBtn");
+            if ( btn && !(btn.isEnabled()) ){
+                btn.enable();
             }
         }
 
@@ -350,15 +428,12 @@ function popupSubmitBtn (){
             let values = $$("editFormPopup").getValues();
             let elementClass;
             let index;
-
-   
     
             try{
                 Object.keys(values).forEach(function(el,i){
-                    index = el.lastIndexOf("_");
+                    index        = el.lastIndexOf("_");
                     elementClass = el.slice(0,index);
                     visibleField (values[el],elementClass,el);
-               
           
                 });
             } catch(err){
@@ -492,17 +567,7 @@ function tabbarClick (id){
             setFunctionError(err,logNameFile,"btnSubmitState");
         }
     }
-    // function visibleClearBtn (param){
-    //     if($$("popupFilterClearBtn") && 
-    //     $$("popupFilterClearBtn").isVisible()){
-    //         if (param){
-    //             $$("popupFilterClearBtn").show();
-    //         } else {
-    //             $$("popupFilterClearBtn").hide();
-    //         }
-    
-    //     }
-    // }
+
 
     function visibleRemoveBtn (param){
         if ($$("editFormPopupLibRemoveBtn") && 

@@ -156,7 +156,8 @@ function getComboOptions (refTable){
 function getUserData(){
     const userprefsGetData = webix.ajax("/init/default/api/whoami");
     userprefsGetData.then(function(data){
-        data = data.json().content;
+        const err = data.json();
+        data      = data.json().content;
 
         const userData = {};
     
@@ -165,6 +166,11 @@ function getUserData(){
         userData.username = data.username;
         
         setStorageData("user", JSON.stringify(userData));
+    
+        if (err.err_type !== "i"){
+            setFunctionError(err,"commonFunctions","function getUserData");
+        }
+    
     });
     userprefsGetData.fail(function(err){
         setAjaxError(err, "favsLink","btnSaveLpostContentinkClick => getUserData");

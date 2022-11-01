@@ -14,10 +14,14 @@ import {propertyTemplate}           from "../viewPropertyTable.js";
 import {filterForm}                 from "../tableFilter/layout.js"
 import {setStorageData}             from "../storageSetting.js";
 import {viewTools}                  from "../viewTools.js";
+import {createTableRows}            from "../getContent/getInfoTable.js";
 
-import  {STORAGE,getData}           from "../globalStorage.js";
+import {STORAGE,getData}           from "../globalStorage.js";
 
 import {setFunctionError}           from "../errors.js";
+
+
+
 
 
 const logNameFile = "router => common";
@@ -77,9 +81,40 @@ function createElements(specificElement){
 
                 
                 5);
+
+                $$("table").attachEvent("onAfterSort", function(id,sortType,colType){
+                    const sortInfo = {
+                        idCol : id,
+                        type  : sortType
+                    };
+                    $$("table").config.sort = sortInfo;
+                });
+
+                $$("table").attachEvent("onScrollY", function(){
+                    const table        = this;
+                    const scrollState  = table.getScrollState();
+                    const maxHeight    = table._dtable_height;
+                    const offsetHeight = table._dtable_offset_height;
+
+                    const limitLoad   = 80;
+
+                    if (maxHeight - scrollState.y == offsetHeight){ 
+                
+                        const tableId           = table.config.idTable;
+                        const oldOffset         = table.config.offsetAttr;
+
+                        const newOffset         = oldOffset + limitLoad;
+
+                        table.config.offsetAttr = newOffset;
+                        table.refresh();
+
+                        createTableRows ("table",tableId, oldOffset);
+                    }
+                     
+                });
             }
         } catch (err){
-            setFunctionError(err,logNameFile,"createTables")
+            setFunctionError(err,logNameFile,"createTables");
         }
     }
 
@@ -121,6 +156,9 @@ function createElements(specificElement){
                         
                     },
                 6);
+
+
+           
             }
         } catch (err){
             setFunctionError(err,logNameFile,"createForms")
@@ -347,7 +385,7 @@ function getWorkspace (){
                         }
                     } else {
                         delims.push(el.name);
-                        menuTree.push({id:el.name, disabled:true,value:"1"})
+                        menuTree.push({id:el.name, disabled:true,value:""})
                     }
               
                 });

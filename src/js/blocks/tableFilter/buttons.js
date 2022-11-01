@@ -1,5 +1,5 @@
 import { setLogValue }                            from '../logBlock.js';
-import { getItemId }                              from "../commonFunctions.js";
+import { getItemId, hideElem, getUserData }       from "../commonFunctions.js";
 import { setFunctionError,setAjaxError }          from "../errors.js";
 import { setStorageData }                         from "../storageSetting.js";
 import { modalBox }                               from "../notifications.js";
@@ -7,7 +7,7 @@ import { modalBox }                               from "../notifications.js";
 import { createFilterPopup,returnTemplateValue }  from "./popup.js";
 
 const PREFS_STORAGE = {};  
-const logNameFile = "tableFilter => buttons";
+const logNameFile   = "tableFilter => buttons";
 
 function getUserprefsData (){
 
@@ -30,50 +30,14 @@ function editFiltersBtn (){
     function userprefsData (){ 
 
         const userprefsGetData = webix.ajax("/init/default/api/userprefs/");
+
         userprefsGetData.then(function(data){
-            function getUserData (){
-                    
-                const whoamiData = webix.ajax("/init/default/api/whoami");
-    
-                whoamiData.then(function(data){
-                    data = data.json().content;
-    
-                    function createStorageData (){
-                        let userData = {};
-                    
-                        userData.id       = data.id;
-                        userData.name     = data.first_name;
-                        userData.username = data.username;
-                        
-                        setStorageData("user", JSON.stringify(userData));
-                    }
-    
-                    function getStorageData (){
-                        user = webix.storage.local.get("user");
-                    }
-                    try{
-                        createStorageData ();
-                        getStorageData ();
-                    }catch (err){
-                        setFunctionError(err,logNameFile,"function getUserData");
-                    }
-        
-                    if (data.err_type == "e"){
-                        setLogValue("error",data.error);
-                    } else {
-                        setLogValue("success","Рабочая область фильтра обновлена");
-                    }
-                });
-        
-                whoamiData.fail(function(err){
-                    setAjaxError(err, logNameFile,"getUserData");
-                });
-            }
-    
+
             function setTemplates(user){
+                const lib = $$("filterEditLib");
 
                 function clearOptionsPull(){
-                    const lib        = $$("filterEditLib");
+                
                     const oldOptions = [];
     
                     if (lib && lib.config.options.length !== 0){
@@ -91,15 +55,18 @@ function editFiltersBtn (){
 
                 clearOptionsPull();
 
-                let dataSrc = data.json().content;
+                const dataSrc = data.json().content;
                 try{
                     dataSrc.forEach(function(data, i) {
                      
-                        if(data.name.includes("filter-template_") && data.owner == user.id){
-                            let prefs = JSON.parse(data.prefs);
+                        if( data.name.includes("filter-template_") && data.owner == user.id ){
+                            const prefs = JSON.parse(data.prefs);
                             if (prefs.table == currId){
                     
-                                $$("filterEditLib").addOption( {id:i+1, value:prefs.name});
+                                lib.addOption( {
+                                    id    : i+1, 
+                                    value : prefs.name
+                                });
                     
                             }
                         }
@@ -113,41 +80,28 @@ function editFiltersBtn (){
     
             function setEmptyOption(){
                 $$("filterEditLib").addOption(
-                    {   id:"radioNoneContent",
-                        disabled:true, 
-                        value:"Сохранённых шаблонов нет"
+                    {   id      : "radioNoneContent",
+                        disabled: true, 
+                        value   : "Сохранённых шаблонов нет"
                     }
                 );
             }
-    
-            // function counterVisibleElements (){
-            //     let visibleElements=0;
-            //     let filterElements = $$("filterTableForm").elements;
-            //     try{
-            //         Object.values(filterElements).forEach(function(el,i){
-            //             if (!(el.config.hidden)){
-            //                 visibleElements++;
-            //             }
-                        
-            //         });
-            //     } catch (err){
-            //         setFunctionError(err,logNameFile,"function counterVisibleElements");
-            //     }
-            //     return visibleElements;
-            // }
-           
 
 
             let user = webix.storage.local.get("user");
+
             try{
                 if (!user){
                     getUserData ();
+                    user = webix.storage.local.get("user");
                 }
     
                 if(user){
                     setTemplates(user);
+
+                    const lib = $$("filterEditLib");
                     
-                    if ($$("filterEditLib") && $$("filterEditLib").data.options.length == 0 ){
+                    if (lib && lib.data.options.length == 0 ){
                         setEmptyOption();
                     }
              
@@ -158,43 +112,39 @@ function editFiltersBtn (){
             
         });
         userprefsGetData.fail(function(err){
-            console.log(err);
-            setLogValue("error", "tableFilter => buttons function userprefsData: "+err.status+" "+err.statusText+" "+err.responseURL);
+            setAjaxError(err, logNameFile,"saveTemplate");
         });
        
-
-        // if (PREFS_STORAGE.userprefs){
-
-            
-        // }
     }
 
     userprefsData ();
 
     function setValueLib(){
-        if ($$("filterEditLib")){
-            //$$("filterEditLib").setValue(filterTemplateValue);   
-            $$("filterEditLib").setValue(  returnTemplateValue () );   
+        const lib = $$("filterEditLib");
+        if (lib){ 
+            lib.setValue(  returnTemplateValue () );   
           
         }
     }  
 
     function stateSubmitBtn(state){
+        const btn = $$("popupFilterSubmitBtn");
         if(state){
-            $$("popupFilterSubmitBtn").enable();
+            btn.enable();
         } else {
-            $$("popupFilterSubmitBtn").disable();
+            btn.disable();
         }
     
     }
     
     
     function popupSizeAdaptive(){
-        let size = window.innerWidth - 500;
+        const size  = window.innerWidth - 500;
+        const popup = $$("popupFilterEdit");
         try{
-            if($$("popupFilterEdit") && $$("popupFilterEdit").$width > 200){
-                $$("popupFilterEdit").config.width = size;
-                $$("popupFilterEdit").resize();
+            if( popup && popup.$width > 200 ){
+                popup.config.width = size;
+                popup.resize();
             }
         } catch (err){
             setFunctionError(err,logNameFile,"function userprefsData => popupSizeAdaptive");
@@ -208,34 +158,17 @@ function editFiltersBtn (){
     }
 
     const checkbox =  {
-        view:"checkbox", 
-        id:"selectAll", 
-        labelRight:"<div style='font-weight:600'>Выбрать всё</div>", 
-        labelWidth:0,
-        name:"selectAll",
-        on:{
+        view        : "checkbox", 
+        id          : "selectAll", 
+        labelRight  : "<div style='font-weight:600'>Выбрать всё</div>", 
+        labelWidth  : 0,
+        name        : "selectAll",
+        on          : {
             onChange:function(){
                 stateSubmitBtn(true);
-                // function setStateSubmitBtn(){
-                //     try{
-                //         if ($$("selectAll").getValue()){
-                //             if(!($$("popupFilterSubmitBtn").isEnabled())){
-                //                 stateSubmitBtn(true);
-                //             }
-
-                //         } 
-                //         //else {
-                //             // if($$("popupFilterSubmitBtn").isEnabled()){
-                //             //     stateSubmitBtn(false);
-                //             // }
-                //       //  }
-                //     } catch (err){
-                //         setFunctionError(err,logNameFile,"function checkbox:onchange => setStateSubmitBtn");
-                //     }
-                // }
 
                 function setValueCheckbox(){
-                    let checkboxes = $$("editFormPopupScrollContent").getChildViews();
+                    const checkboxes = $$("editFormPopupScrollContent").getChildViews();
                     try{
                         checkboxes.forEach(function(el,i){
                             if (el.config.id.includes("checkbox")){
@@ -265,11 +198,14 @@ function editFiltersBtn (){
     
  
     function getAllCheckboxes(){
-        let checkboxes = [];
+        const checkboxes           = [];
         const filterTableElements  = $$("filterTableForm").elements;
         try{
             Object.values(filterTableElements).forEach(function(el,i){
-                checkboxes.push({ id:el.config.id, label:el.config.label })
+                checkboxes.push({ 
+                    id    : el.config.id, 
+                    label : el.config.label 
+                });
             });
         }catch (err){
             setFunctionError( err, logNameFile, "function editFiltersBtn => getAllCheckboxes" );
@@ -278,22 +214,24 @@ function editFiltersBtn (){
         return checkboxes;
     }
 
-    let formData = getAllCheckboxes();
- 
+   // let formData = getAllCheckboxes();
+   
  
     function checkboxOnChange (el){
    
-        let parent = $$(el.id+"_checkbox").getParentView();
-        let childs = parent.getChildViews();
+        const parent = $$(el.id+"_checkbox").getParentView();
+        const childs = parent.getChildViews();
     
-        let counter=0;
+        let counter  = 0;
         let btnState = 0;
 
         function getStatusCheckboxes(){
             try{
                 childs.forEach(function(el,i){
                     if (el.config.id.includes("checkbox")){
-                        if (!(el.config.value)||el.config.value==""){
+                        const value = el.config.value;
+
+                        if ( !(value) || value == "" ){
                             counter++;
                         }
                     }
@@ -308,31 +246,20 @@ function editFiltersBtn (){
 
         function setStateBtnSubmit(){
             stateSubmitBtn(true);
-            // try{
-            //     if (btnState > 0) {
-            //         if(!($$("popupFilterSubmitBtn").isEnabled())){
-            //             stateSubmitBtn(true);
-            //         }
-            //     } 
-            //     else {
-            //         if($$("popupFilterSubmitBtn").isEnabled()){
-            //             stateSubmitBtn(false);
-            //         }
-            //     }
-            // } catch (err){
-            //     setFunctionError(err,logNameFile,"function checkboxOnChange => setStateBtnSubmit");
-            // }
         }
+
         function setSelectAllState(){
             try{
+                const selectAll = $$("selectAll");
+               
                 if (counter == 0){
-                    $$("selectAll").config.value = 1;
-                    $$("selectAll").refresh();
-                } else {
-                    if ($$("selectAll").config.value !== 0){
-                        $$("selectAll").config.value = 0;
-                        $$("selectAll").refresh();
-                    }
+                    selectAll.config.value = 1;
+                    selectAll.refresh();
+
+                } else if ( selectAll.config.value !== 0 ){
+                    selectAll.config.value = 0;
+                    selectAll.refresh();
+                    
                 }
             } catch (err){
                 setFunctionError(err,logNameFile,"function checkboxOnChange => setSelectAllState");
@@ -354,32 +281,43 @@ function editFiltersBtn (){
 
         const nameList = [
             {cols:[
-                {   id:"editFormPopupScrollContent",
-                    css:"webix_edit-form-popup-scroll-content",
-                    rows:[
+                {   id  : "editFormPopupScrollContent",
+                    css : "webix_edit-form-popup-scroll-content",
+                    rows: [
                         checkbox
                     ]
                 }
             ]}
         ];
 
+  
+   
         try {  
+            const formData = getAllCheckboxes();
+
             formData.forEach(function(el,i){
                 if(!(el.id.includes("child"))){
-                    let template = {
-                        view:"checkbox", 
-                        id:el.id+"_checkbox", 
-                        labelRight:el.label, 
-                        labelWidth:0,
-                        name:el.id,
-                        on:{
+
+                    const template = {
+                        view        : "checkbox", 
+                        id          : el.id+"_checkbox", 
+                        labelRight  : el.label, 
+                        labelWidth  : 0,
+                        name        : el.id,
+                        on          : {
                             onChange:function(){
                                 checkboxOnChange (el);
                             }
                         } 
                     };
 
-                    if ($$(el.id) && $$(el.id).isVisible()){
+                    const field = $$(el.id);
+
+                    const allInputs = $$( el.id+"_rows").getChildViews();
+
+            
+                    if (field && field.isVisible() || allInputs.length > 1 ){
+               
                         template.value = 1;
                         nameList[0].cols[0].rows.push(template);
                     
@@ -389,8 +327,10 @@ function editFiltersBtn (){
                 }
             });
 
-            if ($$("editFormPopupScroll")){
-                $$("editFormPopupScroll").addView({rows:nameList},1);
+            const scroll = $$("editFormPopupScroll");
+
+            if (scroll){
+                scroll.addView( {rows : nameList}, 1 );
             }
         } catch (err){
             setFunctionError(err,logNameFile,"function createCheckboxes");
@@ -401,13 +341,15 @@ function editFiltersBtn (){
   
 
     let counter = 0;
-    let checkboxes = $$("editFormPopupScrollContent").getChildViews();
+    const checkboxes = $$("editFormPopupScrollContent").getChildViews();
     
     function countSelectCheckboxes(){
         try{
             checkboxes.forEach(function(el,i){
                 if (el.config.id.includes("checkbox")){
-                    if (!(el.config.value)||el.config.value==""){
+                    const value = el.config.value;
+
+                    if ( !(value) || value == "" ){
                         counter++;
                     }
                 }
@@ -419,9 +361,10 @@ function editFiltersBtn (){
 
     function stateSelectAll(){
         try{
-            if (counter == 0){
-                $$("selectAll").config.value = 1;
-                $$("selectAll").refresh();
+            const selectAll = $$("selectAll");
+            if ( counter == 0 ){
+                selectAll.config.value = 1;
+                selectAll.refresh();
             } 
         } catch (err){
             setFunctionError(err,logNameFile,"function stateSelectAll");
@@ -433,45 +376,46 @@ function editFiltersBtn (){
  
 }
 
-
-function hideFilterPopup(){
-    if ($$("tableFilterPopup") && $$("tableFilterPopup").isVisible()){
-        $$("tableFilterPopup").hide();
-    }
-}
-
 function filterSubmitBtn (){
     
-    let values = $$("filterTableForm").getValues();
+    const values = $$("filterTableForm").getValues();
                              
     let query =[];
 
-    function getOperationVal (value, filterEl,el,condition, position, parentIndex=false){
-       
-        const itemTreeId = getItemId ();
+    function getOperationVal (value, filterEl,condition, position, parentIndex=false){
+ 
+        const itemTreeId     = getItemId ();
+        const operationValue = $$(filterEl+"-btnFilterOperations").config.value;
+        
+        let sentName;
 
-        let operationValue = $$(el+"-btnFilterOperations").config.value;
+        if (filterEl.includes("_filter")){
+            const index = filterEl.lastIndexOf("_");
+            sentName    = filterEl.slice(0,index);
+        }
 
         function templateSecondItems (operation){
-            return "+and+"+itemTreeId+"."+filterEl+operation+value    
+            const name = itemTreeId + "." + sentName;
+            return "+and+" + name + operation + value;
         }
 
         function templateFirstItems(operation){
-            return itemTreeId+"."+filterEl+operation+value;
+            const name = itemTreeId + "." + sentName;
+            return name + operation + value;
         }
 
         
         function templateChilds(operation){
-            return "+"+condition+"+"+itemTreeId+"."+filterEl+operation+value;
+            const name = itemTreeId + "." + sentName;
+            return "+" + condition + "+" + name + operation + value;
         }
 
         try {
       
             if (position == "parent"){
-                
-                
+
                 if(parentIndex){
-                   
+          
                     if (operationValue == "="){
                        query.push(templateSecondItems ("+=+"));
                      
@@ -518,27 +462,29 @@ function filterSubmitBtn (){
             
             } else if (position == "child") {
 
-                if (operationValue == "="){
-                    query.push(templateChilds("+=+"));
-                 
-                } else if (operationValue == "!="){
-                    query.push(templateChilds("+!=+"));
+                
+                    if (operationValue == "="){
+                        query.push(templateChilds("+=+"));
+                    
+                    } else if (operationValue == "!="){
+                        query.push(templateChilds("+!=+"));
 
-                }  else if (operationValue == "<"){
-                    query.push(templateChilds("+<+"));
+                    }  else if (operationValue == "<"){
+                        query.push(templateChilds("+<+"));
 
-                } else if (operationValue == ">"){
-                    query.push(templateChilds("+>+"));
+                    } else if (operationValue == ">"){
+                        query.push(templateChilds("+>+"));
 
-                } else if (operationValue == ">="){
-                    query.push(templateChilds("+>=+"));
+                    } else if (operationValue == ">="){
+                        query.push(templateChilds("+>=+"));
 
-                } else if (operationValue == "<="){
-                    query.push(templateChilds("+<=+"));
+                    } else if (operationValue == "<="){
+                        query.push(templateChilds("+<=+"));
 
-                } else if (operationValue == "⊆"){
-                    query.push(templateChilds("+contains+"));
-                }
+                    } else if (operationValue == "⊆"){
+                        query.push(templateChilds("+contains+"));
+                    }
+                
             }
         } catch (err){
             setFunctionError(err,logNameFile,"function filterSubmitBtn => getOperationVal");
@@ -549,70 +495,131 @@ function filterSubmitBtn (){
     
     
     function createGetData(){
-        let filterEl;
-        let postFormatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
-        let value;
-        let firstItem = 0;
+       
+        const postFormatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
+        const valuesArr      = [];
 
-        Object.keys(values).sort().forEach(function(el,i){
+        function checkInput(el){
+            el.getChildViews().forEach(function(child,i){
+                const idEl = child.config.id;
+                if (idEl.includes("-container-child-")){
 
-            filterEl = el;
-            value = values[el];
+                    const startIndex   = idEl.indexOf("container-child-")-1;
+                    const startId      = idEl.slice(0,startIndex);
+
+                    const endIndex     = idEl.indexOf("-child-");
+                    const endId        = idEl.slice(endIndex);
+
+                    const name         = $$( startId + endId ).config.name;
+
+                    valuesArr.push ({name:name, value:$$(startId+endId).getValue()});
+
+                } else {
+                    const index         = idEl.indexOf("_container");
+                    const idParentInput = idEl.slice(0,index)+"_filter";
+
+                    const name         = $$(idParentInput).config.name;
+                    valuesArr.push ({name:name, value:$$(idParentInput).getValue()});
+
+                }
+            });
+        }
+        
+        $$("inputsFilter")._cells.forEach(function(el,i){
+            checkInput(el);
+        });
+
+        let checkFirstChild = false;
+        let firstItem       = 0;
+     
+        const notNullVals = [];
+
+        function removeNull(){
+            valuesArr.forEach(function(el,i){
+                if (el.value){
+                    notNullVals.push(el);
+                } 
+            });
+        }
+
+        removeNull();
+
+        notNullVals.forEach(function(el,i){
+      
+            let filterEl = el.name;
+            let value    = el.value ;
+ 
+ 
+            if (i == 0 && filterEl.includes("child")){
+                checkFirstChild = true;
+                firstItem       = 1;
+            } else {
+                checkFirstChild = false;
+            }
+       
             function formattingDateValue(){
-                if ($$(el).config.view == "datepicker"){
+                const view = $$(filterEl).config.view; 
+                if ( view == "datepicker" ){
                     value = postFormatData(value);
                 }
             }
-
+ 
             function formattinSelectValue(){
-                if ($$(el).config.text && $$(el).config.text == "Нет"){
+                const text = $$(filterEl).config.text;
+                if ( text && text == "Нет" ){
                     value = 0;
                 }
             }
 
-            function createFilterElement (){
-                if (el.includes("filter") && !(el.includes("condition"))){
-                    filterEl = el.lastIndexOf("_");
-                    filterEl = el.slice(0,filterEl)
-                }
-            }
-
             function createQuery(){
+           
+     
                 try{
-                    if(
-                        !(el.includes("condition")) &&
-                        !(el.includes("child"    )) &&
-                        values[el]!== ""            &&
-                        el        !== "selectAll"   &&
-                        $$(el).isVisible()
-                    ){
-                        
-                        
-                        if (firstItem > 0){
-                            getOperationVal ("'"+value+"'",filterEl,el,"and","parent",true);
-                        }else {
-                            getOperationVal ("'"+value+"'",filterEl,el,"and","parent");
+
+                    if( !(filterEl.includes("child")) ){
+
+                        if (checkFirstChild){
+                            getOperationVal ("'"+value+"'",filterEl,"and","parent",true);
+                            firstItem++;
+                        } else if ( firstItem == 0 ) {
+                            getOperationVal ("'"+value+"'",filterEl,"and","parent");
+                        } else if  ( firstItem > 0 ){
+                            getOperationVal ("'"+value+"'",filterEl,"and","parent",true);
                         }
 
                         firstItem++;
                         
-                    } else if (el.includes("child")){
-                        if (el.includes("operAnd")){
-                            getOperationVal ("'"+value+"'",filterEl,el,"and","child");
+                    } else if (filterEl.includes("child")){ 
 
-                        } else if (el.includes("operOr")){
-                            getOperationVal ("'"+value+"'",filterEl,el,"or","child");
+                        if (checkFirstChild){
+
+                            if (filterEl.includes("operAnd")){
+                                getOperationVal ("'"+value+"'",filterEl,"and","parent");
+    
+                            } else if (filterEl.includes("operOr")){
+                                getOperationVal ("'"+value+"'",filterEl,"or","parent");
+                            }
+                           
+                        } else {
+                            if (filterEl.includes("operAnd")){
+                                getOperationVal ("'"+value+"'",filterEl,"and","child");
+    
+                            } else if (filterEl.includes("operOr")){
+                                getOperationVal ("'"+value+"'",filterEl,"or","child");
+                            }
                         }
+                    
                     }
                 } catch (err){
                     setFunctionError(err,logNameFile,"function createQuery");
                 }
             }
-            if (value && $$(el)){
+
+
+            if (value && $$(filterEl)){
                 try{
                     formattingDateValue();
                     formattinSelectValue();
-                    createFilterElement ();
                     createQuery();
                 } catch (err){
                     setFunctionError(err,logNameFile,"function createGetData");
@@ -625,37 +632,50 @@ function filterSubmitBtn (){
 
     
     if ($$("filterTableForm").validate()){
-     
+        
         createGetData();
+        let currTableView;
+        if ($$("table").isVisible()){
+            currTableView = $$("table");
+        } else {
+            currTableView = $$("table-view");
+        }
+   
+        currTableView.config.filter = query.join("");
 
         const queryData = webix.ajax("/init/default/api/smarts?query=" + query.join("") );
 
         queryData.then(function(data){
-            let notifyType = data.json().err_type;
-            let notifyMsg = data.json().err;
-            data = data.json().content;
+            data             = data.json();
+            const reccount   = data.reccount;
+            const notifyType = data.err_type;
+            const notifyMsg  = data.err;
+
+            data             = data.content;
+
+
             function setData(){
                 try{
+                   
                     if (data.length !== 0){
-                        $$("table").hideOverlay("Ничего не найдено");
-                        $$("table").clearAll()
-                        $$("table").parse(data);
+                        currTableView.hideOverlay("Ничего не найдено");
+                        currTableView.clearAll();
+                        currTableView.parse(data);
                     } else {
-                        $$("table").clearAll()
-                        $$("table").showOverlay("Ничего не найдено");
+                        currTableView.clearAll();
+                        currTableView.showOverlay("Ничего не найдено");
                     }
                 } catch (err){
                     setFunctionError(err,logNameFile,"function filterSubmitBtn => setData");
                 }
             }
 
-            function setCounterValue(){
-                const filterCountRows = $$("table").count();
-                const value = filterCountRows.toString();
+            function setCounterValue (){
                 try{
-                    $$("table-idFilterElements").setValues(value);
+                    const counter = $$("table-idFilterElements");
+                    counter.setValues(reccount.toString());
                 } catch (err){
-                    setFunctionError(err,logNameFile,"function filterSubmitBtn => setCounterValue");
+                    setFunctionError(err,logNameFile,"setCounterVal");
                 }
             }
 
@@ -664,7 +684,7 @@ function filterSubmitBtn (){
 
                 setData();
                 setCounterValue();
-                hideFilterPopup();
+                hideElem($$("tableFilterPopup"));
         
                 setLogValue("success","Фильтры успшено применены");
             
@@ -687,13 +707,13 @@ function filterSubmitBtn (){
 function filterLibraryBtn () {
     try {
         webix.prompt({
-            title: "Название шаблона",
-            ok: "Сохранить",
-            cancel: "Отменить",
-            css:"webix_prompt-filter-lib",
-            input: {
-            required:true,
-            placeholder:"Введите название шаблона...",
+            title       : "Название шаблона",
+            ok          : "Сохранить",
+            cancel      : "Отменить",
+            css         : "webix_prompt-filter-lib",
+            input       : {
+            required    : true,
+            placeholder : "Введите название шаблона...",
             },
             width:350,
         }).then(function(result){
@@ -705,36 +725,39 @@ function filterLibraryBtn () {
                 }
 
            
-                let data = PREFS_STORAGE.userprefs.content;
-                let nameTemplate = result;
-                let collection = {content:[]};
-                let settingExists = false;
+                const data         = PREFS_STORAGE.userprefs.content;
+                const nameTemplate = result;
+                const collection   = { content:[] };
+                let settingExists  = false;
 
-                const currId = getItemId();
-                const inputs =  $$("inputsFilter")._collection;
+                const currId       = getItemId();
+                const inputs       =  $$("inputsFilter")._collection;
 
-                let template = {
-                    name:nameTemplate,
-                    collection:collection,
-                    values: $$("filterTableForm").getValues(),
-                    table: currId
+                const formVals     = $$("filterTableForm").getValues();
+
+                const template     = {
+                    name        : nameTemplate,
+                    collection  : collection,
+                    values      : formVals,
+                    table       : currId
                 };
-       
               
+           
 
-                let sentObj = {
-                    name:currId+"_filter-template_"+nameTemplate,
-                    prefs:template,
+                const sentObj = {
+                    name    : currId + "_filter-template_" + nameTemplate,
+                    prefs   : template,
                 };
 
                 function childs(el,id){
+                 
                     try{
                      
                         $$(el.id).getChildViews().forEach(function(child,i){
                             
-                            let condition = $$(child.config.id)._collection[0].id;
-                            let index = el.id.lastIndexOf("_rows");
-                            let parentField = el.id.slice(0,index);
+                            const condition   = $$(child.config.id)._collection[0].id;
+                            const index       = el.id.lastIndexOf("_rows");
+                            const parentField = el.id.slice(0,index);
 
                    
                          
@@ -747,7 +770,6 @@ function filterLibraryBtn () {
                                         value: $$(idInput+"-btnFilterOperations").getValue()
                                     }
                                 };
-    
                                 if (condition.includes("and")){
                                     tempalteCollectionItem.condition = "and";
                                     collection.content.push(tempalteCollectionItem);
@@ -756,8 +778,11 @@ function filterLibraryBtn () {
                                     collection.content.push(tempalteCollectionItem);
                                 } 
                             }
+
+                            console.log(child.config.id)
                             if (child.config.id.includes("child")){
                                 setChildToCollection();
+                          
                             } else {
                                 collection.content.push({
                                     condition:"parent",
@@ -779,10 +804,11 @@ function filterLibraryBtn () {
                 function saveExistsTemplate(sentObj){
                     data.forEach(function(el,i){
                
-                        let currName = currId+"_filter-template_"+nameTemplate;
+                        const currName = currId + "_filter-template_" + nameTemplate;
 
                         function putUserprefsData (){
-                            const putData = webix.ajax().put("/init/default/api/userprefs/"+el.id, sentObj);
+                            const url     = "/init/default/api/userprefs/"+el.id;
+                            const putData = webix.ajax().put(url, sentObj);
 
                             putData.then(function(data){
                                 data = data.json();
@@ -823,12 +849,13 @@ function filterLibraryBtn () {
                 function setDataStorage(){
                     const whoamiData = webix.ajax("/init/default/api/whoami");
                     whoamiData.then(function(data){
-                        sentObj.owner = data.json().content.id;
+                        data          = data.json().content;
+                        sentObj.owner = data.id;
 
-                        let userData = {};
-                        userData.id = data.json().content.id;
-                        userData.name = data.json().content.first_name;
-                        userData.username = data.json().content.username;
+                        const userData      = {};
+                        userData.id         = data.id;
+                        userData.name       = data.first_name;
+                        userData.username   = data.username;
                         
                         setStorageData("user", JSON.stringify(userData));
                     });
@@ -840,15 +867,15 @@ function filterLibraryBtn () {
                 }
                 
                 function saveNewTemplate(){
-                    let ownerId = webix.storage.local.get("user").id;
+                    const ownerId = webix.storage.local.get("user").id;
                     if (ownerId){
                         sentObj.owner = ownerId;
                     } else {
                         setDataStorage();
-                        
                     }
 
-                    const userprefsPost = webix.ajax().post("/init/default/api/userprefs/",sentObj);
+                    const url           = "/init/default/api/userprefs/";
+                    const userprefsPost = webix.ajax().post(url, sentObj);
                     
                     userprefsPost.then(function(data){
                         data = data.json();
@@ -869,8 +896,8 @@ function filterLibraryBtn () {
                 if (PREFS_STORAGE.userprefs){
                     inputs.forEach(function(el,i){
                        
-                        let indexId = el.id.lastIndexOf("_rows");
-                        let id = el.id.slice(0,indexId);
+                        const indexId = el.id.lastIndexOf("_rows");
+                        const id = el.id.slice(0,indexId);
 
                         if ($$(id).isVisible()){
                             childs(el,id);
@@ -890,9 +917,7 @@ function filterLibraryBtn () {
             saveTemplate ();
 
         });
-
-            
-            
+    
     } catch(err) {
         setFunctionError(err,logNameFile,"function filterSubmitBtn");
     }
@@ -909,8 +934,8 @@ function backTableBtnClick() {
         const secondaryBtnClass = "webix-transparent-btn";
 
         if (btnClass.classList.contains(primaryBtnClass)){
-            btnClass.classList.add(secondaryBtnClass);
-            btnClass.classList.remove(primaryBtnClass);
+            btnClass.classList.add     (secondaryBtnClass);
+            btnClass.classList.remove  (primaryBtnClass);
         }
     }
     function defaultState(){
@@ -922,8 +947,9 @@ function backTableBtnClick() {
             tableContainer.show();
         }
 
-        if ($$("table")){
-            $$("table").clearSelection();
+        const table = $$("table");
+        if (table){
+            table.clearSelection();
         }
     }
 
@@ -937,8 +963,8 @@ function resetFilterBtn (){
     try {
 
         const itemTreeId = getItemId ();
-
-        const queryData = webix.ajax("/init/default/api/smarts?query="+itemTreeId+".id >= 0");
+        const url        = "/init/default/api/smarts?query="+itemTreeId+".id >= 0";
+        const queryData  = webix.ajax(url);
         queryData.then(function(data){
             const dataErr =  data.json();
           
@@ -946,13 +972,14 @@ function resetFilterBtn (){
                 
             function setDataTable(){
                 try{
+                    const table = $$("table");
                     if (data.length !== 0){
-                        $$("table").hideOverlay("Ничего не найдено");
-                        $$("table").clearAll()
-                       $$("table").parse(data);
+                        table.hideOverlay("Ничего не найдено");
+                        table.clearAll();
+                        table.parse(data);
                     } else {
-                        $$("table").clearAll()
-                        $$("table").showOverlay("Ничего не найдено");
+                        table.clearAll();
+                        table.showOverlay("Ничего не найдено");
                     }
                 } catch (err){
                     setFunctionError(err,logNameFile,"function resetFilterBtn => setDataTable");
@@ -961,26 +988,31 @@ function resetFilterBtn (){
 
             function setFilterCounterVal(){
                 try{
+                    const filterTable     = $$("table-idFilterElements");
                     const filterCountRows = $$("table").count();
                     const value           = filterCountRows.toString();
-                    $$("table-idFilterElements").setValues(value);
+
+                    filterTable.setValues(value);
                 } catch (err){
                     setFunctionError(err,logNameFile,"function setFilterCounterVal");
                 }
             }
 
             function clearFilterValues(){
-                if($$("filterTableForm")){
-                    $$("filterTableForm").clear(); 
+                const form = $$("filterTableForm");
+                if(form){
+                    form.clear(); 
                 }
             }
 
             function hideInputsContainer(){
                 const inputs = document.querySelectorAll(".webix_filter-inputs");
+
+                const hideClass = "webix_hide-content";
                 try{
                     inputs.forEach(function(elem,i){
-                        if ( !(elem.classList.contains("webix_hide-content")) ){
-                            elem.classList.add("webix_hide-content");
+                        if ( !(elem.classList.contains(hideClass)) ){
+                            elem.classList.add(hideClass);
                         }
                     });
                 } catch (err){
@@ -989,8 +1021,8 @@ function resetFilterBtn (){
             }
 
             function clearSpace(){
-                let childs = [];
-                let inputsContainer = $$("inputsFilter").getChildViews();
+                const childs = [];
+                const inputsContainer = $$("inputsFilter").getChildViews();
                 
       
                 inputsContainer.forEach(function(el,i){
@@ -1002,9 +1034,10 @@ function resetFilterBtn (){
 
                     function getChildsId (){
                         try{
-                            $$(el.config.id).getChildViews().forEach(function(child,i){
+                            const childsView = $$(el.config.id).getChildViews();
+                            childsView.forEach(function(child,i){
                                 if (child.config.id.includes("child")){
-                                    childs.push (child.config.id)
+                                    childs.push (child.config.id);
                                 }
                             });
                         } catch (err){
@@ -1012,15 +1045,10 @@ function resetFilterBtn (){
                         }
                     }
 
-                    function hideContaier(){
-                        if($$(inputId+"_container-btns") && $$(inputId+"_container-btns").isVisible()){
-                            $$(inputId+"_container-btns").hide();
-                        }
-                    }
                     try{
                         removeParentInput();
                         getChildsId ();
-                        hideContaier();
+                        hideElem($$(inputId+"_container-btns"));
                     } catch (err){
                         setFunctionError(err,logNameFile,"function resetFilterBtn => clearSpace");
                     }
@@ -1030,7 +1058,9 @@ function resetFilterBtn (){
                 function removeChilds(){
                     try{
                         childs.forEach(function(idChild,i){
-                            $$(idChild).getParentView().removeView($$(idChild));
+                            const child  = $$(idChild);
+                            const parent = child.getParentView();
+                            parent.removeView(child);
                         });
                     } catch (err){
                         setFunctionError(err,logNameFile,"function resetFilterBtn => removeChilds");
@@ -1040,15 +1070,17 @@ function resetFilterBtn (){
             }
 
             function disableLibSaveBtn(){
-                if ($$("filterLibrarySaveBtn") && $$("filterLibrarySaveBtn").isEnabled()){
-                    $$("filterLibrarySaveBtn").disable();
+                const saveBtn = $$("filterLibrarySaveBtn") ;
+                if (saveBtn && saveBtn.isEnabled()){
+                    saveBtn.disable();
                 }
             }
 
             function showEmptyTemplate(){
-                if ($$("filterEmptyTempalte") && !($$("filterEmptyTempalte").isVisible())){
-                    $$("filterEmptyTempalte").show();
-                    $$("filterEmptyTempalte").refresh();
+                const emptyTemplate = $$("filterEmptyTempalte");
+                if  (emptyTemplate && !(emptyTemplate.isVisible()) ){
+                    emptyTemplate.show();
+                    emptyTemplate.refresh();
                 }
             }
 
@@ -1060,7 +1092,7 @@ function resetFilterBtn (){
                 try{
                     setDataTable();
                     setFilterCounterVal();
-                    hideFilterPopup();
+                    hideElem($$("tableFilterPopup"));
                     clearFilterValues();
                     hideInputsContainer();
                     clearSpace();
@@ -1089,18 +1121,18 @@ function resetFilterBtn (){
 function buttonsFormFilter (name) {
 
     const formResetBtn = {  
-        view:"button",
-        id:"resetFilterBtn",
-        disabled:true,
-        height:48,
-        minWidth:50,
-        width:65,
-        hotkey: "shift+esc",
-        css:"webix_danger", 
-        type:"icon", 
-        icon:"icon-trash", 
-        click:resetFilterBtn,
-        on: {
+        view    : "button",
+        id      : "resetFilterBtn",
+        disabled: true,
+        height  : 48,
+        minWidth: 50,
+        width   : 65,
+        hotkey  : "shift+esc",
+        css     : "webix_danger", 
+        type    : "icon", 
+        icon    : "icon-trash", 
+        click   : resetFilterBtn,
+        on      : {
             onAfterRender: function () {
                 this.getInputNode().setAttribute("title", "Сбросить фильтры");
             }
@@ -1108,24 +1140,24 @@ function buttonsFormFilter (name) {
     };
     
     const formBtnSubmit = {   
-        view:"button",
-        id:"btnFilterSubmit",
-        height:48,
-        minWidth:70, 
-        css:"webix_primary",
-        hotkey: "Enter",
-        disabled:true,
-        value:"Применить фильтры", 
-        click:filterSubmitBtn,
+        view    : "button",
+        id      : "btnFilterSubmit",
+        height  : 48,
+        minWidth: 70, 
+        css     : "webix_primary",
+        hotkey  : "Enter",
+        disabled: true,
+        value   : "Применить фильтры", 
+        click   : filterSubmitBtn,
     };
     
     const formEditBtn = {   
-        view:"button",
-        value:"Редактор фильтров",
-        height:48,
-        minWidth:140, 
-        click:editFiltersBtn,
-        on: {
+        view    : "button",
+        value   : "Редактор фильтров",
+        height  : 48,
+        minWidth: 140, 
+        click   : editFiltersBtn,
+        on      : {
             onAfterRender: function () {
                 this.getInputNode().setAttribute("title","Добавить/удалить фильтры");
             },
@@ -1133,21 +1165,21 @@ function buttonsFormFilter (name) {
     };    
     
     const filterBackTableBtn = { 
-        view:"button", 
-        id:"table-backTableBtnFilter",
-        type:"icon",
-        icon:"icon-arrow-left",
-        value:"Вернуться к таблице",
-        hidden:true,  
-        height:48,
-        minWidth:50,
-        width:55,
+        view    : "button", 
+        id      : "table-backTableBtnFilter",
+        type    : "icon",
+        icon    : "icon-arrow-left",
+        value   : "Вернуться к таблице",
+        hidden  : true,  
+        height  : 48,
+        minWidth: 50,
+        width   : 55,
        
-        click:function(){
+        click   : function(){
             backTableBtnClick();
         },
     
-        on: {
+        on      : {
             onAfterRender: function () {
                 this.getInputNode().setAttribute("title","Вернуться к таблице");
             }
@@ -1155,17 +1187,17 @@ function buttonsFormFilter (name) {
     };
     
     const formLibrarySaveBtn = {   
-        view:"button",
-        id:"filterLibrarySaveBtn",
-        disabled:true,
-        height:48,
-        minWidth:50,
-        width:65,
-        hotkey: "shift+esc",
-        type:"icon", 
-        icon:"icon-file", 
-        click:filterLibraryBtn,
-        on: {
+        view    : "button",
+        id      : "filterLibrarySaveBtn",
+        disabled: true,
+        height  : 48,
+        minWidth: 50,
+        width   : 65,
+        hotkey  : "shift+esc",
+        type    : "icon", 
+        icon    : "icon-file", 
+        click   : filterLibraryBtn,
+        on      : {
             onAfterRender: function () {
                 this.getInputNode().setAttribute("title", "Сохранить шаблон с полями в библиотеку");
             }

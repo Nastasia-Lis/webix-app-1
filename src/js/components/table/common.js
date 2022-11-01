@@ -7,10 +7,6 @@ import {removeElem}                             from "../../blocks/commonFunctio
 
 const logNameFile = "table => common";
 
-function setCounterVal (){
-    const tableCount = $$("table").count().toString();
-    $$("table-findElements").setValues(tableCount);
-}
 
 function setDirtyProperty (){
     const prop = $$("editTableFormProperty");
@@ -169,7 +165,6 @@ function putData (nextItem, valuesProp, currId, editInForm=false){
 }
 
 export {
-    setCounterVal,
     setDirtyProperty,
     toEditForm,
     validateError,

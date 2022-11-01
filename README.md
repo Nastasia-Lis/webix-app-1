@@ -1,4 +1,4 @@
-Expa version 1.0.44
+Expa version 1.0.45
 
 
 npm run build - готовая сборка

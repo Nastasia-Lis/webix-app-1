@@ -9,7 +9,7 @@ const logNameFile = "tableFilter => toolbar";
 
 
 function field (operation,countChild,typeField,el){
-
+ 
     let findTableId;
 
     function getIdCombo(){
@@ -31,14 +31,22 @@ function field (operation,countChild,typeField,el){
 
     function createField(){
      
+        let labelType;
+        if (operation == "operOr"){
+            labelType = " + или";
+        } else {
+            labelType = " + и";
+        }
         const elemId        = getElemId ();
         const containerRows = $$(elemId+"_filter"+"_rows");
         countChild          = containerRows.getChildViews().length;
 
         const fieldId       = elemId+"_filter-child-"+operation+"-"+countChild;
         const fieldTemplate = {
-            id:  fieldId, 
-            name:fieldId,
+            id    : fieldId, 
+            name  : fieldId,
+            label : el.label + `<span style='font-size: 12px !important; color:var(--primary)'>  ${labelType}</span>`,
+            labelPosition:"top",
             on:{
                 onKeyPress:function(){
                     const btn = $$("btnFilterSubmit");
@@ -77,6 +85,7 @@ function field (operation,countChild,typeField,el){
                 element.options     = {
                     data:getComboOptions(findTableId)
                 };
+
             } else if (type == "bool"){
                 element.options = [
                     {id:1, value: "Да"},
@@ -156,31 +165,46 @@ function filterOperationsBtnLogic (idBtn,id){
 
 }
 
+function showEmptyTemplate(){
+                     
+    const inputs = $$("inputsFilter");
+    if ( inputs.$height == 46){
+        showElem($$("filterEmptyTempalte"));
+    }
+
+}
+
 function filterOperationsBtnData (typeField){
     return webix.once(function(){
         if (typeField == "combo" || typeField == "boolean" ){
-            this.add( { value: '=', id:"operations_eql" });
-            this.add( { value: '!=', id:"operations_notEqual" });
+
+            this.add( { value: '=',       id:"operations_eql"      });
+            this.add( { value: '!=',      id:"operations_notEqual" });
+
         } else if (typeField  == "text" ){
-            this.add( { value: '=', id:"operations_eql" });
-            this.add( { value: '!=', id:"operations_notEqual" });
-            this.add( {value: 'содержит', id:"operations_contains"});
+
+            this.add( { value: '=',       id:"operations_eql"      });
+            this.add( { value: '!=',      id:"operations_notEqual" });
+            this.add( { value: 'содержит',id:"operations_contains" });
+
         } else if (typeField  == "date"){
-            this.add( { value: '=', id:"operations_eql" });
-            this.add( { value: '!=', id:"operations_notEqual" });
-            this.add( { value: '<', id:"operations_less"  });
-            this.add( { value: '>', id:"operations_more"  });
-            this.add( { value: '>=', id:"operations_mrEqual" });
-            this.add( { value: '<=', id:"operations_lsEqual" });
+
+            this.add( { value: '=',       id:"operations_eql"      });
+            this.add( { value: '!=',      id:"operations_notEqual" });
+            this.add( { value: '<',       id:"operations_less"     });
+            this.add( { value: '>',       id:"operations_more"     });
+            this.add( { value: '>=',      id:"operations_mrEqual"  });
+            this.add( { value: '<=',      id:"operations_lsEqual"  });
 
         } else if (typeField  == "integer"   ){
-            this.add( { value: '=', id:"operations_eql" });
-            this.add( { value: '!=', id:"operations_notEqual" });
-            this.add( { value: '<', id:"operations_less"  });
-            this.add( { value: '>', id:"operations_more"  });
-            this.add( { value: '>=', id:"operations_mrEqual" });
-            this.add( { value: '<=', id:"operations_lsEqual" });
-            this.add( {value: 'содержит', id:"operations_contains"});
+
+            this.add( { value: '=',       id:"operations_eql"      });
+            this.add( { value: '!=',      id:"operations_notEqual" });
+            this.add( { value: '<',       id:"operations_less"     });
+            this.add( { value: '>',       id:"operations_more"     });
+            this.add( { value: '>=',      id:"operations_mrEqual"  });
+            this.add( { value: '<=',      id:"operations_lsEqual"  });
+            this.add( { value: 'содержит',id:"operations_contains" });
 
         }   
     });
@@ -218,33 +242,6 @@ function filterFieldsFunctions (el,typeField){
     
     };
 
-    const btnAdd = {
-        view:"button", 
-        css: "webix_filterBtns",
-        value:"+",
-        id:el.id+"_filter_condition",
-        inputHeight:38,
-        width: 40,
-        popup: {
-        view: 'contextmenu',
-        width: 200,
-        data: [
-            { value: 'и', id:"add_and" },
-            { value: 'или', id:"add_or" },
-        ],
-        on: {
-            onMenuItemClick(id) {  
-                createChildFields (id,el);
-            },
-            
-        }
-        },
-        on:{
-            onAfterRender: function () {
-                this.getInputNode().setAttribute("title","Добавить ещё вариант поля");
-            },
-        }
-    };
 
     const contextBtn = {   
         view:"button",
@@ -269,93 +266,63 @@ function filterFieldsFunctions (el,typeField){
             ],
             on:{
                 onMenuItemClick:function(id, e, node){
-
+         
                     function popupSuccess(idBtnDel){
-            
-                        function hideHtmlContainer(inputName){
-                            const inputs = document.querySelectorAll(".webix_filter-inputs");
-                            let counter  = 0;
+
         
-                            inputs.forEach(function(elem,i){
-                                
-                                const viewAttr  = elem.getAttribute("view_id");
-        
-                                const hideClass = "webix_hide-content";
-                                const showClass = "webix_show-content";
-        
-        
-                                if (viewAttr == inputName){
-                                    if ( !(elem.classList.contains( hideClass )) ){
-                                        elem.classList.add( hideClass );
-                                 
+                        const container          = idBtnDel          .getParentView();
+                    
+                        const parentContainer    = container         .getParentView();
+                        const mainInput          = parentContainer   .getChildViews();
+
+                        const allInputsContainer = parentContainer   .getParentView();
+                        const allInputs          = allInputsContainer.getChildViews();
+              
+             
+                        function hideMainInput(){
+                            try{
+                                mainInput.forEach(function(el){
+                                    const id = el.config.id;
+             
+                                    hideElem(el);
+                                    
+                                    if ( !(id.includes( "_container-btns" )) ){
+                                        el.setValue("");
+
+
+                                   //     hideHtmlContainer( id + "_rows" );
+  
                                     }
-        
-                                    if ( elem.classList.contains( showClass ) ){
-                                        elem.classList.remove( showClass );
-                                    }
-                                }
-                 
-                                if ( elem.classList.contains( showClass ) ){
-                                    counter++;
-                                }
-        
-                            });
-        
-                            if ( !counter ){
-                                showElem($$("filterEmptyTempalte"));
+                                });
+                            }catch(err){ 
+                                setFunctionError(err,logNameFile,"contextBtn remove => hideMainInput");
                             }
                         }
-        
-                            const container          = idBtnDel          .getParentView();
-                     
-                            const parentContainer    = container         .getParentView();
-                            const mainInput          = parentContainer   .getChildViews();
 
-                            const allInputsContainer = parentContainer   .getParentView();
-                            const allInputs          = allInputsContainer.getChildViews();
-              
 
-                            function hideMainInput(){
-                                try{
-                                    mainInput.forEach(function(el){
-                                        const id = el.config.id;
-                                        hideElem(el);
-                                        
-                                        if ( !(id.includes( "_container-btns" )) ){
-                                            el.setValue("");
-                                            hideHtmlContainer( id + "_rows" );
-                                        }
-                                    });
-                                }catch(err){ 
-                                    setFunctionError(err,logNameFile,"contextBtn remove => hideMainInput");
-                                }
-                            }
-
-                            function hideChilds(){
-                                const childsArr = [];
-                                allInputs.forEach(function(el){
-                                    const id = el.config.id;
-                                    if(id.includes("-container-child-")){
-                                        childsArr.push($$(id));
-
-                                    }
-                                });
-
-                                childsArr.forEach(function(el){
-                                    const parent = el.getParentView();
-                                    parent.removeView(el);
-                                });
-                            }
+                        function setFirstChildAttr(){
+                           
+                            const firstContainer  = allInputs[1]  .getChildViews()[0];
+                 
+                            const firstChildInput = firstContainer.getChildViews()[0];
                             
-                            hideMainInput();
-                            hideChilds();
+                            if (firstChildInput){
+                                firstChildInput.config.firstAttr = true;
+                            }
 
-                            setLogValue("success","Поле удалено"); 
-                   
+                        }
+
+          
+                        hideMainInput();
+                        showEmptyTemplate();
+                        setFirstChildAttr();
+                        setLogValue("success","Поле удалено"); 
+                     
                     }
 
                     if ( id == "add_and" || id == "add_or" ){
                         createChildFields (id,el);
+                        
                     } else if (id.includes("remove")){
                         const idBtnDel = $$(this.config.master);
 
@@ -366,9 +333,7 @@ function filterFieldsFunctions (el,typeField){
                             }
                         );
                     }
-                
 
-        
                 },
              
             }
@@ -397,10 +362,15 @@ function filterFieldsFunctions (el,typeField){
     return btns;       
 }
 
-function createChildFields (id,el) {
+function createChildFields (id,el,position) {
+ 
     const elemId        = el.id;
     const containerRows = $$(elemId+"_filter"+"_rows");
     const countChild    = containerRows.getChildViews().length;
+
+    if (position == undefined){
+        position = 1;
+    }
 
     let typeField;
     function getTypeField(){
@@ -411,10 +381,13 @@ function createChildFields (id,el) {
         }
     }
     getTypeField();
+
+  
     function createAndInput(){
+      
         const headline = {   
             id:"and_"+webix.uid(),
-            template:"<div style='color:var(--primary)'>+ и</div>", 
+            template:`<span style='font-size: 12px !important;'>${el.label}</span> <span style='font-size: 12px !important; color:var(--primary)'>  + и</span>`,
             height:30, 
             borderless:true
         };
@@ -448,63 +421,117 @@ function createChildFields (id,el) {
             }
         };
 
-        const idBtnDel =btnsId+"_remove";
-        const btnDel = {
+
+
+        const contextBtn = {   
             view:"button",
-            id:idBtnDel,
-            css:"webix_filterBtns webix_danger",
+            id:btnsId+"_contextMenuFilter",
             type:"icon",
-            icon: 'wxi-trash',
-            inputHeight:38,
-            width: 40,
-            click:function(){
-                function popupSuccess (){     
-                    try{ 
-                        const container       = $$(idBtnDel).getParentView();
-                        const parentContainer = container.getParentView().getParentView();
-                        const rowsContainer   = $$(elemId+"_filter"+"_rows");
+            css:"webix_filterBtns",
+            icon: 'wxi-dots',
+            inputHeight : 38,
+            width       : 40,
+            popup: {
+                view: 'contextmenu',
+                css:"webix_contextmenu",
+                data: [
+                    {   id:"add",   
+                        value:"Добавить поле", 
+                        icon: "icon-plus",
+                        submenu:[      
+                            { id:"add_and", value: 'и'  },
+                            { id:"add_or" , value: 'или'},
+                        ]},
+                    {id:"remove", value:"Удалить поле", icon: "icon-trash"}
+                ],
+                on:{
+                    onMenuItemClick:function(id, e, node){
+    
+                    
+                        const contextBtn     = $$(this.config.master);
+                        const btnContainer   = contextBtn.getParentView     ();
+                        const inputContainer = btnContainer.getParentView   ();
+                        const childContainer = inputContainer.getParentView ();
+                        const container      = $$(el.id+"_filter_rows");
                         
-                        rowsContainer.removeView($$(parentContainer.config.id));
+             
+                        function popupSuccess(){
+                        
+                            container.removeView(childContainer);
+                            showEmptyTemplate();
+                            setLogValue("success","Поле удалено"); 
+                    
+                        }
+    
+                        if ( id == "add_and" || id == "add_or" ){
+                            const currChildId    = childContainer.config.id;
+                            const allInputs      = container.getChildViews();
 
-                        setLogValue("success","Поле удалено");     
-                    } catch(err){ 
-                        setFunctionError(err,logNameFile,"createAndInput => popupSuccess");
-                    }
+                            let childPosition    = 0;
+             
+                            allInputs.forEach(function(inp,i){
+                                const inputId     = inp.config.id;
+                   
+
+                                if ( inputId == currChildId ){
+                                    childPosition = i+1;
+                                }
+                            
+                            });
+
+                            createChildFields (id,el,childPosition);
+
+                        } else if (id.includes("remove")){
+
+                            popupExec("Поле фильтра будет удалено").then(
+                                function(res){
+                      
+                                    if(res){
+                                        popupSuccess();
+                                    }
+                              
+                                    
+                                }
+                            );
+                        }
+                    
+    
+            
+                    },
+                 
                 }
-                
-                popupExec("Поле фильтра будет удалено").then(
-                    function(){
-                        popupSuccess ();
-                    }
-                );
-
-
             },
-            on: {
+    
+            on:{
                 onAfterRender: function () {
-                    this.getInputNode().setAttribute("title","Удалить поле фильтра");
+                    this.getInputNode().setAttribute("title","Другие операции");
                 },
-            },
-        
+            }
+      
         };
 
         const btns = {  
             id:elemId+"_filter_container-btns"+countChild,
+            css:{"margin-top":"22px!important"},
             cols:[
                 btnOperations,
-                btnDel
+                contextBtn
+               // btnDel
             ]
         };
 
+
+
         function addInput(){
+
+            try{ 
  
-            try{     
-                   
                 containerRows.addView(
-                    {   id:elemId+"_filter-container-child-"+countChild, 
+                    {   id:elemId+"_filter-container-child-operAnd-"+countChild, 
                         padding:5,
+                        positionElem:position,
                         rows:[
-                            headline,
+                          //  headline,
                             {   id:webix.uid(),
                                 cols:[
                                     field ("operAnd",
@@ -516,9 +543,12 @@ function createChildFields (id,el) {
                                 ]
                             }
                         ]
-                    },countChild
+                    },position
         
                 );
+
+
+ 
             }catch(err){ 
                 setFunctionError(err,logNameFile,"createAndInput => addInput");
             }
@@ -531,7 +561,7 @@ function createChildFields (id,el) {
 
         const headline =  {
             id:"or_"+webix.uid(),
-            template:"<div style='color:var(--primary)'>+ или</div>",
+            template:`<span style='font-size: 12px !important;'>${el.label}</span> <span style='font-size: 12px !important; color:var(--primary)'>  + или</span>`,
             height:30, 
             borderless:true
         };
@@ -566,56 +596,110 @@ function createChildFields (id,el) {
         };
 
         const idBtnDel = btnsId+"_remove";
-        const btnDel = {
+        const contextBtn = {   
             view:"button",
-            css:"webix_filterBtns webix_danger",
-            id:idBtnDel,
+            id:btnsId+"_contextMenuFilter",
             type:"icon",
-            icon: 'wxi-trash',
-            inputHeight:38,
-            width: 40,
-            click:function(){
-                function popupSuccess(){
-                    try{
-                        let container = $$(idBtnDel).getParentView();
-                        let parentContainer = container.getParentView().getParentView();
-
-                        containerRows.removeView($$(parentContainer.config.id));
-
-                        setLogValue("success","Поле удалено"); 
-                    }catch(err){ 
-                        setFunctionError(err,logNameFile,"createOrInput => popupSuccess")
-                    }
-                }
-                
-                popupExec("Поле фильтра будет удалено").then(
-                    function(){
-                        popupSuccess();
+            css:"webix_filterBtns",
+            icon: 'wxi-dots',
+            inputHeight : 38,
+            width       : 40,
+            popup: {
+                view: 'contextmenu',
+                css:"webix_contextmenu",
+                data: [
+                    {   id:"add",   
+                        value:"Добавить поле", 
+                        icon: "icon-plus",
+                        submenu:[      
+                            { id:"add_and", value: 'и'  },
+                            { id:"add_or" , value: 'или'},
+                        ]},
+                    {id:"remove", value:"Удалить поле", icon: "icon-trash"}
+                ],
+                on:{
+                    onMenuItemClick:function(id, e, node){
+    
+                    
+                        const contextBtn     = $$(this.config.master);
+                        const btnContainer   = contextBtn.getParentView     ();
+                        const inputContainer = btnContainer.getParentView   ();
+                        const childContainer = inputContainer.getParentView ();
+                        const container      = $$(el.id+"_filter_rows");
+                    
+                     
+             
+                        function popupSuccess(){
                         
-                    }
-                );
+                            container.removeView(childContainer);
+                            showEmptyTemplate();
+                            setLogValue("success","Поле удалено"); 
+                    
+                        }
+    
+                        if ( id == "add_and" || id == "add_or" ){
+                            const currChildId    = childContainer.config.id;
+                            const allInputs      = container.getChildViews();
+
+                            let childPosition    = 0;
+             
+                            allInputs.forEach(function(inp,i){
+                                const inputId     = inp.config.id;
+                   
+
+                                if ( inputId == currChildId ){
+                                    childPosition = i+1;
+                                }
+                            
+                            });
+
+                            createChildFields (id,el,childPosition);
+
+                        } else if (id.includes("remove")){
+
+                            popupExec("Поле фильтра будет удалено").then(
+                                function(res){
+                      
+                                    if(res){
+                                        popupSuccess();
+                                    }
+                              
+                                    
+                                }
+                            );
+                        }
+                    
+    
+            
+                    },
+                 
+                }
             },
-            on: {
+    
+            on:{
                 onAfterRender: function () {
-                    this.getInputNode().setAttribute("title","Удалить поле фильтра");
+                    this.getInputNode().setAttribute("title","Другие операции");
                 },
-            },
-        
+            }
+      
         };
+
 
         const btns =  {
             id:elemId+"_filter_container-btns"+countChild,
+            css:{"margin-top":"22px!important"},
             cols:[
                 btnOperation,
-                btnDel
+                contextBtn
             ]
         };
-
+ 
         containerRows.addView(
             {   id:elemId+"_filter-container-child-operOr-"+countChild,
                 padding:5,
+                positionElem:position,
                 rows:[
-                    headline,
+                  //  headline,
                     {   id:webix.uid(),
                         cols:[
                             field ("operOr",
@@ -626,8 +710,12 @@ function createChildFields (id,el) {
                             btns
                         ]
                     }
-            ]},countChild
+            ]},position
         );
+
+        
+     
+
     }
 
     if(id.includes("and")){

@@ -110,8 +110,8 @@ function setUserPrefs (){
 
         
         async function setPrefs(){
-         
-            if (!(Object.keys(user).length)){
+ 
+            if (!user){
                 const userprefsGetData = webix.ajax("/init/default/api/whoami");
                 userprefsGetData.then(function(data){
                     data = data.json().content;

@@ -232,6 +232,20 @@ function removeNullFields(arr){
     return sentObj;
 }
 
+
+function setCounterVal (){
+    try{
+        const counter = $$("table-findElements");
+        
+        const oldVal  = counter.getValues();
+        const newVal  = +oldVal + 1;
+
+        counter.setValues(newVal.toString());
+    } catch (err){
+        setFunctionError(err,logNameFile,"setCounterVal");
+    }
+}
+
 function saveNewItem (){
     const currId = getItemId ();
  
@@ -243,7 +257,6 @@ function saveNewItem (){
         const notNullVals  = removeNullFields(newValues);
         const sentVals     = dateFormatting(notNullVals);
 
-    console.log(sentVals)
 
         const postData  = webix.ajax().post("/init/default/api/"+currId, sentVals);
       
@@ -261,7 +274,13 @@ function saveNewItem (){
 
             function tableUpdate(){
                 newValues.id = data.content.id;
-                $$("table").add(newValues); 
+
+                if (newValues.id <= $$("table").config.offsetAttr ){
+                    $$("table").add(newValues); 
+                }
+
+                setCounterVal ();
+
             }
 
             if (data.content.id !== null){
@@ -414,9 +433,14 @@ const newAddBtn = {
     height:48,
     minWidth:90, 
     disabled:true,
-    hotkey: "shift",
+    hotkey: "alt+a",
     value:"Новая запись", 
-    click:addItem
+    click:addItem,
+    on      : {
+        onAfterRender: function () {
+            this.getInputNode().setAttribute("title", "Добавить новую запись (Alt+A)");
+        }
+    } 
 };
 
 const delBtn = {  
@@ -426,16 +450,17 @@ const delBtn = {
     height:48,
     minWidth:90,
     width:100,
-    hotkey: "shift+esc",
+    hotkey: "ctrl+enter",
     css:"webix_danger", 
     type:"icon", 
     icon:"icon-trash", 
     click:removeItem,
     on: {
         onAfterRender: function () {
-            this.getInputNode().setAttribute("title","Удалить запись из таблицы");
+            this.getInputNode().setAttribute("title","Удалить запись из таблицы (Ctrl+Enter)");
         }
-    } 
+    },
+     
 };
 
 const saveBtn = { 
@@ -443,10 +468,16 @@ const saveBtn = {
     id:"table-saveBtn",
     hidden:true, 
     value:"Сохранить", 
+    hotkey: "shift+space",
     height:48, 
     css:"webix_primary", 
     click:function(){
         saveItem();
+    },
+    on: {
+        onAfterRender: function () {
+            this.getInputNode().setAttribute("title","Удалить запись из таблицы (Shift+Space)");
+        }
     },
 };
 
@@ -457,8 +488,14 @@ const saveNewBtn = {
     hidden:true,  
     height:48,
     css:"webix_primary", 
+    hotkey: "ctrl+shift+space",
     click:function(){
         saveNewItem();
+    },
+    on: {
+        onAfterRender: function () {
+            this.getInputNode().setAttribute("title","Удалить запись из таблицы (Ctrl+Shift+Space)");
+        }
     },
 };
 
@@ -472,14 +509,13 @@ const backTableBtn = {
     height:48,
     minWidth:60,
     width:90,
-   
+    hotkey:"shift+q",
     click:function(){
         backTableBtnClick();
     },
-
     on: {
         onAfterRender: function () {
-            this.getInputNode().setAttribute("title","Вернуться к таблице");
+            this.getInputNode().setAttribute("title","Вернуться к таблице (Shift+Q)");
         }
     } 
 };

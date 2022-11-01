@@ -6,8 +6,7 @@ import {setLogValue}                                        from '../../blocks/l
 import {setAjaxError,setFunctionError}                      from "../../blocks/errors.js";
 import {showElem,hideElem,removeElem,getItemId}             from "../../blocks/commonFunctions.js";
 
-import {setCounterVal, toEditForm, validateError, putData}  from "./common.js";
-
+import {toEditForm, validateError, putData}                 from "./common.js";
 
 const logNameFile = "table => onFuncs";
 
@@ -251,14 +250,13 @@ const onFuncTable = {
       
         }
       
-        setCounterVal ();
         overlay ();
     },
 
     onAfterAdd: function() {
-        setCounterVal ();
         this.hideOverlay();
     },
+
 };
 
 

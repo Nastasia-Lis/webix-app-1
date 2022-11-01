@@ -1,21 +1,22 @@
 import  {trashBtn,showPropBtn}           from "./btnsInTable.js";
 
+const limitLoad   = 80;
+
 function table (idTable, onFunc, editableParam=false) {
     return {
-        view        :"datatable",
+        view        : "datatable",
         id          : idTable,
-        css         :"webix_table-style webix_header_border webix_data_border",
+        css         : "webix_table-style webix_header_border webix_data_border",
         autoConfig  : true,
-        editable    :editableParam,
+        editable    : editableParam,
         editaction  :"dblclick",
-        minHeight   :350,
-        datafetch   :5,
-        datathrottle: 5000,
-        loadahead   :100,
+        minHeight   : 350,
         footer      : true,
-        select      :true,
+        select      : true,
         resizeColumn: true,
-        on          :onFunc,
+        sort        : [],
+        offsetAttr  : limitLoad,
+        on          : onFunc,
         onClick     :{
             "wxi-trash":function(event,config,html){
                 trashBtn(config,idTable);
@@ -25,6 +26,10 @@ function table (idTable, onFunc, editableParam=false) {
                 showPropBtn (cell);
             },
             
+        },
+        ready:function(){ 
+            const firstCol = this.getColumns()[0];
+            this.markSorting(firstCol.id, "asc");
         },
     };
 }
