@@ -705,7 +705,7 @@ function createEditFields (parentElement) {
     }
 
     try {
-        const columnsData = $$("table").getColumns();
+        const columnsData = $$("table").getColumns(true);
         const inpElements = Object.keys($$(parentElement).elements);
         
         if ( inpElements.length==0  ){

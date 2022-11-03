@@ -3,7 +3,7 @@ import { STORAGE,getData }                  from "../globalStorage.js";
 
 import { setAjaxError,setFunctionError }    from "../errors.js";
 
-import { getComboOptions }                  from '../commonFunctions.js';
+import { getComboOptions, removeElem }                  from '../commonFunctions.js';
 import { showElem,hideElem }                from '../commonFunctions.js';
 
 import { setUserPrefs }                     from '../storageSetting.js';
@@ -48,6 +48,7 @@ function submitBtn (idElements, url, verb, rtype){
                 try{
                     tableView.clearAll();
 
+                    
                     if (data.length !== 0){
                         tableView.hideOverlay("Ничего не найдено");
                         tableView.parse(data);
@@ -178,7 +179,6 @@ function submitBtn (idElements, url, verb, rtype){
 }
 
 function createTableRows (idCurrTable,idsParam, offset=0){
-
     const dataContent  = STORAGE.fields.content;
     const data         = dataContent[idsParam];
 
@@ -216,6 +216,7 @@ function createTableRows (idCurrTable,idsParam, offset=0){
         }
 
         function datePrefs (data){
+ 
             let dateFormat;
 
             const columns  = $$(table).getColumns();
@@ -304,35 +305,35 @@ function createTableRows (idCurrTable,idsParam, offset=0){
                             check = true;
                         } 
                     });
-
+               
                     return check;
                 }
 
-                
-                function findKey(element){
-                    Object.keys(element).forEach(function(key,i){
-                        if(findBool(key)){
-                            boolKeys.push(key);
+           
+                function findKey(){
+                    const cols = idCurrView.getColumns();
+                    cols.forEach(function(key,i){
+                    
+                        if(findBool(key.id)){
+                            boolKeys.push(key.id);
                         }
                     });
+            
                 }
-
-                data.forEach(function(el,i){
-                   findKey(el);
-                });
+                findKey  ();
 
 
                 function returnVal(element){
                     boolKeys.forEach(function(el,i){
-
-                        if ( element[el] == "0" ){
+                        if ( element[el] == false ){
                             element[el] = 2;
-                        } 
+                        } else {
+                            element[el] = 1;
+                        }
                     });
    
                 }
 
-        
                 data.forEach(function(el,i){
                     returnVal(el);
                 });
@@ -342,19 +343,13 @@ function createTableRows (idCurrTable,idsParam, offset=0){
 
 
             function checkNotUnique(idAddRow){
-             //   let check = false;
-            //    console.log(idCurrView.config.offsetAttr) // до этого id добавляется
 
                 Object.values(idCurrView.data.pull).forEach(function(el,i){
             
                     if ( el.id == idAddRow ){
-                        //check = true;
-
                         idCurrView.remove(el.id);
                     }
                 });
-
-              //  return check;
             }
 
 
@@ -390,7 +385,7 @@ function createTableRows (idCurrTable,idsParam, offset=0){
 
         function setCounterVal (data){
             try{
-                const prevCountRows = data.reccount.toString();
+                const prevCountRows = data;
                 $$(idFindElem).setValues(prevCountRows);
                 
                 if(idCurrTable == "table"){
@@ -405,15 +400,17 @@ function createTableRows (idCurrTable,idsParam, offset=0){
 
         const tableElem = $$(table);
         const limitLoad = 80;
-
+        const firstCol = tableElem.getColumns()[0].id;
 
         function returnFilter(){
             const filterString = tableElem.config.filter;
+
             let filter;
             if (filterString){
                 filter = filterString;
             } else {
                 filter = itemTreeId +'.id+%3E%3D+0';
+        
             }
             return filter;
         }
@@ -421,28 +418,26 @@ function createTableRows (idCurrTable,idsParam, offset=0){
         function returnSort(){
             let sort;
 
-            const sortCol        = tableElem.config.sort.idCol;
-            const sortType       = tableElem.config.sort.type;
-            const firstCol       = tableElem.getColumns()[0].id;
+            const sortCol  = tableElem.config.sort.idCol;
+            const sortType = tableElem.config.sort.type;
         
             if (sortCol){
                 if (sortType == "desc"){
-                    sort = "~"+itemTreeId+'.'+sortCol;
+                    sort = "~" + itemTreeId + '.' + sortCol;
                 } else {
-                    sort = itemTreeId+'.'+sortCol;
+                    sort =       itemTreeId + '.' + sortCol;
                 }
             } else {
-                sort = itemTreeId+'.'+firstCol;
+                    sort =       itemTreeId + '.' + firstCol;
             }
 
             return sort;
         }
-
+      
         function loadTableData(){
             tableElem.load({
                 $proxy : true,
                 load   : function(view, params){
-                 
                     const filter = returnFilter();
                     const sort   = returnSort  ();
 
@@ -452,153 +447,171 @@ function createTableRows (idCurrTable,idsParam, offset=0){
                                     "offset="+ offset
                     ];
 
-                    const url = "/init/default/api/smarts?";
+              
+                    let url;
+                    const tableType = tableElem.config.id;
+                    if (tableType == "table"){
+                        url = "/init/default/api/smarts?"+ query.join("&");
+                    } else {
+                        url = "/init/default/api/" + itemTreeId;
+                    }
 
-                    webix.ajax().get( url + query.join("&") , {
-                        success:function(text, data, XmlHttpRequest){
-                            data = data.json();
-                            
-                            if ( !offset ){
-                                tableElem.config.reccount  = data.reccount;
-                                tableElem.config.idTable   = itemTreeId;
-                                tableElem.config.limitLoad = limitLoad;
-                                setCounterVal (data);
-                            }
+                    const getData = webix.ajax().get( url );
 
-                            data  = data.content;
-    
-                            try {
-                                setTableState ();
-                                datePrefs     (data);
-                                parseRowData  (data);
-                               
-                            
-                            } catch (err){
-                                setFunctionError(err,logNameFile,"getItemData => table load");
-                            } 
-                    
-                        },
-                        error:function(text, data, XmlHttpRequest){    
-                            function tableErrorState (){
-                                const prevCountRows = "-";
-                                function disableBtn(btn){
-                                    if(btn){
-                                        btn.disable();
-                                    }
-                                }
-                                try {
-                                    $$(idFindElem)          .setValues(prevCountRows.toString());
-                                    $$("table-findElements").setValues(prevCountRows.toString());
-            
-                                    disableBtn ($$("table-newAddBtnId"));
-                                    disableBtn ($$("table-filterId"   ));
-                                    disableBtn ($$("table-exportBtn"  ));
-                             
-      
-                              
-                                } catch (err){
-                                    setFunctionError(err,logNameFile,"tableErrorState");
-    
-                                }
-                            }
-    
-                            function notAuthPopup(){
-                    
-                                function destructPopup(){
-                                    try{
-                                        const popup = $$("popupNotAuth");
-                                        if (popup){
-                                            popup.destructor();
-                                        }
-                                    } catch (err){
-                                        setFunctionError(err,logNameFile,"notAuthPopup btnClosePopup click");
-                                    }
-                                }
-                                const popupHeadline = {   
-                                    template    : "Вы не авторизованы", 
-                                    width       : 250,
-                                    css         : "webix_template-not-found", 
-                                    borderless  : true, 
-                                    height      : 20 
-                                };
-                                const btnClosePopup = {
-                                    view  : "button",
-                                    id    : "buttonClosePopup",
-                                    css   : "popup_close-btn",
-                                    type  : "icon",
-                                    width : 35,
-                                    icon: 'wxi-close',
-                                    click:function(){
-                                        destructPopup();
-                                    }
-                                };
-                
-                                const popupSubtitle = {   
-                                    template    : "Войдите в систему, чтобы продолжить.",
-                                    css         : "webix_template-not-found-descr", 
-                                    borderless  : true, 
-                                    height      : 35 
-                                };
-                
-                                const mainBtnPopup = {
-                                    view    : "button",
-                                    css     : "webix_btn-go-login",
-                                    height  : 46,
-                                    value   : "Войти",
-                                    click   : function(){
-                                        function navigate(){
-                                            try{
-                                                Backbone.history.navigate("/", { trigger:true});
-                                                window.location.reload();
-                                            } catch (err){
-                                                setFunctionError(err,logNameFile,"notAuthPopup navigate");
-                                            }
-                                        }
-                                        destructPopup();
-                                        navigate();
-                                     
-                                   
-                                    }
-                                };
-                
-                                webix.ui({
-                                    view    : "popup",
-                                    id      : "popupNotAuth",
-                                    css     : "webix_popup-prev-href",
-                                    width   : 340,
-                                    height  : 125,
-                                    modal   : true,
-                                    position: "center",
-                                    body    : {
-                                        rows: [
-                                        {rows: [ 
-                                            { cols: [
-                                                popupHeadline,
-                                                {},
-                                                btnClosePopup,
-                                            ]},
-                                            popupSubtitle,
-                                            mainBtnPopup,
-                                            { height : 20 }
-                                        ]}]
-                                        
-                                    },
-                
-                                }).show();
-                            }
-    
-                            tableErrorState ();
-    
-                            if (XmlHttpRequest.status == 401){
+                    getData.then(function(data){
+                        data = data.json();
+
                         
-                                if (!($$("popupNotAuth"))){
-                                    notAuthPopup();
-                                }
-                          
-                            }
-                        }, 
-            
+                        if ( !offset && tableType == "table" ){
+                            tableElem.config.reccount  = data.reccount;
+                            tableElem.config.idTable   = itemTreeId;
+                            tableElem.config.limitLoad = limitLoad;
+                            setCounterVal (data.reccount.toString());
+                        }
+
+                        if( tableType == "table-view" ){
+                            tableElem.config.idTable   = itemTreeId;
+                            setCounterVal (data.content.length.toString());
+                        }
+
+                        data  = data.content;
+
+                        try {
+                            setTableState ();
+                            datePrefs     (data);
+                            parseRowData  (data);
+                        
+                        
+                        } catch (err){
+                   
+                            setFunctionError(err,logNameFile,"getItemData => table load");
+                        } 
+                    
                     });
+                    
+                    getData.fail(function(err){
+
+                        function tableErrorState (){
+                            const prevCountRows = "-";
+                            function disableBtn(btn){
+                                if(btn){
+                                    btn.disable();
+                                }
+                            }
+                            try {
+                                $$(idFindElem)          .setValues(prevCountRows.toString());
+                                $$("table-findElements").setValues(prevCountRows.toString());
+        
+                                disableBtn ($$("table-newAddBtnId"));
+                                disableBtn ($$("table-filterId"   ));
+                                disableBtn ($$("table-exportBtn"  ));
+                         
+  
+                          
+                            } catch (err){
+                                setFunctionError(err,logNameFile,"tableErrorState");
+
+                            }
+                        }
+
+                        function notAuthPopup(){
+                
+                            function destructPopup(){
+                                try{
+                                    const popup = $$("popupNotAuth");
+                                    if (popup){
+                                        popup.destructor();
+                                    }
+                                } catch (err){
+                                    setFunctionError(err,logNameFile,"notAuthPopup btnClosePopup click");
+                                }
+                            }
+                            const popupHeadline = {   
+                                template    : "Вы не авторизованы", 
+                                width       : 250,
+                                css         : "webix_template-not-found", 
+                                borderless  : true, 
+                                height      : 20 
+                            };
+                            const btnClosePopup = {
+                                view  : "button",
+                                id    : "buttonClosePopup",
+                                css   : "popup_close-btn",
+                                type  : "icon",
+                                width : 35,
+                                icon: 'wxi-close',
+                                click:function(){
+                                    destructPopup();
+                                }
+                            };
+            
+                            const popupSubtitle = {   
+                                template    : "Войдите в систему, чтобы продолжить.",
+                                css         : "webix_template-not-found-descr", 
+                                borderless  : true, 
+                                height      : 35 
+                            };
+            
+                            const mainBtnPopup = {
+                                view    : "button",
+                                css     : "webix_btn-go-login",
+                                height  : 46,
+                                value   : "Войти",
+                                click   : function(){
+                                    function navigate(){
+                                        try{
+                                            Backbone.history.navigate("/", { trigger:true});
+                                            window.location.reload();
+                                        } catch (err){
+                                            setFunctionError(err,logNameFile,"notAuthPopup navigate");
+                                        }
+                                    }
+                                    destructPopup();
+                                    navigate();
+                                 
+                               
+                                }
+                            };
+            
+                            webix.ui({
+                                view    : "popup",
+                                id      : "popupNotAuth",
+                                css     : "webix_popup-prev-href",
+                                width   : 340,
+                                height  : 125,
+                                modal   : true,
+                                position: "center",
+                                body    : {
+                                    rows: [
+                                    {rows: [ 
+                                        { cols: [
+                                            popupHeadline,
+                                            {},
+                                            btnClosePopup,
+                                        ]},
+                                        popupSubtitle,
+                                        mainBtnPopup,
+                                        { height : 20 }
+                                    ]}]
+                                    
+                                },
+            
+                            }).show();
+                        }
+
+                        tableErrorState ();
+
+                        if (err.status == 401){
+                    
+                            if (!($$("popupNotAuth"))){
+                                notAuthPopup();
+                            }
+                      
+                        } 
+
+                        setAjaxError(err, "getInpoTable","getData");
+                    });
+
                 }
             });
         }
@@ -667,38 +680,29 @@ function createTableRows (idCurrTable,idsParam, offset=0){
 }
 
 function getInfoTable (idCurrTable,idsParam) {
-   
-    let //idFindElem,
-        filterBar,
-        itemTreeId,
+ 
+    let filterBar,
         titem
     ;
 
     function getValsTable (){
-        itemTreeId = idsParam;
         titem = $$("tree").getItem(idsParam);
 
         if (!titem){
             titem = idsParam;
         }
 
- 
-        if (idCurrTable.includes("view")){
-            try{ 
-               // idSearch  = "table-view-search";
-               // idFindElem  = "table-view-findElements";
-                filterBar   = $$("table-view-filterId").getParentView();
-            } catch (err){  
-                setFunctionError(err,logNameFile,"getValsTable");
+        try{ 
+            if (idCurrTable.includes("view")){
+            
+                filterBar = $$("table-view-filterId").getParentView();
+            
+            } else {
+                filterBar = $$("table-filterId").getParentView();
+              
             }
-        } else {
-            try{
-              //  idSearch  = "table-search";
-              //  idFindElem  = "table-findElements";
-                filterBar   = $$("table-filterId").getParentView();
-            } catch (err){  
-                setFunctionError(err,logNameFile,"getValsTable");
-            }
+        } catch (err){  
+            setFunctionError(err,logNameFile,"getValsTable");
         }
     }
 
@@ -707,19 +711,29 @@ function getInfoTable (idCurrTable,idsParam) {
             $$(idCurrTable).clearAll();
 
             if (idCurrTable == "table-view"){
-                if ($$("contextActionsPopup")){
-                    $$("contextActionsPopup").destructor();
+                const popup       = $$("contextActionsPopup");
+                const btnAdaptive = $$("contextActionsBtnAdaptive");
+                const inputs      = $$( "customInputs" );
+                const inputsMain  = $$("customInputsMain");
+                
+                
+                if (popup){
+                    popup.destructor();
+                }
+      
+                
+                if (btnAdaptive){
+                    filterBar.removeView(btnAdaptive);
                 }
 
-                if ($$("contextActionsBtnAdaptive")){
-                    filterBar.removeView($$("contextActionsBtnAdaptive"))
-                }
-                if ($$( "customInputs" )){
-                    $$( "customInputs" ).getParentView().removeView($$( "customInputs" ))
+                if (inputs){
+                    const parent = inputs.getParentView();
+                    parent.removeView(inputs);
                 }
 
-                if ($$("customInputsMain")){
-                    $$("customInputsMain").getParentView().removeView($$( "customInputsMain" ))
+                if (inputsMain){
+                    const parent = inputsMain.getParentView();
+                    parent.removeView(inputsMain);
                 }
             
             }
@@ -820,24 +834,54 @@ function getInfoTable (idCurrTable,idsParam) {
         const dataFields    = data.fields;
         const colsName      = Object.keys(data.fields);
         const columnsData   = [];
-      
+        const table         = $$(idCurrTable);
  
         let fieldType;
-        const table = $$(idCurrTable);
+     
         function refreshCols(columnsData){
-      
             if(table){
                 table.refreshColumns(columnsData);
             }
         }
 
-        function getUserPrefs(){
 
+        function setColsUserSize(storageData){
+           
+            storageData.values.forEach(function (el,i){
+                table.setColumnWidth(el.column, el.width);
+            });        
+        }
+
+        function getUserPrefs(){
+   
             const storageData = webix.storage.local.get("visibleColsPrefs_"+idsParam);
+
+            if ( storageData && storageData.values.length ){
+                setColsUserSize(storageData);  
+            }
+
+            function setColsSize(col){
+                let countCols;
+                let containerWidth;
+          
+                if(storageData && storageData.values.length){
+                    countCols  = storageData.values.length;
+                } else {
+                    const cols = table.getColumns(true);
+                    countCols  = cols .length;
+                }
+
+                containerWidth = window.innerWidth - $$("tree").$width - 25;
+
+                const tableWidth = containerWidth-17;
+                const colWidth   = tableWidth / countCols;
+
+                table.setColumnWidth(col, colWidth);
+            }
             
             function findUniqueCols(col){
                 let result = false;
-
+    
                 storageData.values.forEach(function(el){
             
                     if (el.column == col){
@@ -848,11 +892,10 @@ function getInfoTable (idCurrTable,idsParam) {
                 return result;
             }
 
-    
-            if( storageData ){
+            const allCols = table.getColumns(true);
+            if( storageData && storageData.values.length ){
 
-                const allCols = table.getColumns(true);
-
+   
                 allCols.forEach(function(el,i){
 
                     if (findUniqueCols(el.id)){
@@ -873,9 +916,15 @@ function getInfoTable (idCurrTable,idsParam) {
                         
                 });
 
+            } else {   
+             
+                allCols.forEach(function(el,i){
+                    setColsSize(el.id);  
+                });
+               
             }
     
-
+            
         }
 
         try{
@@ -955,7 +1004,12 @@ function getInfoTable (idCurrTable,idsParam) {
                 }
 
                 function setFillCOl     (){
-                    dataFields[data].fillspace  = true;
+             
+                    const length     = Object.values(dataFields).length;
+                    const tableWidth = $$("tableContainer").$width-17;
+                    const colWidth   = tableWidth/length;
+               
+                    dataFields[data].width  = colWidth;
                 }
 
                 function setHeaderCol   (){
@@ -1000,9 +1054,11 @@ function getInfoTable (idCurrTable,idsParam) {
         
             });
 
+
             refreshCols(columnsData);
 
             getUserPrefs();
+
  
         } catch (err){
             setFunctionError(err,logNameFile,"createTableCols");
@@ -1593,9 +1649,6 @@ function getInfoTable (idCurrTable,idsParam) {
     }
 
 
-   
-
-
     async function generateTable (){ // SINGLE ELS
 
         if (!STORAGE.fields){
@@ -1609,6 +1662,7 @@ function getInfoTable (idCurrTable,idsParam) {
 
             createDetailAction (columnsData);
             createDynamicElems ();
+          
             createTableRows (idCurrTable,idsParam);
            
         }

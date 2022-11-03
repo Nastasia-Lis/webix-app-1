@@ -49,7 +49,7 @@ function setLogValue (typeNotify,notifyText,specificSrc) {
         }
 
         if (srcTable == "version"){
-            name = 'Expa v1.0.45';
+            name = 'Expa v1.0.46';
 
         } else if (srcTable == "cp") {
             name = 'Смена пароля';

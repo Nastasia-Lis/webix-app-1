@@ -5,7 +5,7 @@ import {setHeadlineBlock} from './blockHeadline.js';
 
 import {toolbarFilterBtn} from "./tableFilter/toolbarBtn.js";
 import {toolbarEditButton} from "./tableEditForm/toolbarBtn.js";
-import {toolbarVisibleColsBtn} from "./visibleColumns.js";
+import {toolbarVisibleColsBtn} from "./columnsSettings/visibleColumns.js";
 
 
 

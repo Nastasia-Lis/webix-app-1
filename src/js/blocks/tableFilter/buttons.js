@@ -378,12 +378,20 @@ function editFiltersBtn (){
 
 function filterSubmitBtn (){
     
-    const values = $$("filterTableForm").getValues();
                              
     let query =[];
 
     function getOperationVal (value, filterEl,condition, position, parentIndex=false){
- 
+
+        const segmentBtnVal = $$(filterEl+"_segmentBtn").getValue();
+
+        if (segmentBtnVal == "1"){
+            condition = "and";
+        } else {
+            condition = "or";
+        }
+
+
         const itemTreeId     = getItemId ();
         const operationValue = $$(filterEl+"-btnFilterOperations").config.value;
         
@@ -503,23 +511,24 @@ function filterSubmitBtn (){
             el.getChildViews().forEach(function(child,i){
                 const idEl = child.config.id;
                 if (idEl.includes("-container-child-")){
+                    const childInp = child.getChildViews()[0]._collection[0].cols[0];
+           
+                    const valueChild   = $$(childInp.id).getValue();
 
-                    const startIndex   = idEl.indexOf("container-child-")-1;
-                    const startId      = idEl.slice(0,startIndex);
-
-                    const endIndex     = idEl.indexOf("-child-");
-                    const endId        = idEl.slice(endIndex);
-
-                    const name         = $$( startId + endId ).config.name;
-
-                    valuesArr.push ({name:name, value:$$(startId+endId).getValue()});
+                    valuesArr.push ( { 
+                        name  : childInp.name, 
+                        value : valueChild 
+                    });
 
                 } else {
                     const index         = idEl.indexOf("_container");
                     const idParentInput = idEl.slice(0,index)+"_filter";
 
                     const name         = $$(idParentInput).config.name;
-                    valuesArr.push ({name:name, value:$$(idParentInput).getValue()});
+                    valuesArr.push ({ 
+                        name  : name, 
+                        value : $$(idParentInput).getValue()
+                    });
 
                 }
             });
@@ -543,6 +552,8 @@ function filterSubmitBtn (){
         }
 
         removeNull();
+
+        console.log(valuesArr,notNullVals)
 
         notNullVals.forEach(function(el,i){
       
@@ -572,7 +583,7 @@ function filterSubmitBtn (){
             }
 
             function createQuery(){
-           
+                //console.log($$(filterEl+"_segmentBtn"), $$(filterEl+"_segmentBtn").getValue())
      
                 try{
 

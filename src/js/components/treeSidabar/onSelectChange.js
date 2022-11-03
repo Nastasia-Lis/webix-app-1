@@ -70,12 +70,13 @@ function onSelectChangeFunc(ids){
             setFunctionError(err,logNameFile,"hideNoneContent");
         }
     }
-
+ 
     function setTableName (id){
         try{
+           
             const tableHeadline = $$("table-templateHeadline");
             const tableViewHeadline = $$("table-view-templateHeadline");
-            
+       
             if (tableHeadline){
                 STORAGE.tableNames.forEach(function(el,i){
                     if (el.id == id){
@@ -317,14 +318,14 @@ function onSelectChangeFunc(ids){
     function getInfoSelectElement (){
         if (       getItemParent   == "tables"     ){
             defaultStateForm();
-            getInfoTable ("table", ids[0]);
+          //  getInfoTable ("table", ids[0]);
             setTableName (treeItemId); 
 
         } else if (getItemParent   == "dashboards" ){
             getInfoDashboard ();
 
         } else if (getItemParent   == "forms"      ){
-            getInfoTable ("table-view", ids[0]);
+          //  getInfoTable ("table-view", ids[0]);
             setTableName (treeItemId);
 
         }

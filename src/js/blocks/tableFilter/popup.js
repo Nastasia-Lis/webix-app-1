@@ -1,6 +1,6 @@
 
 import {setLogValue} from '../logBlock.js';
-import {getItemId} from "../commonFunctions.js";
+import {getItemId, showElem,hideElem} from "../commonFunctions.js";
 import {setFunctionError,setAjaxError} from "../errors.js";
 import {modalBox} from "../notifications.js";
 
@@ -18,8 +18,36 @@ function clearPopupBtn (){
 
 function popupSubmitBtn (){
 
-    function visibleField (condition,elementClass=null,el=null){
+    webix.message({
+        text:"Блок находится в разработке",
+        type:"debug", 
+        expire: 10000,
+    });
+
+    const stateElements = [];
+    function showSegmentBtn(){
+    
+        let counter = 0;
+        stateElements.forEach(function(checkbox,i){
+            if (i){
+                if (checkbox.val){
+                    counter++; 
+                }
+
  
+                if (counter > 1){
+                    showElem($$(checkbox.elem + "_filter_segmentBtn"));
+                } else {
+                    hideElem($$(checkbox.elem + "_filter_segmentBtn")); 
+                }
+            }
+             
+        });
+      
+    }
+
+    function visibleField (condition,elementClass=null,el=null){
+        stateElements.push({elem:elementClass, val:condition});
         let htmlElement = document.querySelectorAll(".webix_filter-inputs");
 
         function showHtmlEl(){
@@ -28,8 +56,10 @@ function popupSubmitBtn (){
                 htmlElement.forEach(function(elem,i){
            
                     if (elem.classList.contains(elementClass)){
+                      
                         if (!(elem.classList.contains("webix_show-content"))){
                             elem.classList.add("webix_show-content");
+                            
                         }
                         if (elem.classList.contains("webix_hide-content")){
                             elem.classList.remove("webix_hide-content");
@@ -186,8 +216,6 @@ function popupSubmitBtn (){
         }
     }
 
-  
-    
     function getLibraryData(){
         
         let radioValue = $$("filterEditLib").getOption($$("filterEditLib").getValue());
@@ -414,7 +442,6 @@ function popupSubmitBtn (){
       
     }
 
- 
     function getCheckboxData(){
 
         function enableLibrarySaveBtn(){
@@ -503,8 +530,6 @@ function popupSubmitBtn (){
         setLogValue("success","Рабочая область фильтра обновлена");
     }
 
-
-
     try{                                             
         const tabbarValue = $$("filterPopupTabbar").getValue();
 
@@ -513,6 +538,7 @@ function popupSubmitBtn (){
 
         } else if (tabbarValue=="editFormScroll"){
             getCheckboxData();
+            showSegmentBtn();
         }
     }catch(err){
         setFunctionError(err,logNameFile,"function popupSubmitBtn");

@@ -1,8 +1,8 @@
-import { hideElem, showElem,getItemId }     from "./commonFunctions.js";
-import { setFunctionError, setAjaxError }   from "./errors.js";
-import { setLogValue }                      from "./logBlock.js";
-import { setStorageData }                   from "./storageSetting.js";
-import { modalBox }                         from "./notifications.js";
+import { hideElem, showElem }                           from "../commonFunctions.js";
+import { setFunctionError }                             from "../errors.js";
+import { setLogValue }                                  from "../logBlock.js";
+import { modalBox }                                     from "../notifications.js";
+import { postPrefsValues, getTable, destructPopup }     from "./common.js";
 
 function searchColsListPress (){
     const list      = $$("visibleList");
@@ -26,10 +26,6 @@ function searchColsListPress (){
         } else {
             hideElem($$("visibleColsEmptyTempalte"));
         }
-
-    
-     
-       //visibleColsEmptyTempalteSelected
       
     } catch(err){
         setFunctionError(err,"visibleColumns","searchColsListPress");
@@ -37,16 +33,6 @@ function searchColsListPress (){
 
 }
 
-function destructPopup(){
-    try{
-        const popup = $$("popupVisibleCols");
-        if (popup){
-            popup.destructor();
-        }
-    } catch (err){
-        setFunctionError(err,"visibleColumns","destructPopup");
-    }
-}
 
 function setBtnSubmitState(state){
     const btnSubmit  = $$("visibleColsSubmit");
@@ -60,33 +46,42 @@ function setBtnSubmitState(state){
 }
 
 
-function getTable(){
-    const tableTempl     = $$("table");
-    const tableTemplView = $$("table-view");
-    let table;
+function setColsSize(col,listItems){
+    const table      = getTable();
+    const countCols  = listItems.length;
+    const tableWidth = $$("tableContainer").$width-17;
+    const colWidth   = tableWidth / countCols;
 
-    if ( tableTempl.isVisible() ){
-        table = tableTempl;
-    } else if ( tableTemplView.isVisible() ){
-        table = tableTemplView;
-    }
-
-    return table;
+    table.setColumnWidth(col, colWidth);
 }
 
-
 function clearBtnColsClick (){
-    const table = getTable();
-    const cols  = table.getColumns(true);
+    const table  = getTable();
+    const cols   = table.getColumns(true);
+    const values = [];
+  
+    function returnWidthCol(){
+        const containerWidth = window.innerWidth - $$("tree").$width - 77; 
+        const cols           = table.getColumns(true).length;
+        const colWidth   = containerWidth / cols;
+        return colWidth.toFixed(2);
+    }
 
     function showCols(){
         try{
             cols.forEach(function(el,i){
-                
+                const colWidth = returnWidthCol();
+                setColsSize(el.id,cols);
                 if( !( table.isColumnVisible(el.id) ) ){
                     table.showColumn(el.id);
                 }
-                
+                table.moveColumn    (el.id,i);
+                table.setColumnWidth(el.id, colWidth);
+                values.push({
+                    column   : el.id,
+                    position : i,
+                    width    : colWidth 
+                });
             });
         } catch(err){
             setFunctionError(err,"visibleColumns","clearBtnColsClick => showCols");
@@ -100,169 +95,11 @@ function clearBtnColsClick (){
 
         if (result == 1){
             showCols();
+            postPrefsValues(values);
             destructPopup();
             setLogValue   ("success","Рабочая область таблицы обновлена");
         }
     });
-}
-
-function setUpdateCols(sentVals){
-    const table   = getTable();
-    const columns = table.getColumns(true);
-    
-    function findUniqueCols(col){
-        let result = false;
-
-        sentVals.values.forEach(function(el){
-            if (el.column == col){
-                result = true;
-            }
-
-        });
-        
-        return result;
-    }
-
-    function setVisibleState(){
-        try{
-            columns.forEach(function(el,i){
-                
-                if (findUniqueCols(el.id)){
-                    if( !( table.isColumnVisible(el.id) ) ){
-                        table.showColumn(el.id);
-                    }
-                } else {
-                    const colIndex = table.getColumnIndex(el.id);
-                    if(table.isColumnVisible(el.id) && colIndex !== -1){
-                        table.hideColumn(el.id);
-                    }
-                }
-            });
-        } catch(err){
-            setFunctionError(err,"visibleColumns","setUpdateCols => setVisibleState");
-        }
-    }
-
-    function moveListItem(){
-        sentVals.values.forEach(function(el){
-            table.moveColumn(el.column, el.position);
-                
-        });  
-    }
-
-
-    setVisibleState ();
-    moveListItem    ();
-
-}
-
-function postPrefsValues(values){
-    const id            = getItemId();
-    const sentVals      = {
-        values       : values, 
-        tableIdPrefs : id
-    };
-
-    const sentObj = {
-        name:"visibleColsPrefs_"+id,
-        prefs:sentVals,
-    };
-
-    function saveExistsTemplate(sentObj,idPutData){
-        const url     = "/init/default/api/userprefs/"+idPutData;
-        const putData = webix.ajax().put(url, sentObj);
-
-        putData.then(function(data){
-            data = data.json();
-             
-            if (data.err_type !== "i"){
-                setLogValue("error","toolbarTable function saveExistsTemplate putData: "+ data.err);
-            } else {
-                setLogValue   ("success","Рабочая область таблицы обновлена");
-                setStorageData("visibleColsPrefs_"+id, JSON.stringify(sentObj.prefs));
-                setUpdateCols (sentVals);
-            }
-
-           
-        });
-
-        putData.fail(function(err){
-            setAjaxError(err, "visibleColumns","saveExistsTemplate => putUserprefsData");
-        });
-
-        destructPopup();
-    } 
-
-    function saveNewTemplate(){
-        const ownerId = webix.storage.local.get("user").id;
-        const url     = "/init/default/api/userprefs/";
-        
-        if (ownerId){
-            sentObj.owner = ownerId;
-        }
-
-        const userprefsPost = webix.ajax().post(url,sentObj);
-        
-        userprefsPost.then(function(data){
-            data = data.json();
- 
-            if (data.err_type !== "i"){
-                setFunctionError(data.err,"filterTableForm","tabbarClick")
-            } else {
-                setLogValue   ("success","Рабочая область таблицы обновлена");
-                setStorageData("visibleColsPrefs_"+id, JSON.stringify(sentObj.prefs));
-                setUpdateCols (sentVals);
-            }
-        });
-
-        userprefsPost.fail(function(err){
-            setAjaxError(err, "visibleColumns","saveTemplate");
-        });
-
-        destructPopup();
-    }
-
-    function getUserprefsData(){
-     
-        const getData = webix.ajax().get("/init/default/api/userprefs");
-        let settingExists = false;
-        let idPutData;
-    
-        getData.then(function(data){
-            data = data.json().content;
-            try{
-                data.forEach(function(el){
-                    
-                    if (el.name == "visibleColsPrefs_"+id && !settingExists){
-                        idPutData = el.id
-                        settingExists = true;
-                
-                    }
-                });
-            } catch (err){
-                setFunctionError(err,"visibleColumns","getUserprefsData getData");
-            }
-        });
-
-        getData.then(function(){
-     
-            if (!settingExists){
-                saveNewTemplate();
-            } else {
-                saveExistsTemplate(sentObj,idPutData);
-            }
-        });
-
-
-        getData.fail(function(err){
-            setAjaxError(err, "toolbarTable","getUserprefsData");
-        });
-
-        return settingExists;
-
-    }
-    getUserprefsData();
-
 }
 
 
@@ -272,18 +109,74 @@ function visibleColsSubmitClick (){
     const listPull  = list.data.pull;
     const listItems = Object.values(listPull);
     const values    = [];
+    const table     = getTable();
+
+    const containerWidth = window.innerWidth - $$("tree").$width - 77; 
+
+    function returnMinSize(){
+        const allCols = table.getColumns(true).length;
+        const width  = containerWidth / allCols;
+
+        return width.toFixed(2);
+    }
+
+    function setLastColWidth(lastColumn,widthCols){
+        const sumWidth       = widthCols.reduce((a, b) => a + b, 0);
+
+
+        let widthLastCol   =  containerWidth - sumWidth;
+
+        if (widthLastCol < 50){
+            widthLastCol = returnMinSize();
+        }
+
+        lastColumn.width = Number(widthLastCol);
+ 
+        values.push(lastColumn); 
+    }
+
 
     try{
+        const widthCols = [];
+        const lastColumn = {};
+ 
+        
         listItems.forEach(function(el,i){
             const positionElem = list.getIndexById(el.id);
-            values.push({column:el.column, position:positionElem});
+            const lastCol      = list.getLastId();
+         
+            let colWidth;
+
+            if ( el.id !== lastCol){
+                colWidth = table.getColumnConfig(el.column).width;
+              
+                if ( colWidth >= containerWidth ){
+                    colWidth = returnMinSize();
+                }
+            
+                widthCols.push(colWidth);
+           
+                values.push({
+                    column   : el.column, 
+                    position : positionElem,
+                    width    : Number(colWidth)
+                });
+            } else {
+                lastColumn.column   = el.column;
+                lastColumn.position = positionElem;
+            } 
+ 
+      
 
         });
+        setLastColWidth(lastColumn,widthCols);
+
     } catch (err){
         setFunctionError(err,"visibleColumns","visibleColsSubmitClick");
     }
 
-    postPrefsValues(values);
+    postPrefsValues(values,true);
+
 }
 
 function createMsg(){

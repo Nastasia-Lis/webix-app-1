@@ -69,6 +69,25 @@ function dateFormatting(arr){
 }
 
 
+function formattingBoolVals(arr){
+    const table = $$( "table" );
+    const cols  = table.getColumns();
+    cols.forEach(function(el,i){
+
+        if ( arr[el.id] && el.type == "boolean" ){
+            if (arr[el.id] == 2){
+                arr[el.id] = false;
+            } else {
+                arr[el.id] = true;
+            }
+        }
+    });
+
+    return arr;
+
+}   
+
+
 function saveItem(addBtnClick=false, refBtnClick=false){    
   
     try{    
@@ -81,15 +100,15 @@ function saveItem(addBtnClick=false, refBtnClick=false){
             if( itemData.id ) {
                 const link       = "/init/default/api/"+currId+"/"+itemData.id;
                 
-                const editForm   = $$("table-editForm");
-                const property   = $$("editTableFormProperty");
-                const addBtn     = $$("table-newAddBtnId");
-                const emptyTempl = $$("EditEmptyTempalte");
-                const container  = $$("tableContainer");
-                const uniqueVals = uniqueData (itemData);
-                const sentObj    = dateFormatting(uniqueVals);
+                const editForm       = $$("table-editForm");
+                const property       = $$("editTableFormProperty");
+                const addBtn         = $$("table-newAddBtnId");
+                const emptyTempl     = $$("EditEmptyTempalte");
+                const container      = $$("tableContainer");
+                const uniqueVals     = uniqueData (itemData);
+                const dateFormatVals = dateFormatting(uniqueVals)
+                const sentObj        = formattingBoolVals(dateFormatVals);
  
-
                 const putData    = webix.ajax().put(link, sentObj);
 
                 putData.then(function(data){
@@ -232,7 +251,6 @@ function removeNullFields(arr){
     return sentObj;
 }
 
-
 function setCounterVal (){
     try{
         const counter = $$("table-findElements");
@@ -251,11 +269,12 @@ function saveNewItem (){
  
     if (!(validateProfForm().length)){
 
-        const editForm     = $$("table-editForm");
-        const property     = $$("editTableFormProperty");
-        const newValues    = property.getValues();
-        const notNullVals  = removeNullFields(newValues);
-        const sentVals     = dateFormatting(notNullVals);
+        const editForm       = $$("table-editForm");
+        const property       = $$("editTableFormProperty");
+        const newValues      = property.getValues();
+        const notNullVals    = removeNullFields  (newValues);
+        const dateFormatVals = dateFormatting    (notNullVals);
+        const sentVals       = formattingBoolVals(dateFormatVals);
 
 
         const postData  = webix.ajax().post("/init/default/api/"+currId, sentVals);
