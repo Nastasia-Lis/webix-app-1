@@ -1,7 +1,7 @@
 import {router}                                 from "../blocks/routerConfig/router.js";
 import {createElements,removeElements}          from "../blocks/routerConfig/common.js";
 
-import {setStorageData}                         from "../blocks/storageSetting.js";
+import {setStorageData, setUserPrefs}           from "../blocks/storageSetting.js";
 
 import {setFunctionError, setAjaxError}         from "../blocks/errors.js";
 
@@ -29,19 +29,16 @@ function postLoginData(){
     const postData  = webix.ajax().post("/init/default/login",loginData);
 
     postData.then(function(data){
-        
+
         if (data.json().err_type == "i"){
 
             data = data.json().content;
             const userData     = {};
-       
+
 
             userData.id        = data.id;
             userData.name      = data.first_name;
             userData.username  = data.username;
-            
-            setStorageData("user", JSON.stringify(userData));
-
 
             if (form){
                 form.clear();
@@ -49,7 +46,7 @@ function postLoginData(){
 
             Backbone.history.navigate("content", { trigger:true});
             window.location.reload();
-
+ 
         } else {
             if (form && form.isDirty()){
                 form.markInvalid("username", "");

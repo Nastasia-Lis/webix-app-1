@@ -845,16 +845,19 @@ function getInfoTable (idCurrTable,idsParam) {
         }
 
 
+        const sumWidth = [];
         function setColsUserSize(storageData){
-           
+          
             storageData.values.forEach(function (el,i){
+                sumWidth.push(el.width);
                 table.setColumnWidth(el.column, el.width);
-            });        
+            });   
         }
 
         function getUserPrefs(){
    
             const storageData = webix.storage.local.get("visibleColsPrefs_"+idsParam);
+            const allCols     = table.getColumns(true);
 
             if ( storageData && storageData.values.length ){
                 setColsUserSize(storageData);  
@@ -873,7 +876,7 @@ function getInfoTable (idCurrTable,idsParam) {
 
                 containerWidth = window.innerWidth - $$("tree").$width - 25;
 
-                const tableWidth = containerWidth-17;
+                const tableWidth = containerWidth - 17;
                 const colWidth   = tableWidth / countCols;
 
                 table.setColumnWidth(col, colWidth);
@@ -892,10 +895,24 @@ function getInfoTable (idCurrTable,idsParam) {
                 return result;
             }
 
-            const allCols = table.getColumns(true);
-            if( storageData && storageData.values.length ){
+            function setWidthLastCol(){
+                const containerWidth = window.innerWidth - $$("tree").$width - 77; 
+                const reduce = sumWidth.reduce((a, b) => +a + +b, 0);
 
-   
+                if (reduce < containerWidth){
+                    const cols       = table.getColumns();
+                    const lastCol    = cols[cols.length-1];
+                    const difference = containerWidth - reduce;
+                    const oldWidth   = lastCol.width;
+                    const newWidth   = oldWidth + difference;
+       
+                    table.setColumnWidth(lastCol.id, newWidth);
+                    
+                }
+
+            }
+
+            function setVisibleCols(){
                 allCols.forEach(function(el,i){
 
                     if (findUniqueCols(el.id)){
@@ -910,11 +927,19 @@ function getInfoTable (idCurrTable,idsParam) {
                     }
                         
                 });
+            }
 
+            function setPositionCols(){
                 storageData.values.forEach(function(el){
                     table.moveColumn(el.column,el.position);
                         
                 });
+            } 
+           
+            if( storageData && storageData.values.length ){
+                setVisibleCols();
+                setPositionCols();
+                setWidthLastCol();
 
             } else {   
              
@@ -949,6 +974,7 @@ function getInfoTable (idCurrTable,idsParam) {
                     try{
                         dataFields[data].format = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
                         dataFields[data].editor = "date";
+                        dataFields[data].css    = {"text-align":"right"};
                     }catch (err){
                         setFunctionError(err, logNameFile, "createTableCols => createDatetimeCol")
                     }
@@ -963,12 +989,15 @@ function getInfoTable (idCurrTable,idsParam) {
                         setFunctionError(err,logNameFile,"createTableCols => createTextCol")
                     }
                 }
+
+              
                 function createIntegerCol   (){
                     try{
-            
                         dataFields[data].editor         = "text";
                         dataFields[data].sort           = "int";
                         dataFields[data].numberFormat   = "1 111";
+                        dataFields[data].css            = {"text-align":"right"};
+                        
                     }catch (err){
                         setFunctionError(err,logNameFile,"createTableCols => createIntegerCol");
                     }
@@ -985,7 +1014,7 @@ function getInfoTable (idCurrTable,idsParam) {
                         setFunctionError(err,logNameFile,"createTableCols => createBoolCol");
                     }
                 }
-                
+
                 if (fieldType.includes("reference")){
                     createReferenceCol();
                 } else if ( fieldType == "datetime"){

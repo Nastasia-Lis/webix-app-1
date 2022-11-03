@@ -1,4 +1,4 @@
-console.log("expa 1.0.46"); 
+console.log("expa 1.0.47"); 
 
 import {textInputClean}                     from "./blocks/commonFunctions.js";
 import {auth}                               from "./components/login.js";
@@ -8,7 +8,7 @@ import {header}                             from "./components/header.js";
 import {treeSidebar}                        from "./components/treeSidabar/layout.js";
 
 import {logLayout}                          from "./blocks/logBlock.js";
-import {resetTimer}                         from  "./blocks/autoLogout.js";
+import {resetTimer}                         from  "./blocks/logout/autoLogout.js";
 
 import {setFunctionError}                   from "./blocks/errors.js";
 import {resizeAdaptive,adaptivePoints}      from "./blocks/adaptive.js";

@@ -67,19 +67,37 @@ function clearBtnColsClick (){
         return colWidth.toFixed(2);
     }
 
+
+
+    function returnPosition(column){
+        const defaultColsPosition = Object.keys(table.data.pull[1]);
+        let position;
+        defaultColsPosition.forEach(function(el,i){
+            if (el == column){
+                position = i;
+            }
+        });
+
+        return position;
+    }
+
     function showCols(){
         try{
             cols.forEach(function(el,i){
-                const colWidth = returnWidthCol();
+                const colWidth    = returnWidthCol();
+                const positionCol = returnPosition(el.id);
+
                 setColsSize(el.id,cols);
+                
                 if( !( table.isColumnVisible(el.id) ) ){
                     table.showColumn(el.id);
                 }
-                table.moveColumn    (el.id,i);
+           
                 table.setColumnWidth(el.id, colWidth);
+
                 values.push({
                     column   : el.id,
-                    position : i,
+                    position : positionCol,
                     width    : colWidth 
                 });
             });

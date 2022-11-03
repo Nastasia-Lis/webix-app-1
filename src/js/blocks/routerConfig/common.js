@@ -421,7 +421,6 @@ function getWorkspace (){
     }
 
     async function getAuth () {
-
         if (!STORAGE.whoami){
             await getData("whoami"); 
         }
@@ -429,6 +428,7 @@ function getWorkspace (){
         if (STORAGE.whoami){
             createContent (); 
         }
+
     }
 
     getAuth ();

@@ -58,7 +58,6 @@ function setUpdateCols(sentVals){
     function moveListItem(){
         sentVals.values.forEach(function(el){
             table.moveColumn(el.column, el.position);
-                
         });  
     }
 

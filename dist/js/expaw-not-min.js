@@ -12,15 +12,21 @@ function setStorageData (name, value){
 }
 
 function setLoginActionPref(userLocation, userprefsWorkspace){
-
+    function replaceUser(){
+        if (userLocation       && 
+            userLocation.href  && 
+            userLocation.href !== window.location.href ){
+        
+            window.location.replace(userLocation.href);
+        }
+    }
     try{
-        if (userprefsWorkspace.LoginActionOpt == 2){
-            if (userLocation       && 
-                userLocation.href  && 
-                userLocation.href !== window.location.href ){
-            
-                window.location.replace(userLocation.href);
+        if (userprefsWorkspace){
+            if (userprefsWorkspace.LoginActionOpt == 2){
+                replaceUser();
             }
+        } else {
+            replaceUser();
         }
     } catch(err){
         errors_setFunctionError(err,"storageSettings","setLoginActionPref");
@@ -30,23 +36,35 @@ function setLoginActionPref(userLocation, userprefsWorkspace){
 
 
 function moveUser(){
+
     const localPath = "/index.html/content";
     const expaPath  = "/init/default/spaw/content";
+
+
 
     if ( window.location.pathname == localPath || window.location.pathname == expaPath ){
   
         const userprefsWorkspace = webix.storage.local.get("userprefsWorkspaceForm");
         const userLocation       = webix.storage.local.get("userLocationHref");
+        const outsideHref        = webix.storage.local.get("outsideHref");
 
-        const url = new URL( userLocation.href );
- 
-        if (userprefsWorkspace                    && 
-            userprefsWorkspace.LoginActionOpt     && 
-            url.origin == window.location.origin  &&
-            !(url.pathname.includes("logout")     )){
+        if (outsideHref){
+            const url = new URL( outsideHref.href );
             
-            setLoginActionPref( userLocation, userprefsWorkspace );
+            if ( url.origin == window.location.origin && !(url.pathname.includes("logout"))) {
+                setLoginActionPref( outsideHref, userprefsWorkspace );
+            }
+
+        } else {
+            const url = new URL( userLocation.href );
+            if ( userprefsWorkspace && userprefsWorkspace.LoginActionOpt || !userprefsWorkspace ){
+
+                if ( url.origin == window.location.origin && !(url.pathname.includes("logout"))) {
+                    setLoginActionPref( userLocation, userprefsWorkspace );
+                }
+            }
         }
+
     }
 }
 
@@ -59,11 +77,13 @@ function setLogPref(){
     function hideLog(){
         logLayout.config.height = 5;
         logBtn.config.icon ="icon-eye";
+        logBtn.setValue(1);
     }
 
     function showLog(){
         logLayout.config.height = 90;
         logBtn.config.icon ="icon-eye-slash";
+        logBtn.setValue(2);
     }
     
     try{
@@ -71,10 +91,10 @@ function setLogPref(){
  
             if (userprefsWorkspace.logBlockOpt !== undefined ){
 
-                if (userprefsWorkspace.logBlockOpt=="2"){
+                if (userprefsWorkspace.logBlockOpt == "2"){
                     hideLog();
 
-                } else if(userprefsWorkspace.logBlockOpt=="1"){
+                } else if(userprefsWorkspace.logBlockOpt == "1"){
                     showLog();
                 }
 
@@ -91,13 +111,17 @@ function setLogPref(){
 
 
 
-function setUserPrefs (){
+function setUserPrefs (userData){
  
     const userprefsData = webix.ajax("/init/default/api/userprefs/");
    
     userprefsData.then( function (data) {
         let user = webix.storage.local.get("user");
         data       = data.json().content;
+
+        if (userData){
+            user = userData;
+        }
         
         function setDataToStorage(){
  
@@ -114,19 +138,19 @@ function setUserPrefs (){
         }
 
         
-        async function setPrefs(){
- 
+        function setPrefs(){
+   
             if (!user){
                 const userprefsGetData = webix.ajax("/init/default/api/whoami");
                 userprefsGetData.then(function(data){
                     data = data.json().content;
-
+                
                     let userData = {};
                 
                     userData.id       = data.id;
                     userData.name     = data.first_name;
                     userData.username = data.username;
-                    
+           
                     setStorageData("user", JSON.stringify(userData));
                 });
                 userprefsGetData.then(function(data){
@@ -161,7 +185,144 @@ function setUserPrefs (){
 
 
 
+;// CONCATENATED MODULE: ./src/js/blocks/logout/common.js
+
+
+
+
+
+function logout() {
+
+    const userprefsData = webix.ajax().get("/init/default/api/userprefs/");
+
+    userprefsData.then(function(data){
+        if (data.err_type !== "i"){
+            errors_setFunctionError(data.json().err,"autoLogout","putUserPrefs");
+        }
+
+        data = data.json().content;
+        
+        let settingExists = false;
+        let location = {};
+        location.href = window.location.href;
+
+        let sentObj = {
+            name:"userLocationHref",
+            prefs:location
+        };
+  
+        function putUserPrefs(){
+            try{
+                data.forEach(function(el,i){
+                    if (el.name == "userLocationHref"){
+                        settingExists = true;
+
+                        const putData = webix.ajax().put("/init/default/api/userprefs/"+el.id, sentObj);
+
+                        putData.then(function(data){
+                            data = data.json();
+                            if (data.err_type !== "i"){
+                                setLogValue("error",data.err);
+                            }
+                        });
+
+                        putData.fail(function(err){
+                            setAjaxError(err, "autoLogout","putUserPrefs");
+                        });
+                    } 
+                });  
+            }   catch(err){
+                errors_setFunctionError(err,"autoLogout","putUserPrefs");
+            }
+        }
+
+        function getWhoamiData(){
+            let ownerId = webix.storage.local.get("user").id;
+
+            try{
+                if (ownerId){
+                    sentObj.owner = ownerId;
+                } else {
+                    const whoamiData =  webix.ajax("/init/default/api/whoami");
+                    
+                    whoamiData.then(function(data){
+                        data = data.json().content;
+                        sentObj.owner       = data.id;
+
+                        const userData      = {};
+
+                        userData.id         = data.id;
+                        userData.name       = data.first_name;
+                        userData.username   = data.username;
+                    });
+
+                    whoamiData.fail(function(err){
+                        setAjaxError(err, "autoLogout","getWhoamiData");
+                    });
+
+                }
+            }   catch(err){
+                errors_setFunctionError(err,"autoLogout","getWhoamiData")
+            }
+        }
+        
+        function postUserPrefs(){
+
+            const postData = webix.ajax().post("/init/default/api/userprefs/",sentObj);
+
+            postData.then(function(data){
+                data = data.json();
+
+                if (data.err_type !== "i"){
+                    errors_setFunctionError(data.err,"autoLogout","putUserPrefs");
+                }
+            });
+
+            postData.fail(function(err){
+                setAjaxError(err, "autoLogout","postUserPrefs");
+            });
+
+        }
+
+
+        if (window.location.pathname !== "/index.html/content"){
+            putUserPrefs();
+
+            if (!settingExists){
+                getWhoamiData();
+                postUserPrefs();
+            }
+        }
+    });
+
+    userprefsData.then(function(data){
+        Backbone.history.navigate("logout", { trigger:true});
+        Backbone.history.navigate("/", { trigger:true});
+    });
+
+    userprefsData.fail(function(err){
+        setAjaxError(err, "autoLogout","logout");
+
+    });
+  
+}
+
+
+function checkNotAuth (err){
+    if (err.status               === 401                  && 
+        window.location.pathname !== "/index.html"        && 
+        window.location.pathname !== "/init/default/spaw/"){
+        
+        const prefs = {href:window.location.href};
+        setStorageData ("outsideHref", JSON.stringify(prefs) );
+        Backbone.history.navigate("/", { trigger:true});
+
+    }
+}
+
+
 ;// CONCATENATED MODULE: ./src/js/blocks/globalStorage.js
+
 
 
 const STORAGE = {};
@@ -181,13 +342,13 @@ function getTableNames (content){
     return tableNames;
 }
 
-function checkNotAuth (err){
-    if (err.status               === 401                  && 
-        window.location.pathname !== "/index.html"        && 
-        window.location.pathname !== "/init/default/spaw/"){
-        Backbone.history.navigate("/", { trigger:true});
-    }
-}
+// function checkNotAuth (err){
+//     if (err.status               === 401                  && 
+//         window.location.pathname !== "/index.html"        && 
+//         window.location.pathname !== "/init/default/spaw/"){
+//         Backbone.history.navigate("/", { trigger:true});
+//     }
+// }
 
 function getData (fileName){
  
@@ -269,7 +430,7 @@ function setLogValue (typeNotify,notifyText,specificSrc) {
         }
 
         if (srcTable == "version"){
-            name = 'Expa v1.0.46';
+            name = 'Expa v1.0.47';
 
         } else if (srcTable == "cp") {
             name = 'Смена пароля';
@@ -6565,6 +6726,7 @@ function createDatePopup(elem){
                 id:"buttonClosePopup",
                 css:"popup_close-btn",
                 type:"icon",
+                hotkey:"esc",
                 width:35,
                 icon: 'wxi-close',
                 click:function(){
@@ -9259,16 +9421,19 @@ function getInfoTable (idCurrTable,idsParam) {
         }
 
 
+        const sumWidth = [];
         function setColsUserSize(storageData){
-           
+          
             storageData.values.forEach(function (el,i){
+                sumWidth.push(el.width);
                 table.setColumnWidth(el.column, el.width);
-            });        
+            });   
         }
 
         function getUserPrefs(){
    
             const storageData = webix.storage.local.get("visibleColsPrefs_"+idsParam);
+            const allCols     = table.getColumns(true);
 
             if ( storageData && storageData.values.length ){
                 setColsUserSize(storageData);  
@@ -9287,7 +9452,7 @@ function getInfoTable (idCurrTable,idsParam) {
 
                 containerWidth = window.innerWidth - $$("tree").$width - 25;
 
-                const tableWidth = containerWidth-17;
+                const tableWidth = containerWidth - 17;
                 const colWidth   = tableWidth / countCols;
 
                 table.setColumnWidth(col, colWidth);
@@ -9306,10 +9471,24 @@ function getInfoTable (idCurrTable,idsParam) {
                 return result;
             }
 
-            const allCols = table.getColumns(true);
-            if( storageData && storageData.values.length ){
+            function setWidthLastCol(){
+                const containerWidth = window.innerWidth - $$("tree").$width - 77; 
+                const reduce = sumWidth.reduce((a, b) => +a + +b, 0);
 
-   
+                if (reduce < containerWidth){
+                    const cols       = table.getColumns();
+                    const lastCol    = cols[cols.length-1];
+                    const difference = containerWidth - reduce;
+                    const oldWidth   = lastCol.width;
+                    const newWidth   = oldWidth + difference;
+       
+                    table.setColumnWidth(lastCol.id, newWidth);
+                    
+                }
+
+            }
+
+            function setVisibleCols(){
                 allCols.forEach(function(el,i){
 
                     if (findUniqueCols(el.id)){
@@ -9324,11 +9503,19 @@ function getInfoTable (idCurrTable,idsParam) {
                     }
                         
                 });
+            }
 
+            function setPositionCols(){
                 storageData.values.forEach(function(el){
                     table.moveColumn(el.column,el.position);
                         
                 });
+            } 
+           
+            if( storageData && storageData.values.length ){
+                setVisibleCols();
+                setPositionCols();
+                setWidthLastCol();
 
             } else {   
              
@@ -9363,6 +9550,7 @@ function getInfoTable (idCurrTable,idsParam) {
                     try{
                         dataFields[data].format = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
                         dataFields[data].editor = "date";
+                        dataFields[data].css    = {"text-align":"right"};
                     }catch (err){
                         errors_setFunctionError(err, getInfoTable_logNameFile, "createTableCols => createDatetimeCol")
                     }
@@ -9377,12 +9565,15 @@ function getInfoTable (idCurrTable,idsParam) {
                         errors_setFunctionError(err,getInfoTable_logNameFile,"createTableCols => createTextCol")
                     }
                 }
+
+              
                 function createIntegerCol   (){
                     try{
-            
                         dataFields[data].editor         = "text";
                         dataFields[data].sort           = "int";
                         dataFields[data].numberFormat   = "1 111";
+                        dataFields[data].css            = {"text-align":"right"};
+                        
                     }catch (err){
                         errors_setFunctionError(err,getInfoTable_logNameFile,"createTableCols => createIntegerCol");
                     }
@@ -9399,7 +9590,7 @@ function getInfoTable (idCurrTable,idsParam) {
                         errors_setFunctionError(err,getInfoTable_logNameFile,"createTableCols => createBoolCol");
                     }
                 }
-                
+
                 if (fieldType.includes("reference")){
                     createReferenceCol();
                 } else if ( fieldType == "datetime"){
@@ -10197,7 +10388,6 @@ function setUpdateCols(sentVals){
     function moveListItem(){
         sentVals.values.forEach(function(el){
             table.moveColumn(el.column, el.position);
-                
         });  
     }
 
@@ -10362,11 +10552,12 @@ function postPrefsValues(values, visCol=false){
 function setColsWidthStorage(table){
     table.attachEvent("onColumnResize",function(id,newWidth, oldWidth, action){
         if (action){
+           
             const cols   = table.getColumns();
             const values = [];
-      
+
             cols.forEach(function(el,i){
-    
+
                 values.push({
                     column  : el.id, 
                     position: table.getColumnIndex(el.id),
@@ -12105,19 +12296,37 @@ function clearBtnColsClick (){
         return colWidth.toFixed(2);
     }
 
+
+
+    function returnPosition(column){
+        const defaultColsPosition = Object.keys(table.data.pull[1]);
+        let position;
+        defaultColsPosition.forEach(function(el,i){
+            if (el == column){
+                position = i;
+            }
+        });
+
+        return position;
+    }
+
     function showCols(){
         try{
             cols.forEach(function(el,i){
-                const colWidth = returnWidthCol();
+                const colWidth    = returnWidthCol();
+                const positionCol = returnPosition(el.id);
+
                 setColsSize(el.id,cols);
+                
                 if( !( table.isColumnVisible(el.id) ) ){
                     table.showColumn(el.id);
                 }
-                table.moveColumn    (el.id,i);
+           
                 table.setColumnWidth(el.id, colWidth);
+
                 values.push({
                     column   : el.id,
-                    position : i,
+                    position : positionCol,
                     width    : colWidth 
                 });
             });
@@ -15728,7 +15937,6 @@ function getWorkspace (){
     }
 
     async function getAuth () {
-
         if (!STORAGE.whoami){
             await getData("whoami"); 
         }
@@ -15736,6 +15944,7 @@ function getWorkspace (){
         if (STORAGE.whoami){
             createContent (); 
         }
+
     }
 
     getAuth ();
@@ -16710,7 +16919,7 @@ function getInfoDashboard ( idsParam ){
 const tree_logNameFile = "router => tree";
 
 function treeRouter(id){
-    
+
     function notFoundPopup(){
 
         const popupHeadline = {   
@@ -16988,6 +17197,7 @@ function treeRouter(id){
 const routerConfig_logNameFile = "router => index";
 
 function indexRouter(){
+
     function goToContentPage(){
     
         try {
@@ -17022,10 +17232,12 @@ function indexRouter(){
             await getData("whoami"); 
         }
 
+
         if (STORAGE.whoami){
             goToContentPage();
 
         } else {
+  
             showWorkspace();
         }
     }
@@ -17525,19 +17737,16 @@ function postLoginData(){
     const postData  = webix.ajax().post("/init/default/login",loginData);
 
     postData.then(function(data){
-        
+
         if (data.json().err_type == "i"){
 
             data = data.json().content;
             const userData     = {};
-       
+
 
             userData.id        = data.id;
             userData.name      = data.first_name;
             userData.username  = data.username;
-            
-            setStorageData("user", JSON.stringify(userData));
-
 
             if (form){
                 form.clear();
@@ -17545,7 +17754,7 @@ function postLoginData(){
 
             Backbone.history.navigate("content", { trigger:true});
             window.location.reload();
-
+ 
         } else {
             if (form && form.isDirty()){
                 form.markInvalid("username", "");
@@ -17823,8 +18032,10 @@ function header() {
                 hotkey :"ctrl+m",
                 css:"webix_log-btn",
                 click:function (){
+         
                     if (this.getValue() == 1){
                         this.setValue(2);
+                 
                     } else {
                         this.setValue(1);
                     }
@@ -17832,31 +18043,31 @@ function header() {
                 on: {
                     onAfterRender: function () {
                         this.getInputNode().setAttribute("title","Показать/скрыть системные сообщения (Ctrl+M)");
-                         
                     },
 
                     onChange:function(newValue, oldValue, config){
+                        const list      = $$("logBlock-list");
+                        const logLayout = $$("logLayout");
+                        const logBtn    = $$("webix_log-btn");
 
-                        let lastItemList = $$("logBlock-list").getLastId();
+                        const lastItemList = list.getLastId();
                         if (newValue == 2){
                             this.config.badge = "";
-                            $$("logBlock-list").showItem(lastItemList);
+                            list.showItem(lastItemList);
                         
-                            $$("logLayout").config.height = 90;
+                            logLayout.config.height = 90;
                         
-                            $$("logLayout").resize();
+                            logLayout.resize();
                             this.config.icon ="icon-eye-slash";
                             this.refresh();
-                           // setStorageData("LogVisible", JSON.stringify("show"));
                         } else {
-                            $$("logLayout").config.height = 5;
-                            $$("logLayout").resize();
+                            logLayout.config.height = 5;
+                            logLayout.resize();
                             this.config.icon ="icon-eye";
                             this.refresh();
-                            //setStorageData("LogVisible", JSON.stringify("hide"));
             
-                            $$("webix_log-btn").config.badge = "";
-                            $$("webix_log-btn").refresh();
+                            logBtn.config.badge = "";
+                            logBtn.refresh();
                         }
             
                     }
@@ -19144,7 +19355,7 @@ function treeSidebar () {
 }
 
 
-;// CONCATENATED MODULE: ./src/js/blocks/autoLogout.js
+;// CONCATENATED MODULE: ./src/js/blocks/logout/autoLogout.js
 
 
 
@@ -19158,119 +19369,6 @@ function resetTimer (){
     window.onclick = resetTimer;     
     window.onkeypress = resetTimer;   
     window.addEventListener('scroll', resetTimer, true); 
-
-    function logout() {
-
-        const userprefsData = webix.ajax().get("/init/default/api/userprefs/");
-
-        userprefsData.then(function(data){
-            if (data.err_type !== "i"){
-                errors_setFunctionError(data.json().err,"autoLogout","putUserPrefs");
-            }
-
-            data = data.json().content;
-            
-            let settingExists = false;
-            let location = {};
-            location.href = window.location.href;
-
-            let sentObj = {
-                name:"userLocationHref",
-                prefs:location
-            };
-            
-            function putUserPrefs(){
-                try{
-                    data.forEach(function(el,i){
-                        if (el.name == "userLocationHref"){
-                            settingExists = true;
-
-                            const putData = webix.ajax().put("/init/default/api/userprefs/"+el.id, sentObj);
-
-                            putData.then(function(data){
-                                data = data.json();
-                                if (data.err_type !== "i"){
-                                    setLogValue("error",data.err);
-                                }
-                            });
-
-                            putData.fail(function(err){
-                                setAjaxError(err, "autoLogout","putUserPrefs");
-                            });
-                        } 
-                    });  
-                }   catch(err){
-                    errors_setFunctionError(err,"autoLogout","putUserPrefs");
-                }
-            }
-
-            function getWhoamiData(){
-                let ownerId = webix.storage.local.get("user").id;
-
-                try{
-                    if (ownerId){
-                        sentObj.owner = ownerId;
-                    } else {
-                        const whoamiData =  webix.ajax("/init/default/api/whoami");
-                        
-                        whoamiData.then(function(data){
-                            sentObj.owner = data.json().content.id;
-
-                            let userData = {};
-                            userData.id = data.json().content.id;
-                            userData.name = data.json().content.first_name;
-                            userData.username = data.json().content.username;
-                        });
-
-                        whoamiData.fail(function(err){
-                            setAjaxError(err, "autoLogout","getWhoamiData");
-                        });
-
-                    }
-                }   catch(err){
-                    errors_setFunctionError(err,"autoLogout","getWhoamiData")
-                }
-            }
-            
-            function postUserPrefs(){
-
-                const postData = webix.ajax().post("/init/default/api/userprefs/",sentObj);
-
-                postData.then(function(data){
-                    data = data.json();
-
-                    if (data.err_type !== "i"){
-                        errors_setFunctionError(data.err,"autoLogout","putUserPrefs");
-                    }
-                });
-
-                postData.fail(function(err){
-                    setAjaxError(err, "autoLogout","postUserPrefs");
-                });
-
-            }
-
-
-            if (window.location.pathname !== "/index.html/content"){
-                putUserPrefs();
-   
-                if (!settingExists){
-                    getWhoamiData();
-                    postUserPrefs();
-                }
-            }
-        });
-
-        userprefsData.then(function(data){
-            Backbone.history.navigate("logout", { trigger:true});
-        });
-
-        userprefsData.fail(function(err){
-            setAjaxError(err, "autoLogout","logout");
-
-        });
-      
-    }
 
     function resetTimer() {
         try {
@@ -19662,7 +19760,7 @@ function setRouterStart(){
 
 
 ;// CONCATENATED MODULE: ./src/js/app.js
-console.log("expa 1.0.46"); 
+console.log("expa 1.0.47"); 
 
 
 

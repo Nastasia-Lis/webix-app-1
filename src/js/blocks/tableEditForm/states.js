@@ -482,6 +482,7 @@ function createDatePopup(elem){
                 id:"buttonClosePopup",
                 css:"popup_close-btn",
                 type:"icon",
+                hotkey:"esc",
                 width:35,
                 icon: 'wxi-close',
                 click:function(){

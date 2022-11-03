@@ -1,4 +1,5 @@
-import {setAjaxError,setFunctionError} from "./errors.js";
+import { setAjaxError, setFunctionError }   from "./errors.js";
+import { checkNotAuth }                     from "./logout/common.js";
 
 const STORAGE = {};
 
@@ -17,13 +18,13 @@ function getTableNames (content){
     return tableNames;
 }
 
-function checkNotAuth (err){
-    if (err.status               === 401                  && 
-        window.location.pathname !== "/index.html"        && 
-        window.location.pathname !== "/init/default/spaw/"){
-        Backbone.history.navigate("/", { trigger:true});
-    }
-}
+// function checkNotAuth (err){
+//     if (err.status               === 401                  && 
+//         window.location.pathname !== "/index.html"        && 
+//         window.location.pathname !== "/init/default/spaw/"){
+//         Backbone.history.navigate("/", { trigger:true});
+//     }
+// }
 
 function getData (fileName){
  

@@ -7,15 +7,21 @@ function setStorageData (name, value){
 }
 
 function setLoginActionPref(userLocation, userprefsWorkspace){
-
+    function replaceUser(){
+        if (userLocation       && 
+            userLocation.href  && 
+            userLocation.href !== window.location.href ){
+        
+            window.location.replace(userLocation.href);
+        }
+    }
     try{
-        if (userprefsWorkspace.LoginActionOpt == 2){
-            if (userLocation       && 
-                userLocation.href  && 
-                userLocation.href !== window.location.href ){
-            
-                window.location.replace(userLocation.href);
+        if (userprefsWorkspace){
+            if (userprefsWorkspace.LoginActionOpt == 2){
+                replaceUser();
             }
+        } else {
+            replaceUser();
         }
     } catch(err){
         setFunctionError(err,"storageSettings","setLoginActionPref");
@@ -25,23 +31,35 @@ function setLoginActionPref(userLocation, userprefsWorkspace){
 
 
 function moveUser(){
+
     const localPath = "/index.html/content";
     const expaPath  = "/init/default/spaw/content";
+
+
 
     if ( window.location.pathname == localPath || window.location.pathname == expaPath ){
   
         const userprefsWorkspace = webix.storage.local.get("userprefsWorkspaceForm");
         const userLocation       = webix.storage.local.get("userLocationHref");
+        const outsideHref        = webix.storage.local.get("outsideHref");
 
-        const url = new URL( userLocation.href );
- 
-        if (userprefsWorkspace                    && 
-            userprefsWorkspace.LoginActionOpt     && 
-            url.origin == window.location.origin  &&
-            !(url.pathname.includes("logout")     )){
+        if (outsideHref){
+            const url = new URL( outsideHref.href );
             
-            setLoginActionPref( userLocation, userprefsWorkspace );
+            if ( url.origin == window.location.origin && !(url.pathname.includes("logout"))) {
+                setLoginActionPref( outsideHref, userprefsWorkspace );
+            }
+
+        } else {
+            const url = new URL( userLocation.href );
+            if ( userprefsWorkspace && userprefsWorkspace.LoginActionOpt || !userprefsWorkspace ){
+
+                if ( url.origin == window.location.origin && !(url.pathname.includes("logout"))) {
+                    setLoginActionPref( userLocation, userprefsWorkspace );
+                }
+            }
         }
+
     }
 }
 
@@ -54,11 +72,13 @@ function setLogPref(){
     function hideLog(){
         logLayout.config.height = 5;
         logBtn.config.icon ="icon-eye";
+        logBtn.setValue(1);
     }
 
     function showLog(){
         logLayout.config.height = 90;
         logBtn.config.icon ="icon-eye-slash";
+        logBtn.setValue(2);
     }
     
     try{
@@ -66,10 +86,10 @@ function setLogPref(){
  
             if (userprefsWorkspace.logBlockOpt !== undefined ){
 
-                if (userprefsWorkspace.logBlockOpt=="2"){
+                if (userprefsWorkspace.logBlockOpt == "2"){
                     hideLog();
 
-                } else if(userprefsWorkspace.logBlockOpt=="1"){
+                } else if(userprefsWorkspace.logBlockOpt == "1"){
                     showLog();
                 }
 
@@ -86,13 +106,17 @@ function setLogPref(){
 
 
 
-function setUserPrefs (){
+function setUserPrefs (userData){
  
     const userprefsData = webix.ajax("/init/default/api/userprefs/");
    
     userprefsData.then( function (data) {
         let user = webix.storage.local.get("user");
         data       = data.json().content;
+
+        if (userData){
+            user = userData;
+        }
         
         function setDataToStorage(){
  
@@ -109,19 +133,19 @@ function setUserPrefs (){
         }
 
         
-        async function setPrefs(){
- 
+        function setPrefs(){
+   
             if (!user){
                 const userprefsGetData = webix.ajax("/init/default/api/whoami");
                 userprefsGetData.then(function(data){
                     data = data.json().content;
-
+                
                     let userData = {};
                 
                     userData.id       = data.id;
                     userData.name     = data.first_name;
                     userData.username = data.username;
-                    
+           
                     setStorageData("user", JSON.stringify(userData));
                 });
                 userprefsGetData.then(function(data){

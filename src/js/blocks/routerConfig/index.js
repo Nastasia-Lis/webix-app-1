@@ -5,6 +5,7 @@ import {setFunctionError} from "../errors.js";
 const logNameFile = "router => index";
 
 function indexRouter(){
+
     function goToContentPage(){
     
         try {
@@ -39,10 +40,12 @@ function indexRouter(){
             await getData("whoami"); 
         }
 
+
         if (STORAGE.whoami){
             goToContentPage();
 
         } else {
+  
             showWorkspace();
         }
     }

@@ -141,8 +141,10 @@ function header() {
                 hotkey :"ctrl+m",
                 css:"webix_log-btn",
                 click:function (){
+         
                     if (this.getValue() == 1){
                         this.setValue(2);
+                 
                     } else {
                         this.setValue(1);
                     }
@@ -150,31 +152,31 @@ function header() {
                 on: {
                     onAfterRender: function () {
                         this.getInputNode().setAttribute("title","Показать/скрыть системные сообщения (Ctrl+M)");
-                         
                     },
 
                     onChange:function(newValue, oldValue, config){
+                        const list      = $$("logBlock-list");
+                        const logLayout = $$("logLayout");
+                        const logBtn    = $$("webix_log-btn");
 
-                        let lastItemList = $$("logBlock-list").getLastId();
+                        const lastItemList = list.getLastId();
                         if (newValue == 2){
                             this.config.badge = "";
-                            $$("logBlock-list").showItem(lastItemList);
+                            list.showItem(lastItemList);
                         
-                            $$("logLayout").config.height = 90;
+                            logLayout.config.height = 90;
                         
-                            $$("logLayout").resize();
+                            logLayout.resize();
                             this.config.icon ="icon-eye-slash";
                             this.refresh();
-                           // setStorageData("LogVisible", JSON.stringify("show"));
                         } else {
-                            $$("logLayout").config.height = 5;
-                            $$("logLayout").resize();
+                            logLayout.config.height = 5;
+                            logLayout.resize();
                             this.config.icon ="icon-eye";
                             this.refresh();
-                            //setStorageData("LogVisible", JSON.stringify("hide"));
             
-                            $$("webix_log-btn").config.badge = "";
-                            $$("webix_log-btn").refresh();
+                            logBtn.config.badge = "";
+                            logBtn.refresh();
                         }
             
                     }
