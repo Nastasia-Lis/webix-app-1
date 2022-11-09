@@ -84,16 +84,15 @@ function createTemplate (){
 
 
 const propertyEditForm = {   
-    view:"property",  
-    id:"editTableFormProperty", 
-    css:"webix_edit-table-form-property",
-    dirty:false,
-    nameWidth:150,
-    editable:true,
-    tooltip:propTooltipAction,
-    hidden:true,
-    elements:[],
-    on:{
+    view     : "property",  
+    id       : "editTableFormProperty", 
+    css      : "webix_edit-table-form-property",
+    dirty    : false,
+    editable : true,
+    tooltip  : propTooltipAction,
+    hidden   : true,
+    elements : [],
+    on       : {
         onEditorChange:function(id, value){
         
             function setStateSaveBtn(){
@@ -116,12 +115,15 @@ const propertyEditForm = {
        
         },
         onBeforeRender:function (){
+
             const size = this.config.elements.length*28;
             
             if (size && this.$height !== size){
                 this.define("height", size);
                 this.resize();
             }
+    
+          
         },
 
         onAfterEditStop:function(state, editor){

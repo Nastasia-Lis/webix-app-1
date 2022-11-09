@@ -547,7 +547,7 @@ function popupSubmitBtn (){
 }
 
 const templateRecover = {
-    template:"Редактор фильтров", 
+    template:"<div class='no-wrap-headline'> Редактор фильтров </div>", 
     css:"webix_template-recover", 
     borderless:true, 
     height:40 

@@ -49,14 +49,15 @@ function resizeForms(){
 
             hideElem (сontainer  );
             hideElem (formResizer);
-            hideElem (tree       );
+            hideElem ($$("tree") );
             showElem (backBtn    );
+          
         }
     }
 
     function createFormMain(){
         if (tools.isVisible()          && 
-        tools.config.width !== 350 ){
+            tools.config.width !== 350 ){
 
             tools.config.width = 350;
             tools.resize();
@@ -81,7 +82,7 @@ function resizeForms(){
 
 
 function resizeDashboards(){
-    const dashTool      = $$("dashboard-tool-main");
+    const dashTool      = $$("dashboardTool");
     const dashContainer = $$("dashboardInfoContainer");
     const tree          = $$("tree");
     const backBtn       = $$("dash-backDashBtn");
@@ -101,10 +102,13 @@ function resizeDashboards(){
 
     function createDashMain(){
         if (dashTool.isVisible()          && 
-        dashTool.config.width !== 350 ){
+            dashTool.config.width !== 350 ){
 
             dashTool.config.width = 350;
             dashTool.resize();
+
+            $$("dashboardTool").config.width = 350;
+            $$("dashboardTool").resize();
 
             showElem (dashContainer);
             hideElem (backBtn      );
@@ -175,7 +179,9 @@ function resizeTableEditForm(){
 }
 
 function resizeTableFilterForm (){
-    const filterForm = $$("filterTableForm");
+
+    const filterForm = $$("filterTableBarContainer");
+    
     const container  = $$("tableContainer");
     const backBtn    = $$("table-backTableBtnFilter");
     const tree       = $$("tree");
@@ -184,7 +190,7 @@ function resizeTableFilterForm (){
         if (filterForm.isVisible()){
             filterForm.config.width = window.innerWidth-45;
             filterForm.resize();
-
+ 
             hideElem (container);
             hideElem (tree     );
             showElem (backBtn  );
@@ -227,6 +233,11 @@ function setSearchInputState(){
             el.show();
         }
     });
+}
+
+
+function resizeTableCols(){
+    
 }
 
 

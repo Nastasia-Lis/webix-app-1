@@ -1,6 +1,6 @@
 
-import {hideElem,showElem} from "../commonFunctions.js";
-import {setFunctionError} from "../errors.js";
+import { hideElem,showElem } from "../commonFunctions.js";
+import { setFunctionError  } from "../errors.js";
 
 const logNameFile = "tableEditForm => toolbarBtn";
 
@@ -38,6 +38,7 @@ function editBtnClick() {
         if (editForm && editForm.isVisible()){
             hideElem(editForm     );
             hideElem(editContainer);
+          
 
         }else if (editForm && !(editForm.isVisible())) {
             showElem(editForm      );
@@ -75,22 +76,34 @@ function editBtnClick() {
 
 
 function toolbarEditButton (idTable){
-    const idBtnEdit = idTable+"-editTableBtnId";
+    const idBtnEdit = idTable + "-editTableBtnId";
+
+    function returnValue( empty = true ){
+        const icon = "<span class='webix_icon icon-pencil'></span>";
+        const text = "<span style='padding-left: 5px'>Редактор записи</span>";
+
+        if (empty){
+            return icon;
+        } else {
+            return icon+text;
+        }
+    }   
 
     return {   
-        view:"button",
-        maxWidth:200, 
-        value:"<span class='webix_icon icon-pencil'></span><span style='padding-left: 5px'>"+
-            "Редактор записи</span>",
-        id:idBtnEdit,
-        css:"webix_btn-edit",
-        title:"текст",
-        hotkey:"ctrl+shift+x",
-        height:42,
-        click:function(){
+        view    : "button",
+        maxWidth: 200, 
+        value   : returnValue( false ),
+        id      : idBtnEdit,
+        css     : "webix_btn-edit",
+        title   : "текст",
+        hotkey  : "ctrl+shift+x",
+        height  : 42,
+        minWidth: 40,
+        onlyIcon: false,
+        click   : function(){
             editBtnClick(idBtnEdit);
         },
-        on: {
+        on      : {
             onAfterRender: function () {
                 try{
                     if(idTable !== "table" && this.isVisible()){
@@ -99,6 +112,16 @@ function toolbarEditButton (idTable){
                 } catch (err) {   
                     setFunctionError(err,logNameFile,"btn edit onAfterRender");
                 }
+
+            
+                if ( this.$width < 160 &&  !this.config.onlyIcon ){
+                    this.setValue(returnValue( ));
+                    this.config.onlyIcon = true;
+                } else if (this.$width > 160 && this.config.onlyIcon){
+                    this.setValue(returnValue( false ));
+                    this.config.onlyIcon = false;
+                }
+
                 this.getInputNode().setAttribute("title","Редактировать запись (Ctrl+Shift+X)");
             }
         } 

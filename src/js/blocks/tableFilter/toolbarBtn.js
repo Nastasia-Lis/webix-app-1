@@ -821,14 +821,19 @@ function createFilterElements (parentElement, viewPosition=1) {
 
 function filterBtnClick (idTable){
     const filter = $$("filterTableForm");
-    
+
+    function resizeContainer(width){
+        const filterContainer = $$("filterTableBarContainer");
+  
+        filterContainer.config.width = width;
+        filterContainer.resize();
+    }
     function filterMinAdaptive(){
+
         hideElem($$("tableContainer"));
         hideElem($$("tree"));
         showElem($$("table-backTableBtnFilter"));
-        
-        filter.config.width = window.innerWidth-45;
-        filter.resize();
+        resizeContainer(window.innerWidth-45);
       
 
     }
@@ -882,7 +887,7 @@ function filterBtnClick (idTable){
     
         clearTableSelection();
         toolbarBtnLogic();
-       
+        resizeContainer(350);
     }
 
     
@@ -907,21 +912,21 @@ function toolbarFilterBtn(idTable,visible){
     ;
 
     const btn = 
-    {   view:"button",
-        width: 50, 
-        type:"icon",
-        id:idFilter,
-        hidden:visible,
-        icon:"icon-filter",
-        css:"webix_btn-filter webix-transparent-btn ",
-        disabled:true,
-        title:"текст",
-        hotkey:"ctrl+shift+f",
-        height:42,
-        click:function(){
+    {   view    : "button",
+        width   : 50, 
+        type    : "icon",
+        id      : idFilter,
+        hidden  : visible,
+        icon    : "icon-filter",
+        css     : "webix_btn-filter webix-transparent-btn ",
+        disabled: true,
+        title   : "текст",
+        hotkey  : "ctrl+shift+f",
+        height  : 42,
+        click   : function(){
             filterBtnClick(idTable,idBtnEdit);
         },
-        on: {
+        on      : {
             onAfterRender: function () {
                 this.getInputNode().setAttribute("title","Показать/скрыть фильтры (Ctrl+Shift+F)");
             }

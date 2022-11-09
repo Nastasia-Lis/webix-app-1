@@ -69,10 +69,12 @@ async function toRefTable (refTable){
 
 function setRefTable (srcTable){
     const table = $$("table");
+    const cols  = table.getColumns();
     const tree  = $$("tree");
+
     
     try {
-        table.getColumns().forEach(function(col,i){
+        cols.forEach(function(col,i){
 
             if ( col.id == srcTable ){
             
@@ -753,13 +755,13 @@ function createEditFields (parentElement) {
                 }
 
                 
-                let template = {
-                    id:el.id,
-                    label:el.label, 
-                    unique: el.unique,
-                    notnull: el.notnull,
-                    length:el.length,
-                    value: defValue ()
+                const template = {
+                    id      : el.id,
+                    label   : el.label, 
+                    unique  : el.unique,
+                    notnull : el.notnull,
+                    length  : el.length,
+                    value   : defValue ()
                     
                 };
 
@@ -822,9 +824,10 @@ function createEditFields (parentElement) {
                 } else {
                     createTextInput();
                 }
-
+                
+       
                 inputsArray.push(template);
-             
+ 
             });
 
        

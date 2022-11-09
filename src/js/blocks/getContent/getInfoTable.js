@@ -1135,11 +1135,20 @@ function getInfoTable (idCurrTable,idsParam) {
     
 
     }
+    
 
     function createDynamicElems (){
         const dataContent       = STORAGE.fields.content;
         const data              = dataContent[idsParam];  
         const dataInputsArray   = data.inputs;
+
+        function setAdaptiveWidth(elem){
+            const child       = elem.getNode().firstElementChild;
+            child.style.width = elem.$width+"px";
+
+            const inp         = elem.getInputNode();
+            inp.style.width   = elem.$width-5+"px";
+        }
       
         function generateCustomInputs (){  
             const customInputs  = [];
@@ -1155,6 +1164,7 @@ function getInfoTable (idCurrTable,idsParam) {
                     on              : {
                         onAfterRender: function () {
                             this.getInputNode().setAttribute("title",dataInputsArray[el].comment);
+                            setAdaptiveWidth(this);
                         },
                         onChange:function(){
                             const inputs = $$("customInputs").getChildViews();
@@ -1245,6 +1255,7 @@ function getInfoTable (idCurrTable,idsParam) {
                     on: {
                         onAfterRender: function () {
                             this.getInputNode().setAttribute( "title", dataInputsArray[el].comment );
+                            setAdaptiveWidth(this);
                         },
                     }               
                 };
@@ -1315,7 +1326,7 @@ function getInfoTable (idCurrTable,idsParam) {
                     id          : "customBtnDel"+i,
                     css         : "webix_danger", 
                     type        : "icon", 
-                    disabled    : true,
+                //    disabled    : true,
                     icon        : "icon-trash",
                     inputWidth  : 55,
                     inputHeight : 35,
@@ -1337,7 +1348,7 @@ function getInfoTable (idCurrTable,idsParam) {
                     view        : "button", 
                     css         : "webix_primary", 
                     id          : "customBtn"+i,
-                    inputHeight : 35,
+                    height      : 42,
                     value       : dataInputsArray[el].label,
                     click       : function (id) {
                         const idElements = getInputsId (this);
@@ -1366,6 +1377,7 @@ function getInfoTable (idCurrTable,idsParam) {
                     on: {
                         onAfterRender: function () {
                             this.getInputNode().setAttribute( "title", dataInputsArray[el].comment );
+                            setAdaptiveWidth(this);
                         },
                     },
                 };
@@ -1384,7 +1396,7 @@ function getInfoTable (idCurrTable,idsParam) {
                     on: {
                         onAfterRender: function () {
                             this.getInputNode().setAttribute( "title", dataInputsArray[el].comment );
-
+                            setAdaptiveWidth(this);
                             const parent = this  .getParentView();
                             const childs = parent.getChildViews();
 
@@ -1427,6 +1439,7 @@ function getInfoTable (idCurrTable,idsParam) {
                     on           : {
                         onAfterRender: function () {
                             this.getInputNode().setAttribute( "title", dataInputsArray[el].comment );
+                            setAdaptiveWidth(this);
                         },
                         onChange:function(){
                             try{
@@ -1531,14 +1544,13 @@ function getInfoTable (idCurrTable,idsParam) {
 
             function maxInputsSize (customInputs){
       
-                let inpObj = {
-                    id  : "customInputs",
-                    css : "webix_custom-inp", 
-                    rows: [
+                const inpObj = {
+                    id      : "customInputs",
+                    css     : "webix_custom-inp", 
+                    rows    : [
                         { height : 20 },
-                        { rows : customInputs }
+                        { rows   : customInputs }
                     ],
-                    width:350,
                 };
 
            
@@ -1633,9 +1645,8 @@ function getInfoTable (idCurrTable,idsParam) {
 
             const viewToolsBtn  = $$("viewToolsBtn");
             if (data.inputs){  
-                let customInputs;
            
-                customInputs        = generateCustomInputs ();
+                const customInputs  = generateCustomInputs ();
                 const filterBar     = $$("table-view-filterId").getParentView();
 
                 const btnTools = {   

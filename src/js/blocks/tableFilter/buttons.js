@@ -139,13 +139,12 @@ function editFiltersBtn (){
     
     
     function popupSizeAdaptive(){
-        const size  = window.innerWidth - 500;
+
+        const size  = window.innerWidth * 0.89;
         const popup = $$("popupFilterEdit");
         try{
-            if( popup && popup.$width > 200 ){
-                popup.config.width = size;
-                popup.resize();
-            }
+            popup.config.width = size;
+            popup.resize();
         } catch (err){
             setFunctionError(err,logNameFile,"function userprefsData => popupSizeAdaptive");
         }
@@ -935,7 +934,8 @@ function filterLibraryBtn () {
 }
 
 function backTableBtnClick() {
-    const filterForm     = $$("filterTableForm");
+    const filterForm     = $$("filterTableBarContainer");
+   
     const tableContainer = $$("tableContainer");
     
 
@@ -1164,7 +1164,7 @@ function buttonsFormFilter (name) {
     
     const formEditBtn = {   
         view    : "button",
-        value   : "Редактор фильтров",
+        value   : "Открыть редактор",
         height  : 48,
         minWidth: 140, 
         click   : editFiltersBtn,

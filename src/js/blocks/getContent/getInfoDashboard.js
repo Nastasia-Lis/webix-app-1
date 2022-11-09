@@ -154,15 +154,57 @@ const dashLayout = [
     }
 ];
 
+function clearDashLayout(){
+    if ( dashLayout[0].rows.length ){
+        dashLayout[0].rows = [];
+    }  
+}
+
+function goToRefView(chartAction){
+    const tree = $$("tree");
+
+    if ( tree.getItem(chartAction) ){
+        tree.select(chartAction);
+    } else {
+        Backbone.history.navigate("tree/"+chartAction, { trigger:true});
+        window.location.reload();
+    }
+}
+
 function createCharts(dataCharts){
+ 
+    clearDashLayout();
+
     try{
         dataCharts.forEach(function(el,i){
             const titleTemplate = el.title;
 
             delete el.title;
+     
+            el.borderless  = true;
+            el.minWidth    = 250;
+            el.on          = {
+                onItemClick:function(idEl,event,html){
+                    const chartAction = el.data[idEl-1].action;
+                   // const chartAction = "auth_user"
 
-            el.borderless       = true;
-            el.minWidth         = 250;
+                    if (chartAction){
+                        const fields = STORAGE.fields.content;
+                        Object.keys(fields).forEach(function(key,i){
+                          
+                            if ( key == chartAction ){
+                                goToRefView(chartAction);
+                            }
+                        });
+                    } else {
+                        const emptyAcion  = el.data[idEl-1];
+                        emptyAcion.action = null;
+                        console.log(emptyAcion)
+                    }
+                
+                   
+                }
+            };
 
             const headline = {   
                 template    : titleTemplate,
@@ -183,18 +225,22 @@ function createCharts(dataCharts){
             });
         
         });
+
+   
     } catch (err){  
         setFunctionError(err,logNameFile,"createCharts");
     }
 }
 
 
-function createSpace(inputsArray,idsParam){
+function createSpace( inputsArray, idsParam ){
 
     function backBtnClick (){
         const dashTool = $$("dashboard-tool-main");
 
-        hideElem    (dashTool);
+       // hideElem    (dashTool);
+        hideElem    ($$( "dashboardTool"));
+       
         showElem    ($$("dashboardInfoContainer"));
     }
 
@@ -269,18 +315,23 @@ function createSpace(inputsArray,idsParam){
 
                 hideElem (tree);
                 hideElem ($$("dashboardInfoContainer"));
-
-                showElem (dashTool);
+                showElem ($$("dashboardTool"));
+               // showElem (dashTool);
                 showElem (backBtn);
             
-                dashTool.config.width = window.innerWidth-45;
-                dashTool.resize();
+                // dashTool.config.width = window.innerWidth-45;
+                // dashTool.resize();
+
+                $$("dashboardTool").config.width = window.innerWidth-45;
+                $$("dashboardTool").resize();
             }
 
             function filterMaxAdaptive(){
                 if (dashTool.isVisible()){
-                    hideElem(dashTool);
+                    hideElem ($$("dashboardTool"));
+                 //   hideElem(dashTool);
                 } else {
+                    showElem ($$("dashboardTool"));
                     showElem(dashTool);
                 }
             }
@@ -298,11 +349,18 @@ function createSpace(inputsArray,idsParam){
 
             } else {
                 hideElem(backBtn);
+   
+                // if (dashTool.config.width !== 350){
+                //     dashTool.config.width  = 350;
+                //     dashTool.resize();
+                // }
 
-                if (dashTool.config.width !== 350){
-                    dashTool.config.width  = 350;
-                    dashTool.resize();
+                if ($$("dashboardTool").config.width !== 350){
+                    $$("dashboardTool").config.width  = 350;
+                    $$("dashboardTool").resize();
                 }
+
+                
             }
 
 
@@ -399,7 +457,9 @@ function updateDash(){
         view: "flexlayout",
         css : "webix_dash-charts-flex",
         rows: dashLayout,
+       
     };
+ 
 
     const dashBody = {
         view        : "scrollview", 
@@ -415,8 +475,10 @@ function updateDash(){
         }
     };
 
+
     try{
-        inner.addView(dashBody);
+
+       inner.addView(dashBody);
     } catch (err){  
         setFunctionError(err,logNameFile,"updateDash");
     }
@@ -425,9 +487,10 @@ function updateDash(){
 function getAjax ( url, inputsArray, idsParam, action=false ) {
   
     const getData = webix.ajax().get(url);
+
     
     getData.then(function(data){
-
+     
         const dataCharts    = data.json().charts;
 
         removeScroll();
@@ -503,6 +566,14 @@ async function getFieldsData ( idsParam ){
         let singleItemContent;
         let fields = STORAGE.fields.content;
         let inputsArray= [];
+
+        function setAdaptiveWidth(elem){
+            const child       = elem.getNode().firstElementChild;
+            child.style.width = elem.$width+"px";
+
+            const inp         = elem.getInputNode();
+            inp.style.width   = elem.$width-5+"px";
+        }
      
         function createFilterElems (inputs,el){
            
@@ -517,6 +588,8 @@ async function getFieldsData ( idsParam ){
                     on          : {
                         onAfterRender : function () {
                             this.getInputNode().setAttribute("title",input.comment);
+   
+                           setAdaptiveWidth(this);
                         },
                     }
                 };
@@ -558,7 +631,7 @@ async function getFieldsData ( idsParam ){
                     on: {
                         onAfterRender: function () {
                             this.getInputNode().setAttribute("title","Часы, минуты, секунды");
-                            
+                            setAdaptiveWidth(this);
                         },
                     }
                 };
@@ -594,8 +667,9 @@ async function getFieldsData ( idsParam ){
 
                             function createTime(type){
                                 const value = $$(elem.config.id).getValue();
+                          
                                 try{
-                                    if (value.getValue()!==null){
+                                    if (value !==null ){
 
                                         if (type == "sdt"){
                                             sdtDate = sdtDate.concat( " " + postformatTime(value) );
@@ -684,6 +758,7 @@ async function getFieldsData ( idsParam ){
                             try{
                                 const charts = $$("dashboard-charts");
                                 const body   = $$("dashboardBody");
+                      
                                 if (charts){
                                     body.removeView(charts);
                                 }
@@ -751,6 +826,7 @@ async function getFieldsData ( idsParam ){
                             on          : {
                                 onAfterRender: function () {
                                     this.getInputNode().setAttribute("title",input.comment);
+                                    setAdaptiveWidth(this);
                                 },
                             },
 

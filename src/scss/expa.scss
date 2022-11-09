@@ -1048,3 +1048,13 @@ label, button{
     padding-top:6px!important;
 }
 
+
+
+
+
+/// headlines
+.no-wrap-headline{
+    text-overflow: ellipsis!important;
+    white-space: nowrap;
+    overflow: hidden;
+}

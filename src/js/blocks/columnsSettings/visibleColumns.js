@@ -249,7 +249,6 @@ function colsPopupSelect(action){
 
         if ( type == "available" ){
             const pull = Object.values(list.data.pull);
- 
             if ( pull.length ){
                 hideElem(emptyTemplateSelected);
                 setBtnSubmitState("enable");
@@ -271,10 +270,11 @@ function colsPopupSelect(action){
         const selectedItem  = list.getSelectedItem();
         const selectedId    = list.getSelectedId  ();
         if (selectedItem){
+            hideEmptyElem("available");
             listSelect.add(selectedItem);
             list.remove(selectedId);
             showEmptyElem(list,emptyTemplate, $$("addColsBtn"));
-            hideEmptyElem("available");
+        
             setBtnSubmitState("enable");
         } else {
             createMsg();
@@ -287,11 +287,12 @@ function colsPopupSelect(action){
         const selectedId    = listSelect.getSelectedId();
     
         if (selectedItem){
+            hideEmptyElem("selected");
             list.add(selectedItem);
             listSelect.remove(selectedId);
 
             showEmptyElem(listSelect,emptyTemplateSelected, $$("removeColsBtn"));
-            hideEmptyElem("selected");
+         
         } else {
             createMsg();
         }
@@ -692,6 +693,7 @@ function  visibleColsButtonClick(idTable){
             modal       : true,
             escHide     : true,
             position    : "center",
+            scroll      :"y",
             body        : {
 
                 rows:[ 
@@ -706,7 +708,7 @@ function  visibleColsButtonClick(idTable){
                     {height:5},
 
                     { cols:[
-                        {
+                        {   
                             rows:[
                                 search,
 

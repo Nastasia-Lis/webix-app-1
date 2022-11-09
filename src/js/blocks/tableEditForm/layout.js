@@ -8,17 +8,18 @@ const editForm = {
     hidden      : true,
     css         : "webix_form-edit",
     minHeight   : 350,
+    minWidth    : 230,
     borderless  : true,
     scroll      : true,
     elements    : [
         editFormBtns,
         propertyLayout,  
     ],
+
    
     rules       : {
         $all:webix.rules.isNotEmpty
     },
-
 
     ready       : function(){
         this.validate();
@@ -29,10 +30,6 @@ const editForm = {
 
 
 function editTableBar (){
-    // return {id:"editTableBarContainer",rows:[
-    //     editForm
-    // ]};
-
     return editForm;
 }
 

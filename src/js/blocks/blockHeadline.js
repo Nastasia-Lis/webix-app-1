@@ -2,17 +2,18 @@ import {setFunctionError}           from "./errors.js";
 import {saveFavsClick}              from "./favsLink.js";
 import {prevBtnClick, nextBtnClick} from "./historyBtns.js";
 
-function setHeadlineBlock (idTemplate, title=null){
+function setHeadlineBlock ( idTemplate, title=null ){
     let templateTitle;
     try{
         if(title){
             templateTitle = title;
         } else {
             templateTitle = function(){
-                if (Object.keys($$(idTemplate).getValues()).length !==0){
-                    return $$(idTemplate).getValues();
+                const value = $$(idTemplate).getValues();
+                if (Object.keys(value).length !==0){
+                    return "<div class='no-wrap-headline'>" + value + "</div>";
                 } else {
-                    return "Имя не указано";
+                    return "<div class='no-wrap-headline'> Имя не указано </div>";
                 }
             };
         }
@@ -21,26 +22,29 @@ function setHeadlineBlock (idTemplate, title=null){
     }
 
     const headline = {   
-        view:"template",
-        id:idTemplate,
-        borderless:true,
-        css:"webix_block-headline",
-        height:34,
-        template:templateTitle,
+        view        : "template",
+        id          : idTemplate,
+        borderless  : true,
+        css         : "webix_block-headline",
+        height      : 34,
+        template    : templateTitle,
+        on:{
+
+        }
     };
 
 
     const favsBtn = {
-        view:"button", 
-        css:"webix-transparent-btn",
-        type:"icon",
-        icon:"icon-star",
-        hotkey :"ctrl+shift+l",
-        width:50,
-        click:function(){
+        view    : "button", 
+        css     : "webix-transparent-btn",
+        type    : "icon",
+        icon    : "icon-star",
+        hotkey  : "ctrl+shift+l",
+        width   : 50,
+        click   : function(){
             saveFavsClick();
         },
-        on:{
+        on      : {
             onAfterRender: function () {
                 this.getInputNode().setAttribute("title","Добавить ссылку в избранное (Ctrl+Shift+L)");
             },
@@ -50,16 +54,16 @@ function setHeadlineBlock (idTemplate, title=null){
     };
 
     const prevBtn = {
-        view:"button", 
-        css:"webix-transparent-btn btn-history",
-        type:"icon",
-        icon:"icon-arrow-left",
-        width:50,
-        hotkey  :"ctrl+shift+p",
-        click:function(){
+        view    : "button", 
+        css     : "webix-transparent-btn btn-history",
+        type    : "icon",
+        icon    : "icon-arrow-left",
+        width   : 50,
+        hotkey  : "ctrl+shift+p",
+        click   : function(){
             prevBtnClick();
         },
-        on:{
+        on      : {
             onAfterRender: function () {
                 this.getInputNode().setAttribute("title","Вернуться назад (Ctrl+Shift+P)");
             },
@@ -69,16 +73,16 @@ function setHeadlineBlock (idTemplate, title=null){
     };
  
     const nextBtn = {
-        view:"button", 
-        css:"webix-transparent-btn btn-history",
-        type:"icon",
-        icon:"icon-arrow-right",
-        width:50,
-        hotkey  :"ctrl+shift+b",
-        click:function(){
+        view    : "button", 
+        css     : "webix-transparent-btn btn-history",
+        type    : "icon",
+        icon    : "icon-arrow-right",
+        width   : 50,
+        hotkey  : "ctrl+shift+b",
+        click   : function(){
             nextBtnClick();
         },
-        on:{
+        on      : {
             onAfterRender: function () {
                 this.getInputNode().setAttribute("title","Перейти вперёд (Ctrl+Shift+B)");
             },
@@ -90,14 +94,15 @@ function setHeadlineBlock (idTemplate, title=null){
 
 
     const headlineLayout = {
-        css:"webix_block-headline",
-        cols:[
+        css : "webix_block-headline",
+        cols: [
             headline,
             {},
-            {cols:[
-                prevBtn,
-                nextBtn,
-            ]},
+            {   cols:[
+                    prevBtn,
+                    nextBtn,
+                ]
+            },
             favsBtn
         ]
     };

@@ -83,7 +83,7 @@ function onBeforeSelectFunc(data){
     }
 
     function adaptiveViewDashFilter(){
-        const dashTool      = $$("dashboard-tool-main");
+        const dashTool      = $$("dashboardTool");
         const dashContainer = $$("dashboardInfoContainer");
 
         hideElem (dashTool);

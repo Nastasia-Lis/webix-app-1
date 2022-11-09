@@ -1,6 +1,21 @@
 import {buttonsFormFilter} from "./buttons.js";
 
 
+
+function setAdaptiveValue(btn, adaptVal, mainVal){
+    const width  = btn.$width;
+   
+    if (width < 120 &&  btn.config.value !== adaptVal ){
+        btn.config.value = adaptVal;
+        btn.refresh();
+      
+    } else if (width > 120 &&  btn.config.value !== mainVal ) {
+        btn.config.value = mainVal;
+        btn.refresh();
+    }
+}
+
+
 const formEmptyTemplate = {   
     id:"filterEmptyTempalte",
     css:"webix_empty-template",
@@ -9,26 +24,25 @@ const formEmptyTemplate = {
 };
 
 const filterTableForm = {
-    view:"form", 
-    hidden:true,
-    id:"filterTableForm",
-    minHeight:350,
-    minWidth:210,
-    width: 320,
-    scroll:true,
-    borderless:true,
-    elements:[
-        {   id:"form-adaptive",
-            minHeight:48,
-            css:"webix_form-adaptive",
-            margin:5,
-            rows:[
-                {   margin:5, 
-                    rows:[
+    view        : "form", 
+    hidden      : true,
+    id          : "filterTableForm",
+    minHeight   : 350,
+   // width       : 320,
+    scroll      : true,
+    borderless  : true,
+    elements    : [
+        {   
+            minHeight : 48,
+            css       : "webix_form-adaptive",
+            margin    : 5,
+            rows      : [
+                {   margin : 5, 
+                    rows   : [
                       
-                    {   responsive:"form-adaptive",  
-                        margin:5, 
-                        cols:[
+                    {   
+                        margin      : 5, 
+                        cols        : [
                             buttonsFormFilter("filterBackTableBtn"),
                             buttonsFormFilter("formEditBtn"),
                             buttonsFormFilter("formResetBtn"),
@@ -37,12 +51,12 @@ const filterTableForm = {
                     ]
                 },
 
-                {   id:"btns-adaptive",
-                    css:{"margin-top":"5px!important"},
-                    rows:[
-                        {   responsive:"btns-adaptive", 
-                            margin:5, 
-                            cols:[
+                {   id   : "btns-adaptive",
+                    css  : {"margin-top":"5px!important"},
+                    rows : [
+                        {   responsive  : "btns-adaptive", 
+                            margin      : 5, 
+                            cols        : [
                                 buttonsFormFilter("formBtnSubmit"),
                                 buttonsFormFilter("formLibrarySaveBtn"),
                             ]
@@ -66,11 +80,18 @@ const filterTableForm = {
 };
 
 function filterForm (){
-    return {id:"filterTableBarContainer", hidden:true, rows:[
-            {id:"editFilterBarAdaptive", rows:[
-                filterTableForm
-            ]}
-    ]};
+    return {    id      : "filterTableBarContainer", 
+                minWidth: 250,
+                width   : 350, 
+                hidden  : true, 
+                rows    : [
+                    {   id  : "editFilterBarAdaptive", 
+                        rows: [
+                            filterTableForm
+                        ]
+                    }
+                ]
+            };
 }
 
 export{

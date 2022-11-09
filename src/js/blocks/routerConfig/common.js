@@ -72,9 +72,6 @@ function createElements(specificElement){
                           
                                 editTableBar(),
                                 filterForm(),
-                               
-                             
-                                
                                 
                             ]
                         }
@@ -119,7 +116,7 @@ function createElements(specificElement){
 
                                 { view:"resizer",id:"formsTools-resizer",hidden:true,class:"webix_resizers",},
                                 propertyTemplate("propTableView"),
-                                {id:"formsTools",hidden:true,rows:[
+                                {id:"formsTools",hidden:true,  minWidth:190, rows:[
                                     viewTools,                                
                                 ]},
                             ]},

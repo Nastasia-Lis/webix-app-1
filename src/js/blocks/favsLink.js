@@ -24,7 +24,18 @@ function getUserData(){
     });
 }
 
-
+function setAdaptiveSize(popup){
+    if (window.innerWidth < 1200 ){
+        const size  = window.innerWidth * 0.89;
+        try{
+            popup.config.width = size;
+            popup.resize();
+        } catch (err){
+            setFunctionError(err,"favsLink","function setAdaptiveSize");
+        }
+    }
+ 
+}
 
 function favsPopupCollectionClick (){
     const getData = webix.ajax().get("/init/default/api/userprefs/");
@@ -105,8 +116,7 @@ function favsPopupSubmitClick(){
 function favsPopup(){
 
     const popupHeadline = {   
-        template:"Избранное", 
-        width:250,
+        template:"<div class='no-wrap-headline'>Избранное</div>", 
         css:"popup_headline", 
         borderless:true, 
         height:20 
@@ -194,7 +204,7 @@ function favsPopup(){
     });
     
     favsPopupCollectionClick ();
-
+    setAdaptiveSize($$("popupFavsLink"));
 }
 
 
@@ -218,6 +228,7 @@ function getCurrId(){
 }
 
 function saveFavsClick(){
+
 
     async function getLinkName(){
         
@@ -410,8 +421,7 @@ function saveFavsClick(){
     }
    
     const popupHeadline = {   
-        template:"Сохранить ссылку", 
-        width:250,
+        template:"<div class='no-wrap-headline'>Сохранить ссылку</div>", 
         css:"popup_headline", 
         borderless:true, 
         height:20 
@@ -475,8 +485,14 @@ function saveFavsClick(){
 
     }).show();
 
+ 
+
     getLinkName();
     getLink();
+
+    setAdaptiveSize($$("popupFavsLinkSave"));   
+   
+
 }
 
 

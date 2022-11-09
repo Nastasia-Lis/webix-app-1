@@ -446,19 +446,35 @@ function backTableBtnClick() {
 }
 
 
+function setAdaptiveValue(btn, adaptVal, mainVal){
+    const width  = btn.$width;
+   
+    if (width < 120 &&  btn.config.value !== adaptVal ){
+        btn.config.value = adaptVal;
+        btn.refresh();
+      
+    } else if (width > 120 &&  btn.config.value !== mainVal ) {
+        btn.config.value = mainVal;
+        btn.refresh();
+    }
+}
+
 const newAddBtn = {   
-    view:"button",
-    id:"table-newAddBtnId",
-    height:48,
-    minWidth:90, 
-    disabled:true,
-    hotkey: "alt+a",
-    value:"Новая запись", 
-    click:addItem,
+    view    : "button",
+    id      : "table-newAddBtnId",
+    height  : 48,
+    minWidth: 50, 
+    disabled: true,
+    hotkey  : "alt+a",
+    value   : "Новая запись", 
+    click   : addItem,
     on      : {
         onAfterRender: function () {
             this.getInputNode().setAttribute("title", "Добавить новую запись (Alt+A)");
-        }
+            setAdaptiveValue(this, "+", "Новая запись");
+
+        },
+    
     } 
 };
 
@@ -467,8 +483,7 @@ const delBtn = {
     id:"table-delBtnId",
     disabled:true,
     height:48,
-    minWidth:90,
-    width:100,
+    width:50,
     hotkey: "ctrl+enter",
     css:"webix_danger", 
     type:"icon", 
@@ -483,14 +498,14 @@ const delBtn = {
 };
 
 const saveBtn = { 
-    view:"button", 
-    id:"table-saveBtn",
-    hidden:true, 
-    value:"Сохранить", 
-    hotkey: "shift+space",
-    height:48, 
-    css:"webix_primary", 
-    click:function(){
+    view    : "button", 
+    id      : "table-saveBtn",
+    hidden  : true, 
+    value   : "Сохранить", 
+    hotkey  : "shift+space",
+    height  : 48, 
+    css     : "webix_primary", 
+    click   : function(){
         saveItem();
     },
     on: {
@@ -501,14 +516,15 @@ const saveBtn = {
 };
 
 const saveNewBtn = { 
-    view:"button", 
-    id:"table-saveNewBtn",
-    value:"Сохранить новую запись",
-    hidden:true,  
-    height:48,
-    css:"webix_primary", 
-    hotkey: "ctrl+shift+space",
-    click:function(){
+    view    : "button", 
+    id      : "table-saveNewBtn",
+  //  value   : "Сохранить новую запись",
+    value   : "Сохранить",
+    hidden  : true,  
+    height  : 48,
+    css     : "webix_primary", 
+    hotkey  : "ctrl+shift+space",
+    click   : function(){
         saveNewItem();
     },
     on: {
@@ -519,45 +535,50 @@ const saveNewBtn = {
 };
 
 const backTableBtn = { 
-    view:"button", 
-    id:"table-backTableBtn",
-    type:"icon",
-    icon:"icon-arrow-left",
-    value:"Вернуться к таблице",
-    hidden:true,  
-    height:48,
-    minWidth:60,
-    width:90,
-    hotkey:"shift+q",
-    click:function(){
+    view    : "button", 
+    id      : "table-backTableBtn",
+    type    : "icon",
+    icon    : "icon-arrow-left",
+    value   : "Вернуться к таблице",
+    hidden  : true,  
+    height  : 48,
+    minWidth: 60,
+    width   : 90,
+    hotkey  : "shift+q",
+    click   : function(){
         backTableBtnClick();
     },
     on: {
         onAfterRender: function () {
-            this.getInputNode().setAttribute("title","Вернуться к таблице (Shift+Q)");
+            this.getInputNode().setAttribute( "title", "Вернуться к таблице (Shift+Q)" );
         }
     } 
 };
 
 const emptyTmplate = {   
-    id:"EditEmptyTempalte",
-    css:"webix_empty-template",
-    template:"Добавьте новую запись или выберите существующую из таблицы", 
-    borderless:true
+    id         : "EditEmptyTempalte",
+    css        : "webix_empty-template",
+    template   : "Добавьте новую запись или выберите существующую из таблицы", 
+    borderless : true,
 };
 
 const editFormBtns = {
-    minHeight:48,
-    css:"webix_form-adaptive", 
-    margin:5, 
+    minHeight : 48,
+    css       : "webix_form-adaptive", 
+    margin    : 5, 
     rows:[
         {cols:[
-            {id:"tablePropBtnsSpace",width:35, hidden:true},
+            {   id      : "tablePropBtnsSpace",
+                width   : 35, 
+                hidden  : true
+            },
             {rows:[
                 {
-                    margin:5,rows:[
+                    margin : 5,
+                    rows   : [
                         {
-                            margin:5,cols:[
+                            margin : 2,
+                            cols   : [
                                 backTableBtn,
                                 newAddBtn,  
                                 delBtn,
@@ -567,8 +588,8 @@ const editFormBtns = {
                     ]
                 },
         
-                {   margin:10, 
-                    rows:[ 
+                {   margin : 10, 
+                    rows   : [ 
                         saveBtn,
                         saveNewBtn,
                         emptyTmplate,
