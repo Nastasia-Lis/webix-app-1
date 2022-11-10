@@ -1,7 +1,7 @@
 
 
-import { showElem, hideElem }    from "../commonFunctions.js";
-import { setFunctionError}       from "../errors.js";
+import { showElem, hideElem }     from "../commonFunctions.js";
+import { setFunctionError }       from "../errors.js";
 
 const visibleInputs = {};
 
@@ -27,7 +27,6 @@ function showSegmentBtn (condition,el){
 }
 
 function visibleField (condition, elementClass = null, el = null){
-
     const showClass = "webix_show-content";
     const hideClass = "webix_hide-content";
     function editStorage(){

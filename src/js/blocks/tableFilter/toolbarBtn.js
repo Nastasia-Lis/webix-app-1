@@ -1,3 +1,4 @@
+
 import { hideElem,showElem,getComboOptions }    from "../commonFunctions.js";
 import { setFunctionError }                     from "../errors.js";
 import { setLogValue }                          from "../logBlock.js";
@@ -34,7 +35,7 @@ function field (operation,uniqueId,typeField,el){
      
         const elemId        = getElemId ();
 
-        const fieldId       = elemId+"_filter-child-"+operation+"-"+uniqueId;
+        const fieldId       = elemId+"_filter-child-"+uniqueId;
         const fieldTemplate = {
             id        : fieldId, 
             name      : fieldId,
@@ -158,11 +159,23 @@ function filterOperationsBtnLogic (idBtn,id){
 
 }
 
+function checkCountInputs(){
+    const values = Object.values(visibleInputs);
+    let counter  = 0;
+
+    values.forEach(function(value, i){
+        if (value.length){
+            counter ++;
+        }
+    });
+
+    return counter;
+}
+
 function showEmptyTemplate(){
-                     
-    const inputs = $$("inputsFilter");
-    if ( inputs.$height == 46){
-        showElem($$("filterEmptyTempalte"));
+
+    if (! checkCountInputs()){
+        showElem($$("filterEmptyTempalte")); 
     }
 
 }
@@ -194,16 +207,16 @@ function filterOperationsBtnData (typeField){
 
         if (typeField == "combo" || typeField == "boolean" ){
             addDefaultOperations(this);
+
         } else if (typeField  == "text" ){
             addDefaultOperations(this);
             addOperation (this, "содержит", "contains");
-        } else if (typeField  == "date"){
 
+        } else if (typeField  == "date"){
             addDefaultOperations  (this);
             addMoreLessOperations (this);
 
         } else if (typeField  == "integer"   ){
-
             addDefaultOperations  (this);
             addMoreLessOperations (this);
             addOperation (this, "содержит", "contains");
@@ -221,12 +234,31 @@ function removeInStorage(el,thisInput){
 
 }
 
+function hideLastSegmentBtn(idElement){
+ 
+    const count = checkCountInputs();
+    const keys  = Object.keys(visibleInputs);
 
+    function hideBtn(id){
+        const btn = $$(id + "_filter_segmentBtn");
+        hideElem(btn);
+    }
+ 
+    if (count === 2){
+        keys.forEach(function(input,i){
+           
+            if (input !== idElement){
+                hideBtn(input);
+            }
+        });
+
+    }
+}
 
 function hideHtmlEl(id){
     const idContainer = $$(id+"_filter_rows");
-    const showClass = "webix_show-content";
-    const hideClass = "webix_hide-content";
+    const showClass   = "webix_show-content";
+    const hideClass   = "webix_hide-content";
 
     const childs = idContainer.getChildViews();
 
@@ -240,84 +272,75 @@ function hideHtmlEl(id){
 
 }
 
+function hideChildSegmentBtn (idChild, id){
+    const lengthChilds = visibleInputs[id].length;
 
-function hideNextSegmentBtn(){
+    const lastChild = visibleInputs[id][lengthChilds-1];
 
-    const values =  Object.values(visibleInputs);
-
-    let check    = false;
-    let nextInput;
-
-    values.forEach(function(value,i){
-  
-        if (value.length && !check){
-            nextInput = value[0];
-            check     = true;
-        }
-
-        if ( !value.length ){
-            const id = Object.keys(visibleInputs)[i];
-            hideHtmlEl(id);
-        }
-
-    });
-
-
-    const segmentBtn = $$(nextInput + "_segmentBtn");
-    hideElem(segmentBtn);
+    if (checkCountInputs() === 1 &&
+        lastChild === idChild    ){
+        const segmentChildBtn = idChild + "_segmentBtn";
+        hideElem($$(segmentChildBtn));
+    }
 }
 
 function clickContextBtnParent (id,el){
 
-    const thisInput = el.id + "_filter";
-                 
-    function removeInput(){
+    const thisInput  = el.id + "_filter";
+    const segmentBtn = $$(thisInput + "_segmentBtn");       
+    
+    function removeInput (){
 
         const container     = $$(thisInput).getParentView();
         const mainInput     = container    .getChildViews();
-      
-
        
         function hideMainInput(){
             const btnOperations = $$(thisInput + "-btnFilterOperations");
-            const segmentBtn    = $$(thisInput + "_segmentBtn");
+   
             try{
                 mainInput.forEach(function(el){
                     hideElem(el);
                 });
 
-
+           
                 btnOperations.setValue(" = ");
-                hideElem(segmentBtn);
+
             } catch(err){ 
-                setFunctionError(err,logNameFile,"contextBtn remove => hideMainInput");
+                setFunctionError(err, logNameFile, "contextBtn remove => hideMainInput");
             }
         }
 
         hideMainInput       ();
-     //   hideHtmlEl          (thisInput);
+        hideHtmlEl          (el.id);
+        hideLastSegmentBtn  (el.id);
         removeInStorage     (el, thisInput);
         showEmptyTemplate   ();
-        hideNextSegmentBtn  ();
-        setLogValue         ("success","Поле удалено"); 
+        setLogValue         ("success", "Поле удалено"); 
 
     }
 
+    function addInput (){
+        const idChild = createChildFields (id, el);
+        showElem (segmentBtn);
+        hideChildSegmentBtn (idChild, el.id);
+    }
+
     if ( id === "add" ){
-        createChildFields (id,el);
+        addInput();
         
     } else if (id === "remove"){
 
         popupExec("Поле фильтра будет удалено").then(
             function(){
-                removeInput();
+                removeInput ();
+                hideElem    (segmentBtn);
                 
             }
         );
     }
 }
 
-function filterFieldsFunctions (el,typeField){
+function filterFieldsFunctions (el, typeField){
 
     const idBtnOperation = el.id+"_filter-btnFilterOperations";
     const btnOperation = {
@@ -402,21 +425,20 @@ function clickContextBtnChild(id, el, thisElem){
     function returnThisInput(){
         const master    = thisElem.config.master;
         const index     = master.indexOf("_contextMenuFilter");
-        const thisInput = master.slice(0,index);
+        const thisInput = master.slice(0, index);
 
         return thisInput;
     }
 
     const thisInput     = returnThisInput();
     const thisContainer = thisInput + "-container";
-    
- 
+    const segmentBtn    = $$(thisInput+"_segmentBtn");
 
     function addChild(){
-        const parentInput  = $$(el.id+"_filter");
+        const parentInput  = $$(el.id + "_filter");
         let childPosition  = 0;
 
-        visibleInputs[el.id].forEach(function(input,i){
+        visibleInputs[el.id].forEach(function(input, i){
 
             const inputContainer = input + "-container";
             if (inputContainer === thisContainer){
@@ -428,8 +450,12 @@ function clickContextBtnChild(id, el, thisElem){
             childPosition++;
         }
 
-        createChildFields (id,el,childPosition);
+        const idChild = createChildFields (id,el,childPosition);
 
+        hideChildSegmentBtn (idChild, el.id);
+
+        showElem(segmentBtn);
+        console.log(visibleInputs)
     }
 
     function removeContainer(){
@@ -439,27 +465,32 @@ function clickContextBtnChild(id, el, thisElem){
         parent.removeView($$(thisContainer));
     } 
 
-    function isFirstInput(){
-        let check = false;
+    function hideParentSegmentBtn(){
+        const colName   = $$(thisInput).config.columnName;
+        const parentBtn = $$(colName + "_filter_segmentBtn");
+        hideElem(parentBtn);
+    }
 
-        visibleInputs[el.id].forEach(function(input,i){
-            if (input === thisInput && i === 0){
-                check = true;
-            }
-        });
-
+    function isLastInput(){
+        const length = visibleInputs[el.id].length;
+        let check    = false;
+   
+        if (length === 2){
+            check = true;
+        }
         return check;
     }
 
     function removeInput(){
-        const isFirst = isFirstInput();
+        const isLast = isLastInput();
+
         removeInStorage(el, thisInput);
 
-        removeContainer();
-
-        if (isFirst){
-            hideNextSegmentBtn();
+        if (isLast){
+            hideParentSegmentBtn();
         }
+
+        removeContainer();
         showEmptyTemplate();
         setLogValue("success","Поле удалено"); 
 
@@ -485,7 +516,7 @@ function clickContextBtnChild(id, el, thisElem){
 
 
 function createChildFields (id,el,position) {
- 
+
     const elemId        = el.id;
     const containerRows = $$(elemId + "_filter" + "_rows");
     const uniqueId      = webix.uid();
@@ -575,9 +606,10 @@ function createChildFields (id,el,position) {
     }
 
     function returnLogicBtn(btnsId){
+    
         return {
             view    : "segmented", 
-            id      : btnsId+"_segmentBtn",
+            id      : btnsId + "_segmentBtn",
             value   : 1, 
             options : [
                 { "id":"1", "value":"и" }, 
@@ -588,34 +620,24 @@ function createChildFields (id,el,position) {
 
     function createBtns(btnsId){
         return {
-            id:elemId+"_filter_container-btns"+uniqueId,
-            css:{"margin-top":"22px!important"},
-            cols:[
-                returnButtonOperation(btnsId),
-                returnContextButton  (btnsId)
+            id  : elemId + "_filter_container-btns" + uniqueId,
+            css : {"margin-top" : "22px!important"},
+            cols: [
+                returnButtonOperation (btnsId),
+                returnContextButton   (btnsId)
             ]
         };
     }
 
 
     function addInput(operation){
-        let operationsIdPart;
-
-        if (operation == "operAnd"){
-            operationsIdPart = "-operAnd-";
-        } else {
-            operationsIdPart = "-operOr-";
-        }
-
-       // const idContainer = elemId + "_filter-container-child" + operationsIdPart + uniqueId;
-        const idContainer = elemId + "_filter-child" + operationsIdPart + uniqueId + "-container";
-        const btnsId      = elemId + "_filter-child" + operationsIdPart + uniqueId;
+      
+        const idContainer = elemId + "_filter-child-" + uniqueId + "-container";
+        const btnsId      = elemId + "_filter-child-" + uniqueId;
 
         const input      = field (operation ,uniqueId, typeField, el);
-
+          
         visibleInputs[elemId].splice(position, 0, input.id);
-
-        
 
         containerRows.addView(
             {   id:idContainer,
@@ -624,26 +646,24 @@ function createChildFields (id,el,position) {
                 rows:[
                     {   id:webix.uid(),
                         rows:[
-                            returnLogicBtn(btnsId),
                             {cols:[
                                 input,
                                 createBtns(btnsId)
                             ]},
-                           
+                            returnLogicBtn(btnsId),
                         ]
                     }
             ]},position
         );
 
     }
+
+   
+
     addInput("operAnd");
-    // if(id.includes("and")){
-    //     addInput("operAnd");
-        
-    // } else if(id.includes("or")){
-    //     addInput("operOr");
-    // }
- 
+   
+    const idCreateField = elemId + "_filter-child-" + uniqueId;
+    return idCreateField;
 }
 
 function createFilterElements (parentElement, viewPosition=1) {
@@ -669,11 +689,11 @@ function createFilterElements (parentElement, viewPosition=1) {
             columnsData.forEach((el,i) => {
          
                 const inputTemplate = { 
-                    id              :el.id+"_filter",
-                    name            :el.id+"_filter", 
-                    hidden          :true,
-                    label           :el.label, 
-                    labelPosition   :"top",
+                    id              : el.id + "_filter",
+                    name            : el.id + "_filter", 
+                    hidden          : true,
+                    label           : el.label, 
+                    labelPosition   : "top",
                     columnName      : el.id,
                     on:{
                         onItemClick:function(){
@@ -694,6 +714,7 @@ function createFilterElements (parentElement, viewPosition=1) {
                     ]
                 };
 
+
                 const idContainerRows = el.id + "_filter"+"_rows";
                 const idContainer     = el.id + "_filter-container";
                 const cssContainer    = el.id + " webix_filter-inputs";
@@ -706,11 +727,12 @@ function createFilterElements (parentElement, viewPosition=1) {
                             {   id:idContainer,
                                 padding:5,
                                 rows:[
-                                    logicBtn,
+                                 
                                     { cols:[
                                         element,
                                         btns,
                                     ]},
+                                    logicBtn,
                                    
                                 ]
                             }

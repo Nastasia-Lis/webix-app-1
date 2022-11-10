@@ -1,20 +1,20 @@
-console.log("expa 1.0.49"); 
+console.log("expa 1.0.50"); 
 
-import {textInputClean}                     from "./blocks/commonFunctions.js";
-import {auth}                               from "./components/login.js";
-import {setUserPrefs}                       from "./blocks/storageSetting.js";
-import {header}                             from "./components/header.js";
+import { textInputClean }                     from "./blocks/commonFunctions.js";
+import { auth }                               from "./components/login.js";
+import { setUserPrefs }                       from "./blocks/storageSetting.js";
+import { header }                             from "./components/header/layout.js";
 
-import {treeSidebar}                        from "./components/treeSidabar/layout.js";
+import { treeSidebar }                        from "./components/treeSidabar/layout.js";
 
-import {logLayout}                          from "./blocks/logBlock.js";
-import {resetTimer}                         from  "./blocks/logout/autoLogout.js";
+import { logLayout }                          from "./blocks/logBlock.js";
+import { resetTimer }                         from  "./blocks/logout/autoLogout.js";
 
-import {setFunctionError}                   from "./blocks/errors.js";
-import {resizeAdaptive,adaptivePoints}      from "./blocks/adaptive.js";
-import {webixGlobalPrefs,protoUIEdittree}   from "./blocks/webixGlobalPrefs.js";
-import {setRouterStart}                     from "./blocks/routerConfig/routerStart.js";
-import {backButtonBrowserLogic}             from "./blocks/historyBtns.js";
+import { setFunctionError }                   from "./blocks/errors.js";
+import { resizeAdaptive,adaptivePoints }      from "./blocks/adaptive.js";
+import { webixGlobalPrefs,protoUIEdittree }   from "./blocks/webixGlobalPrefs.js";
+import { setRouterStart }                     from "./blocks/routerConfig/routerStart.js";
+import { backButtonBrowserLogic }             from "./blocks/historyBtns.js";
 
 
 const emptySpace = {
@@ -67,7 +67,7 @@ const mainLayout = {
                                             
             cols: [
                 { rows  : [
-                    header(),
+                    header,
                     adaptive,
                 
                     {cols : [

@@ -167,7 +167,7 @@ function goToRefView(chartAction){
     if ( tree.getItem(chartAction) ){
         tree.select(chartAction);
     } else {
-        Backbone.history.navigate("tree/"+chartAction, { trigger:true});
+        Backbone.history.navigate("tree/" + chartAction, { trigger : true });
         window.location.reload();
     }
 }

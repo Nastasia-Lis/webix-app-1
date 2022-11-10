@@ -1,5 +1,5 @@
 import { setLogValue }                            from '../logBlock.js';
-import { getItemId, hideElem, getUserData }       from "../commonFunctions.js";
+import { getItemId, hideElem, getUserData, showElem }       from "../commonFunctions.js";
 import { setFunctionError,setAjaxError }          from "../errors.js";
 import { setStorageData }                         from "../storageSetting.js";
 import { modalBox }                               from "../notifications.js";
@@ -147,7 +147,11 @@ function editFiltersBtn (){
             popup.config.width = size;
             popup.resize();
         } catch (err){
-            setFunctionError(err,logNameFile,"function userprefsData => popupSizeAdaptive");
+            setFunctionError(
+                err,
+                logNameFile,
+                "function userprefsData => popupSizeAdaptive"
+            );
         }
     }
     
@@ -168,7 +172,8 @@ function editFiltersBtn (){
                 stateSubmitBtn(true);
 
                 function setValueCheckbox(){
-                    const checkboxes = $$("editFormPopupScrollContent").getChildViews();
+                    const content    = $$("editFormPopupScrollContent");
+                    const checkboxes = content.getChildViews();
                     try{
                         checkboxes.forEach(function(el,i){
                             if (el.config.id.includes("checkbox")){
@@ -183,7 +188,11 @@ function editFiltersBtn (){
 
                         });
                     } catch (err){
-                        setFunctionError(err,logNameFile,"function checkbox:onchange => setValueCheckbox");
+                        setFunctionError(
+                            err,
+                            logNameFile,
+                            "function checkbox:onchange => setValueCheckbox"
+                        );
                     }
                 }
 
@@ -208,7 +217,11 @@ function editFiltersBtn (){
                 });
             });
         }catch (err){
-            setFunctionError( err, logNameFile, "function editFiltersBtn => getAllCheckboxes" );
+            setFunctionError( 
+                err, 
+                logNameFile, 
+                "function editFiltersBtn => getAllCheckboxes" 
+            );
         }
      
         return checkboxes;
@@ -240,7 +253,11 @@ function editFiltersBtn (){
                     }
                 });
             } catch (err){
-                setFunctionError(err,logNameFile,"function checkboxOnChange => getStatusCheckboxes");
+                setFunctionError(
+                    err,
+                    logNameFile,
+                    "function checkboxOnChange => getStatusCheckboxes"
+                );
             }
         }
 
@@ -262,7 +279,11 @@ function editFiltersBtn (){
                     
                 }
             } catch (err){
-                setFunctionError(err,logNameFile,"function checkboxOnChange => setSelectAllState");
+                setFunctionError(
+                    err,
+                    logNameFile,
+                    "function checkboxOnChange => setSelectAllState"
+                );
             }
         }
        
@@ -271,7 +292,11 @@ function editFiltersBtn (){
             setStateBtnSubmit();
             setSelectAllState();
         } catch (err){
-            setFunctionError(err,logNameFile,"function checkboxOnChange");
+            setFunctionError(
+                err,
+                logNameFile,
+                "function checkboxOnChange"
+            );
 
         }
     }
@@ -618,8 +643,8 @@ function filterLibraryBtn () {
             cancel      : "Отменить",
             css         : "webix_prompt-filter-lib",
             input       : {
-            required    : true,
-            placeholder : "Введите название шаблона...",
+                required    : true,
+                placeholder : "Введите название шаблона...",
             },
             width:350,
         }).then(function(result){
@@ -633,89 +658,86 @@ function filterLibraryBtn () {
            
                 const data         = PREFS_STORAGE.userprefs.content;
                 const nameTemplate = result;
-                const collection   = { content:[] };
                 let settingExists  = false;
 
                 const currId       = getItemId();
-                const inputs       =  $$("inputsFilter")._collection;
-
-                const formVals     = $$("filterTableForm").getValues();
 
                 const template     = {
                     name        : nameTemplate,
-                    collection  : collection,
-                    values      : formVals,
-                    table       : currId
+                    table       : currId,
+                    values      : []
                 };
-              
-           
+
+                function createPrefsValue(){
+                    const keys             = Object.keys(visibleInputs);
+                    const keysLength       = keys.length;
+
+                    function pushValues(id, value, operation, logic, parent){
+
+                        template.values.push({
+                            id          : id, 
+                            value       : value,
+                            operation   : operation,
+                            logic       : logic,
+                            parent      : parent,
+                        });
+
+                    }
+
+                    function isParent(el){
+                        const parent = el.config.columnName + "_filter";
+                        const id     = el.config.id;
+                        let check    = null;
+
+                        if (parent !== id){
+                            check = el.config.columnName;
+                        } else {
+
+                        }
+
+                        return check;
+                    }
+
+                    function setOperation(arr){
+                        arr.forEach(function(el,i){
+                       
+                            try{
+                                const value      = $$( el ).getValue();
+
+                                const operation  = $$( el + "-btnFilterOperations" ).getValue();
+
+                                const segmentBtn = $$( el + "_segmentBtn" );
+                                let logic = null;
+                                if (segmentBtn.isVisible()){
+                                    logic = segmentBtn.getValue();
+                                }
+
+                                const parent = isParent($$( el ));
+                        
+                                pushValues(el, value, operation, logic, parent);
+
+                            } catch(err){
+                                setFunctionError(
+                                    err,
+                                    logNameFile,
+                                    "function filterLibraryBtn => setOperation"
+                                );
+                            }
+                        });
+                    }
+                   
+                    for (let i = 0; i < keysLength; i++) {   
+                        const key = keys[i];
+                        setOperation(visibleInputs[key]);
+                    }
+
+                  
+                }
 
                 const sentObj = {
                     name    : currId + "_filter-template_" + nameTemplate,
                     prefs   : template,
                 };
-
-                function childs(el,id){
-                    const values =  Object.values(visibleInputs);
-                    const keys   =  Object.keys(visibleInputs);
-                    const inputsCollection = [];
-                    try{
-                     
-                        values.forEach(function(value,i){
-                
-                            inputsCollection.push({
-                                id    : keys[i], 
-                                count : value.length
-                            });
-                        });
-
-                        console.log(inputsCollection)
-                        // $$(el.id).getChildViews().forEach(function(child,i){
-                            
-                        //     const condition   = $$(child.config.id)._collection[0].id;
-                        //     const index       = el.id.lastIndexOf("_rows");
-                        //     const parentField = el.id.slice(0,index);
-
-                   
-                         
-                        //     function setChildToCollection(){
-                        //         let idInput = $$(child.config.id).getChildViews()[1]._collection[0].id;
-                        //         let tempalteCollectionItem = {
-                        //             parentField: $$(parentField).config, 
-                        //             childValue : {
-                        //                 id   : idInput+"-btnFilterOperations",
-                        //                 value: $$(idInput+"-btnFilterOperations").getValue()
-                        //             }
-                        //         };
-                        //         if (condition.includes("and")){
-                        //             tempalteCollectionItem.condition = "and";
-                        //             collection.content.push(tempalteCollectionItem);
-                        //         } else if (condition.includes("or")){
-                        //             tempalteCollectionItem.condition = "or";
-                        //             collection.content.push(tempalteCollectionItem);
-                        //         } 
-                        //     }
-
-                        //     console.log(child.config.id)
-                        //     if (child.config.id.includes("child")){
-                        //         setChildToCollection();
-                          
-                        //     } else {
-                        //         collection.content.push({
-                        //             condition:"parent",
-                        //             parentField:$$(el.id).config, 
-                        //             parentValue:{
-                        //                 id:id+"-btnFilterOperations", 
-                        //                 value:$$(id+"-btnFilterOperations").getValue()
-                        //             }
-                        //         });
-                        //     }
-
-                        // });
-                    } catch(err){
-                        setFunctionError(err,logNameFile,"function filterLibraryBtn => childs:");
-                    }
-                }
 
                 
                 function saveExistsTemplate(sentObj){
@@ -725,21 +747,36 @@ function filterLibraryBtn () {
                     
                         function putUserprefsData (){
                             const url     = "/init/default/api/userprefs/"+el.id;
-                            console.log(sentObj)
-                            // const putData = webix.ajax().put(url, sentObj);
+                         
+                            const putData = webix.ajax().put(url, sentObj);
 
-                            // putData.then(function(data){
-                            //     data = data.json();
-                            //     if (data.err_type == "i"){
-                            //         setLogValue("success","Шаблон"+" «"+nameTemplate+"» "+" сохранён в библиотеку");
-                            //     } else {
-                            //         setLogValue("error","tableFilter => buttons function modalBoxExists: "+ data.err);
-                            //     }
-                            // });
+                            putData.then(function(data){
+                                data = data.json();
+                                if (data.err_type == "i"){
+                                    setLogValue(
+                                        "success",
+                                        "Шаблон" +
+                                        " «" +
+                                        nameTemplate +
+                                        "» " +
+                                        " сохранён в библиотеку"
+                                    );
+                                } else {
+                                    setLogValue(
+                                        "error",
+                                        "tableFilter => buttons function modalBoxExists: " + 
+                                        data.err
+                                    );
+                                }
+                            });
 
-                            // putData.fail(function(err){
-                            //     setAjaxError(err, logNameFile,"saveExistsTemplate => putUserprefsData");
-                            // });
+                            putData.fail(function(err){
+                                setAjaxError(
+                                    err, 
+                                    logNameFile,
+                                    "saveExistsTemplate => putUserprefsData"
+                                );
+                            });
 
                         }
 
@@ -794,37 +831,39 @@ function filterLibraryBtn () {
 
                     const url           = "/init/default/api/userprefs/";
 
-                    console.log(sentObj)
-                    // const userprefsPost = webix.ajax().post(url, sentObj);
+                    const userprefsPost = webix.ajax().post(url, sentObj);
                     
-                    // userprefsPost.then(function(data){
-                    //     data = data.json();
+                    userprefsPost.then(function(data){
+                        data = data.json();
     
-                    //     if (data.err_type == "i"){
-                    //         setLogValue("success","Шаблон"+" «"+nameTemplate+"» "+" сохранён в библиотеку");
-                    //     } else {
-                    //         setLogValue("error",data.error);
-                    //     }
-                    // });
-
-                    // userprefsPost.fail(function(err){
-                    //     setAjaxError(err, logNameFile,"saveTemplate => saveNewTemplate");
-                    // });
-
-                }
-
-                if (PREFS_STORAGE.userprefs){
-                    inputs.forEach(function(el,i){
-                       
-                        const indexId = el.id.lastIndexOf("_rows");
-                        const id = el.id.slice(0,indexId);
-
-                        if ($$(id).isVisible()){
-                            childs(el,id);
+                        if (data.err_type == "i"){
+                            setLogValue(
+                                "success",
+                                "Шаблон" +
+                                " «" +
+                                nameTemplate +
+                                "» " +
+                                " сохранён в библиотеку"
+                            );
+                        } else {
+                            setLogValue("error",data.error);
                         }
                     });
 
-                    saveExistsTemplate(sentObj);
+                    userprefsPost.fail(function(err){
+                        setAjaxError(
+                            err, 
+                            logNameFile,
+                            "saveTemplate => saveNewTemplate"
+                        );
+                    });
+
+                }
+               
+                if (PREFS_STORAGE.userprefs){
+
+                    createPrefsValue    ();
+                    saveExistsTemplate  (sentObj);
 
                     
                     if (!settingExists){
@@ -903,7 +942,11 @@ function resetFilterBtn (){
                         table.showOverlay("Ничего не найдено");
                     }
                 } catch (err){
-                    setFunctionError(err,logNameFile,"function resetFilterBtn => setDataTable");
+                    setFunctionError(
+                        err,
+                        logNameFile,
+                        "function resetFilterBtn => setDataTable"
+                    );
                 }
             }
 
@@ -915,7 +958,11 @@ function resetFilterBtn (){
 
                     filterTable.setValues(value);
                 } catch (err){
-                    setFunctionError(err,logNameFile,"function setFilterCounterVal");
+                    setFunctionError(
+                        err,
+                        logNameFile,
+                        "function setFilterCounterVal"
+                    );
                 }
             }
 
@@ -937,7 +984,11 @@ function resetFilterBtn (){
                         }
                     });
                 } catch (err){
-                    setFunctionError(err,logNameFile,"function resetFilterBtn => hideInputsContainer");
+                    setFunctionError(
+                        err,
+                        logNameFile,
+                        "function resetFilterBtn => hideInputsContainer"
+                    );
                 }
             }
 
@@ -962,7 +1013,11 @@ function resetFilterBtn (){
                                 }
                             });
                         } catch (err){
-                            setFunctionError(err,logNameFile,"function resetFilterBtn => getChildsId");
+                            setFunctionError(
+                                err,
+                                logNameFile,
+                                "function resetFilterBtn => getChildsId"
+                            );
                         }
                     }
 
@@ -971,7 +1026,11 @@ function resetFilterBtn (){
                         getChildsId ();
                         hideElem($$(inputId+"_container-btns"));
                     } catch (err){
-                        setFunctionError(err,logNameFile,"function resetFilterBtn => clearSpace");
+                        setFunctionError(
+                            err,
+                            logNameFile,
+                            "function resetFilterBtn => clearSpace"
+                        );
                     }
 
                 });
@@ -984,7 +1043,11 @@ function resetFilterBtn (){
                             parent.removeView(child);
                         });
                     } catch (err){
-                        setFunctionError(err,logNameFile,"function resetFilterBtn => removeChilds");
+                        setFunctionError(
+                            err,
+                            logNameFile,
+                            "function resetFilterBtn => removeChilds"
+                        );
                     }
                 }
                 removeChilds();
@@ -999,10 +1062,8 @@ function resetFilterBtn (){
 
             function showEmptyTemplate(){
                 const emptyTemplate = $$("filterEmptyTempalte");
-                if  (emptyTemplate && !(emptyTemplate.isVisible()) ){
-                    emptyTemplate.show();
-                    emptyTemplate.refresh();
-                }
+                showElem(emptyTemplate);
+                emptyTemplate.refresh();
             }
 
             function disableRemoveBtn(){
@@ -1011,22 +1072,30 @@ function resetFilterBtn (){
 
             if (dataErr.err_type == "i"){
                 try{
-                    setDataTable();
-                    setFilterCounterVal();
-                    hideElem($$("tableFilterPopup"));
-                    clearFilterValues();
-                    hideInputsContainer();
-                    clearSpace();
-                    disableLibSaveBtn();
-                    showEmptyTemplate();
-                    disableRemoveBtn();
+                    setDataTable        ();
+                    setFilterCounterVal ();
+                    hideElem            ($$("tableFilterPopup"));
+                    clearFilterValues   ();
+                    hideInputsContainer ();
+                    clearSpace          ();
+                    disableLibSaveBtn   ();
+                    showEmptyTemplate   ();
+                    disableRemoveBtn    ();
                 } catch (err){
-                    setFunctionError(err,logNameFile,"function resetFilterBtn");
+                    setFunctionError(
+                        err,
+                        logNameFile,
+                        "function resetFilterBtn"
+                    );
                 }
             
                 setLogValue("success", "Фильтры очищены");
             } else {
-                setLogValue("error", "tableFilter => buttons function resetFilterBtn ajax: "+dataErr.err);
+                setLogValue(
+                    "error", 
+                    "tableFilter => buttons function resetFilterBtn ajax: " +
+                    dataErr.err
+                );
             }
         });
 
@@ -1035,7 +1104,11 @@ function resetFilterBtn (){
         });
     
     } catch(err) {
-        setFunctionError(err,"Ошибка при очищении фильтров; tableFilter => buttons","function resetFilterBtn");
+        setFunctionError(
+            err,
+            "Ошибка при очищении фильтров; tableFilter => buttons",
+            "function resetFilterBtn"
+        );
     }
 }
 
@@ -1080,7 +1153,9 @@ function buttonsFormFilter (name) {
         click   : editFiltersBtn,
         on      : {
             onAfterRender: function () {
-                this.getInputNode().setAttribute("title","Добавить/удалить фильтры");
+                this.getInputNode().setAttribute(
+                    "title","Добавить/удалить фильтры"
+                );
             },
         },
     };    
@@ -1102,7 +1177,9 @@ function buttonsFormFilter (name) {
     
         on      : {
             onAfterRender: function () {
-                this.getInputNode().setAttribute("title","Вернуться к таблице");
+                this.getInputNode().setAttribute(
+                    "title","Вернуться к таблице"
+                );
             }
         } 
     };
@@ -1120,7 +1197,9 @@ function buttonsFormFilter (name) {
         click   : filterLibraryBtn,
         on      : {
             onAfterRender: function () {
-                this.getInputNode().setAttribute("title", "Сохранить шаблон с полями в библиотеку");
+                this.getInputNode().setAttribute(
+                    "title", "Сохранить шаблон с полями в библиотеку"
+                );
             }
         } 
     };

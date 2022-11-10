@@ -1,14 +1,12 @@
 
-import {setFunctionError} from "../errors.js";
-import {STORAGE,getData} from "../globalStorage.js";
-import {hideElem} from "../commonFunctions.js";
+import { setFunctionError }     from "../errors.js";
+import { STORAGE, getData }     from "../globalStorage.js";
+import { hideElem }             from "../commonFunctions.js";
 
-//import {getInfoTable,getInfoDashboard} from "../content.js";
+import { getInfoTable }         from "../getContent/getInfoTable.js";
+import { getInfoDashboard }     from "../getContent/getInfoDashboard.js";
 
-import {getInfoTable} from "../getContent/getInfoTable.js";
-import {getInfoDashboard} from "../getContent/getInfoDashboard.js";
-
-import {getWorkspace} from "./common.js";
+import { getWorkspace }         from "./common.js";
 
 const logNameFile = "router => tree";
 

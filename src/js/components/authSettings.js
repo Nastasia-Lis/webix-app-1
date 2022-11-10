@@ -6,13 +6,18 @@ function doAuthCp (){
     try{
         const form = $$("cp-form");
         if ( form && form.validate()){
+
             
-            let objPass = {op:"",np:""};
+        
             let passData = form.getValues();
-            objPass.np = passData.newPass;
-            objPass.op = passData.oldPass;
+
+            const objPass = {
+                op: passData.oldPass,
+                np: passData.newPass
+            };
             
-            const postData = webix.ajax().post("/init/default/api/cp", objPass);
+            const url      = "/init/default/api/cp";
+            const postData = webix.ajax().post(url, objPass);
             
             postData.then(function(data){
                 data = data.json();
@@ -39,70 +44,74 @@ function doAuthCp (){
 }
 
 const headline = {   
-    template:"<div>Изменение пароля</div>",
-    css:'webix_cp-form',
-    height:35, 
-    borderless:true
+    template   : "<div>Изменение пароля</div>",
+    css        : 'webix_cp-form',
+    height     : 35, 
+    borderless : true
 };
 
 const userName = {   
-    view:"template",
-    id:"authName",
-    css:"webix_userprefs-info",
-    height:50, 
-    borderless:true,
-    template:function(){
-        if (Object.keys($$("authName").getValues()).length !==0){
-            return "<div style='display:inline-block;color:var(--primary);font-size:13px!important;font-weight:600'>"+
-                    "Имя пользователя:</div>"+
-                    "⠀"+
-                    "<div style='display:inline-block;font-size:13px!important;font-weight:600'>"+
-                    $$("authName").getValues()+
-                    "<div>";
+    view        : "template",
+    id          : "authName",
+    css         : "webix_userprefs-info",
+    height      : 50, 
+    borderless  : true,
+    template    : function(){
+        const values = $$("authName").getValues();
+        const keys   = Object.keys(values);
+
+        function returnDiv(text){
+            const defaultStyles = "display:inline-block; font-size:13px!important; font-weight:600;" ;
+            return "<div style='"+defaultStyles+"color:var(--primary);'>"+
+            "Имя пользователя:</div>"+
+            "⠀"+
+            "<div style=' " + defaultStyles + " '>"+
+            text +
+            "<div>";
+        }
+
+        if (keys.length !== 0){
+            return returnDiv (values);
         } else {
-            return "<div style='display:inline-block;color:var(--primary);font-size:13px!important;font-weight:600'>"+
-                    "Имя пользователя:</div>"+
-                    "⠀"+ 
-                    "<div style='display:inline-block;font-size:13px!important;font-weight:600'>"+
-                    "не указано</div>";
+            return returnDiv ("не указано");
         }
     },
 };
 
 function generatePassInput(labelPass, namePass){
     return {   
-        view:"text",
-        width:300,
-        labelPosition:"top", 
-        type:"password",
-        name:namePass,
-        label:labelPass, 
+        view            : "text",
+        width           : 300,
+        labelPosition   : "top", 
+        type            : "password",
+        name            : namePass,
+        label           : labelPass, 
     };
 }
 
 
 const btnSubmit = {   
-    view:"button",
-    height:48,
-    width:300, 
-    value:"Сменить пароль" , 
-    css:"webix_primary", 
-    click:doAuthCp
+    view    : "button",
+    height  : 48,
+    width   : 300, 
+    value   : "Сменить пароль" , 
+    css     : "webix_primary", 
+    click   : doAuthCp
 };
 
 const authCp = {
-    view:"form", 
-    id:"cp-form",
-    borderless:true,
-    margin:5,
-    elements:[
+    view        : "form", 
+    id          : "cp-form",
+    borderless  : true,
+    margin      : 5,
+    elements    : [
         headline,
         userName,
-        generatePassInput("Старый пароль", "oldPass"),
-        generatePassInput("Новый пароль", "newPass"),
+        generatePassInput("Старый пароль"       , "oldPass"   ),
+        generatePassInput("Новый пароль"        , "newPass"   ),
         generatePassInput("Повтор нового пароля", "repeatPass"),
-        {   margin:5, 
-            cols:[
+        {   margin  : 5, 
+            cols    : [
                 btnSubmit,
             ]
         }
@@ -111,13 +120,14 @@ const authCp = {
     rules:{
         $all:webix.rules.isNotEmpty,
         $obj:function(data){
-            
+            const checkCp = $$("cp-form").isDirty();
+
             if (data.newPass != data.repeatPass){
                 setLogValue("error","Новый пароль не совпадает с повтором");
             return false;
             }
 
-            if (data.newPass == data.oldPass && $$("cp-form").isDirty() ){
+            if (data.newPass == data.oldPass && checkCp ){
                 setLogValue("error","Новый пароль должен отличаться от старого");
                 return false;
             }
@@ -128,7 +138,8 @@ const authCp = {
 
 
 const authCpLayout = {
-    id:"layout-cp",cols:[
+    id  : "layout-cp",
+    cols: [
         authCp,
         {}
     ]

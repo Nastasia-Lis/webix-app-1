@@ -1,13 +1,15 @@
 
-import { setLogValue }                             from '../logBlock.js';
-import { getItemId, showElem, hideElem, getTable } from "../commonFunctions.js";
-import { setFunctionError, setAjaxError }          from "../errors.js";
-import { modalBox }                                from "../notifications.js";
+import { setLogValue }                       from '../logBlock.js';
 
-import { getUserprefsData, PREFS_STORAGE }         from "./buttons.js";
-import { createChildFields }                       from "./toolbarBtn.js";
-import { visibleField }                            from "./common.js";
-import { getLibraryData }                          from "./userTemplate.js";
+import { setFunctionError, setAjaxError }    from "../errors.js";
+import { modalBox }                          from "../notifications.js";
+
+import { getUserprefsData, PREFS_STORAGE }   from "./buttons.js";
+import { visibleField, visibleInputs }       from "./common.js";
+import { getLibraryData }                    from "./userTemplate.js";
+
+import { getItemId, showElem, hideElem, 
+         disableElem, enableElem }           from "../commonFunctions.js";
 
 let filterTemplateValue;
 
@@ -19,235 +21,7 @@ function popupSubmitBtn (){
     webix.message({
         text:"В процессе разработки",
         type:"debug", 
-        expire: 10000,
-       
     });
-//     function getLibraryData(){
-//         const lib           = $$("filterEditLib");
-//         const libValue      = lib.getValue ();
-//         const radioValue    = lib.getOption(libValue);
-        
-//         let userprefsData = webix.ajax("/init/default/api/userprefs/");
-     
-//         userprefsData.then(function(data){
-//             let dataErr = data.json();
-//             data = data.json().content;
-      
-//             const currId    = getItemId ();
-//             const allInputs = $$("inputsFilter").getChildViews();
-       
-//             function hideFalseInputs(trueInputs){
-              
-                
-//                 function findTrueInput(inp){
-//                     let findInput;
-//                     trueInputs.forEach(function(el,i){
-                     
-//                         if (inp.includes(el)){
-//                             findInput = el;
-//                         }
-                        
-//                     });
-
-
-//                     return findInput+"_rows";
-//                 }
-
-//                 try{
-//                     allInputs.forEach(function(input,i){
-             
-//                         let trueInp = findTrueInput(input.config.id);
-//                         let id      = input.config.id;
-                        
-//                         function getElementHide(){
-//                             let indexHide = id.indexOf("_rows");
-//                             return id.slice(0,indexHide);
-//                         }
-
-//                         function getHtmlClass(elementHide){
-//                             let indexHtml = elementHide.indexOf("_filter");
-//                             return id.slice(0,indexHtml);
-//                         }
-//  //visibleInputs.length = 0
-//                         if (input.config.id !== trueInp){
-//                             let elementHide = getElementHide();
-//                             let htmlClass = getHtmlClass(elementHide);
-//                             visibleField(0,htmlClass,elementHide);
-//                         }
-
-//                     });
-//                 } catch(err){
-//                     setFunctionError(err,logNameFile,"function hideFalseInputs");
-//                 }
-//             }
-
-//             function removeChilds(){
-//                 const inputsInner = [];
-
-//                 allInputs.forEach(function(input,i){
-//                     inputsInner.push(input.getChildViews());
-//                 });
-
-//                 function getChilds(el){
-//                     el.forEach(function(child,i){
-//                         if (child.config.id.includes("-child-")){
-//                             const childView = $$(child.config.id);
-//                             const parent = childView.getParentView();
-//                             parent.removeView(childView);
-//                         }
-//                     });
-//                 }
-             
-//                 inputsInner.forEach(function(el,i){
-//                     if (el.length > 1){
-//                        getChilds(el);
-//                     }
-//                 });
-//             }
- 
-//             function  createWorkspace(prefs){
-//                 removeChilds();
-//                 let trueInputs = [];
-
-//                 try{
-//                     prefs.collection.content.forEach(function(el,i){
-                     
-//                         function getHtmlArgument (){
-//                             const indexHtml = el.parentField.id.indexOf("_filter");
-//                             return el.parentField.id.slice(0,indexHtml); 
-//                         }
-
-//                         function getIdElArgument (){
-//                             const indexId = el.parentField.id.indexOf("_rows");
-//                             return el.parentField.id.slice(0,indexId);
-//                         }
-
-//                         function showParentInputs(){
-//                             const htmlClass = getHtmlArgument ();
-//                             const idEl      = getIdElArgument ();
-//                      //visibleInputs.length = 0
-//                             visibleField(1,htmlClass,idEl);
-
-//                             trueInputs.push(idEl);
-//                         }
-
-//                         function setParentValues(){
-//                             if($$(el.parentValue.id)){
-//                                 $$(el.parentValue.id).setValue(el.parentValue.value);
-//                             }
-//                         }
-
-                        
-//                         function removeLastChilds (){
-//                             try{ 
-//                                 if(  $$(el.parentField.id) ){
-//                                     $$(el.parentField.id)._cells.forEach(function(child,i){
-//                                         if (child.config.id.includes("child")){
-//                                             $$(el.parentField.id).removeView($$(child.config.id));
-//                                         }
-//                                     });
-//                                 }
-//                             } catch(err){
-//                                 setFunctionError(err,logNameFile,"function createWorkspace => removeLastChilds");
-//                             }
-//                         }
-
-//                         function createChilds(){
-//                             const columnsData = $$("table").getColumns(true);
-           
-//                             try{ 
-//                                 columnsData.forEach(function(col,i){
-//                                     if ( el.parentField.id == col.id+"_filter" ){
-                                      
-//                                         if (el.condition == "and"){
-                                     
-//                                             createChildFields ("and",col);
-            
-//                                             $$(el.childValue.id).setValue(el.childValue.value); 
-                                       
-                                       
-//                                         } else if (el.condition == "or"){
-//                                             createChildFields ("or",col);
-    
-//                                             $$(el.childValue.id).setValue(el.childValue.value); 
-                                         
-//                                         }
-                               
-//                                     }
-//                                 });
-//                             } catch(err){
-//                                 setFunctionError(err,logNameFile,"function createWorkspace => createChilds");
-//                             }
-//                         }
-
-
-//                         if (el.condition == "parent"){
-                            
-//                             showParentInputs();
-            
-//                             setParentValues();
-//                           removeLastChilds ();
-                        
-//                         }
-                  
-               
-//                         hideFalseInputs(trueInputs);
-//                         createChilds();
-//                     });
-            
-//                     $$("filterTableForm").setValues(prefs.values);
-
-//                 } catch(err){
-//                     setFunctionError(err,logNameFile,"function createWorkspace");
-//                 }
-//             }
-
-//             function dataEnumeration() {
-//                 try{
-//                     data.forEach(function(el,i){
-
-//                         if (el.name == currId+"_filter-template_"+radioValue.value){
-//                             let prefs = JSON.parse(el.prefs);
-//                             createWorkspace(prefs);
-//                         }
-
-//                         function removeFilterPopup(){
-//                             if ($$("popupFilterEdit")){
-//                                 $$("popupFilterEdit").destructor();
-//                             }
-//                         }
-
-//                         function enableBtnSubmit(){
-//                             if ($$("btnFilterSubmit") && !($$("btnFilterSubmit").isEnabled())){
-//                                 $$("btnFilterSubmit").enable();
-//                             }
-//                         }
-//                         removeFilterPopup();
-//                         enableBtnSubmit();
-//                     });
-//                 } catch(err){
-//                     setFunctionError(err,logNameFile,"function dataEnumeration");
-//                 }
-//             }
-
-//             //if (dataErr.err_type == "i"){
-//             dataEnumeration();
-//             setLogValue("success","Рабочая область фильтра обновлена");
-    
-               
-//             // } else {
-//             //     setLogValue("error",dataErr.err); 
-//             // }
-
-//         });
-
-//         userprefsData.fail(function(err){
-//             setAjaxError(err, logNameFile,"getLibraryData");
-//         });
-
-
-      
-//     }
 
     function getCheckboxData(){
 
@@ -259,34 +33,56 @@ function popupSubmitBtn (){
         }
 
         function createWorkspaceCheckbox (){
-            let values = $$("editFormPopup").getValues();
-            let elementClass;
-            let index;  
-            let isFirst = true;
-  
+            const values       = $$("editFormPopup").getValues();
+            const selectValues = [];
+         
+            function hideSegmentBtn(){
+                const length = selectValues.length;
+                 
+                selectValues.forEach(function(value,i){
+                    const prevIndex = length - 2;
+                    const lastIndex = length - 1;
+                    if (i == lastIndex){
+                        const segmentBtn = $$( value + "_segmentBtn");
+                        hideElem(segmentBtn);
+                    }
+
+                    if ( i == prevIndex ){
+                        const columnId     = $$(value).config.columnName;
+                        const prevInputs   = visibleInputs[columnId];
+                        const inputsLength = prevInputs.length;
+
+                      
+                        console.log(visibleInputs)
+                    }
+           
+                });
+            }
             try{
                 Object.keys(values).forEach(function(el,i){
-             
-                    index        = el.lastIndexOf("_");
-                    elementClass = el.slice(0,index);
-                    visibleField (values[el],elementClass,el);
 
-                
-                    if (values[el] && isFirst && el !== "selectAll"){
-                        const segmentBtn = $$( el + "_segmentBtn");
-                        hideElem(segmentBtn);
-                        isFirst = false;
+                    if (values[el]){
+                        selectValues.push(el);
                     }
+
+                    const columnName = $$(el).config.columnName;
+                    visibleField (values[el],columnName,el);
           
                 });
 
+                hideSegmentBtn();
+
             } catch(err){
-                setFunctionError(err,logNameFile,"function createWorkspaceCheckbox");
+                setFunctionError(
+                    err,
+                    logNameFile,
+                    "function createWorkspaceCheckbox"
+                );
             }
         }
 
         function visibleCounter(){
-            let visibleElements=0;
+            let visibleElements = 0;
             try{
                 Object.values($$("filterTableForm").elements).forEach(function(el,i){
                     if (!(el.config.hidden)){
@@ -296,29 +92,21 @@ function popupSubmitBtn (){
                 });
 
             } catch(err){
-                setFunctionError(err,logNameFile,"function getCheckboxData => visibleCounter");
+                setFunctionError(
+                    err,
+                    logNameFile,
+                    "function getCheckboxData => visibleCounter"
+                );
             }
 
             return visibleElements;
         }
 
-     
-
-        function disableFilterSubmit(){
-            if($$("btnFilterSubmit") && $$("btnFilterSubmit").isEnabled()){
-                $$("btnFilterSubmit").disable();
-            }
-        }
-
-        function disableibrarySaveBtn(){
-            if($$("filterLibrarySaveBtn").isEnabled()){
-                $$("filterLibrarySaveBtn").disable();
-            }
-        }
 
         function hideFilterPopup (){
-            if ($$("popupFilterEdit")){
-                $$("popupFilterEdit").destructor();
+            const popup = $$("popupFilterEdit");
+            if (popup){
+                popup.destructor();
             }
         }
        
@@ -329,91 +117,177 @@ function popupSubmitBtn (){
             const visibleElements = visibleCounter();
 
             if (!(visibleElements)){
-                showElem($$("filterEmptyTempalte"));
-                disableFilterSubmit();
-                disableibrarySaveBtn(); 
+                showElem    ($$("filterEmptyTempalte"));
+                disableElem ($$("btnFilterSubmit"));
+                disableElem ($$("filterLibrarySaveBtn"));
             } 
 
             hideFilterPopup ();
 
         } catch(err){
-            setFunctionError(err,logNameFile,"function getCheckboxData");
+            setFunctionError(
+                err,
+                logNameFile,
+                "function getCheckboxData"
+            );
         }
       
         setLogValue("success","Рабочая область фильтра обновлена");
     }
 
-    try{                                             
+    try {                                             
         const tabbarValue = $$("filterPopupTabbar").getValue();
 
-        if (tabbarValue =="editFormPopupLib"){
+        if (tabbarValue == "editFormPopupLib" ){
             getLibraryData();
 
-        } else if (tabbarValue=="editFormScroll"){
+        } else if (tabbarValue == "editFormScroll" ){
             getCheckboxData();
         }
-    }catch(err){
+    } catch (err) {
         setFunctionError(err,logNameFile,"function popupSubmitBtn");
         $$("popupFilterEdit").destructor();
     }
+
+}
+
+function removeBtnClick (){
+    const currId = getItemId ();
+    async function userprefsData (){ 
+
+        const lib        = $$("filterEditLib");
+        const libValue   = lib.getValue();
+        const radioValue = lib.getOption(libValue);
+       
+        function deleteElement(el){
+            const url            = "/init/default/api/userprefs/" + el.id;
+            const deleteTemplate = webix.ajax().del(url, el);
+
+            deleteTemplate.then(function(data){
+                data = data.json();
+            
+                function removeOptionState (){
+                    try{
+                        lib.config.options.forEach(function(el,i){
+                            if (el.id == id){
+                                el.value = value + " (шаблон удалён)";
+                                lib.refresh();
+                                lib.disableOption(lib.getValue());
+                                lib.setValue("");
+                            }
+                        });
+                    } catch (err){
+                        setFunctionError(
+                            err, 
+                            logNameFile, 
+                            "function deleteElement => removeOptionState"
+                        );
+                    }
+                }
+
+                if (data.err_type !== "e"&&data.err_type !== "x"){
+                    setLogValue("success","Шаблон « " + value + " » удален");
+                    removeOptionState ();
+                } else {
+                    setLogValue("error", 
+                    logNameFile + "function userprefsData: " + data.err);
+                }
+
+            });
+            deleteTemplate.fail(function(err){
+                setAjaxError(err, logNameFile,"getLibraryData");
+            });
+        }
+
+        if (!PREFS_STORAGE.userprefs){
+            await getUserprefsData (); 
+        }
+
+        if (PREFS_STORAGE.userprefs){
+            const data         = PREFS_STORAGE.userprefs.content;
+
+            const id           = radioValue.id;
+            const value        = radioValue.value;
+
+            const templateName = currId + "_filter-template_" + value;
+
+            data.forEach(function(el,i){
+                if (el.name == templateName){
+                    deleteElement();
+                }
+            });
+
+        }
+    }
+
+
+    modalBox(   "Шаблон будет удалён", 
+                "Вы уверены, что хотите продолжить?", 
+                ["Отмена", "Удалить"]
+    ).then(function(result){
+
+        if (result == 1){
+
+            userprefsData ();
+            
+        }
+    });
 }
 
 const templateRecover = {
-    template:"<div class='no-wrap-headline'> Редактор фильтров </div>", 
-    css:"webix_template-recover", 
-    borderless:true, 
-    height:40 
+    template    : "<div class='no-wrap-headline'>" +
+                  "Редактор фильтров </div>", 
+    css         : "webix_template-recover", 
+    borderless  : true, 
+    height      : 40 
 };
 
 const buttonClosePopup =  {
-    view:"button",
-    id:"buttonClosePopup",
-    css:"popup_close-btn",
-    type:"icon",
-    hotkey: "esc",
-    width:25,
-    icon: 'wxi-close',
-    click:function(){
-        if ($$("popupFilterEdit")){
-            $$("popupFilterEdit").destructor();
+    view    : "button",
+    id      : "buttonClosePopup",
+    css     : "popup_close-btn",
+    type    : "icon",
+    hotkey  : "esc",
+    width   : 25,
+    icon    : 'wxi-close',
+    click   : function(){
+        const popup = $$("popupFilterEdit");
+        if (popup){
+            popup.destructor();
         }
     
     }
 };
 
 const filterPrompt = {
-    css:"webix_empty-template",
-    template:"Выберите нужные поля или шаблон из библиотеки", 
-    borderless:true, 
-    height:47
+    css         : "webix_empty-template",
+    template    : "Выберите нужные поля или шаблон из библиотеки", 
+    borderless  : true, 
+    height      : 47
 };
+
 function tabbarClick (id){
 
 
     function btnSubmitState (state){
-        try {
-            if (state=="enable"){
-                if(!($$("popupFilterSubmitBtn").isEnabled())){
-                    $$("popupFilterSubmitBtn").enable();
-                }
-            } else if (state=="disable"){
-                if($$("popupFilterSubmitBtn").isEnabled()){
-                    $$("popupFilterSubmitBtn").disable();
-                }
-            }
-        }catch(err){
-            setFunctionError(err,logNameFile,"btnSubmitState");
+        const btn = $$("popupFilterSubmitBtn");
+
+        if (state=="enable"){
+            enableElem(btn);
+        } else if (state=="disable"){
+            disableElem(btn);
         }
+        
     }
 
 
     function visibleRemoveBtn (param){
-        if ($$("editFormPopupLibRemoveBtn") && 
-        !($$("editFormPopupLibRemoveBtn").isVisible())){
+        const btn = $$("editFormPopupLibRemoveBtn");
+        if ( btn && !(btn.isVisible()) ){
             if (param){
-                $$("editFormPopupLibRemoveBtn").show();
+                btn.show();
             } else {
-                $$("editFormPopupLibRemoveBtn").hide();
+                btn.hide();
             }
         }
     }
@@ -430,7 +304,6 @@ function tabbarClick (id){
         }
 
         try{
-           // visibleClearBtn (false);
             setStateSubmitBtn ();
             visibleRemoveBtn (true);
         }catch(err){
@@ -465,7 +338,6 @@ function tabbarClick (id){
 
         try{
             countChecked();
-          //  visibleClearBtn (true);
             visibleRemoveBtn (false);
             setStateSubmitBtn();
         }catch(err){
@@ -490,46 +362,57 @@ function tabbarClick (id){
     }
 }
 
+function returnDivHeadline(title){
+    return  "<span" + 
+            "class='webix_tabbar-filter-headline'>" +
+            title +
+            "</span>";
+}
+
+
 const tabbar =  {
-    view:"tabbar",  
-    type:"top", 
-    id:"filterPopupTabbar",
-    css:"webix_filter-popup-tabbar",
-    multiview:true, 
-    options: [
-        {   value: "<span class='webix_tabbar-filter-headline'>Поля</span>", 
+    view        : "tabbar",  
+    type        : "top", 
+    id          : "filterPopupTabbar",
+    css         : "webix_filter-popup-tabbar",
+    multiview   : true, 
+    height      : 50,
+
+    options     : [
+        {   value: returnDivHeadline("Поля"), 
             id: 'editFormScroll' 
         },
-        {   value: "<span class=webix_tabbar-filter-headline'>Библиотека</span>", 
+        {   value: returnDivHeadline("Библиотека"), 
             id: 'editFormPopupLib' 
         },
     ],
-    height:50,
+
     on:{
-        onAfterTabClick:function(id){
+        onAfterTabClick: function(id){
             tabbarClick(id);
         }
     }
 };
 
 const tabCheckboxes = {   
-    view:"scrollview",
-    borderless:true, 
-    css:"webix_multivew-cell",
-    id:"editFormScroll", 
-    scroll:"y", 
-    body:{ 
-        id:"editFormPopupScroll",
-        rows:[ ]
+    view        :"scrollview",
+    id          : "editFormScroll", 
+    borderless  : true, 
+    css         : "webix_multivew-cell",
+    scroll      : "y", 
+    body        : { 
+        id  : "editFormPopupScroll",
+        rows: [ ]
     }
 
 };
 
 function stateSubmitBtn(state){
+    const popup = $$("popupFilterSubmitBtn");
     if(state){
-        $$("popupFilterSubmitBtn").enable();
+        popup.enable();
     } else {
-        $$("popupFilterSubmitBtn").disable();
+        popup.disable();
     }
 
 }
@@ -538,166 +421,81 @@ function returnTemplateValue(){
     return filterTemplateValue;
 }
 
-const radioLibBtn =  {   
-    view:"radio", 
-    id:"filterEditLib",
-    vertical:true,
-    options:[],
-    on:{
-        onChange:function(){
-            function enableRemoveBtn(){
-                if (!($$("editFormPopupLibRemoveBtn").isEnabled())){
-                    $$("editFormPopupLibRemoveBtn").enable();
-                }
-            }
-            
-            if (this.getValue()){
-                filterTemplateValue = this.getValue();
+function onChangeLibBtn (){
+    const btn       = $$("filterEditLib");
+    const submitBtn = $$("popupFilterSubmitBtn");
+    
+    if (btn.getValue()){
+        filterTemplateValue = btn.getValue();
 
-                
-                enableRemoveBtn();
-                if(!($$("popupFilterSubmitBtn").isEnabled())){
-                    stateSubmitBtn(true);
-                }
-            } else {
-                if($$("popupFilterSubmitBtn").isEnabled()){
-                    stateSubmitBtn(false);
-                }
-            }
+        enableElem($$("editFormPopupLibRemoveBtn"));
+
+        if(!(submitBtn.isEnabled())){
+            stateSubmitBtn(true);
+        }
+    } else {
+        if(submitBtn.isEnabled()){
+            stateSubmitBtn(false);
+        }
+    }
+}
+
+const radioLibBtn =  {   
+    view    : "radio", 
+    id      : "filterEditLib",
+    vertical: true,
+    options : [],
+    on      : {
+        onChange: function(){
+            onChangeLibBtn ();
         }
     }
 };
 
 const tabLib = {  
-    view:"form", 
-    scroll:true ,
-    id:"editFormPopupLib",
-    css:"webix_multivew-cell",
-    borderless:true,
-    elements:[
+    view        : "form", 
+    scroll      : true ,
+    id          : "editFormPopupLib",
+    css         : "webix_multivew-cell",
+    borderless  : true,
+    elements    : [
         radioLibBtn
     ],
 
 };
 
 const submitBtn =  {   
-    view:"button",
-    id:"popupFilterSubmitBtn",
-    height:48,
-    minWidth:140,
-    disabled:true, 
-    css:"webix_primary",
-    hotkey: "Enter",
-    value:"Применить", 
-    on: {
+    view    : "button",
+    id      : "popupFilterSubmitBtn",
+    height  : 48,
+    minWidth: 140,
+    disabled: true, 
+    css     : "webix_primary",
+    hotkey  : "Enter",
+    value   : "Применить", 
+    on      : {
         onAfterRender: function () {
-            this.getInputNode().setAttribute("title","Выбранные фильтры будут добавлены в рабочее поле, остальные скрыты");
+            this.getInputNode().setAttribute("title",
+            "Выбранные фильтры будут добавлены в рабочее поле, остальные скрыты");
         },
     },
     click:popupSubmitBtn
 };
 
-// const cleanBtn = {   
-//     view:"button",
-//     id:"popupFilterClearBtn",
-//     width:110,
-//     height:48,
-//     css:"webix_secondary",
-//     disabled:true,
-//     value:"Сбросить", 
-//     on: {
-//         onAfterRender: function () {
-//             this.getInputNode().setAttribute("title","Все фильтры будут очищены и удалены");
-//         },
-//     },
-//     click:clearPopupBtn
-// };
 
 const removeBtn = {   
-    view:"button",
-    css:"webix_danger",
-    id:"editFormPopupLibRemoveBtn",
-    type:"icon",
-    icon: 'icon-trash',
-    hidden:true,
-    disabled:true,
-    width: 50,
-    click:function(){
-        const currId = getItemId ();
-        async function userprefsData (){ 
-            let libValue = $$("filterEditLib").getValue();
-            let radioValue = $$("filterEditLib").getOption(libValue);
-
-            if (!PREFS_STORAGE.userprefs){
-                await getUserprefsData (); 
-            }
-
-            if (PREFS_STORAGE.userprefs){
-                let data = PREFS_STORAGE.userprefs.content;
-                let templateName = currId+"_filter-template_"+radioValue.value;
-
-
-                data.forEach(function(el,i){
-                    function deleteElement(){
-                        let deleteTemplate = webix.ajax().del("/init/default/api/userprefs/"+el.id,el);
-
-                        deleteTemplate.then(function(data){
-                            data = data.json();
-                        
-                            function removeOptionState (){
-                                try{
-                                    $$("filterEditLib").config.options.forEach(function(el,i){
-                                        if (el.id == radioValue.id){
-                                            el.value = radioValue.value + " (шаблон удалён)";
-                                            $$("filterEditLib").refresh();
-                                            $$("filterEditLib").disableOption($$("filterEditLib").getValue());
-                                            $$("filterEditLib").setValue("");
-                                        }
-                                    });
-                                } catch (err){
-                                    setFunctionError(err,logNameFile,"function deleteElement => removeOptionState");
-                                }
-                            }
-
-                            if (data.err_type !== "e"&&data.err_type !== "x"){
-                                setLogValue("success","Шаблон « "+radioValue.value+" » удален");
-                                removeOptionState ();
-                            } else {
-                                setLogValue("error", logNameFile+" function userprefsData: "+data.err);
-                            }
-
-                        });
-                        deleteTemplate.fail(function(err){
-                            setAjaxError(err, logNameFile,"getLibraryData");
-                        });
-                    }
-
-                    if (el.name == templateName){
-                        deleteElement();
-                    }
-                });
-
-            }
-        }
-
-
-        modalBox(   "Шаблон будет удалён", 
-                    "Вы уверены, что хотите продолжить?", 
-                    ["Отмена", "Удалить"]
-        ).then(function(result){
-    
-            if (result == 1){
-
-                userprefsData ();
-                
-            }
-        });
-
-
-
-
+    view    : "button",
+    css     : "webix_danger",
+    id      : "editFormPopupLibRemoveBtn",
+    type    : "icon",
+    icon    : 'icon-trash',
+    hidden  : true,
+    disabled: true,
+    width   : 50,
+    click   : function(){
+        removeBtnClick ();
     },
-    on: {
+    on      : {
         onAfterRender: function () {
             this.getInputNode().setAttribute("title","Выбранный шаблон будет удален");
         },
@@ -705,26 +503,26 @@ const removeBtn = {
 };
 
 const editFormPopup = {
-    view:"form", 
-    id:"editFormPopup",
-    css:"webix_edit-form-popup",
-    borderless:true,
-    elements:[
-        {rows:[ 
+    view        : "form", 
+    id          : "editFormPopup",
+    css         : "webix_edit-form-popup",
+    borderless  : true,
+    elements    : [
+
+        { rows : [ 
             tabbar,
                 
-            {   height:200,
-                cells:[
+            {   height : 200,
+                cells  : [
                     tabCheckboxes,
                     tabLib,
                 ]   
             },
     
-            {height:20},
-            {cols:[
+            {height : 20},
+            {cols   : [
                 submitBtn,
-                {width:5},
-               // cleanBtn,
+                {width : 5},
                 removeBtn,
             ]},
         ]},
@@ -735,21 +533,24 @@ const editFormPopup = {
 
 function createFilterPopup() {
     webix.ui({
-        view:"popup",
-        id:"popupFilterEdit",
-        css:"webix_popup-filter-container webix_popup-config",
-        modal:true,
-        escHide:true,
-        position:"center",
-        height:400,
-        width:400,
-        body:{
-            scroll:"y", rows:[
-                {css:"webix_filter-headline-wrapper", cols:[ 
-                    templateRecover,
-                    {width:150},
-                    buttonClosePopup,
-                ]},
+        view    : "popup",
+        id      : "popupFilterEdit",
+        css     : "webix_popup-filter-container webix_popup-config",
+        modal   : true,
+        escHide : true,
+        position: "center",
+        height  : 400,
+        width   : 400,
+        body    : {
+            scroll : "y", 
+            rows   : [
+                {   css : "webix_filter-headline-wrapper", 
+                    cols: [ 
+                        templateRecover,
+                        {width : 150},
+                        buttonClosePopup,
+                    ]
+                },
 
                 filterPrompt,
                 editFormPopup
@@ -757,12 +558,10 @@ function createFilterPopup() {
         }
     }).show();
 }
-//createFilterPopup();
 
 
 
 export {
     createFilterPopup,
     returnTemplateValue,
-  //  visibleInputs
 };

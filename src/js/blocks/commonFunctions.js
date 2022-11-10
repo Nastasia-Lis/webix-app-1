@@ -74,6 +74,16 @@ function disableElem(element){
     }
 }
 
+function enableElem(element){
+    try{
+        if ( element && !(element.isEnabled()) ){
+            element.enable();
+        }
+    } catch (err){
+        setFunctionError(err,"sidebar","enableElements");
+    }
+}
+
 function textInputClean(){
     let mdView = null;
   
@@ -194,6 +204,7 @@ export {
     showElem,
     removeElem,
     disableElem,
+    enableElem,
 
     textInputClean,
     

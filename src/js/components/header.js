@@ -1,95 +1,95 @@
 
-import {modalBox} from "../blocks/notifications.js";
-import {setLogValue} from '../blocks/logBlock.js';
-import {setStorageData,setUserLocation} from "../blocks/storageSetting.js";
-import {catchErrorTemplate,ajaxErrorTemplate} from "../blocks/logBlock.js";
+import { modalBox }                               from "../blocks/notifications.js";
+import { setLogValue }                            from '../blocks/logBlock.js';
+import { setStorageData }                         from "../blocks/storageSetting.js";
+import { catchErrorTemplate,ajaxErrorTemplate }   from "../blocks/logBlock.js";
 
-import {saveItem, saveNewItem} from "../blocks/tableEditForm/buttons.js";
-import {setAjaxError,setFunctionError} from "../blocks/errors.js";
+import { saveItem, saveNewItem }                  from "../blocks/tableEditForm/buttons.js";
 
-import {favsPopup} from "../blocks/favsLink.js";
-import {checkFonts} from "../blocks/checkFonts.js";
+import { favsPopup }                              from "../blocks/favsLink.js";
+import { checkFonts }                             from "../blocks/checkFonts.js";
 
-import {setUserPrefs}                       from "../blocks/storageSetting.js";
-let userLocation;
-let headerContextId;
+import { setFunctionError, setAjaxError }         from "../blocks/errors.js";
+import { hideElem, showElem }                     from "../blocks/commonFunctions.js";
 
-function header() {
-    function collapseClick (){
 
-        function setSearchInputState(visible=false){
-            const headerChilds = $$("header").getChildViews();
+function setSearchInputState(visible = false){
+    const headerChilds = $$("header").getChildViews();
 
-            headerChilds.forEach(function(el){
-                if (el.config.id.includes("search" )      || 
-                    el.config.id.includes("log-btn")      || 
-                    el.config.id.includes("context-menu") ){
-                    if(visible){
-                        el.show();
-                    } else {
-                        el.hide();
-                    }
-                  
-                }
-            });
-        }
-        try {
-
-            if (window.innerWidth > 850 ){
-                if ($$("tree").isVisible()){
-                  // this.config.icon ="wxi-angle-double-right";
-                    this.refresh();
-                    $$("tree").hide();
-                    if($$("sideMenuResizer")){
-                        $$("sideMenuResizer").hide();
-                    } 
-
-                } else {
-                    $$("tree").show();
-                  //  this.config.icon ="wxi-angle-double-left";
-                    this.refresh();
-                    if(window.innerWidth >= 800){
-                        if($$("sideMenuResizer")){
-                            $$("sideMenuResizer").show();
-                        }
-                    } 
-                
-                    
-                }
+    headerChilds.forEach(function(el){
+        if (el.config.id.includes("search" )      || 
+            el.config.id.includes("log-btn")      || 
+            el.config.id.includes("context-menu") ){
+            
+            if(visible){
+                el.show();
             } else {
-                if ($$("tree").isVisible()){
-                   // this.config.icon ="wxi-angle-double-right";
-                    this.refresh();
-                    $$("tree").hide();
-                    if($$("sideMenuResizer")){
-                        $$("sideMenuResizer").hide();
-                    } 
-                    setSearchInputState(true);
-
-                } else {
-                    $$("tree").show();
-                    $$("tree").config.width = window.innerWidth;
-                    $$("tree").resize()
-                    
-                   // this.config.icon ="wxi-angle-double-left";
-                    this.refresh();
-                    if(window.innerWidth >= 800){
-                        if($$("sideMenuResizer")){
-                            $$("sideMenuResizer").show();
-                        }
-                    } 
-
-                    setSearchInputState();
-                }
+                el.hide();
             }
+          
+        }
+    });
+}
 
-           
-        } catch (error){
-            console.log(error);
-            catchErrorTemplate("009-000", error);
-    
+
+
+function collapseClick (){
+    const tree      = $$("tree");
+    const resizer   = $$("sideMenuResizer");
+
+    function showTree(){
+        try {
+            tree.show();
+            if(window.innerWidth >= 800){
+                showElem(resizer);
+            } 
+        } catch (err){
+            setFunctionError(err,"header","showTree");
+
         }
     }
+
+    try {
+
+        if (window.innerWidth > 850 ){
+            if (tree.isVisible()){
+                tree.hide();
+                hideElem(resizer);
+
+            } else {
+                showTree(); 
+ 
+            }
+        } else {
+            if (tree.isVisible()){
+                tree.hide();
+
+                hideElem(resizer);
+
+                setSearchInputState(true);
+
+            } else {
+                showTree();
+
+                tree.config.width = window.innerWidth;
+                tree.resize();
+        
+                setSearchInputState();
+            }
+        }
+        this.refresh();
+       
+    } catch (err){
+        setFunctionError(err,"header","collapseClick");
+
+    }
+}
+
+
+
+
+
+function header() {
 
     const header = {
         view: "toolbar", 
@@ -482,7 +482,5 @@ function header() {
 }
 
 export {
-    header,
-    headerContextId,
-    userLocation
+    // /header
 };
