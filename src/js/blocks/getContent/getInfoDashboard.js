@@ -7,6 +7,7 @@ import { setHeadlineBlock }               from '../blockHeadline.js';
 import { showElem, hideElem }             from '../commonFunctions.js';
 
 
+
 const logNameFile = "getContent => getInfoDashboard";
 
 function getDashId ( idsParam ){
@@ -174,37 +175,57 @@ function goToRefView(chartAction){
 function createCharts(dataCharts){
  
     clearDashLayout();
-
     try{
         dataCharts.forEach(function(el,i){
+
+          // el.action = "auth_user";
             const titleTemplate = el.title;
 
             delete el.title;
      
             el.borderless  = true;
             el.minWidth    = 250;
+      
             el.on          = {
                 onItemClick:function(idEl,event,html){
-                    const chartAction = el.data[idEl-1].action;
-                   // const chartAction = "auth_user"
-
-                    if (chartAction){
+                    function findFiels(chartAction){
                         const fields = STORAGE.fields.content;
                         Object.keys(fields).forEach(function(key,i){
-                          
+                        
                             if ( key == chartAction ){
                                 goToRefView(chartAction);
                             }
                         });
+                    } 
+
+                    if (el.action){
+                        findFiels(el.action);
                     } else {
-                        const emptyAcion  = el.data[idEl-1];
-                        emptyAcion.action = null;
-                        console.log(emptyAcion)
+                        const collection = el.data;
+                        let selectElement;
+                 
+                        collection.forEach(function(el,i){
+            
+                            if (el.id == idEl){
+                                selectElement = el;
+                            }
+                        });
+
+                        const chartAction = selectElement.action;
+                     // const chartAction = "userprefs"
+                        if (chartAction){
+                            findFiels(chartAction);
+
+                        } 
+                  
                     }
+                  
                 
                    
                 }
             };
+
+
 
             const headline = {   
                 template    : titleTemplate,
@@ -223,6 +244,8 @@ function createCharts(dataCharts){
                     el
                 ]
             });
+
+        
         
         });
 
@@ -492,7 +515,6 @@ function getAjax ( url, inputsArray, idsParam, action=false ) {
     getData.then(function(data){
      
         const dataCharts    = data.json().charts;
-
         removeScroll();
         
         if ( !action ){ //не с помощью кнопки фильтра

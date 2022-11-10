@@ -203,3 +203,50 @@
     border: 1px solid var(--gray)!important;
 }
 
+
+
+//// segment btn
+/// 
+.webix_segment_N,
+.webix_segment_0{
+    font-size: 14px!important;
+    margin: 0px 10px;
+    width: 100px!important;
+    border-radius: 5px!important;
+
+}
+
+.webix_segment_N.webix_selected,
+.webix_selected.webix_segment_0{
+    background-color: var(--primary)!important;
+    border-color: var(--primary)!important;
+    color: #fff!important;
+}
+
+.webix_segment_N,
+.webix_segment_0{
+    @include secondary-btn;
+}
+
+.webix_segment_N:hover,
+.webix_segment_0:hover{
+    @include secondary-btn--hover;
+}
+
+.webix_segment_N:active,
+.webix_segment_0:active{
+    @include secondary-btn--active;
+}
+
+
+.webix_all_segments{
+    text-align: center;
+}
+
+ 
+
+ 
+
+
+
+

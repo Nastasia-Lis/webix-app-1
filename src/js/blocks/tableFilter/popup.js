@@ -1,446 +1,253 @@
 
-import {setLogValue} from '../logBlock.js';
-import {getItemId, showElem,hideElem} from "../commonFunctions.js";
-import {setFunctionError,setAjaxError} from "../errors.js";
-import {modalBox} from "../notifications.js";
+import { setLogValue }                             from '../logBlock.js';
+import { getItemId, showElem, hideElem, getTable } from "../commonFunctions.js";
+import { setFunctionError, setAjaxError }          from "../errors.js";
+import { modalBox }                                from "../notifications.js";
 
-import {resetFilterBtn,getUserprefsData,PREFS_STORAGE} from "./buttons.js";
-import {createChildFields} from "./toolbarBtn.js";
+import { getUserprefsData, PREFS_STORAGE }         from "./buttons.js";
+import { createChildFields }                       from "./toolbarBtn.js";
+import { visibleField }                            from "./common.js";
+import { getLibraryData }                          from "./userTemplate.js";
 
 let filterTemplateValue;
-const logNameFile = "tableFilter => popup";
 
-function clearPopupBtn (){
-    $$("popupFilterEdit").destructor();
-    resetFilterBtn ();
-}
+const logNameFile = "tableFilter => popup";
 
 
 function popupSubmitBtn (){
 
     webix.message({
-        text:"Блок находится в разработке",
+        text:"В процессе разработки",
         type:"debug", 
         expire: 10000,
-    });
-
-    const stateElements = [];
-    function showSegmentBtn(){
-    
-        let counter = 0;
-        stateElements.forEach(function(checkbox,i){
-            if (i){
-                if (checkbox.val){
-                    counter++; 
-                }
-
- 
-                if (counter > 1){
-                    showElem($$(checkbox.elem + "_filter_segmentBtn"));
-                } else {
-                    hideElem($$(checkbox.elem + "_filter_segmentBtn")); 
-                }
-            }
-             
-        });
-      
-    }
-
-    function visibleField (condition,elementClass=null,el=null){
-        stateElements.push({elem:elementClass, val:condition});
-        let htmlElement = document.querySelectorAll(".webix_filter-inputs");
-
-        function showHtmlEl(){
-            try{
-             
-                htmlElement.forEach(function(elem,i){
-           
-                    if (elem.classList.contains(elementClass)){
-                      
-                        if (!(elem.classList.contains("webix_show-content"))){
-                            elem.classList.add("webix_show-content");
-                            
-                        }
-                        if (elem.classList.contains("webix_hide-content")){
-                            elem.classList.remove("webix_hide-content");
-                        }
-
-                    } else {
-                        if (!(elem.classList.contains("webix_hide-content"))){
-                            elem.classList.add("webix_hide-content");
-                        }
-                    }
-                });
-
-            } catch(err){
-                setFunctionError(err,logNameFile,"function visibleField => showHtmlEl");
-            }
-        }
-
-        function showInputContainers(){
-            if ($$(el)){
-                $$(el).show();
-            }
-
-            if($$(el+"_container-btns") && !($$(el+"_container-btns").isVisible())){
-                $$(el+"_container-btns").show();
-            }
-        }
-    
-        function enableResetBtn(){
-            if (!($$("resetFilterBtn").isEnabled())){
-                $$("resetFilterBtn").enable();
-            }
-        }
-
-        function enableLibrarySaveBtn(){
-            if (!($$("filterLibrarySaveBtn").isEnabled())){
-                $$("filterLibrarySaveBtn").enable();
-            }
-        }
-
-        function hideEmptyTemplate(){
-            if ($$("filterEmptyTempalte").isVisible()){
-                $$("filterEmptyTempalte").hide();
-            }
-        }
-
-        function hideInputContainers (){
-            const operBtn =  $$(el+"-btnFilterOperations");
-            if( operBtn ){
-                operBtn.setValue("=");
-            }
-         
-            $$(el).setValue("");
-            $$(el).hide();
-     
-            if($$(el+"_container-btns") && $$(el+"_container-btns").isVisible()){
-                $$(el+"_container-btns").hide();
-            }
-        }
-
-        function hideHtmlEl (){
-            try{
-                htmlElement.forEach(function(elem,i){
-                    if (elem.classList.contains(elementClass)){
-                        if (!(elem.classList.contains("webix_hide-content"))){
-                            elem.classList.add("webix_hide-content");
-                        }
-                        if (elem.classList.contains("webix_show-content")){
-                            elem.classList.remove("webix_show-content");
-                        }
-                    }
-                });
-
-            } catch(err){
-                setFunctionError(err,logNameFile,"function visibleField => hideHtmlEl");
-            }
-        }
-      
-        function removeChilds(){
-            const countChild = $$(el+"_rows").getChildViews();  
-            const childs     = [];
-    
-            try{
-               
-                Object.values(countChild).forEach(function(elem,i){
-                  
-                    if (elem.config.id.includes("child")){
-                        childs.push($$(elem.config.id));
-                    }
-
-                });
- 
-                childs.forEach(function(el,i){
-                    const parent = el.getParentView();
-                    parent.removeView($$(el.config.id));
- 
-                });
-
-            } catch(err){
-                setFunctionError(err,logNameFile,"function visibleField => removeChids");
-            }
-        }
-
-        let checkChilds = false;
-        if (el!=="selectAll"){
-            const childs = $$(el+"_rows").getChildViews();
-            if (childs.length > 1){
-                checkChilds = true;
-            }
-         
-        }
- 
-        if ( !checkChilds ){
-            if (condition){
-
-                try{
-                    showHtmlEl();
-                    showInputContainers();
-                    enableResetBtn();
-                    enableLibrarySaveBtn();
-                    hideEmptyTemplate();
-                } catch(err){
-                    setFunctionError(err,logNameFile,"function visibleField => showElements");
-                }
-
-            } else{
-                try{
-        
-                    if ($$(el).isVisible()){
-                        hideHtmlEl ();
-                    }
-
-                    if($$(el+"_rows")){
-                        removeChilds();
-                    }
-
-                    hideInputContainers ();
-
-                } catch(err){
-                    setFunctionError(err,logNameFile,"function visibleField => hideElements");
-                }
-            }
-        } else {
-            if ( !condition ){
-                if ($$(el).isVisible()){
-                    hideHtmlEl ();
-                }
-
-                if($$(el+"_rows")){
-                    removeChilds();
-                }
-
-                hideInputContainers ();
-            }
-        }
-    }
-
-    function getLibraryData(){
-        
-        let radioValue = $$("filterEditLib").getOption($$("filterEditLib").getValue());
-        
-        let userprefsData = webix.ajax("/init/default/api/userprefs/");
-     
-        userprefsData.then(function(data){
-            let dataErr = data.json();
-            data = data.json().content;
-      
-            const currId    = getItemId ();
-            const allInputs = $$("inputsFilter").getChildViews();
        
-            function hideFalseInputs(trueInputs){
+    });
+//     function getLibraryData(){
+//         const lib           = $$("filterEditLib");
+//         const libValue      = lib.getValue ();
+//         const radioValue    = lib.getOption(libValue);
+        
+//         let userprefsData = webix.ajax("/init/default/api/userprefs/");
+     
+//         userprefsData.then(function(data){
+//             let dataErr = data.json();
+//             data = data.json().content;
+      
+//             const currId    = getItemId ();
+//             const allInputs = $$("inputsFilter").getChildViews();
+       
+//             function hideFalseInputs(trueInputs){
               
                 
-                function findTrueInput(inp){
-                    let findInput;
-                    trueInputs.forEach(function(el,i){
+//                 function findTrueInput(inp){
+//                     let findInput;
+//                     trueInputs.forEach(function(el,i){
                      
-                        if (inp.includes(el)){
-                            findInput = el;
-                        }
+//                         if (inp.includes(el)){
+//                             findInput = el;
+//                         }
                         
-                    });
+//                     });
 
 
-                    return findInput+"_rows";
-                }
+//                     return findInput+"_rows";
+//                 }
 
-                try{
-                    allInputs.forEach(function(input,i){
+//                 try{
+//                     allInputs.forEach(function(input,i){
              
-                        let trueInp = findTrueInput(input.config.id);
-                        let id      = input.config.id;
+//                         let trueInp = findTrueInput(input.config.id);
+//                         let id      = input.config.id;
                         
-                        function getElementHide(){
-                            let indexHide = id.indexOf("_rows");
-                            return id.slice(0,indexHide);
-                        }
+//                         function getElementHide(){
+//                             let indexHide = id.indexOf("_rows");
+//                             return id.slice(0,indexHide);
+//                         }
 
-                        function getHtmlClass(elementHide){
-                            let indexHtml = elementHide.indexOf("_filter");
-                            return id.slice(0,indexHtml);
-                        }
+//                         function getHtmlClass(elementHide){
+//                             let indexHtml = elementHide.indexOf("_filter");
+//                             return id.slice(0,indexHtml);
+//                         }
+//  //visibleInputs.length = 0
+//                         if (input.config.id !== trueInp){
+//                             let elementHide = getElementHide();
+//                             let htmlClass = getHtmlClass(elementHide);
+//                             visibleField(0,htmlClass,elementHide);
+//                         }
 
-                        if (input.config.id !== trueInp){
-                            let elementHide = getElementHide();
-                            let htmlClass = getHtmlClass(elementHide);
-                            visibleField(0,htmlClass,elementHide);
-                        }
+//                     });
+//                 } catch(err){
+//                     setFunctionError(err,logNameFile,"function hideFalseInputs");
+//                 }
+//             }
 
-                    });
-                } catch(err){
-                    setFunctionError(err,logNameFile,"function hideFalseInputs");
-                }
-            }
+//             function removeChilds(){
+//                 const inputsInner = [];
 
-            function removeChilds(){
-                const inputsInner = [];
+//                 allInputs.forEach(function(input,i){
+//                     inputsInner.push(input.getChildViews());
+//                 });
 
-                allInputs.forEach(function(input,i){
-                    inputsInner.push(input.getChildViews());
-                });
-
-                function getChilds(el){
-                    el.forEach(function(child,i){
-                        if (child.config.id.includes("-child-")){
-                            const childView = $$(child.config.id);
-                            const parent = childView.getParentView();
-                            parent.removeView(childView);
-                        }
-                    });
-                }
+//                 function getChilds(el){
+//                     el.forEach(function(child,i){
+//                         if (child.config.id.includes("-child-")){
+//                             const childView = $$(child.config.id);
+//                             const parent = childView.getParentView();
+//                             parent.removeView(childView);
+//                         }
+//                     });
+//                 }
              
-                inputsInner.forEach(function(el,i){
-                    if (el.length > 1){
-                       getChilds(el);
-                    }
-                });
-            }
+//                 inputsInner.forEach(function(el,i){
+//                     if (el.length > 1){
+//                        getChilds(el);
+//                     }
+//                 });
+//             }
  
-            function  createWorkspace(prefs){
-                removeChilds();
-                let trueInputs = [];
+//             function  createWorkspace(prefs){
+//                 removeChilds();
+//                 let trueInputs = [];
 
-                try{
-                    prefs.collection.content.forEach(function(el,i){
+//                 try{
+//                     prefs.collection.content.forEach(function(el,i){
                      
-                        function getHtmlArgument (){
-                            const indexHtml = el.parentField.id.indexOf("_filter");
-                            return el.parentField.id.slice(0,indexHtml); 
-                        }
+//                         function getHtmlArgument (){
+//                             const indexHtml = el.parentField.id.indexOf("_filter");
+//                             return el.parentField.id.slice(0,indexHtml); 
+//                         }
 
-                        function getIdElArgument (){
-                            const indexId = el.parentField.id.indexOf("_rows");
-                            return el.parentField.id.slice(0,indexId);
-                        }
+//                         function getIdElArgument (){
+//                             const indexId = el.parentField.id.indexOf("_rows");
+//                             return el.parentField.id.slice(0,indexId);
+//                         }
 
-                        function showParentInputs(){
-                            const htmlClass = getHtmlArgument ();
-                            const idEl      = getIdElArgument ();
-                    
-                            visibleField(1,htmlClass,idEl);
+//                         function showParentInputs(){
+//                             const htmlClass = getHtmlArgument ();
+//                             const idEl      = getIdElArgument ();
+//                      //visibleInputs.length = 0
+//                             visibleField(1,htmlClass,idEl);
 
-                            trueInputs.push(idEl);
-                        }
+//                             trueInputs.push(idEl);
+//                         }
 
-                        function setParentValues(){
-                            if($$(el.parentValue.id)){
-                                $$(el.parentValue.id).setValue(el.parentValue.value);
-                            }
-                        }
+//                         function setParentValues(){
+//                             if($$(el.parentValue.id)){
+//                                 $$(el.parentValue.id).setValue(el.parentValue.value);
+//                             }
+//                         }
 
                         
-                        function removeLastChilds (){
-                            try{ 
-                                if(  $$(el.parentField.id) ){
-                                    $$(el.parentField.id)._cells.forEach(function(child,i){
-                                        if (child.config.id.includes("child")){
-                                            $$(el.parentField.id).removeView($$(child.config.id));
-                                        }
-                                    });
-                                }
-                            } catch(err){
-                                setFunctionError(err,logNameFile,"function createWorkspace => removeLastChilds");
-                            }
-                        }
+//                         function removeLastChilds (){
+//                             try{ 
+//                                 if(  $$(el.parentField.id) ){
+//                                     $$(el.parentField.id)._cells.forEach(function(child,i){
+//                                         if (child.config.id.includes("child")){
+//                                             $$(el.parentField.id).removeView($$(child.config.id));
+//                                         }
+//                                     });
+//                                 }
+//                             } catch(err){
+//                                 setFunctionError(err,logNameFile,"function createWorkspace => removeLastChilds");
+//                             }
+//                         }
 
-                        function createChilds(){
-                            const columnsData = $$("table").getColumns(true);
+//                         function createChilds(){
+//                             const columnsData = $$("table").getColumns(true);
            
-                            try{ 
-                                columnsData.forEach(function(col,i){
-                                    if ( el.parentField.id == col.id+"_filter" ){
+//                             try{ 
+//                                 columnsData.forEach(function(col,i){
+//                                     if ( el.parentField.id == col.id+"_filter" ){
                                       
-                                        if (el.condition == "and"){
+//                                         if (el.condition == "and"){
                                      
-                                            createChildFields ("and",col);
+//                                             createChildFields ("and",col);
             
-                                            $$(el.childValue.id).setValue(el.childValue.value); 
+//                                             $$(el.childValue.id).setValue(el.childValue.value); 
                                        
                                        
-                                        } else if (el.condition == "or"){
-                                            createChildFields ("or",col);
+//                                         } else if (el.condition == "or"){
+//                                             createChildFields ("or",col);
     
-                                            $$(el.childValue.id).setValue(el.childValue.value); 
+//                                             $$(el.childValue.id).setValue(el.childValue.value); 
                                          
-                                        }
+//                                         }
                                
-                                    }
-                                });
-                            } catch(err){
-                                setFunctionError(err,logNameFile,"function createWorkspace => createChilds");
-                            }
-                        }
+//                                     }
+//                                 });
+//                             } catch(err){
+//                                 setFunctionError(err,logNameFile,"function createWorkspace => createChilds");
+//                             }
+//                         }
 
 
-                        if (el.condition == "parent"){
+//                         if (el.condition == "parent"){
                             
-                            showParentInputs();
+//                             showParentInputs();
             
-                            setParentValues();
-                          removeLastChilds ();
+//                             setParentValues();
+//                           removeLastChilds ();
                         
-                        }
+//                         }
                   
                
-                        hideFalseInputs(trueInputs);
-                        createChilds();
-                    });
+//                         hideFalseInputs(trueInputs);
+//                         createChilds();
+//                     });
             
-                    $$("filterTableForm").setValues(prefs.values);
+//                     $$("filterTableForm").setValues(prefs.values);
 
-                } catch(err){
-                    setFunctionError(err,logNameFile,"function createWorkspace");
-                }
-            }
+//                 } catch(err){
+//                     setFunctionError(err,logNameFile,"function createWorkspace");
+//                 }
+//             }
 
-            function dataEnumeration() {
-                try{
-                    data.forEach(function(el,i){
+//             function dataEnumeration() {
+//                 try{
+//                     data.forEach(function(el,i){
 
-                        if (el.name == currId+"_filter-template_"+radioValue.value){
-                            let prefs = JSON.parse(el.prefs);
-                            createWorkspace(prefs);
-                        }
+//                         if (el.name == currId+"_filter-template_"+radioValue.value){
+//                             let prefs = JSON.parse(el.prefs);
+//                             createWorkspace(prefs);
+//                         }
 
-                        function removeFilterPopup(){
-                            if ($$("popupFilterEdit")){
-                                $$("popupFilterEdit").destructor();
-                            }
-                        }
+//                         function removeFilterPopup(){
+//                             if ($$("popupFilterEdit")){
+//                                 $$("popupFilterEdit").destructor();
+//                             }
+//                         }
 
-                        function enableBtnSubmit(){
-                            if ($$("btnFilterSubmit") && !($$("btnFilterSubmit").isEnabled())){
-                                $$("btnFilterSubmit").enable();
-                            }
-                        }
-                        removeFilterPopup();
-                        enableBtnSubmit();
-                    });
-                } catch(err){
-                    setFunctionError(err,logNameFile,"function dataEnumeration");
-                }
-            }
+//                         function enableBtnSubmit(){
+//                             if ($$("btnFilterSubmit") && !($$("btnFilterSubmit").isEnabled())){
+//                                 $$("btnFilterSubmit").enable();
+//                             }
+//                         }
+//                         removeFilterPopup();
+//                         enableBtnSubmit();
+//                     });
+//                 } catch(err){
+//                     setFunctionError(err,logNameFile,"function dataEnumeration");
+//                 }
+//             }
 
-            //if (dataErr.err_type == "i"){
-            dataEnumeration();
-            setLogValue("success","Рабочая область фильтра обновлена");
+//             //if (dataErr.err_type == "i"){
+//             dataEnumeration();
+//             setLogValue("success","Рабочая область фильтра обновлена");
     
                
-            // } else {
-            //     setLogValue("error",dataErr.err); 
-            // }
+//             // } else {
+//             //     setLogValue("error",dataErr.err); 
+//             // }
 
-        });
+//         });
 
-        userprefsData.fail(function(err){
-            setAjaxError(err, logNameFile,"getLibraryData");
-        });
+//         userprefsData.fail(function(err){
+//             setAjaxError(err, logNameFile,"getLibraryData");
+//         });
 
 
       
-    }
+//     }
 
     function getCheckboxData(){
 
@@ -454,15 +261,25 @@ function popupSubmitBtn (){
         function createWorkspaceCheckbox (){
             let values = $$("editFormPopup").getValues();
             let elementClass;
-            let index;
-    
+            let index;  
+            let isFirst = true;
+  
             try{
                 Object.keys(values).forEach(function(el,i){
+             
                     index        = el.lastIndexOf("_");
                     elementClass = el.slice(0,index);
                     visibleField (values[el],elementClass,el);
+
+                
+                    if (values[el] && isFirst && el !== "selectAll"){
+                        const segmentBtn = $$( el + "_segmentBtn");
+                        hideElem(segmentBtn);
+                        isFirst = false;
+                    }
           
                 });
+
             } catch(err){
                 setFunctionError(err,logNameFile,"function createWorkspaceCheckbox");
             }
@@ -485,11 +302,7 @@ function popupSubmitBtn (){
             return visibleElements;
         }
 
-        function showEmptyTempalte(){
-            if (!($$("filterEmptyTempalte").isVisible())){
-                $$("filterEmptyTempalte").show();
-            } 
-        }
+     
 
         function disableFilterSubmit(){
             if($$("btnFilterSubmit") && $$("btnFilterSubmit").isEnabled()){
@@ -516,7 +329,7 @@ function popupSubmitBtn (){
             const visibleElements = visibleCounter();
 
             if (!(visibleElements)){
-                showEmptyTempalte();
+                showElem($$("filterEmptyTempalte"));
                 disableFilterSubmit();
                 disableibrarySaveBtn(); 
             } 
@@ -538,7 +351,6 @@ function popupSubmitBtn (){
 
         } else if (tabbarValue=="editFormScroll"){
             getCheckboxData();
-            showSegmentBtn();
         }
     }catch(err){
         setFunctionError(err,logNameFile,"function popupSubmitBtn");
@@ -951,5 +763,6 @@ function createFilterPopup() {
 
 export {
     createFilterPopup,
-    returnTemplateValue
+    returnTemplateValue,
+  //  visibleInputs
 };

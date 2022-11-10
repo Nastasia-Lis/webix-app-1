@@ -4,7 +4,8 @@ import { setFunctionError,setAjaxError }          from "../errors.js";
 import { setStorageData }                         from "../storageSetting.js";
 import { modalBox }                               from "../notifications.js";
 
-import { createFilterPopup,returnTemplateValue }  from "./popup.js";
+import { createFilterPopup,returnTemplateValue}   from "./popup.js";
+import { visibleInputs }                          from "./common.js";
 
 const PREFS_STORAGE = {};  
 const logNameFile   = "tableFilter => buttons";
@@ -380,191 +381,133 @@ function filterSubmitBtn (){
                              
     let query =[];
 
-    function getOperationVal (value, filterEl,condition, position, parentIndex=false){
-
-        const segmentBtnVal = $$(filterEl+"_segmentBtn").getValue();
-
-        if (segmentBtnVal == "1"){
-            condition = "and";
-        } else {
-            condition = "or";
-        }
-
-
-        const itemTreeId     = getItemId ();
-        const operationValue = $$(filterEl+"-btnFilterOperations").config.value;
-        
-        let sentName;
-
-        if (filterEl.includes("_filter")){
-            const index = filterEl.lastIndexOf("_");
-            sentName    = filterEl.slice(0,index);
-        }
-
-        function templateSecondItems (operation){
-            const name = itemTreeId + "." + sentName;
-            return "+and+" + name + operation + value;
-        }
-
-        function templateFirstItems(operation){
-            const name = itemTreeId + "." + sentName;
-            return name + operation + value;
-        }
-
-        
-        function templateChilds(operation){
-            const name = itemTreeId + "." + sentName;
-            return "+" + condition + "+" + name + operation + value;
-        }
-
-        try {
-      
-            if (position == "parent"){
-
-                if(parentIndex){
-          
-                    if (operationValue == "="){
-                       query.push(templateSecondItems ("+=+"));
-                     
-                    } else if (operationValue == "!="){
-
-                       query.push(templateSecondItems ("+!=+"));
-                  
-                    } else if (operationValue == "<"){
-                       query.push(templateSecondItems ("+<+"));
-                       
-                    } else if (operationValue == ">"){
-                       query.push(templateSecondItems ("+>+"));
-                        
-                    } else if (operationValue == "<="){
     
-                      query.push(templateSecondItems ("+<=+"));
-                
-                    } else if (operationValue == ">="){
-                        query.push(templateSecondItems ("+>=+"));
-                        
-                    } else if (operationValue == "⊆"){
-                    
-                        query.push(templateSecondItems ("+contains+"));
-                    }
+    function setLogicValue(value){
+        let logic = null; 
+        
+        if (value == "1"){
+            logic = "+and+";
 
-                }else {
-                    if (operationValue == "="){
-                        query.push(templateFirstItems("+=+"));
-                    } else if (operationValue == "!="){
-                        query.push(templateFirstItems("+!=+"));
-                    } else if (operationValue == "<"){
-                        query.push(templateFirstItems("+<+"));
-                    } else if (operationValue == ">"){
-                        query.push(templateFirstItems("+>+"));
-                    } else if (operationValue == "<="){
-                        query.push(templateFirstItems("+<=+"));
-                    } else if (operationValue == ">="){
-                        query.push(templateFirstItems("+>=+"));
-                    } else if (operationValue == "⊆"){
-                        query.push(templateFirstItems("+contains+"));
-                    }
-                }
-                
-            
-            } else if (position == "child") {
-
-                
-                    if (operationValue == "="){
-                        query.push(templateChilds("+=+"));
-                    
-                    } else if (operationValue == "!="){
-                        query.push(templateChilds("+!=+"));
-
-                    }  else if (operationValue == "<"){
-                        query.push(templateChilds("+<+"));
-
-                    } else if (operationValue == ">"){
-                        query.push(templateChilds("+>+"));
-
-                    } else if (operationValue == ">="){
-                        query.push(templateChilds("+>=+"));
-
-                    } else if (operationValue == "<="){
-                        query.push(templateChilds("+<=+"));
-
-                    } else if (operationValue == "⊆"){
-                        query.push(templateChilds("+contains+"));
-                    }
-                
-            }
-        } catch (err){
-            setFunctionError(err,logNameFile,"function filterSubmitBtn => getOperationVal");
+        } else if (value == "2"){
+            logic = "+or+";
         }
+
+        return logic;
+    }
+
+    function setOperationValue(value){
+        let operation;
+        if (value === "=" || !value){
+            operation = "+=+";
+        
+        } else if (value === "!="){
+            operation = "+!=+";
+
+        } else if (value === "<"){
+            operation = "+<+";
+            
+        } else if (value === ">"){
+            operation = "+>+";
+
+        } else if (value === "<="){
+            operation = "+<=+";
+    
+        } else if (value === ">="){
+            operation = "+>=+";
+            
+        } else if (value === "⊆"){
+            operation = "+contains+";
+        } 
+
+        return operation;
+    }
+
+    function setName(value){
+        const itemTreeId     = getItemId ();
+
+        return itemTreeId + "." + value;
+    }
+
+    function setValue(value){
+        return "'" + value + "'";
+    }
+
+    function createQuery (input){
+
+        const name      = setName           (input.name);
+        const value     = setValue          (input.value);
+        const logic     = setLogicValue     (input.logic);
+        const operation = setOperationValue (input.operation);
+
+        let query = name + operation + value;
+
+        if (logic){
+            query = logic + query;
+        }
+
+        return query;
+    }
+
+    
+    function createValuesArray(){
+        const keys       = Object.keys(visibleInputs);
+        const keysLength = keys.length;
+        const valuesArr  = [];
+        let inputs       = [];
+
+
+        // объединить все inputs в один массив 
+        for (let i = 0; i < keysLength; i++) {   
+            const key = keys[i];
+            inputs = inputs.concat(visibleInputs[key]);
+        }
+
+        function segmentBtnValue(input) {
+            const segmentBtn = $$(input + "_segmentBtn") ;
+            let value        = null;
+
+            if (segmentBtn.isVisible()){
+                value = segmentBtn.getValue();
+            }
+            return value;
+        }
+
+        inputs.forEach(function(input,i){
+            const name       = $$(input).config.columnName;
+            const value      = $$(input)                         .getValue();
+            const operation  = $$(input + "-btnFilterOperations").getValue();
+
+            const logic      = segmentBtnValue(input); 
+
+            valuesArr.push ( { 
+                id        : input,
+                name      : name, 
+                value     : value,
+                operation : operation,
+                logic     : logic  
+            });
+        });
+
+        return valuesArr;
     }
 
 
-    
-    
     function createGetData(){
        
         const postFormatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
-        const valuesArr      = [];
+        const valuesArr      = createValuesArray();
 
-        function checkInput(el){
-            el.getChildViews().forEach(function(child,i){
-                const idEl = child.config.id;
-                if (idEl.includes("-container-child-")){
-                    const childInp = child.getChildViews()[0]._collection[0].cols[0];
-           
-                    const valueChild   = $$(childInp.id).getValue();
+        const firstChild     = valuesArr[0].name;
 
-                    valuesArr.push ( { 
-                        name  : childInp.name, 
-                        value : valueChild 
-                    });
 
-                } else {
-                    const index         = idEl.indexOf("_container");
-                    const idParentInput = idEl.slice(0,index)+"_filter";
-
-                    const name         = $$(idParentInput).config.name;
-                    valuesArr.push ({ 
-                        name  : name, 
-                        value : $$(idParentInput).getValue()
-                    });
-
-                }
-            });
-        }
-        
-        $$("inputsFilter")._cells.forEach(function(el,i){
-            checkInput(el);
-        });
-
-        let checkFirstChild = false;
-        let firstItem       = 0;
-     
-        const notNullVals = [];
-
-        function removeNull(){
-            valuesArr.forEach(function(el,i){
-                if (el.value){
-                    notNullVals.push(el);
-                } 
-            });
-        }
-
-        removeNull();
-
-        console.log(valuesArr,notNullVals)
-
-        notNullVals.forEach(function(el,i){
+        valuesArr.forEach(function(el,i){
       
-            let filterEl = el.name;
+            let filterEl = el.id;
             let value    = el.value ;
- 
- 
-            if (i == 0 && filterEl.includes("child")){
+
+            let checkFirstChild = false;
+            if (el.name === firstChild){
                 checkFirstChild = true;
-                firstItem       = 1;
-            } else {
-                checkFirstChild = false;
             }
        
             function formattingDateValue(){
@@ -581,79 +524,34 @@ function filterSubmitBtn (){
                 }
             }
 
-            function createQuery(){
-                //console.log($$(filterEl+"_segmentBtn"), $$(filterEl+"_segmentBtn").getValue())
-     
-                try{
-
-                    if( !(filterEl.includes("child")) ){
-
-                        if (checkFirstChild){
-                            getOperationVal ("'"+value+"'",filterEl,"and","parent",true);
-                            firstItem++;
-                        } else if ( firstItem == 0 ) {
-                            getOperationVal ("'"+value+"'",filterEl,"and","parent");
-                        } else if  ( firstItem > 0 ){
-                            getOperationVal ("'"+value+"'",filterEl,"and","parent",true);
-                        }
-
-                        firstItem++;
-                        
-                    } else if (filterEl.includes("child")){ 
-
-                        if (checkFirstChild){
-
-                            if (filterEl.includes("operAnd")){
-                                getOperationVal ("'"+value+"'",filterEl,"and","parent");
-    
-                            } else if (filterEl.includes("operOr")){
-                                getOperationVal ("'"+value+"'",filterEl,"or","parent");
-                            }
-                           
-                        } else {
-                            if (filterEl.includes("operAnd")){
-                                getOperationVal ("'"+value+"'",filterEl,"and","child");
-    
-                            } else if (filterEl.includes("operOr")){
-                                getOperationVal ("'"+value+"'",filterEl,"or","child");
-                            }
-                        }
-                    
-                    }
-                } catch (err){
-                    setFunctionError(err,logNameFile,"function createQuery");
-                }
-            }
-
-
-            if (value && $$(filterEl)){
-                try{
-                    formattingDateValue();
-                    formattinSelectValue();
-                    createQuery();
-                } catch (err){
-                    setFunctionError(err,logNameFile,"function createGetData");
-                }
+            if ($$(filterEl)){
+                formattingDateValue ();
+                formattinSelectValue();
+                query.push(createQuery(el));
             }
 
         });
-
     }
 
     
     if ($$("filterTableForm").validate()){
         
         createGetData();
+
+        
         let currTableView;
+
         if ($$("table").isVisible()){
             currTableView = $$("table");
         } else {
             currTableView = $$("table-view");
         }
-   
-        currTableView.config.filter = query.join("");
 
-        const queryData = webix.ajax("/init/default/api/smarts?query=" + query.join("") );
+        const fullQuery = query.join("");
+
+        currTableView.config.filter = fullQuery;
+
+        const queryData = webix.ajax("/init/default/api/smarts?query=" + fullQuery );
 
         queryData.then(function(data){
             data             = data.json();
@@ -666,13 +564,11 @@ function filterSubmitBtn (){
 
             function setData(){
                 try{
-                   
+                    currTableView.clearAll();
                     if (data.length !== 0){
                         currTableView.hideOverlay("Ничего не найдено");
-                        currTableView.clearAll();
                         currTableView.parse(data);
                     } else {
-                        currTableView.clearAll();
                         currTableView.showOverlay("Ничего не найдено");
                     }
                 } catch (err){
@@ -760,51 +656,62 @@ function filterLibraryBtn () {
                 };
 
                 function childs(el,id){
-                 
+                    const values =  Object.values(visibleInputs);
+                    const keys   =  Object.keys(visibleInputs);
+                    const inputsCollection = [];
                     try{
                      
-                        $$(el.id).getChildViews().forEach(function(child,i){
+                        values.forEach(function(value,i){
+                
+                            inputsCollection.push({
+                                id    : keys[i], 
+                                count : value.length
+                            });
+                        });
+
+                        console.log(inputsCollection)
+                        // $$(el.id).getChildViews().forEach(function(child,i){
                             
-                            const condition   = $$(child.config.id)._collection[0].id;
-                            const index       = el.id.lastIndexOf("_rows");
-                            const parentField = el.id.slice(0,index);
+                        //     const condition   = $$(child.config.id)._collection[0].id;
+                        //     const index       = el.id.lastIndexOf("_rows");
+                        //     const parentField = el.id.slice(0,index);
 
                    
                          
-                            function setChildToCollection(){
-                                let idInput = $$(child.config.id).getChildViews()[1]._collection[0].id;
-                                let tempalteCollectionItem = {
-                                    parentField: $$(parentField).config, 
-                                    childValue : {
-                                        id   : idInput+"-btnFilterOperations",
-                                        value: $$(idInput+"-btnFilterOperations").getValue()
-                                    }
-                                };
-                                if (condition.includes("and")){
-                                    tempalteCollectionItem.condition = "and";
-                                    collection.content.push(tempalteCollectionItem);
-                                } else if (condition.includes("or")){
-                                    tempalteCollectionItem.condition = "or";
-                                    collection.content.push(tempalteCollectionItem);
-                                } 
-                            }
+                        //     function setChildToCollection(){
+                        //         let idInput = $$(child.config.id).getChildViews()[1]._collection[0].id;
+                        //         let tempalteCollectionItem = {
+                        //             parentField: $$(parentField).config, 
+                        //             childValue : {
+                        //                 id   : idInput+"-btnFilterOperations",
+                        //                 value: $$(idInput+"-btnFilterOperations").getValue()
+                        //             }
+                        //         };
+                        //         if (condition.includes("and")){
+                        //             tempalteCollectionItem.condition = "and";
+                        //             collection.content.push(tempalteCollectionItem);
+                        //         } else if (condition.includes("or")){
+                        //             tempalteCollectionItem.condition = "or";
+                        //             collection.content.push(tempalteCollectionItem);
+                        //         } 
+                        //     }
 
-                            console.log(child.config.id)
-                            if (child.config.id.includes("child")){
-                                setChildToCollection();
+                        //     console.log(child.config.id)
+                        //     if (child.config.id.includes("child")){
+                        //         setChildToCollection();
                           
-                            } else {
-                                collection.content.push({
-                                    condition:"parent",
-                                    parentField:$$(el.id).config, 
-                                    parentValue:{
-                                        id:id+"-btnFilterOperations", 
-                                        value:$$(id+"-btnFilterOperations").getValue()
-                                    }
-                                });
-                            }
+                        //     } else {
+                        //         collection.content.push({
+                        //             condition:"parent",
+                        //             parentField:$$(el.id).config, 
+                        //             parentValue:{
+                        //                 id:id+"-btnFilterOperations", 
+                        //                 value:$$(id+"-btnFilterOperations").getValue()
+                        //             }
+                        //         });
+                        //     }
 
-                        });
+                        // });
                     } catch(err){
                         setFunctionError(err,logNameFile,"function filterLibraryBtn => childs:");
                     }
@@ -815,23 +722,24 @@ function filterLibraryBtn () {
                     data.forEach(function(el,i){
                
                         const currName = currId + "_filter-template_" + nameTemplate;
-
+                    
                         function putUserprefsData (){
                             const url     = "/init/default/api/userprefs/"+el.id;
-                            const putData = webix.ajax().put(url, sentObj);
+                            console.log(sentObj)
+                            // const putData = webix.ajax().put(url, sentObj);
 
-                            putData.then(function(data){
-                                data = data.json();
-                                if (data.err_type == "i"){
-                                    setLogValue("success","Шаблон"+" «"+nameTemplate+"» "+" сохранён в библиотеку");
-                                } else {
-                                    setLogValue("error","tableFilter => buttons function modalBoxExists: "+ data.err);
-                                }
-                            });
+                            // putData.then(function(data){
+                            //     data = data.json();
+                            //     if (data.err_type == "i"){
+                            //         setLogValue("success","Шаблон"+" «"+nameTemplate+"» "+" сохранён в библиотеку");
+                            //     } else {
+                            //         setLogValue("error","tableFilter => buttons function modalBoxExists: "+ data.err);
+                            //     }
+                            // });
 
-                            putData.fail(function(err){
-                                setAjaxError(err, logNameFile,"saveExistsTemplate => putUserprefsData");
-                            });
+                            // putData.fail(function(err){
+                            //     setAjaxError(err, logNameFile,"saveExistsTemplate => putUserprefsData");
+                            // });
 
                         }
 
@@ -885,21 +793,23 @@ function filterLibraryBtn () {
                     }
 
                     const url           = "/init/default/api/userprefs/";
-                    const userprefsPost = webix.ajax().post(url, sentObj);
-                    
-                    userprefsPost.then(function(data){
-                        data = data.json();
-    
-                        if (data.err_type == "i"){
-                            setLogValue("success","Шаблон"+" «"+nameTemplate+"» "+" сохранён в библиотеку");
-                        } else {
-                            setLogValue("error",data.error);
-                        }
-                    });
 
-                    userprefsPost.fail(function(err){
-                        setAjaxError(err, logNameFile,"saveTemplate => saveNewTemplate");
-                    });
+                    console.log(sentObj)
+                    // const userprefsPost = webix.ajax().post(url, sentObj);
+                    
+                    // userprefsPost.then(function(data){
+                    //     data = data.json();
+    
+                    //     if (data.err_type == "i"){
+                    //         setLogValue("success","Шаблон"+" «"+nameTemplate+"» "+" сохранён в библиотеку");
+                    //     } else {
+                    //         setLogValue("error",data.error);
+                    //     }
+                    // });
+
+                    // userprefsPost.fail(function(err){
+                    //     setAjaxError(err, logNameFile,"saveTemplate => saveNewTemplate");
+                    // });
 
                 }
 

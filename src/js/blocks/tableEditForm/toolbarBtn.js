@@ -79,8 +79,8 @@ function toolbarEditButton (idTable){
     const idBtnEdit = idTable + "-editTableBtnId";
 
     function returnValue( empty = true ){
-        const icon = "<span class='webix_icon icon-pencil'></span>";
-        const text = "<span style='padding-left: 5px'>Редактор записи</span>";
+        const icon = "<span class='webix_icon icon-pencil' style='font-size:13px!important'></span>";
+        const text = "<span style='padding-left: 5px; font-size:13px!important' >Редактор записи</span>";
 
         if (empty){
             return icon;

@@ -1,6 +1,8 @@
 import {setFunctionError, setAjaxError} from "./errors.js";
 import {setStorageData} from "./storageSetting.js";
 
+let visibleTable;
+
 function getItemId (){
     let idTable;
 
@@ -10,8 +12,10 @@ function getItemId (){
 
         if ($$("tables").isVisible()){
             idTable = table.config.idTable;
+            visibleTable = table
         } else if ($$("forms").isVisible()){
             idTable = tableView.config.idTable;
+            visibleTable = tableView; 
   
         }
 
@@ -20,6 +24,12 @@ function getItemId (){
     }
 
     return idTable;
+}
+
+function getTable(){
+    getItemId ();
+
+    return visibleTable;
 }
 
 function hideElem(elem){
@@ -151,8 +161,6 @@ function getComboOptions (refTable){
     }});
 }
 
-
-
 function getUserData(){
     const userprefsGetData = webix.ajax("/init/default/api/whoami");
     userprefsGetData.then(function(data){
@@ -180,11 +188,16 @@ function getUserData(){
 
 export {
     getItemId,
+    getTable,
+
     hideElem,
     showElem,
     removeElem,
     disableElem,
+
     textInputClean,
+    
     getComboOptions,
-    getUserData
+    getUserData,
+   
 };
