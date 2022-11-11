@@ -43,13 +43,14 @@ function setLogValue (typeNotify,notifyText,specificSrc) {
                         name = el.name;
                     }
                 });
+                
             } catch (err){
                 setFunctionError(err,"logBlock","findTableName");
             }
         }
 
         if (srcTable == "version"){
-            name = 'Expa v1.0.50';
+            name = 'Expa v1.0.51';
 
         } else if (srcTable == "cp") {
             name = 'Смена пароля';

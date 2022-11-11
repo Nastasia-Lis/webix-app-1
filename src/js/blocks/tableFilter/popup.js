@@ -18,11 +18,6 @@ const logNameFile = "tableFilter => popup";
 
 function popupSubmitBtn (){
 
-    webix.message({
-        text:"В процессе разработки",
-        type:"debug", 
-    });
-
     function getCheckboxData(){
 
         function enableLibrarySaveBtn(){
@@ -35,42 +30,54 @@ function popupSubmitBtn (){
         function createWorkspaceCheckbox (){
             const values       = $$("editFormPopup").getValues();
             const selectValues = [];
+
+            function returnSegmentBtn(input){
+                return $$( input + "_segmentBtn");
+            }
          
-            function hideSegmentBtn(){
-                const length = selectValues.length;
-                 
+            function visibleSegmentBtn(selectAll){
+
+                const selectLength = selectValues.length;
+
                 selectValues.forEach(function(value,i){
-                    const prevIndex = length - 2;
-                    const lastIndex = length - 1;
-                    if (i == lastIndex){
-                        const segmentBtn = $$( value + "_segmentBtn");
-                        hideElem(segmentBtn);
+                    const colId      = $$(value).config.columnName;
+
+                    const collection = visibleInputs[colId];
+                    const length     = collection.length;
+                    const lastIndex  = length - 1;
+
+                    const segmentBtn = returnSegmentBtn(collection[lastIndex]);
+
+                    if ( i === selectLength - 1){
+                      //  скрыть последний элемент
+                      hideElem(segmentBtn);
+          
+                
+                    } else if ( i === selectLength - 2 || selectAll){
+                        showElem(segmentBtn);
                     }
 
-                    if ( i == prevIndex ){
-                        const columnId     = $$(value).config.columnName;
-                        const prevInputs   = visibleInputs[columnId];
-                        const inputsLength = prevInputs.length;
-
-                      
-                        console.log(visibleInputs)
-                    }
-           
+               
                 });
             }
             try{
-                Object.keys(values).forEach(function(el,i){
+                const keys    = Object.keys(values); 
+                let selectAll = false;
 
-                    if (values[el]){
+                keys.forEach(function(el,i){
+
+                    if (values[el] && el !== "selectAll"){
                         selectValues.push(el);
+                    } else if (el == "selectAll"){
+                        selectAll = true;
                     }
 
                     const columnName = $$(el).config.columnName;
-                    visibleField (values[el],columnName,el);
+                    visibleField (values[el], columnName, el);
           
                 });
 
-                hideSegmentBtn();
+                visibleSegmentBtn(selectAll);
 
             } catch(err){
                 setFunctionError(
@@ -82,10 +89,12 @@ function popupSubmitBtn (){
         }
 
         function visibleCounter(){
+            const elements      = $$("filterTableForm").elements;
+            const values        = Object.values(elements);
             let visibleElements = 0;
             try{
-                Object.values($$("filterTableForm").elements).forEach(function(el,i){
-                    if (!(el.config.hidden)){
+                values.forEach(function(el,i){
+                    if ( !(el.config.hidden) ){
                         visibleElements++;
                     }
                     
@@ -149,6 +158,15 @@ function popupSubmitBtn (){
         $$("popupFilterEdit").destructor();
     }
 
+    function showEmptyTemplate(){
+        const keys = Object.keys(visibleInputs).length;
+
+        if ( !keys ){
+            showElem ($$("filterEmptyTempalte"));
+        }
+    }
+    showEmptyTemplate();
+
 }
 
 function removeBtnClick (){
@@ -159,7 +177,8 @@ function removeBtnClick (){
         const libValue   = lib.getValue();
         const radioValue = lib.getOption(libValue);
        
-        function deleteElement(el){
+        function deleteElement(el, id, value){
+
             const url            = "/init/default/api/userprefs/" + el.id;
             const deleteTemplate = webix.ajax().del(url, el);
 
@@ -213,7 +232,7 @@ function removeBtnClick (){
 
             data.forEach(function(el,i){
                 if (el.name == templateName){
-                    deleteElement();
+                    deleteElement(el, id, value);
                 }
             });
 

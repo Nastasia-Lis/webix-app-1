@@ -88,7 +88,7 @@ function formattingBoolVals(arr){
 }   
 
 
-function saveItem(addBtnClick=false, refBtnClick=false){    
+function saveItem(addBtnClick = false, refBtnClick = false){    
   
     try{    
         

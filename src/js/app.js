@@ -1,4 +1,4 @@
-console.log("expa 1.0.50"); 
+console.log("expa 1.0.51"); 
 
 import { textInputClean }                     from "./blocks/commonFunctions.js";
 import { auth }                               from "./components/login.js";
@@ -11,8 +11,8 @@ import { logLayout }                          from "./blocks/logBlock.js";
 import { resetTimer }                         from  "./blocks/logout/autoLogout.js";
 
 import { setFunctionError }                   from "./blocks/errors.js";
-import { resizeAdaptive,adaptivePoints }      from "./blocks/adaptive.js";
-import { webixGlobalPrefs,protoUIEdittree }   from "./blocks/webixGlobalPrefs.js";
+import { resizeAdaptive, adaptivePoints }     from "./blocks/adaptive.js";
+import { webixGlobalPrefs, protoUIEdittree }  from "./blocks/webixGlobalPrefs.js";
 import { setRouterStart }                     from "./blocks/routerConfig/routerStart.js";
 import { backButtonBrowserLogic }             from "./blocks/historyBtns.js";
 

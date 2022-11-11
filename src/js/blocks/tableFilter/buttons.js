@@ -1,11 +1,14 @@
-import { setLogValue }                            from '../logBlock.js';
-import { getItemId, hideElem, getUserData, showElem }       from "../commonFunctions.js";
-import { setFunctionError,setAjaxError }          from "../errors.js";
-import { setStorageData }                         from "../storageSetting.js";
-import { modalBox }                               from "../notifications.js";
+import { setLogValue }                           from '../logBlock.js';
 
-import { createFilterPopup,returnTemplateValue}   from "./popup.js";
-import { visibleInputs }                          from "./common.js";
+import { setFunctionError,setAjaxError }         from "../errors.js";
+import { setStorageData }                        from "../storageSetting.js";
+import { modalBox }                              from "../notifications.js";
+
+import { createFilterPopup,returnTemplateValue}  from "./popup.js";
+import { visibleInputs, clearSpace }             from "./common.js";
+
+import { getItemId, getTable, hideElem, 
+        getUserData, showElem }                  from "../commonFunctions.js";
 
 const PREFS_STORAGE = {};  
 const logNameFile   = "tableFilter => buttons";
@@ -226,8 +229,6 @@ function editFiltersBtn (){
      
         return checkboxes;
     }
-
-   // let formData = getAllCheckboxes();
    
  
     function checkboxOnChange (el){
@@ -453,21 +454,49 @@ function filterSubmitBtn (){
         return itemTreeId + "." + value;
     }
 
-    function setValue(value){
-        return "'" + value + "'";
+    function isBool(name){
+        const table = getTable();
+        const col   = table.getColumnConfig(name);
+        let check   = false;
+        if (col.type && col.type === "boolean"){
+            check = true;
+        }
+
+        return check;
+    }
+
+    function returnBoolValue(value){
+        if (value == 1){
+            return true;
+        } else if (value == 2){
+            return false;
+        }
+    }
+
+    function setValue(name, value){
+
+        let sentValue = "'" + value + "'";
+
+        if (value == 1 || value == 2){
+
+            if ( isBool(name) ){
+                sentValue = returnBoolValue(value);
+            } 
+            
+        }
+        return sentValue;
     }
 
     function createQuery (input){
-
         const name      = setName           (input.name);
-        const value     = setValue          (input.value);
+        const value     = setValue          (input.name, input.value);
         const logic     = setLogicValue     (input.logic);
         const operation = setOperationValue (input.operation);
 
         let query = name + operation + value;
 
         if (logic){
-            query = logic + query;
+            query = query + logic;
         }
 
         return query;
@@ -529,11 +558,6 @@ function filterSubmitBtn (){
       
             let filterEl = el.id;
             let value    = el.value ;
-
-            let checkFirstChild = false;
-            if (el.name === firstChild){
-                checkFirstChild = true;
-            }
        
             function formattingDateValue(){
                 const view = $$(filterEl).config.view; 
@@ -563,14 +587,7 @@ function filterSubmitBtn (){
         
         createGetData();
 
-        
-        let currTableView;
-
-        if ($$("table").isVisible()){
-            currTableView = $$("table");
-        } else {
-            currTableView = $$("table-view");
-        }
+        const currTableView = getTable();
 
         const fullQuery = query.join("");
 
@@ -585,7 +602,6 @@ function filterSubmitBtn (){
             const notifyMsg  = data.err;
 
             data             = data.content;
-
 
             function setData(){
                 try{
@@ -646,7 +662,7 @@ function filterLibraryBtn () {
                 required    : true,
                 placeholder : "Введите название шаблона...",
             },
-            width:350,
+            width       : 350,
         }).then(function(result){
           
             async function saveTemplate (){ 
@@ -920,11 +936,15 @@ function backTableBtnClick() {
 }
 
 function resetFilterBtn (){
+    const table = getTable();
     try {
 
         const itemTreeId = getItemId ();
-        const url        = "/init/default/api/smarts?query="+itemTreeId+".id >= 0";
+        const url        = "/init/default/api/smarts?query=" + itemTreeId + ".id >= 0";
         const queryData  = webix.ajax(url);
+
+        table.config.filter = null;
+        
         queryData.then(function(data){
             const dataErr =  data.json();
           
@@ -932,7 +952,6 @@ function resetFilterBtn (){
                 
             function setDataTable(){
                 try{
-                    const table = $$("table");
                     if (data.length !== 0){
                         table.hideOverlay("Ничего не найдено");
                         table.clearAll();
@@ -992,66 +1011,6 @@ function resetFilterBtn (){
                 }
             }
 
-            function clearSpace(){
-                const childs = [];
-                const inputsContainer = $$("inputsFilter").getChildViews();
-                
-      
-                inputsContainer.forEach(function(el,i){
-                    const inputId = el._collection[0].cols[0].id;
-                    
-                    function removeParentInput(){
-                        $$(inputId).hide();
-                    }
-
-                    function getChildsId (){
-                        try{
-                            const childsView = $$(el.config.id).getChildViews();
-                            childsView.forEach(function(child,i){
-                                if (child.config.id.includes("child")){
-                                    childs.push (child.config.id);
-                                }
-                            });
-                        } catch (err){
-                            setFunctionError(
-                                err,
-                                logNameFile,
-                                "function resetFilterBtn => getChildsId"
-                            );
-                        }
-                    }
-
-                    try{
-                        removeParentInput();
-                        getChildsId ();
-                        hideElem($$(inputId+"_container-btns"));
-                    } catch (err){
-                        setFunctionError(
-                            err,
-                            logNameFile,
-                            "function resetFilterBtn => clearSpace"
-                        );
-                    }
-
-                });
-               
-                function removeChilds(){
-                    try{
-                        childs.forEach(function(idChild,i){
-                            const child  = $$(idChild);
-                            const parent = child.getParentView();
-                            parent.removeView(child);
-                        });
-                    } catch (err){
-                        setFunctionError(
-                            err,
-                            logNameFile,
-                            "function resetFilterBtn => removeChilds"
-                        );
-                    }
-                }
-                removeChilds();
-            }
 
             function disableLibSaveBtn(){
                 const saveBtn = $$("filterLibrarySaveBtn") ;
@@ -1063,7 +1022,6 @@ function resetFilterBtn (){
             function showEmptyTemplate(){
                 const emptyTemplate = $$("filterEmptyTempalte");
                 showElem(emptyTemplate);
-                emptyTemplate.refresh();
             }
 
             function disableRemoveBtn(){
@@ -1139,10 +1097,17 @@ function buttonsFormFilter (name) {
         height  : 48,
         minWidth: 70, 
         css     : "webix_primary",
-        hotkey  : "Enter",
+     //   hotkey  : "Enter",
         disabled: true,
         value   : "Применить фильтры", 
         click   : filterSubmitBtn,
+        on      : {
+            onAfterRender: function () {
+                this.getInputNode().setAttribute(
+                    "title","Применить фильтры"
+                );
+            },
+        },
     };
     
     const formEditBtn = {   

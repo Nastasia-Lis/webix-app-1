@@ -207,10 +207,15 @@
 
 //// segment btn
 /// 
+/// 
+.webix_el_segmented{
+   margin-top: 7px!important;
+}
 .webix_segment_N,
 .webix_segment_0{
     font-size: 14px!important;
-    margin: 0px 10px;
+
+    margin:0px 5px!important;
     width: 100px!important;
     border-radius: 5px!important;
 

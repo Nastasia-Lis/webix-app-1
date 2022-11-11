@@ -17,7 +17,7 @@ function setAdaptiveValue(btn, adaptVal, mainVal){
 
 
 const formEmptyTemplate = {   
-    id:"filterEmptyTempalte",
+   // id:"filterEmptyTempalte",
     css:"webix_empty-template",
     template:"Добавьте фильтры из редактора",
     borderless:true
@@ -33,7 +33,7 @@ const filterTableForm = {
     borderless  : true,
     elements    : [
         {   
-            minHeight : 48,
+           // minHeight : 125,
             css       : "webix_form-adaptive",
             margin    : 5,
             rows      : [
@@ -54,7 +54,7 @@ const filterTableForm = {
                 {   id   : "btns-adaptive",
                     css  : {"margin-top":"5px!important"},
                     rows : [
-                        {   responsive  : "btns-adaptive", 
+                        {  
                             margin      : 5, 
                             cols        : [
                                 buttonsFormFilter("formBtnSubmit"),
@@ -62,11 +62,19 @@ const filterTableForm = {
                             ]
                         },
                         {height:10},
-                        formEmptyTemplate
+                        
                     ]
                 }
             ]
         },
+        {   minHeight :  25,
+            id:"filterEmptyTempalte",
+            rows: [
+                formEmptyTemplate
+            ],
+        }
+
+        
     ],
     rules:{
         $all:webix.rules.isNotEmpty

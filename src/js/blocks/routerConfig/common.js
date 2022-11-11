@@ -1,13 +1,15 @@
 
 // tree elements
-import {dashboardLayout}            from "../../components/dashboard.js";
-import {table}                      from "../../components/table/layout.js";
-import {onFuncTable}                from "../../components/table/onFuncs.js";
-import {authCpLayout}               from "../../components/authSettings.js";
-import {userprefsLayout}            from "../../components/userprefs.js";
-import {editTreeLayout,contextMenu} from "../../components/editTree.js";
-import {sortTable, scrollTableLoad} from "../../components/table/lazyLoad.js";
-import {setColsWidthStorage}        from "../columnsSettings/columnsWidth.js"
+import { dashboardLayout }            from "../../components/dashboard.js";
+import { table }                      from "../../components/table/layout.js";
+import { onFuncTable }                from "../../components/table/onFuncs.js";
+import { authCpLayout }               from "../../components/authSettings.js";
+import { userprefsLayout }            from "../../components/userprefs.js";
+import { editTreeLayout,contextMenu } from "../../components/editTree.js";
+import { sortTable, scrollTableLoad } from "../../components/table/lazyLoad.js";
+import { onResizeTable }              from "../../components/table/onResize.js";
+import { columnResize }               from "../../components/table/onColumnResize.js";
+import { setColsWidthStorage }        from "../columnsSettings/columnsWidth.js"
  
 // other blocks
 import {tableToolbar}               from "../toolbarTable.js";
@@ -80,9 +82,13 @@ function createElements(specificElement){
 
                 
                 5);
-                sortTable          ($$("table"));
-                scrollTableLoad    ($$("table"));
-                setColsWidthStorage($$("table"));
+
+                const tableElem = $$("table");
+                sortTable          (tableElem);
+                onResizeTable      (tableElem);
+                scrollTableLoad    (tableElem);
+                setColsWidthStorage(tableElem);
+                columnResize       (tableElem);
             }
         } catch (err){
             setFunctionError(err,logNameFile,"createTables");
@@ -128,9 +134,12 @@ function createElements(specificElement){
                     },
                 6);
 
-               sortTable          ($$("table-view"));
-               setColsWidthStorage($$("table-view"));
-              //  scrollTableLoad($$("table-view"));
+                const tableElem = $$("table-view");
+
+                sortTable          (tableElem);
+                onResizeTable      (tableElem);
+                setColsWidthStorage(tableElem);
+                columnResize       (tableElem);
            
             }
         } catch (err){
@@ -297,32 +306,34 @@ function getWorkspace (){
         } 
 
        
-
+     
         function generateHeaderMenu  (el){
-            let items = [];
-            
-            try{ 
-                items.push({id:"favs", value:"Избранное", icon: "icon-star"});
-                items.push({id:"userprefs", value:"Настройки", icon: "icon-cog"});
-                items.push({id:"cp", value:"Смена пароля", icon: "icon-lock"});
-                items.push({id:"logout", value:"Выйти", css:"webix_logout", icon: "icon-sign-out"});
-                // el.childs.forEach(function(child,i){
-                //     let item = {
-                //         id:child.name,
-                //         value:child.title
-                //     };
 
-                    
-                //     if (child.name !== "logout"){
-                //         items.push(item);
-                //     } 
-                // });
+            const items = [];
+
+            function pustItem(id, value, icon){
+                const item = {
+                    id    : id, 
+                    value : value, 
+                    icon  : icon
+                };
+
+                if (id == "logout"){
+                    item.css = "webix_logout";
+                }
+              
+                items.push(item);
+            
+                return items;
+            }
+            
+            pustItem ("favs",       "Избранное",     "icon-star"     );
+            pustItem ("userprefs",  "Настройки",     "icon-cog"      );
+            pustItem ("cp",         "Смена пароля",  "icon-lock"     );
+            pustItem ("logout",     "Выйти",         "icon-sign-out" );
 
               
-            } catch (err){
-                setFunctionError(err,logNameFile,"generateHeaderMenu");
-            }
-
+           
             return items;
         }
 
@@ -400,7 +411,7 @@ function getWorkspace (){
         }
 
         function setUserData(){
-            let userStorageData      = {};
+            const userStorageData      = {};
             userStorageData.id       = STORAGE.whoami.content.id;
             userStorageData.name     = STORAGE.whoami.content.first_name;
             userStorageData.username = STORAGE.whoami.content.username;

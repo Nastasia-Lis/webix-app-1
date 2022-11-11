@@ -58,7 +58,7 @@ function itemClickContext(id){
                     editProperty.config.dirty   ){
                     
                     if ( saveBtn.isVisible() ){
-                        saveItem(false, false, true);
+                        saveItem(false, true);
                     } else {
                         saveNewItem(); 
                     }

@@ -18,20 +18,37 @@ function removeClass(elem, className){
     }
 }
 
-function showSegmentBtn (condition,el){
-    const segmentBtn = $$( el + "_segmentBtn");
-   
-    if (condition && el !== "selectAll"){
-        showElem(segmentBtn);
-    } 
+function checkChild(elementClass){
+    let unique = true;
+
+    if ( visibleInputs[elementClass].length ){
+        unique = false;
+    }
+
+    return unique;
+ 
 }
 
 function visibleField (condition, elementClass = null, el = null){
-    const showClass = "webix_show-content";
-    const hideClass = "webix_hide-content";
+    const showClass  = "webix_show-content";
+    const hideClass  = "webix_hide-content";
+    const segmentBtn = $$( el + "_segmentBtn");
+
     function editStorage(){
+
         if (condition && el !== "selectAll"){
-            visibleInputs[elementClass]  = [el];
+
+            if ( !visibleInputs[elementClass] ){
+                visibleInputs[elementClass] = [];
+            }
+  
+            const unique = checkChild(elementClass, el);
+
+            if (unique){
+                visibleInputs[elementClass].push(el);
+                showElem(segmentBtn);
+            }
+         
 
         } else if (visibleInputs[elementClass]) {
             delete visibleInputs[elementClass];
@@ -41,7 +58,7 @@ function visibleField (condition, elementClass = null, el = null){
 
     editStorage();
 
-    showSegmentBtn (condition,el);
+  //  showSegmentBtn (condition,el);
 
     const htmlElement = document.querySelectorAll(".webix_filter-inputs");
 
@@ -188,11 +205,37 @@ function visibleField (condition, elementClass = null, el = null){
     }
 }
 
+function clearSpace(){
+    const values = Object.values(visibleInputs);
+
+    function hideElements(arr){
+        arr.forEach(function(el,i){
+            if ( !el.includes("_filter-child-") ){
+                const colId      = $$(el).config.columnName;
+                const segmentBtn = $$(el + "_segmentBtn");
+
+                visibleField (0, colId, el);
+                segmentBtn.setValue(1);
+                hideElem     (segmentBtn);
+            }
+        });
+    }
+
+    values.forEach(function(el,i){
+     
+        if (el.length){
+            hideElements(el);
+        }
+    });
+}
+
 
 export {
     addClass,
     removeClass,
     visibleField,
-  //  stateElements,
-    visibleInputs
+    clearSpace,
+    
+    visibleInputs,
+    
 };

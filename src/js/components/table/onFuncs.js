@@ -1,12 +1,12 @@
  
-import {defaultStateForm,createEditFields}                  from '../../blocks/tableEditForm/states.js';
-import {validateProfForm}                                   from '../../blocks/tableEditForm/validation.js';
-import {modalBox}                                           from "../../blocks/notifications.js";
-import {setLogValue}                                        from '../../blocks/logBlock.js';
-import {setAjaxError,setFunctionError}                      from "../../blocks/errors.js";
-import {showElem,hideElem,removeElem,getItemId}             from "../../blocks/commonFunctions.js";
+import { defaultStateForm, createEditFields }                   from '../../blocks/tableEditForm/states.js';
+import { validateProfForm }                                     from '../../blocks/tableEditForm/validation.js';
+import { modalBox }                                             from "../../blocks/notifications.js";
+import { setLogValue }                                          from '../../blocks/logBlock.js';
+import { setAjaxError, setFunctionError }                       from "../../blocks/errors.js";
+import { showElem, hideElem, removeElem, getItemId, getTable }  from "../../blocks/commonFunctions.js";
 
-import {toEditForm, validateError, putData}                 from "./common.js";
+import { toEditForm, validateError, putData}                    from "./common.js";
 
 const logNameFile = "table => onFuncs";
 
@@ -15,7 +15,7 @@ const onFuncTable = {
     onBeforeLoad:function(){
         this.showOverlay("Загрузка...");
     },
-    
+
     onBeforeEditStop:function(state, editor, ignoreUpdate){
         const table      = $$("table");
         const valuesProp = table.getSelectedItem();
