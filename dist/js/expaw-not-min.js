@@ -403,15 +403,21 @@ function setLogValue (typeNotify,notifyText,specificSrc) {
     const currentDate = createCurrDate();
 
     function addLogMsg (src){
+        const logList = $$("logBlock-list");
+
         if (!src){
             src = "expa";
         }
       
-        $$("logBlock-list").add({
-            date:currentDate,
-            value:notifyText,
-            src:src
+        logList.add({
+            date  : currentDate,
+            value : notifyText,
+            src   : src
         });
+
+        const lastId = logList.getLastId();
+    
+        logList.showItem(lastId);
     }
 
     async function createLogMessage(srcTable) {
@@ -424,18 +430,18 @@ function setLogValue (typeNotify,notifyText,specificSrc) {
                         name = el.name;
                     }
                 });
-                
+
             } catch (err){
                 errors_setFunctionError(err,"logBlock","findTableName");
             }
         }
 
         if (srcTable == "version"){
-            name = 'Expa v1.0.51';
+            name = 'Expa v1.0.52';
 
         } else if (srcTable == "cp") {
             name = 'Смена пароля';
-
+        
         } else {
             if (!STORAGE.tableNames){
                 await getData("fields"); 
@@ -6291,7 +6297,121 @@ const editFormBtns = {
 
 
 
+;// CONCATENATED MODULE: ./src/js/viewTemplates/popup.js
+class Popup {
+
+    constructor (options){
+
+
+        this.elements   = options.elements;
+
+        this.headline  = {
+            template    : "<div class='no-wrap-headline'>" + 
+                            options.headline + 
+                            "</div>", 
+            css         : "webix_template-recover", 
+            borderless  : true, 
+            height      : 40 
+        };
+
+        this.closeBtn  =  {
+            view    : "button",
+            id      : "buttonClosePopup",
+            css     : "popup_close-btn",
+            type    : "icon",
+            hotkey  : "esc",
+            width   : 25,
+            icon    : 'wxi-close',
+            click   : function(){
+
+                if ( options.closeClick){
+                    options.closeClick();
+                } else {
+                    const popup = $$(options.config.id);
+                    if (popup){
+                        popup.destructor();
+                    }
+                }
+         
+             
+            }
+        };
+  
+        this.popupView  = {
+            view    : "popup",
+            css     : "webix_popup-filter-container webix_popup-config",
+            modal   : true,
+            escHide : true,
+            position: "center",
+            body    : {
+                scroll : "y",
+                rows   : [
+                    {   css : "webix_filter-headline-wrapper", 
+                        cols: [ 
+                            this.headline,
+                            {width : 150},
+                            this.closeBtn
+                        ]
+                    },
+
+                    this.elements
+        
+                ]
+            }
+        };
+
+
+        this.options  = options.config;
+        this.id       = options.config.id;
+
+        this.values   = Object.values(this.options);
+        this.keys     = Object.keys  (this.options);
+
+      
+    }
+
+
+    addConfig(){
+        const popup  = this.popupView; 
+        const values = this.values;
+
+        this.keys.forEach(function(option,i){
+            popup[option] = values[i];
+
+        });
+     
+        return popup;
+
+    }
+
+    createView(){
+        const popup  = this.popupView; 
+        const values = this.values;
+
+        this.keys.forEach(function(option,i){
+            popup[option] = values[i];
+
+        });
+
+      
+        return webix.ui(this.addConfig());
+    }
+
+    showPopup(){
+        $$(this.id).show();
+     
+    }
+
+
+}
+
+
 ;// CONCATENATED MODULE: ./src/js/blocks/tableEditForm/states.js
+
+
+
+
+
 
 
 
@@ -6489,12 +6609,13 @@ function createPopupOpenBtn(elem){
             }
         }
 
-
-        function popupEdit(){
-            function closePopupClick(){
-                const area  = $$("editPropTextarea");
+        const closePopupClick = function (){
+            const area  = $$("editPropTextarea");
+       
+            if (area){
+ 
                 const value = area.getValue();
-            
+        
                 if (area.dirtyValue){
                     modalBox().then(function(result){
         
@@ -6509,27 +6630,12 @@ function createPopupOpenBtn(elem){
                     destructorPopup( $$("editTablePopupText"));
                 }
             }
+           
+        };
 
-            const popupHeadline = {   
-                template:"Редактор поля  «" + elem.label + "»", 
-                width:250,
-                css:"popup_headline", 
-                borderless:true, 
-                height:20 
-            };
-        
-            const btnClosePopup = {
-                view:"button",
-                id:"buttonClosePopup",
-                css:"popup_close-btn",
-                type:"icon",
-                width:35,
-                icon: 'wxi-close',
-                click:function(){
-                    closePopupClick();
-                }
-            };
-            
+
+        function popupEdit(){
+
             const textarea = { 
                 view:"textarea",
                 id:"editPropTextarea", 
@@ -6558,32 +6664,30 @@ function createPopupOpenBtn(elem){
             
             };
             
-            webix.ui({
-                view:"popup",
-                id:"editTablePopupText",
-                css:"webix_popup-prev-href",
-                width:400,
-                minHeight:300,
-                modal:true,
-                escHide:true,
-                position:"center",
-                body:{
-                    rows:[
-                    {rows: [ 
-                        { cols:[
-                            popupHeadline,
-                            {},
-                            btnClosePopup,
-                        ]},
+            const popup = new Popup({
+                headline : "Редактор поля  «" + elem.label + "»",
+                config   : {
+                    id    : "editTablePopupText",
+                    width:400,
+                    minHeight:300,
+            
+                },
+
+                closeClick :  closePopupClick,
+            
+                elements   : {
+                    rows   : [
                         textarea,
                         {height:15},
                         btnSave,
-                    ]}]
-                    
-                },
-        
-            }).show();
+                    ]
+                  
+                }
+            });
             
+            popup.createView ();
+            popup.showPopup  ();
+
             setTextareaVal();
         
         }
@@ -6734,7 +6838,7 @@ function createDatePopup(elem){
 
         function popupEdit(){
 
-            function closePopupClick(){
+            const closePopupClick = function (){
                 let check = false;
                 function checkDirty(elem){
                     if ( elem.config.dirtyProp && !check ){
@@ -6763,29 +6867,7 @@ function createDatePopup(elem){
                     destructorPopup( $$("editTablePopupCalendar"));
                 }
 
-            }
-
-            const popupHeadline = {   
-                template:"Редактор поля  «" + elem.label + "»", 
-                width:250,
-                css:"popup_headline", 
-                borderless:true, 
-                height:20 
             };
-
-            const btnClosePopup = {
-                view:"button",
-                id:"buttonClosePopup",
-                css:"popup_close-btn",
-                type:"icon",
-                hotkey:"esc",
-                width:35,
-                icon: 'wxi-close',
-                click:function(){
-                    closePopupClick();
-                }
-            };
-        
           
             const dateView = {
                 view:"calendar",
@@ -6885,31 +6967,31 @@ function createDatePopup(elem){
             
             };
             
-            webix.ui({
-                view:"popup",
-                id:"editTablePopupCalendar",
-                css:"webix_popup-prev-href",
-                width:400,
-                minHeight:300,
-                modal:true,
-                escHide:true,
-                position:"center",
-                body:{
-                    rows:[
-                    {rows: [ 
-                        { cols:[
-                            popupHeadline,
-                            {},
-                            btnClosePopup,
-                        ]},
+            const popup = new Popup({
+                headline : "Редактор поля  «" + elem.label + "»",
+                config   : {
+                    id        : "editTablePopupCalendar",
+                    width     : 400,
+                    minHeight : 300,
+            
+                },
+
+                closeClick : closePopupClick,
+            
+                elements : {
+                    rows : [
                         dateEditor,
                         {height:15},
                         btnSave,
-                    ]}]
-                    
-                },
-        
-            }).show();
+                    ]
+                  
+                }
+            });
+            
+            popup.createView ();
+            popup.showPopup  ();
+
+         
 
             setPropValues();
 
@@ -8647,7 +8729,6 @@ webix.UIManager.addHotKey("Ctrl+Shift+E", function() {
 
 
 
-
 const getInfoTable_logNameFile = "getContent => getInfoTable";
 
 function submitBtn (idElements, url, verb, rtype){
@@ -8818,10 +8899,22 @@ function submitBtn (idElements, url, verb, rtype){
     
 }
 
-function createTableRows (idCurrTable,idsParam, offset=0){
+
+
+function getLinkParams(param){
+    const params = new URLSearchParams(window.location.search);
+    return params.get(param);
+}
+
+function filterParam(){
+    const value = getLinkParams("filter");
+    return value;
+}
+
+function createTableRows (idCurrTable,idsParam, offset = 0){
+
     const dataContent  = STORAGE.fields.content;
     const data         = dataContent[idsParam];
-
     const itemTreeId   = idsParam;
 
     let idFindElem;
@@ -9039,19 +9132,43 @@ function createTableRows (idCurrTable,idsParam, offset=0){
 
 
         const tableElem = $$(table);
+        const firstCol  = tableElem.getColumns()[0].id;
         const limitLoad = 80;
-        const firstCol = tableElem.getColumns()[0].id;
+
+        function returnFilterId(url){
+            let result;
+
+            if (url){
+                const index = url.indexOf(".");
+                result      =  url.slice(0, index);
+            }
+
+            return result;  
+        }
 
         function returnFilter(){
             const filterString = tableElem.config.filter;
-
+            const urlParam     = filterParam();
+           
+            const filterId = returnFilterId(urlParam);
+            
             let filter;
-            if (filterString){
-                filter = filterString;
+ 
+            if (urlParam && filterId == itemTreeId){
+
+                filter = urlParam;
             } else {
-                filter = itemTreeId +'.id+%3E%3D+0';
-        
+                if (filterString && filterString.table === itemTreeId){
+                    filter = filterString.query;
+
+                } else {
+                    filter = itemTreeId +'.id+%3E%3D+0';
+            
+                }
             }
+
+    
+          
             return filter;
         }
 
@@ -9080,7 +9197,7 @@ function createTableRows (idCurrTable,idsParam, offset=0){
                 load   : function(view, params){
                     const filter = returnFilter();
                     const sort   = returnSort  ();
-
+              
                     const query = [ "query=" + filter, 
                                     "sorts=" + sort, 
                                     "limit=" + limitLoad, 
@@ -9126,7 +9243,7 @@ function createTableRows (idCurrTable,idsParam, offset=0){
                    
                             errors_setFunctionError(err,getInfoTable_logNameFile,"getItemData => table load");
                         } 
-                    
+        
                     });
                     
                     getData.fail(function(err){
@@ -9249,7 +9366,7 @@ function createTableRows (idCurrTable,idsParam, offset=0){
                       
                         } 
 
-                        setAjaxError(err, "getInpoTable","getData");
+                        setAjaxError(err, "getInfoTable","getData");
                     });
 
                 }
@@ -9319,6 +9436,7 @@ function createTableRows (idCurrTable,idsParam, offset=0){
             
 }
 
+
 function getInfoTable (idCurrTable,idsParam) {
  
     let filterBar,
@@ -9381,7 +9499,6 @@ function getInfoTable (idCurrTable,idsParam) {
             errors_setFunctionError(err,getInfoTable_logNameFile,"preparationTable");
         }
     }
-
 
     function createExperementalElement (){
         STORAGE.fields.content.treeTemplate={
@@ -9774,12 +9891,12 @@ function getInfoTable (idCurrTable,idsParam) {
         }
     
 
-    }
-    
+    }   
 
     function createDynamicElems (){
         const dataContent       = STORAGE.fields.content;
         const data              = dataContent[idsParam];  
+     //   console.log(data)
         const dataInputsArray   = data.inputs;
 
         function setAdaptiveWidth(elem){
@@ -10328,7 +10445,6 @@ function getInfoTable (idCurrTable,idsParam) {
 
     }
 
-
     async function generateTable (){ // SINGLE ELS
 
         if (!STORAGE.fields){
@@ -10342,7 +10458,8 @@ function getInfoTable (idCurrTable,idsParam) {
 
             createDetailAction (columnsData);
             createDynamicElems ();
-          
+     
+            //filterParam()
             createTableRows (idCurrTable,idsParam);
            
         }
@@ -10840,32 +10957,6 @@ function favsPopupSubmitClick(){
 
 function favsPopup(){
 
-    const popupHeadline = {   
-        template:"<div class='no-wrap-headline'>Избранное</div>", 
-        css:"popup_headline", 
-        borderless:true, 
-        height:20 
-    };
-
-    const btnClosePopup = {
-        view:"button",
-        id:"buttonClosePopup",
-        css:"popup_close-btn",
-        type:"icon",
-        width:35,
-        hotkey :"esc",
-        icon: 'wxi-close',
-        click:function(){
-            try{
-                if ($$("popupFavsLink")){
-                    $$("popupFavsLink").destructor();
-                }
-            } catch (err){
-                errors_setFunctionError(err,"favsLink","favsPopup click");
-            }
-        
-        }
-    };
 
     const radioLinks = {
         view:"radio", 
@@ -10902,31 +10993,27 @@ function favsPopup(){
  
     };
  
-    webix.ui({
-        view:"popup",
-        id:"popupFavsLink",
-        css:"webix_popup-prev-href",
-        width:400,
-        minHeight:300,
-        escHide:true,
-        modal:true,
-        position:"center",
-        body:{
-            rows:[
-            {rows: [ 
-                { cols:[
-                    popupHeadline,
-                    {},
-                    btnClosePopup,
-                ]},
+ 
+    const popupFavsLink = new Popup({
+        headline : "Избранное",
+        config   : {
+            id    : "popupFavsLink",
+            width     : 400,
+            minHeight : 300,
+    
+        },
+
+        elements : {
+            rows : [
                 radioLinks,
                 {height:15},
                 btnSaveLink,
-            ]}]
-            
-        },
-
+            ]
+          
+        }
     });
+
+    popupFavsLink.createView ();
     
     favsPopupCollectionClick ();
     setAdaptiveSize($$("popupFavsLink"));
@@ -10996,9 +11083,10 @@ function saveFavsClick(){
     }
 
     function destructPopupSave(){
+        const popup = $$("popupFavsLinkSave");
         try{
-            if ($$("popupFavsLinkSave")){
-                $$("popupFavsLinkSave").destructor();
+            if (popup){
+                popup.destructor();
             }
         } catch (err){
             errors_setFunctionError(err,"favsLink","destrucPopupSave");
@@ -11065,16 +11153,16 @@ function saveFavsClick(){
                     data = data.json();
             
                     if (data.err_type == "i"){
-                        setLogValue("success","Ссылка"+" «"+favNameLinkVal+"» "+" сохранёна в избранное");
+                        setLogValue("success", "Ссылка" + " «" + favNameLinkVal + "» " + " сохранёна в избранное");
                     } else {
-                        errors_setFunctionError(data.err,"favsLink","btnSaveLinkClick => postContent msg" );
+                        errors_setFunctionError(data.err, "favsLink", "btnSaveLinkClick => postContent msg" );
                     }
 
                     destructPopupSave();
                 });
 
                 postData.fail(function(err){
-                    setAjaxError(err, "favsLink","btnSaveLinkClick => postContent");
+                    setAjaxError(err, "favsLink", "btnSaveLinkClick => postContent");
                 });
             }
         }
@@ -11119,7 +11207,7 @@ function saveFavsClick(){
                             });
                         } 
                         
-                        
+                     
                         if (!(favPrefs.length) || unique) {
                             postContent();
                         } else if (!unique){
@@ -11145,72 +11233,42 @@ function saveFavsClick(){
         getUserprefs();
     }
    
-    const popupHeadline = {   
-        template:"<div class='no-wrap-headline'>Сохранить ссылку</div>", 
-        css:"popup_headline", 
-        borderless:true, 
-        height:20 
-    };
-
-    const btnClosePopup = {
-        view:"button",
-        id:"buttonClosePopup",
-        css:"popup_close-btn",
-        type:"icon",
-        hotkey :"esc",
-        width:35,
-        icon: 'wxi-close',
-        click:function(){
-            destructPopupSave();
-        
-        }
-    };
 
     
     const btnSaveLink = {
-        view:"button", 
-        value:"Сохранить ссылку", 
-        css:"webix_primary", 
-        click:function(){
+        view    : "button", 
+        value   : "Сохранить ссылку", 
+        css     : "webix_primary", 
+        click   : function(){
             btnSaveLinkClick();
         }
  
     };
 
-
-
-    webix.ui({
-        view:"popup",
-        id:"popupFavsLinkSave",
-        css:"popup_padding-container",
-        escHide:true,
-        width:500,
-        //height:300,
-        modal:true,
-        position:"center",
-        body:{
-            rows:[
-            {rows: [ 
-                { cols:[
-                    popupHeadline,
-                    {},
-                    btnClosePopup,
-                   
-                ]},
-                createTemplate("favNameLink","Имя","не указано"),
-                {height:5},
-                createTemplate("favLink","Ссылка","не указана"),
-                {height:10},
-                btnSaveLink,
-                {}
-                //{height:10}
-            ]}]
-            
+    const popup = new Popup({
+        headline : "Сохранить ссылку",
+        config   : {
+            id    : "popupFavsLinkSave",
+            width : 500,
+    
         },
 
-    }).show();
+        elements : {
+            rows : [
+                createTemplate("favNameLink", "Имя",    "не указано"),
+                {height : 5},
+                createTemplate("favLink",     "Ссылка", "не указана"),
+                {height : 10},
+                btnSaveLink,
+                {}
+            ]
+          
+        }
+    });
 
- 
+    popup.createView ();
+    popup.showPopup  ();
+
 
     getLinkName();
     getLink();
@@ -11392,14 +11450,15 @@ function visibleField (condition, elementClass = null, el = null){
     const hideClass  = "webix_hide-content";
     const segmentBtn = $$( el + "_segmentBtn");
 
-    function editStorage(){
 
+    function editStorage(){
         if (condition && el !== "selectAll"){
 
             if ( !visibleInputs[elementClass] ){
                 visibleInputs[elementClass] = [];
             }
-  
+
+
             const unique = checkChild(elementClass, el);
 
             if (unique){
@@ -11408,15 +11467,14 @@ function visibleField (condition, elementClass = null, el = null){
             }
          
 
-        } else if (visibleInputs[elementClass]) {
-            delete visibleInputs[elementClass];
-
+        } else if (el !== "selectAll") {
+            visibleInputs[elementClass] = [];
         }
+
     }
 
     editStorage();
 
-  //  showSegmentBtn (condition,el);
 
     const htmlElement = document.querySelectorAll(".webix_filter-inputs");
 
@@ -11741,22 +11799,31 @@ function filterOperationsBtnLogic (idBtn,id){
 
 }
 
-function checkCountInputs(){
-    const values = Object.values(visibleInputs);
-    let counter  = 0;
+function getVisibleInfo(lastIndex = false){
+    const values        = Object.values(visibleInputs);
+    const fillElements  = [];
+    
+    let counter         = 0;
 
     values.forEach(function(value, i){
         if (value.length){
             counter ++;
+            fillElements.push(i);
         }
     });
 
-    return counter;
+    if (lastIndex){
+        return fillElements.pop();
+    } else {
+        return counter;
+    }
+
+ 
 }
 
-function showEmptyTemplate(){
+function showEmptyTemplate() {
 
-    if (! checkCountInputs()){
+    if (!getVisibleInfo()){
         showElem($$("filterEmptyTempalte")); 
     }
 
@@ -11829,9 +11896,7 @@ function isLastInput(lastInput, thisInput){
 
 
 function hideLastSegmentBtn(idElement, thisInput, prev = false){
-   
-    const count = checkCountInputs();
-  
+
     const keys  = Object.keys(visibleInputs);
 
     function hideBtn(id, index){
@@ -11842,8 +11907,9 @@ function hideLastSegmentBtn(idElement, thisInput, prev = false){
         let lastInput   = inputs[lastIndex];
         let prevInput   = inputs[prevIndex];
 
+   
         function getPrevCollection(){
-            const key        = keys[index - 1];
+            const key        = keys[index - 1] || keys[index];
             const collection = visibleInputs[key];
             const length     = collection.length;
             const input      = collection[length - 1]; 
@@ -11858,17 +11924,23 @@ function hideLastSegmentBtn(idElement, thisInput, prev = false){
             }
 
             const btn = $$(input + "_segmentBtn");
+        
             hideElem(btn);
+        
         }
 
+ 
+   
         if ( isLastInput(lastInput, thisInput) ){
-           
+  
             if (prev){
-                hide (prevIndex < 0, prevInput);
-                
+
+                hide (prevIndex > 0, prevInput);
+            
             } else {
+
                 hide (!lastIndex, lastInput);
-          
+           
             }
       
         }
@@ -11876,7 +11948,8 @@ function hideLastSegmentBtn(idElement, thisInput, prev = false){
     }
 
     keys.forEach(function(input,i){
-        const lastIndex = count - 1;
+        const lastIndex = getVisibleInfo(true);
+
         if ( i === lastIndex && input == idElement){
             hideBtn(input, i);
         }  
@@ -11885,7 +11958,7 @@ function hideLastSegmentBtn(idElement, thisInput, prev = false){
 }
 
 function hideHtmlEl(id){
-    const idContainer = $$(id+"_filter_rows");
+    const idContainer = $$(id + "_filter_rows");
     const showClass   = "webix_show-content";
     const hideClass   = "webix_hide-content";
 
@@ -11926,11 +11999,11 @@ function clickContextBtnParent (id,el){
                 errors_setFunctionError(err, toolbarBtn_logNameFile, "contextBtn remove => hideMainInput");
             }
         }
-
+  
         hideMainInput       ();
         hideHtmlEl          (el.id);
         hideLastSegmentBtn  (el.id, thisInput);
-        removeInStorage     (el, thisInput);
+        removeInStorage     (el,    thisInput);
         showEmptyTemplate   ();
         setLogValue         ("success", "Поле удалено"); 
 
@@ -12080,13 +12153,13 @@ function clickContextBtnChild(id, el, thisElem){
     }
 
     function removeContainer(){
+
         const parent = $$(thisContainer).getParentView();
         parent.removeView($$(thisContainer));
     } 
 
 
     function removeInput(){
-
         hideLastSegmentBtn(el.id, thisInput, true);
         removeInStorage(el, thisInput);
 
@@ -12758,6 +12831,8 @@ function toolbarEditButton (idTable){
 
 
 
+
+
 function searchColsListPress (){
     const list      = $$("visibleList");
     const search    = $$("searchColsList");
@@ -13159,32 +13234,6 @@ function  visibleColsButtonClick(idTable){
 
     function createPopup(){
 
-        const popupHeadline = {   
-            template    : "Видимость колонок", 
-            width       : 250,
-            css         : "popup_headline list-filter-head", 
-            borderless  : true, 
-            height      : 20 
-        };
-
-        const btnClosePopup = {
-            view        : "button",
-            id          : "buttonClosePopup",
-            css         : "popup_close-btn",
-            type        : "icon",
-            hotkey      : "esc", 
-            width       : 35,
-            icon        : 'wxi-close',
-            click       : function(){
-                destructPopup();
-            },
-            on          : {
-                onAfterRender: function () {
-                    this.getInputNode().setAttribute("title","Закрыть окно (Esc)");
-                }
-            } 
-        };
-
         function generateEmptyTemplate(id,text){
             return {   
                 id        : id,
@@ -13193,7 +13242,6 @@ function  visibleColsButtonClick(idTable){
                 borderless: true
             };
         }
-
 
         function genetateScrollView(idCheckboxes,inner){
             return {
@@ -13207,7 +13255,6 @@ function  visibleColsButtonClick(idTable){
                 }
             };
         }
-
 
         const btnSaveState = {
             view    : "button",
@@ -13226,8 +13273,6 @@ function  visibleColsButtonClick(idTable){
             } 
     
         };
-
-
 
         const scrollView = [
             {   template    : "Доступные колонки", 
@@ -13437,30 +13482,17 @@ function  visibleColsButtonClick(idTable){
                 }
             }
         };
+
+        const popup = new Popup({
+            headline : "Видимость колонок",
+            config   : {
+                id    : "popupVisibleCols",
+                width       : 600,
+                maxHeight   : 400,
+            },
     
-        webix.ui({
-            view        : "popup",
-            id          : "popupVisibleCols",
-            css         : "webix_popup-prev-href",
-            width       : 600,
-            maxHeight   : 400,
-            modal       : true,
-            escHide     : true,
-            position    : "center",
-            scroll      :"y",
-            body        : {
-
-                rows:[ 
-                    { cols:[
-
-                        popupHeadline,
-                        {},
-                        btnClosePopup,
-              
-                    ]},
-
-                    {height:5},
-
+            elements : {
+                rows:[
                     { cols:[
                         {   
                             rows:[
@@ -13497,12 +13529,13 @@ function  visibleColsButtonClick(idTable){
                     {height:20},
 
                     btnSaveState,
-
                 ]
-            },
-            
-
+              
+            }
         });
+    
+        popup.createView ();
+    
         createCheckboxes();
         createSpace();
     }
@@ -13858,6 +13891,9 @@ function getLibraryData(){
 
 
 
+
+
+
 let filterTemplateValue;
 
 const popup_logNameFile = "tableFilter => popup";
@@ -14099,31 +14135,6 @@ function removeBtnClick (){
         }
     });
 }
-
-const templateRecover = {
-    template    : "<div class='no-wrap-headline'>" +
-                  "Редактор фильтров </div>", 
-    css         : "webix_template-recover", 
-    borderless  : true, 
-    height      : 40 
-};
-
-const buttonClosePopup =  {
-    view    : "button",
-    id      : "buttonClosePopup",
-    css     : "popup_close-btn",
-    type    : "icon",
-    hotkey  : "esc",
-    width   : 25,
-    icon    : 'wxi-close',
-    click   : function(){
-        const popup = $$("popupFilterEdit");
-        if (popup){
-            popup.destructor();
-        }
-    
-    }
-};
 
 const filterPrompt = {
     css         : "webix_empty-template",
@@ -14397,32 +14408,30 @@ const editFormPopup = {
     ],
 };
 
-function createFilterPopup() {
-    webix.ui({
-        view    : "popup",
-        id      : "popupFilterEdit",
-        css     : "webix_popup-filter-container webix_popup-config",
-        modal   : true,
-        escHide : true,
-        position: "center",
-        height  : 400,
-        width   : 400,
-        body    : {
-            scroll : "y", 
-            rows   : [
-                {   css : "webix_filter-headline-wrapper", 
-                    cols: [ 
-                        templateRecover,
-                        {width : 150},
-                        buttonClosePopup,
-                    ]
-                },
 
+function createFilterPopup() {
+
+    const popup = new Popup({
+        headline : "Редактор фильтров",
+        config   : {
+            id    : "popupFilterEdit",
+            height  : 400,
+            width   : 400,
+    
+        },
+    
+        elements : {
+            rows : [
                 filterPrompt,
                 editFormPopup
             ]
+          
         }
-    }).show();
+    });
+    
+    popup.createView ();
+    popup.showPopup  ();
+
 }
 
 
@@ -15022,7 +15031,10 @@ function filterSubmitBtn (){
 
         const fullQuery = query.join("");
 
-        currTableView.config.filter = fullQuery;
+        currTableView.config.filter = {
+            table:  currTableView.config.idTable,
+            query:  fullQuery
+        };
 
         const queryData = webix.ajax("/init/default/api/smarts?query=" + fullQuery );
 
@@ -15044,7 +15056,7 @@ function filterSubmitBtn (){
                         currTableView.showOverlay("Ничего не найдено");
                     }
                 } catch (err){
-                    errors_setFunctionError(err,tableFilter_buttons_logNameFile,"function filterSubmitBtn => setData");
+                    errors_setFunctionError(err, tableFilter_buttons_logNameFile, "function filterSubmitBtn => setData");
                 }
             }
 
@@ -15053,7 +15065,7 @@ function filterSubmitBtn (){
                     const counter = $$("table-idFilterElements");
                     counter.setValues(reccount.toString());
                 } catch (err){
-                    errors_setFunctionError(err,tableFilter_buttons_logNameFile,"setCounterVal");
+                    errors_setFunctionError(err, tableFilter_buttons_logNameFile, "setCounterVal");
                 }
             }
 
@@ -16453,15 +16465,188 @@ function clearDashLayout(){
 }
 
 function goToRefView(chartAction){
-    const tree = $$("tree");
 
-    if ( tree.getItem(chartAction) ){
-        tree.select(chartAction);
-    } else {
-        Backbone.history.navigate("tree/" + chartAction, { trigger : true });
-        window.location.reload();
+    let field = chartAction;
+
+    if (chartAction.field){
+        field = chartAction.field;
     }
+
+    const searchParams = new URLSearchParams( chartAction.params ).toString();
+    let url            = "tree/" + field;
+
+    if (searchParams.length){
+        url = url + "?" + searchParams;
+    }
+
+    //query=1&bar=2
+    Backbone.history.navigate(url, { trigger : true });
+    window.location.reload();
 }
+
+
+
+const action = {
+    field  : "auth_group",
+    params :{
+        filter : "auth_group.id > 3" 
+    //   filter : "auth_group.id != '1' or auth_group.id != '3' and auth_group.role contains 'р' or auth_group.role = 'а'" 
+    }
+   
+};
+
+function setCursorPointer(areas, fullElems, idElem){
+
+    areas.forEach(function(el,i){
+        if (el.tagName){
+            const attr = el.getAttribute("webix_area_id");
+
+            if (attr == idElem || fullElems){
+                el.style.cursor = "pointer";
+            }
+            
+        }
+    });
+
+}
+
+function setAttributes(elem){
+
+  //  elem.action = action;
+  
+    elem.borderless  = true;
+    elem.minWidth    = 250;
+    elem.on          = {
+        onAfterRender:function(){
+            const chart          = this.getNode();
+            const htmlCollection = chart.getElementsByTagName('map');
+            const mapTag         = htmlCollection.item(0);
+            const areas          = mapTag.childNodes;
+ 
+            if (elem.action){
+                setCursorPointer(areas, true);
+            } else if (elem.data){
+                elem.data.forEach(function(el,i){
+                    if (i == 1 || i == 4 ){
+                        el.action = action; 
+                    }
+                   
+                    if (el.action){
+                        setCursorPointer(areas, false, el.id);
+                    }
+                });
+            }
+
+        },
+
+        onItemClick:function(idEl, event, html){
+            console.log("пример: ", action);
+
+            function findField(chartAction){
+      
+                let field = chartAction;
+
+                if (chartAction && chartAction.field){
+                    field = chartAction.field;
+                }
+
+                const fields = STORAGE.fields.content;
+
+                Object.keys(fields).forEach(function(key,i){
+                    if ( key == field ){
+                        goToRefView(chartAction);
+                    }
+                });
+            } 
+
+    
+            if (elem.action){
+                findField(elem.action);
+                
+            } else {
+                const collection = elem.data;
+    
+                let selectElement;
+         
+                collection.forEach( function (el,i){
+                    if (el.id == idEl){
+                        selectElement = el;
+                    }
+                });
+
+                const chartAction = selectElement.action;
+
+                if (chartAction){
+                    findField(chartAction);
+
+                } 
+          
+            }
+           
+        },
+
+
+    };
+
+    return elem;
+}
+
+function iterateArr(container){
+    let res;
+    const elements = [];
+
+    function loop(container){
+        container.forEach(function(el, i){
+         
+            const nextContainer = el.rows || el.cols;
+     
+            if (!el.rows && !el.cols){
+                if (el.view && el.view == "chart"){
+                    el = setAttributes(el);
+                }
+                elements.push(el);
+            } else {
+                loop(nextContainer);
+            }
+        });
+    }
+
+    loop( container );
+
+    if (elements.length){
+        res = elements;
+    }
+
+    return res;
+}
+
+function returnEl(element){
+ //   element = obj;
+    
+    const container = element.rows || element.cols;
+
+    let resultElem;
+
+    function returnElements(arr){
+        arr.forEach(function(elem,i){
+            if (elem.view && elem.view == "chart"){
+                resultElem = elem;
+            }
+           
+        });
+    }
+    
+    container.forEach(function(el,i){
+        const nextContainer = el.rows || el.cols;
+        const result        = iterateArr(nextContainer);
+
+       // returnElements(result);
+    });
+
+ //   console.log(resultElem);
+    return resultElem;
+}
+
 
 function createCharts(dataCharts){
  
@@ -16469,54 +16654,15 @@ function createCharts(dataCharts){
     try{
         dataCharts.forEach(function(el,i){
 
-          // el.action = "auth_user";
+            if (el.cols || el.rows){
+                returnEl(el);
+            }
+
             const titleTemplate = el.title;
 
             delete el.title;
-     
-            el.borderless  = true;
-            el.minWidth    = 250;
-      
-            el.on          = {
-                onItemClick:function(idEl,event,html){
-                    function findFiels(chartAction){
-                        const fields = STORAGE.fields.content;
-                        Object.keys(fields).forEach(function(key,i){
-                        
-                            if ( key == chartAction ){
-                                goToRefView(chartAction);
-                            }
-                        });
-                    } 
 
-                    if (el.action){
-                        findFiels(el.action);
-                    } else {
-                        const collection = el.data;
-                        let selectElement;
-                 
-                        collection.forEach(function(el,i){
-            
-                            if (el.id == idEl){
-                                selectElement = el;
-                            }
-                        });
-
-                        const chartAction = selectElement.action;
-                     // const chartAction = "userprefs"
-                        if (chartAction){
-                            findFiels(chartAction);
-
-                        } 
-                  
-                    }
-                  
-                
-                   
-                }
-            };
-
-
+            el = setAttributes(el);
 
             const headline = {   
                 template    : titleTemplate,
@@ -16536,13 +16682,12 @@ function createCharts(dataCharts){
                 ]
             });
 
-        
-        
+
         });
 
    
     } catch (err){  
-        errors_setFunctionError(err,getInfoDashboard_logNameFile,"createCharts");
+        errors_setFunctionError(err, getInfoDashboard_logNameFile, "createCharts");
     }
 }
 
@@ -16550,11 +16695,7 @@ function createCharts(dataCharts){
 function getInfoDashboard_createSpace( inputsArray, idsParam ){
 
     function backBtnClick (){
-        const dashTool = $$("dashboard-tool-main");
-
-       // hideElem    (dashTool);
-        hideElem    ($$( "dashboardTool"));
-       
+        hideElem    ($$( "dashboardTool")); 
         showElem    ($$("dashboardInfoContainer"));
     }
 
@@ -17306,7 +17447,6 @@ function getInfoDashboard ( idsParam ){
 const tree_logNameFile = "router => tree";
 
 function treeRouter(id){
-
     function notFoundPopup(){
 
         const popupHeadline = {   
@@ -17400,11 +17540,11 @@ function treeRouter(id){
 
     function showNotFoundPopup (){
         try{
-            setTimeout(function(){
+            setTimeout( function (){
                 notFoundPopup();
             }, 1500);
         } catch (err){
-            errors_setFunctionError(err,tree_logNameFile,"showNotFoundPopup");
+            errors_setFunctionError(err, tree_logNameFile, "showNotFoundPopup");
         }
     }
     
@@ -17420,7 +17560,7 @@ function treeRouter(id){
                     elem.show();
                 }
             } catch (err){
-                errors_setFunctionError(err,tree_logNameFile,"showTableData (element: "+idElem+")");
+                errors_setFunctionError(err, tree_logNameFile, "showTableData (element: " + idElem + ")");
             }
         }
     
@@ -17435,23 +17575,16 @@ function treeRouter(id){
                         
                         if (field.type == "dbtable" || 
                             field.type == "tform"   || 
-                            field.type == "dashboard"){
-                        
-                               // console.log(webix.storage.local.get("visibleColsPrefs_"+"hattrs"),'SSSS')
+                            field.type == "dashboard"){          
                                 hideElem($$("webix__none-content"));
     
                             if (field.type == "dbtable"){
                                 showElem("tables");
                                 getInfoTable ("table", id);
-               
-                      
                                 
                             } else if (field.type == "tform"){
                                 showElem("forms");
                                 getInfoTable ("table-view", id);
-                                // const idField = $$("table-view").config.idTable;
-                                // const storageData = webix.storage.local.get("visibleColsPrefs_"+idField);
-                                // getUserPrefs("table-view",storageData)
     
                             } else if (field.type == "dashboard"){
                                 showElem("dashboards");
@@ -18807,12 +18940,14 @@ const header = {
  
 
 function setStateFilterBtn(){
+    const primaryClass   = "webix-transparent-btn--primary";
+    const secondaryClass = "webix-transparent-btn";
     try{
         const btnClass = document.querySelector(".webix_btn-filter");
-        if (btnClass && btnClass.classList.contains ("webix-transparent-btn--primary")){
+        if (btnClass && btnClass.classList.contains (primaryClass)){
            
-            btnClass.classList.add   ("webix-transparent-btn");
-            btnClass.classList.remove("webix-transparent-btn--primary");
+            btnClass.classList.add   (secondaryClass);
+            btnClass.classList.remove(primaryClass);
         }
     } catch (err){
         errors_setFunctionError(err,"sidebar","setStateFilterBtn");
@@ -19740,25 +19875,25 @@ function onAfterSelectFunc(id){
 
 function treeSidebar () {
     const tree = {
-        view        :"edittree",
-        id          :"tree",
-        css         :"webix_tree-main",
-        minWidth    :100,
+        view        : "edittree",
+        id          : "tree",
+        css         : "webix_tree-main",
+        minWidth    : 100,
         width       : 250,
-        editable    :false,
-        select      :true,
-        editor      :"text",
-        editValue   :"value",
-        activeTitle :true,
+        editable    : false,
+        select      : true,
+        editor      : "text",
+        editValue   : "value",
+        activeTitle : true,
         clipboard   : true,
-        data        :[],
-        on          :{
+        data        : [],
+        on          : {
             
             onSelectChange:function (ids) {
                 onSelectChangeFunc(ids);
             },
 
-            onItemClick:function(id){
+            onItemClick:function(id) {
                 return onItemClickFunc(id);
             },
 
@@ -19776,7 +19911,8 @@ function treeSidebar () {
 
             onAfterSelect:function(id){
                 onAfterSelectFunc(id);
-            }
+            },
+
         },
 
     };
@@ -20201,7 +20337,7 @@ function setRouterStart(){
 
 
 ;// CONCATENATED MODULE: ./src/js/app.js
-console.log("expa 1.0.51"); 
+console.log("expa 1.0.52"); 
 
 
 

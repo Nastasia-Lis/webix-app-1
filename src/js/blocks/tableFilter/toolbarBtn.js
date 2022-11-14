@@ -149,22 +149,31 @@ function filterOperationsBtnLogic (idBtn,id){
 
 }
 
-function checkCountInputs(){
-    const values = Object.values(visibleInputs);
-    let counter  = 0;
+function getVisibleInfo(lastIndex = false){
+    const values        = Object.values(visibleInputs);
+    const fillElements  = [];
+    
+    let counter         = 0;
 
     values.forEach(function(value, i){
         if (value.length){
             counter ++;
+            fillElements.push(i);
         }
     });
 
-    return counter;
+    if (lastIndex){
+        return fillElements.pop();
+    } else {
+        return counter;
+    }
+
+ 
 }
 
-function showEmptyTemplate(){
+function showEmptyTemplate() {
 
-    if (! checkCountInputs()){
+    if (!getVisibleInfo()){
         showElem($$("filterEmptyTempalte")); 
     }
 
@@ -237,9 +246,7 @@ function isLastInput(lastInput, thisInput){
 
 
 function hideLastSegmentBtn(idElement, thisInput, prev = false){
-   
-    const count = checkCountInputs();
-  
+
     const keys  = Object.keys(visibleInputs);
 
     function hideBtn(id, index){
@@ -250,8 +257,9 @@ function hideLastSegmentBtn(idElement, thisInput, prev = false){
         let lastInput   = inputs[lastIndex];
         let prevInput   = inputs[prevIndex];
 
+   
         function getPrevCollection(){
-            const key        = keys[index - 1];
+            const key        = keys[index - 1] || keys[index];
             const collection = visibleInputs[key];
             const length     = collection.length;
             const input      = collection[length - 1]; 
@@ -266,17 +274,23 @@ function hideLastSegmentBtn(idElement, thisInput, prev = false){
             }
 
             const btn = $$(input + "_segmentBtn");
+        
             hideElem(btn);
+        
         }
 
+ 
+   
         if ( isLastInput(lastInput, thisInput) ){
-           
+  
             if (prev){
-                hide (prevIndex < 0, prevInput);
-                
+
+                hide (prevIndex > 0, prevInput);
+            
             } else {
+
                 hide (!lastIndex, lastInput);
-          
+           
             }
       
         }
@@ -284,7 +298,8 @@ function hideLastSegmentBtn(idElement, thisInput, prev = false){
     }
 
     keys.forEach(function(input,i){
-        const lastIndex = count - 1;
+        const lastIndex = getVisibleInfo(true);
+
         if ( i === lastIndex && input == idElement){
             hideBtn(input, i);
         }  
@@ -293,7 +308,7 @@ function hideLastSegmentBtn(idElement, thisInput, prev = false){
 }
 
 function hideHtmlEl(id){
-    const idContainer = $$(id+"_filter_rows");
+    const idContainer = $$(id + "_filter_rows");
     const showClass   = "webix_show-content";
     const hideClass   = "webix_hide-content";
 
@@ -334,11 +349,11 @@ function clickContextBtnParent (id,el){
                 setFunctionError(err, logNameFile, "contextBtn remove => hideMainInput");
             }
         }
-
+  
         hideMainInput       ();
         hideHtmlEl          (el.id);
         hideLastSegmentBtn  (el.id, thisInput);
-        removeInStorage     (el, thisInput);
+        removeInStorage     (el,    thisInput);
         showEmptyTemplate   ();
         setLogValue         ("success", "Поле удалено"); 
 
@@ -488,13 +503,13 @@ function clickContextBtnChild(id, el, thisElem){
     }
 
     function removeContainer(){
+
         const parent = $$(thisContainer).getParentView();
         parent.removeView($$(thisContainer));
     } 
 
 
     function removeInput(){
-
         hideLastSegmentBtn(el.id, thisInput, true);
         removeInStorage(el, thisInput);
 

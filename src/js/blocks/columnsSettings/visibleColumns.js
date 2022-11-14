@@ -4,6 +4,8 @@ import { setLogValue }                                  from "../logBlock.js";
 import { modalBox }                                     from "../notifications.js";
 import { postPrefsValues, getTable, destructPopup }     from "./common.js";
 
+import { Popup }                                        from "../../viewTemplates/popup.js";
+
 function searchColsListPress (){
     const list      = $$("visibleList");
     const search    = $$("searchColsList");
@@ -405,32 +407,6 @@ function  visibleColsButtonClick(idTable){
 
     function createPopup(){
 
-        const popupHeadline = {   
-            template    : "Видимость колонок", 
-            width       : 250,
-            css         : "popup_headline list-filter-head", 
-            borderless  : true, 
-            height      : 20 
-        };
-
-        const btnClosePopup = {
-            view        : "button",
-            id          : "buttonClosePopup",
-            css         : "popup_close-btn",
-            type        : "icon",
-            hotkey      : "esc", 
-            width       : 35,
-            icon        : 'wxi-close',
-            click       : function(){
-                destructPopup();
-            },
-            on          : {
-                onAfterRender: function () {
-                    this.getInputNode().setAttribute("title","Закрыть окно (Esc)");
-                }
-            } 
-        };
-
         function generateEmptyTemplate(id,text){
             return {   
                 id        : id,
@@ -439,7 +415,6 @@ function  visibleColsButtonClick(idTable){
                 borderless: true
             };
         }
-
 
         function genetateScrollView(idCheckboxes,inner){
             return {
@@ -453,7 +428,6 @@ function  visibleColsButtonClick(idTable){
                 }
             };
         }
-
 
         const btnSaveState = {
             view    : "button",
@@ -472,8 +446,6 @@ function  visibleColsButtonClick(idTable){
             } 
     
         };
-
-
 
         const scrollView = [
             {   template    : "Доступные колонки", 
@@ -683,30 +655,17 @@ function  visibleColsButtonClick(idTable){
                 }
             }
         };
+
+        const popup = new Popup({
+            headline : "Видимость колонок",
+            config   : {
+                id    : "popupVisibleCols",
+                width       : 600,
+                maxHeight   : 400,
+            },
     
-        webix.ui({
-            view        : "popup",
-            id          : "popupVisibleCols",
-            css         : "webix_popup-prev-href",
-            width       : 600,
-            maxHeight   : 400,
-            modal       : true,
-            escHide     : true,
-            position    : "center",
-            scroll      :"y",
-            body        : {
-
-                rows:[ 
-                    { cols:[
-
-                        popupHeadline,
-                        {},
-                        btnClosePopup,
-              
-                    ]},
-
-                    {height:5},
-
+            elements : {
+                rows:[
                     { cols:[
                         {   
                             rows:[
@@ -743,12 +702,13 @@ function  visibleColsButtonClick(idTable){
                     {height:20},
 
                     btnSaveState,
-
                 ]
-            },
-            
-
+              
+            }
         });
+    
+        popup.createView ();
+    
         createCheckboxes();
         createSpace();
     }

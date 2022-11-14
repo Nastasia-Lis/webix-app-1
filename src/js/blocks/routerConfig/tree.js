@@ -11,7 +11,6 @@ import { getWorkspace }         from "./common.js";
 const logNameFile = "router => tree";
 
 function treeRouter(id){
-
     function notFoundPopup(){
 
         const popupHeadline = {   
@@ -105,11 +104,11 @@ function treeRouter(id){
 
     function showNotFoundPopup (){
         try{
-            setTimeout(function(){
+            setTimeout( function (){
                 notFoundPopup();
             }, 1500);
         } catch (err){
-            setFunctionError(err,logNameFile,"showNotFoundPopup");
+            setFunctionError(err, logNameFile, "showNotFoundPopup");
         }
     }
     
@@ -125,7 +124,7 @@ function treeRouter(id){
                     elem.show();
                 }
             } catch (err){
-                setFunctionError(err,logNameFile,"showTableData (element: "+idElem+")");
+                setFunctionError(err, logNameFile, "showTableData (element: " + idElem + ")");
             }
         }
     
@@ -140,23 +139,16 @@ function treeRouter(id){
                         
                         if (field.type == "dbtable" || 
                             field.type == "tform"   || 
-                            field.type == "dashboard"){
-                        
-                               // console.log(webix.storage.local.get("visibleColsPrefs_"+"hattrs"),'SSSS')
+                            field.type == "dashboard"){          
                                 hideElem($$("webix__none-content"));
     
                             if (field.type == "dbtable"){
                                 showElem("tables");
                                 getInfoTable ("table", id);
-               
-                      
                                 
                             } else if (field.type == "tform"){
                                 showElem("forms");
                                 getInfoTable ("table-view", id);
-                                // const idField = $$("table-view").config.idTable;
-                                // const storageData = webix.storage.local.get("visibleColsPrefs_"+idField);
-                                // getUserPrefs("table-view",storageData)
     
                             } else if (field.type == "dashboard"){
                                 showElem("dashboards");

@@ -722,9 +722,14 @@ select:focus {
 
 input,
 select,
+textarea,
 .webix_inp_static {
   border-radius: 4px !important;
   font-weight: 400 !important;
+}
+
+textarea:focus {
+  border: 1px solid var(--primary) !important;
 }
 
 label,
@@ -1258,7 +1263,7 @@ button {
 }
 
 .webix_cal_day_inner {
-  border-radius: 8% !important;
+  border-radius: 5px !important;
 }
 
 .webix_template-not-found .webix_template,
@@ -1458,4 +1463,16 @@ button {
      text-overflow: ellipsis !important;
   white-space: nowrap;
   overflow: hidden;
+}
+
+.webix_property {
+  border-radius: 5px !important;
+}
+
+.webix_view.webix_form.webix_layout_space {
+  border-radius: 5px !important;
+}
+
+.webix_list.list-filter-borders .webix_scroll_cont {
+  padding-bottom: 28px !important;
 }

@@ -11,6 +11,9 @@ import { getLibraryData }                    from "./userTemplate.js";
 import { getItemId, showElem, hideElem, 
          disableElem, enableElem }           from "../commonFunctions.js";
 
+import { Popup }                             from "../../viewTemplates/popup.js";
+
+
 let filterTemplateValue;
 
 const logNameFile = "tableFilter => popup";
@@ -252,31 +255,6 @@ function removeBtnClick (){
         }
     });
 }
-
-const templateRecover = {
-    template    : "<div class='no-wrap-headline'>" +
-                  "Редактор фильтров </div>", 
-    css         : "webix_template-recover", 
-    borderless  : true, 
-    height      : 40 
-};
-
-const buttonClosePopup =  {
-    view    : "button",
-    id      : "buttonClosePopup",
-    css     : "popup_close-btn",
-    type    : "icon",
-    hotkey  : "esc",
-    width   : 25,
-    icon    : 'wxi-close',
-    click   : function(){
-        const popup = $$("popupFilterEdit");
-        if (popup){
-            popup.destructor();
-        }
-    
-    }
-};
 
 const filterPrompt = {
     css         : "webix_empty-template",
@@ -550,32 +528,30 @@ const editFormPopup = {
     ],
 };
 
-function createFilterPopup() {
-    webix.ui({
-        view    : "popup",
-        id      : "popupFilterEdit",
-        css     : "webix_popup-filter-container webix_popup-config",
-        modal   : true,
-        escHide : true,
-        position: "center",
-        height  : 400,
-        width   : 400,
-        body    : {
-            scroll : "y", 
-            rows   : [
-                {   css : "webix_filter-headline-wrapper", 
-                    cols: [ 
-                        templateRecover,
-                        {width : 150},
-                        buttonClosePopup,
-                    ]
-                },
 
+function createFilterPopup() {
+
+    const popup = new Popup({
+        headline : "Редактор фильтров",
+        config   : {
+            id    : "popupFilterEdit",
+            height  : 400,
+            width   : 400,
+    
+        },
+    
+        elements : {
+            rows : [
                 filterPrompt,
                 editFormPopup
             ]
+          
         }
-    }).show();
+    });
+    
+    popup.createView ();
+    popup.showPopup  ();
+
 }
 
 

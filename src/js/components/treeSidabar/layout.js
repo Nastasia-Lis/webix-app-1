@@ -9,25 +9,25 @@ import {onAfterSelectFunc}  from "./onAfterSelect.js";
 
 function treeSidebar () {
     const tree = {
-        view        :"edittree",
-        id          :"tree",
-        css         :"webix_tree-main",
-        minWidth    :100,
+        view        : "edittree",
+        id          : "tree",
+        css         : "webix_tree-main",
+        minWidth    : 100,
         width       : 250,
-        editable    :false,
-        select      :true,
-        editor      :"text",
-        editValue   :"value",
-        activeTitle :true,
+        editable    : false,
+        select      : true,
+        editor      : "text",
+        editValue   : "value",
+        activeTitle : true,
         clipboard   : true,
-        data        :[],
-        on          :{
+        data        : [],
+        on          : {
             
             onSelectChange:function (ids) {
                 onSelectChangeFunc(ids);
             },
 
-            onItemClick:function(id){
+            onItemClick:function(id) {
                 return onItemClickFunc(id);
             },
 
@@ -45,7 +45,8 @@ function treeSidebar () {
 
             onAfterSelect:function(id){
                 onAfterSelectFunc(id);
-            }
+            },
+
         },
 
     };

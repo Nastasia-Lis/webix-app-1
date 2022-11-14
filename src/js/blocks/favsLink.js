@@ -1,9 +1,9 @@
-import  {STORAGE,getData} from "./globalStorage.js";
-import  {setLogValue} from "./logBlock.js";
-import {setAjaxError,setFunctionError} from "./errors.js";
-import {setStorageData} from "./storageSetting.js";
+import { STORAGE ,getData }                 from "./globalStorage.js";
+import { setLogValue }                      from "./logBlock.js";
+import { setAjaxError, setFunctionError }   from "./errors.js";
+import { setStorageData }                   from "./storageSetting.js";
 
-
+import { Popup }                            from "../viewTemplates/popup.js";
 
 function getUserData(){
     const userprefsGetData = webix.ajax("/init/default/api/whoami");
@@ -115,32 +115,6 @@ function favsPopupSubmitClick(){
 
 function favsPopup(){
 
-    const popupHeadline = {   
-        template:"<div class='no-wrap-headline'>Избранное</div>", 
-        css:"popup_headline", 
-        borderless:true, 
-        height:20 
-    };
-
-    const btnClosePopup = {
-        view:"button",
-        id:"buttonClosePopup",
-        css:"popup_close-btn",
-        type:"icon",
-        width:35,
-        hotkey :"esc",
-        icon: 'wxi-close',
-        click:function(){
-            try{
-                if ($$("popupFavsLink")){
-                    $$("popupFavsLink").destructor();
-                }
-            } catch (err){
-                setFunctionError(err,"favsLink","favsPopup click");
-            }
-        
-        }
-    };
 
     const radioLinks = {
         view:"radio", 
@@ -177,31 +151,27 @@ function favsPopup(){
  
     };
  
-    webix.ui({
-        view:"popup",
-        id:"popupFavsLink",
-        css:"webix_popup-prev-href",
-        width:400,
-        minHeight:300,
-        escHide:true,
-        modal:true,
-        position:"center",
-        body:{
-            rows:[
-            {rows: [ 
-                { cols:[
-                    popupHeadline,
-                    {},
-                    btnClosePopup,
-                ]},
+ 
+    const popupFavsLink = new Popup({
+        headline : "Избранное",
+        config   : {
+            id    : "popupFavsLink",
+            width     : 400,
+            minHeight : 300,
+    
+        },
+
+        elements : {
+            rows : [
                 radioLinks,
                 {height:15},
                 btnSaveLink,
-            ]}]
-            
-        },
-
+            ]
+          
+        }
     });
+
+    popupFavsLink.createView ();
     
     favsPopupCollectionClick ();
     setAdaptiveSize($$("popupFavsLink"));
@@ -271,9 +241,10 @@ function saveFavsClick(){
     }
 
     function destructPopupSave(){
+        const popup = $$("popupFavsLinkSave");
         try{
-            if ($$("popupFavsLinkSave")){
-                $$("popupFavsLinkSave").destructor();
+            if (popup){
+                popup.destructor();
             }
         } catch (err){
             setFunctionError(err,"favsLink","destrucPopupSave");
@@ -340,16 +311,16 @@ function saveFavsClick(){
                     data = data.json();
             
                     if (data.err_type == "i"){
-                        setLogValue("success","Ссылка"+" «"+favNameLinkVal+"» "+" сохранёна в избранное");
+                        setLogValue("success", "Ссылка" + " «" + favNameLinkVal + "» " + " сохранёна в избранное");
                     } else {
-                        setFunctionError(data.err,"favsLink","btnSaveLinkClick => postContent msg" );
+                        setFunctionError(data.err, "favsLink", "btnSaveLinkClick => postContent msg" );
                     }
 
                     destructPopupSave();
                 });
 
                 postData.fail(function(err){
-                    setAjaxError(err, "favsLink","btnSaveLinkClick => postContent");
+                    setAjaxError(err, "favsLink", "btnSaveLinkClick => postContent");
                 });
             }
         }
@@ -394,7 +365,7 @@ function saveFavsClick(){
                             });
                         } 
                         
-                        
+                     
                         if (!(favPrefs.length) || unique) {
                             postContent();
                         } else if (!unique){
@@ -420,72 +391,42 @@ function saveFavsClick(){
         getUserprefs();
     }
    
-    const popupHeadline = {   
-        template:"<div class='no-wrap-headline'>Сохранить ссылку</div>", 
-        css:"popup_headline", 
-        borderless:true, 
-        height:20 
-    };
-
-    const btnClosePopup = {
-        view:"button",
-        id:"buttonClosePopup",
-        css:"popup_close-btn",
-        type:"icon",
-        hotkey :"esc",
-        width:35,
-        icon: 'wxi-close',
-        click:function(){
-            destructPopupSave();
-        
-        }
-    };
 
     
     const btnSaveLink = {
-        view:"button", 
-        value:"Сохранить ссылку", 
-        css:"webix_primary", 
-        click:function(){
+        view    : "button", 
+        value   : "Сохранить ссылку", 
+        css     : "webix_primary", 
+        click   : function(){
             btnSaveLinkClick();
         }
  
     };
 
-
-
-    webix.ui({
-        view:"popup",
-        id:"popupFavsLinkSave",
-        css:"popup_padding-container",
-        escHide:true,
-        width:500,
-        //height:300,
-        modal:true,
-        position:"center",
-        body:{
-            rows:[
-            {rows: [ 
-                { cols:[
-                    popupHeadline,
-                    {},
-                    btnClosePopup,
-                   
-                ]},
-                createTemplate("favNameLink","Имя","не указано"),
-                {height:5},
-                createTemplate("favLink","Ссылка","не указана"),
-                {height:10},
-                btnSaveLink,
-                {}
-                //{height:10}
-            ]}]
-            
+    const popup = new Popup({
+        headline : "Сохранить ссылку",
+        config   : {
+            id    : "popupFavsLinkSave",
+            width : 500,
+    
         },
 
-    }).show();
+        elements : {
+            rows : [
+                createTemplate("favNameLink", "Имя",    "не указано"),
+                {height : 5},
+                createTemplate("favLink",     "Ссылка", "не указана"),
+                {height : 10},
+                btnSaveLink,
+                {}
+            ]
+          
+        }
+    });
 
- 
+    popup.createView ();
+    popup.showPopup  ();
+
 
     getLinkName();
     getLink();

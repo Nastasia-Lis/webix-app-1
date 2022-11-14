@@ -3,10 +3,9 @@ import { STORAGE,getData }                  from "../globalStorage.js";
 
 import { setAjaxError,setFunctionError }    from "../errors.js";
 
-import { getComboOptions, removeElem }                  from '../commonFunctions.js';
+import { getComboOptions, removeElem }      from '../commonFunctions.js';
 import { showElem,hideElem }                from '../commonFunctions.js';
 
-import { setUserPrefs }                     from '../storageSetting.js';
 
 const logNameFile = "getContent => getInfoTable";
 
@@ -178,10 +177,22 @@ function submitBtn (idElements, url, verb, rtype){
     
 }
 
-function createTableRows (idCurrTable,idsParam, offset=0){
+
+
+function getLinkParams(param){
+    const params = new URLSearchParams(window.location.search);
+    return params.get(param);
+}
+
+function filterParam(){
+    const value = getLinkParams("filter");
+    return value;
+}
+
+function createTableRows (idCurrTable,idsParam, offset = 0){
+
     const dataContent  = STORAGE.fields.content;
     const data         = dataContent[idsParam];
-
     const itemTreeId   = idsParam;
 
     let idFindElem;
@@ -399,19 +410,43 @@ function createTableRows (idCurrTable,idsParam, offset=0){
 
 
         const tableElem = $$(table);
+        const firstCol  = tableElem.getColumns()[0].id;
         const limitLoad = 80;
-        const firstCol = tableElem.getColumns()[0].id;
+
+        function returnFilterId(url){
+            let result;
+
+            if (url){
+                const index = url.indexOf(".");
+                result      =  url.slice(0, index);
+            }
+
+            return result;  
+        }
 
         function returnFilter(){
             const filterString = tableElem.config.filter;
-
+            const urlParam     = filterParam();
+           
+            const filterId = returnFilterId(urlParam);
+            
             let filter;
-            if (filterString){
-                filter = filterString;
+ 
+            if (urlParam && filterId == itemTreeId){
+
+                filter = urlParam;
             } else {
-                filter = itemTreeId +'.id+%3E%3D+0';
-        
+                if (filterString && filterString.table === itemTreeId){
+                    filter = filterString.query;
+
+                } else {
+                    filter = itemTreeId +'.id+%3E%3D+0';
+            
+                }
             }
+
+    
+          
             return filter;
         }
 
@@ -440,7 +475,7 @@ function createTableRows (idCurrTable,idsParam, offset=0){
                 load   : function(view, params){
                     const filter = returnFilter();
                     const sort   = returnSort  ();
-
+              
                     const query = [ "query=" + filter, 
                                     "sorts=" + sort, 
                                     "limit=" + limitLoad, 
@@ -486,7 +521,7 @@ function createTableRows (idCurrTable,idsParam, offset=0){
                    
                             setFunctionError(err,logNameFile,"getItemData => table load");
                         } 
-                    
+        
                     });
                     
                     getData.fail(function(err){
@@ -609,7 +644,7 @@ function createTableRows (idCurrTable,idsParam, offset=0){
                       
                         } 
 
-                        setAjaxError(err, "getInpoTable","getData");
+                        setAjaxError(err, "getInfoTable","getData");
                     });
 
                 }
@@ -679,6 +714,7 @@ function createTableRows (idCurrTable,idsParam, offset=0){
             
 }
 
+
 function getInfoTable (idCurrTable,idsParam) {
  
     let filterBar,
@@ -741,7 +777,6 @@ function getInfoTable (idCurrTable,idsParam) {
             setFunctionError(err,logNameFile,"preparationTable");
         }
     }
-
 
     function createExperementalElement (){
         STORAGE.fields.content.treeTemplate={
@@ -1134,12 +1169,12 @@ function getInfoTable (idCurrTable,idsParam) {
         }
     
 
-    }
-    
+    }   
 
     function createDynamicElems (){
         const dataContent       = STORAGE.fields.content;
         const data              = dataContent[idsParam];  
+     //   console.log(data)
         const dataInputsArray   = data.inputs;
 
         function setAdaptiveWidth(elem){
@@ -1688,7 +1723,6 @@ function getInfoTable (idCurrTable,idsParam) {
 
     }
 
-
     async function generateTable (){ // SINGLE ELS
 
         if (!STORAGE.fields){
@@ -1702,7 +1736,8 @@ function getInfoTable (idCurrTable,idsParam) {
 
             createDetailAction (columnsData);
             createDynamicElems ();
-          
+     
+            //filterParam()
             createTableRows (idCurrTable,idsParam);
            
         }

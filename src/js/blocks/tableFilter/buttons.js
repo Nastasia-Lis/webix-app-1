@@ -591,7 +591,10 @@ function filterSubmitBtn (){
 
         const fullQuery = query.join("");
 
-        currTableView.config.filter = fullQuery;
+        currTableView.config.filter = {
+            table:  currTableView.config.idTable,
+            query:  fullQuery
+        };
 
         const queryData = webix.ajax("/init/default/api/smarts?query=" + fullQuery );
 
@@ -613,7 +616,7 @@ function filterSubmitBtn (){
                         currTableView.showOverlay("Ничего не найдено");
                     }
                 } catch (err){
-                    setFunctionError(err,logNameFile,"function filterSubmitBtn => setData");
+                    setFunctionError(err, logNameFile, "function filterSubmitBtn => setData");
                 }
             }
 
@@ -622,7 +625,7 @@ function filterSubmitBtn (){
                     const counter = $$("table-idFilterElements");
                     counter.setValues(reccount.toString());
                 } catch (err){
-                    setFunctionError(err,logNameFile,"setCounterVal");
+                    setFunctionError(err, logNameFile, "setCounterVal");
                 }
             }
 

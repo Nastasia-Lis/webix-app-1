@@ -1,7 +1,7 @@
 
 
-import { showElem, hideElem }     from "../commonFunctions.js";
-import { setFunctionError }       from "../errors.js";
+import { showElem, hideElem, getTable }     from "../commonFunctions.js";
+import { setFunctionError }                 from "../errors.js";
 
 const visibleInputs = {};
 
@@ -34,14 +34,15 @@ function visibleField (condition, elementClass = null, el = null){
     const hideClass  = "webix_hide-content";
     const segmentBtn = $$( el + "_segmentBtn");
 
-    function editStorage(){
 
+    function editStorage(){
         if (condition && el !== "selectAll"){
 
             if ( !visibleInputs[elementClass] ){
                 visibleInputs[elementClass] = [];
             }
-  
+
+
             const unique = checkChild(elementClass, el);
 
             if (unique){
@@ -50,15 +51,14 @@ function visibleField (condition, elementClass = null, el = null){
             }
          
 
-        } else if (visibleInputs[elementClass]) {
-            delete visibleInputs[elementClass];
-
+        } else if (el !== "selectAll") {
+            visibleInputs[elementClass] = [];
         }
+
     }
 
     editStorage();
 
-  //  showSegmentBtn (condition,el);
 
     const htmlElement = document.querySelectorAll(".webix_filter-inputs");
 

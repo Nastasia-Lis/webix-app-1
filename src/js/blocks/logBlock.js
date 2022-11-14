@@ -22,15 +22,21 @@ function setLogValue (typeNotify,notifyText,specificSrc) {
     const currentDate = createCurrDate();
 
     function addLogMsg (src){
+        const logList = $$("logBlock-list");
+
         if (!src){
             src = "expa";
         }
       
-        $$("logBlock-list").add({
-            date:currentDate,
-            value:notifyText,
-            src:src
+        logList.add({
+            date  : currentDate,
+            value : notifyText,
+            src   : src
         });
+
+        const lastId = logList.getLastId();
+    
+        logList.showItem(lastId);
     }
 
     async function createLogMessage(srcTable) {
@@ -43,18 +49,18 @@ function setLogValue (typeNotify,notifyText,specificSrc) {
                         name = el.name;
                     }
                 });
-                
+
             } catch (err){
                 setFunctionError(err,"logBlock","findTableName");
             }
         }
 
         if (srcTable == "version"){
-            name = 'Expa v1.0.51';
+            name = 'Expa v1.0.52';
 
         } else if (srcTable == "cp") {
             name = 'Смена пароля';
-
+        
         } else {
             if (!STORAGE.tableNames){
                 await getData("fields"); 

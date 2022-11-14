@@ -162,15 +162,188 @@ function clearDashLayout(){
 }
 
 function goToRefView(chartAction){
-    const tree = $$("tree");
 
-    if ( tree.getItem(chartAction) ){
-        tree.select(chartAction);
-    } else {
-        Backbone.history.navigate("tree/" + chartAction, { trigger : true });
-        window.location.reload();
+    let field = chartAction;
+
+    if (chartAction.field){
+        field = chartAction.field;
     }
+
+    const searchParams = new URLSearchParams( chartAction.params ).toString();
+    let url            = "tree/" + field;
+
+    if (searchParams.length){
+        url = url + "?" + searchParams;
+    }
+
+    //query=1&bar=2
+    Backbone.history.navigate(url, { trigger : true });
+    window.location.reload();
 }
+
+
+
+const action = {
+    field  : "auth_group",
+    params :{
+        filter : "auth_group.id > 3" 
+    //   filter : "auth_group.id != '1' or auth_group.id != '3' and auth_group.role contains 'р' or auth_group.role = 'а'" 
+    }
+   
+};
+
+function setCursorPointer(areas, fullElems, idElem){
+
+    areas.forEach(function(el,i){
+        if (el.tagName){
+            const attr = el.getAttribute("webix_area_id");
+
+            if (attr == idElem || fullElems){
+                el.style.cursor = "pointer";
+            }
+            
+        }
+    });
+
+}
+
+function setAttributes(elem){
+
+  //  elem.action = action;
+  
+    elem.borderless  = true;
+    elem.minWidth    = 250;
+    elem.on          = {
+        onAfterRender:function(){
+            const chart          = this.getNode();
+            const htmlCollection = chart.getElementsByTagName('map');
+            const mapTag         = htmlCollection.item(0);
+            const areas          = mapTag.childNodes;
+ 
+            if (elem.action){
+                setCursorPointer(areas, true);
+            } else if (elem.data){
+                elem.data.forEach(function(el,i){
+                    if (i == 1 || i == 4 ){
+                        el.action = action; 
+                    }
+                   
+                    if (el.action){
+                        setCursorPointer(areas, false, el.id);
+                    }
+                });
+            }
+
+        },
+
+        onItemClick:function(idEl, event, html){
+            console.log("пример: ", action);
+
+            function findField(chartAction){
+      
+                let field = chartAction;
+
+                if (chartAction && chartAction.field){
+                    field = chartAction.field;
+                }
+
+                const fields = STORAGE.fields.content;
+
+                Object.keys(fields).forEach(function(key,i){
+                    if ( key == field ){
+                        goToRefView(chartAction);
+                    }
+                });
+            } 
+
+    
+            if (elem.action){
+                findField(elem.action);
+                
+            } else {
+                const collection = elem.data;
+    
+                let selectElement;
+         
+                collection.forEach( function (el,i){
+                    if (el.id == idEl){
+                        selectElement = el;
+                    }
+                });
+
+                const chartAction = selectElement.action;
+
+                if (chartAction){
+                    findField(chartAction);
+
+                } 
+          
+            }
+           
+        },
+
+
+    };
+
+    return elem;
+}
+
+function iterateArr(container){
+    let res;
+    const elements = [];
+
+    function loop(container){
+        container.forEach(function(el, i){
+         
+            const nextContainer = el.rows || el.cols;
+     
+            if (!el.rows && !el.cols){
+                if (el.view && el.view == "chart"){
+                    el = setAttributes(el);
+                }
+                elements.push(el);
+            } else {
+                loop(nextContainer);
+            }
+        });
+    }
+
+    loop( container );
+
+    if (elements.length){
+        res = elements;
+    }
+
+    return res;
+}
+
+function returnEl(element){
+ //   element = obj;
+    
+    const container = element.rows || element.cols;
+
+    let resultElem;
+
+    function returnElements(arr){
+        arr.forEach(function(elem,i){
+            if (elem.view && elem.view == "chart"){
+                resultElem = elem;
+            }
+           
+        });
+    }
+    
+    container.forEach(function(el,i){
+        const nextContainer = el.rows || el.cols;
+        const result        = iterateArr(nextContainer);
+
+       // returnElements(result);
+    });
+
+ //   console.log(resultElem);
+    return resultElem;
+}
+
 
 function createCharts(dataCharts){
  
@@ -178,54 +351,15 @@ function createCharts(dataCharts){
     try{
         dataCharts.forEach(function(el,i){
 
-          // el.action = "auth_user";
+            if (el.cols || el.rows){
+                returnEl(el);
+            }
+
             const titleTemplate = el.title;
 
             delete el.title;
-     
-            el.borderless  = true;
-            el.minWidth    = 250;
-      
-            el.on          = {
-                onItemClick:function(idEl,event,html){
-                    function findFiels(chartAction){
-                        const fields = STORAGE.fields.content;
-                        Object.keys(fields).forEach(function(key,i){
-                        
-                            if ( key == chartAction ){
-                                goToRefView(chartAction);
-                            }
-                        });
-                    } 
 
-                    if (el.action){
-                        findFiels(el.action);
-                    } else {
-                        const collection = el.data;
-                        let selectElement;
-                 
-                        collection.forEach(function(el,i){
-            
-                            if (el.id == idEl){
-                                selectElement = el;
-                            }
-                        });
-
-                        const chartAction = selectElement.action;
-                     // const chartAction = "userprefs"
-                        if (chartAction){
-                            findFiels(chartAction);
-
-                        } 
-                  
-                    }
-                  
-                
-                   
-                }
-            };
-
-
+            el = setAttributes(el);
 
             const headline = {   
                 template    : titleTemplate,
@@ -245,13 +379,12 @@ function createCharts(dataCharts){
                 ]
             });
 
-        
-        
+
         });
 
    
     } catch (err){  
-        setFunctionError(err,logNameFile,"createCharts");
+        setFunctionError(err, logNameFile, "createCharts");
     }
 }
 
@@ -259,11 +392,7 @@ function createCharts(dataCharts){
 function createSpace( inputsArray, idsParam ){
 
     function backBtnClick (){
-        const dashTool = $$("dashboard-tool-main");
-
-       // hideElem    (dashTool);
-        hideElem    ($$( "dashboardTool"));
-       
+        hideElem    ($$( "dashboardTool")); 
         showElem    ($$("dashboardInfoContainer"));
     }
 

@@ -1,11 +1,16 @@
-import {setFunctionError} from "../errors.js";
-import  {STORAGE,getData} from "../globalStorage.js";
-import {modalBox} from "../notifications.js";
-import {hideElem, showElem,getComboOptions} from "../commonFunctions.js";
+import { setFunctionError }                     from "../errors.js";
+import { STORAGE, getData }                     from "../globalStorage.js";
+import { modalBox }                             from "../notifications.js";
+import { hideElem, showElem, getComboOptions }  from "../commonFunctions.js";
 
-import {saveItem,saveNewItem} from "./buttons.js";
+import { saveItem, saveNewItem }                from "./buttons.js";
 
-import {setDirtyProperty} from "./property.js";
+import { setDirtyProperty }                     from "./property.js";
+
+import { Popup }                                from "../../viewTemplates/popup.js";
+
+
+
 
 const logNameFile = "tableEditForm => states";
 
@@ -195,12 +200,13 @@ function createPopupOpenBtn(elem){
             }
         }
 
-
-        function popupEdit(){
-            function closePopupClick(){
-                const area  = $$("editPropTextarea");
+        const closePopupClick = function (){
+            const area  = $$("editPropTextarea");
+       
+            if (area){
+ 
                 const value = area.getValue();
-            
+        
                 if (area.dirtyValue){
                     modalBox().then(function(result){
         
@@ -215,27 +221,12 @@ function createPopupOpenBtn(elem){
                     destructorPopup( $$("editTablePopupText"));
                 }
             }
+           
+        };
 
-            const popupHeadline = {   
-                template:"Редактор поля  «" + elem.label + "»", 
-                width:250,
-                css:"popup_headline", 
-                borderless:true, 
-                height:20 
-            };
-        
-            const btnClosePopup = {
-                view:"button",
-                id:"buttonClosePopup",
-                css:"popup_close-btn",
-                type:"icon",
-                width:35,
-                icon: 'wxi-close',
-                click:function(){
-                    closePopupClick();
-                }
-            };
-            
+
+        function popupEdit(){
+
             const textarea = { 
                 view:"textarea",
                 id:"editPropTextarea", 
@@ -264,32 +255,30 @@ function createPopupOpenBtn(elem){
             
             };
             
-            webix.ui({
-                view:"popup",
-                id:"editTablePopupText",
-                css:"webix_popup-prev-href",
-                width:400,
-                minHeight:300,
-                modal:true,
-                escHide:true,
-                position:"center",
-                body:{
-                    rows:[
-                    {rows: [ 
-                        { cols:[
-                            popupHeadline,
-                            {},
-                            btnClosePopup,
-                        ]},
+            const popup = new Popup({
+                headline : "Редактор поля  «" + elem.label + "»",
+                config   : {
+                    id    : "editTablePopupText",
+                    width:400,
+                    minHeight:300,
+            
+                },
+
+                closeClick :  closePopupClick,
+            
+                elements   : {
+                    rows   : [
                         textarea,
                         {height:15},
                         btnSave,
-                    ]}]
-                    
-                },
-        
-            }).show();
+                    ]
+                  
+                }
+            });
             
+            popup.createView ();
+            popup.showPopup  ();
+
             setTextareaVal();
         
         }
@@ -440,7 +429,7 @@ function createDatePopup(elem){
 
         function popupEdit(){
 
-            function closePopupClick(){
+            const closePopupClick = function (){
                 let check = false;
                 function checkDirty(elem){
                     if ( elem.config.dirtyProp && !check ){
@@ -469,29 +458,7 @@ function createDatePopup(elem){
                     destructorPopup( $$("editTablePopupCalendar"));
                 }
 
-            }
-
-            const popupHeadline = {   
-                template:"Редактор поля  «" + elem.label + "»", 
-                width:250,
-                css:"popup_headline", 
-                borderless:true, 
-                height:20 
             };
-
-            const btnClosePopup = {
-                view:"button",
-                id:"buttonClosePopup",
-                css:"popup_close-btn",
-                type:"icon",
-                hotkey:"esc",
-                width:35,
-                icon: 'wxi-close',
-                click:function(){
-                    closePopupClick();
-                }
-            };
-        
           
             const dateView = {
                 view:"calendar",
@@ -591,31 +558,31 @@ function createDatePopup(elem){
             
             };
             
-            webix.ui({
-                view:"popup",
-                id:"editTablePopupCalendar",
-                css:"webix_popup-prev-href",
-                width:400,
-                minHeight:300,
-                modal:true,
-                escHide:true,
-                position:"center",
-                body:{
-                    rows:[
-                    {rows: [ 
-                        { cols:[
-                            popupHeadline,
-                            {},
-                            btnClosePopup,
-                        ]},
+            const popup = new Popup({
+                headline : "Редактор поля  «" + elem.label + "»",
+                config   : {
+                    id        : "editTablePopupCalendar",
+                    width     : 400,
+                    minHeight : 300,
+            
+                },
+
+                closeClick : closePopupClick,
+            
+                elements : {
+                    rows : [
                         dateEditor,
                         {height:15},
                         btnSave,
-                    ]}]
-                    
-                },
-        
-            }).show();
+                    ]
+                  
+                }
+            });
+            
+            popup.createView ();
+            popup.showPopup  ();
+
+         
 
             setPropValues();
 
