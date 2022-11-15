@@ -224,9 +224,9 @@ function setAttributes(elem){
                 setCursorPointer(areas, true);
             } else if (elem.data){
                 elem.data.forEach(function(el,i){
-                    if (i == 1 || i == 4 ){
-                        el.action = action; 
-                    }
+                    // if (i == 1 || i == 4 ){
+                    //     el.action = action; 
+                    // }
                    
                     if (el.action){
                         setCursorPointer(areas, false, el.id);
