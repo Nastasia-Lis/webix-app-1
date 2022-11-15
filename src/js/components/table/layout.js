@@ -11,7 +11,7 @@ function table (idTable, onFunc, editableParam=false) {
         editable    : editableParam,
         editaction  :"dblclick",
         minHeight   : 350,
-        //height:200,
+       // height:200,
         footer      : true,
         select      : true,
         resizeColumn: true,

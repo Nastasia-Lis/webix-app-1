@@ -3,7 +3,7 @@ import { STORAGE, getData }               from "../globalStorage.js";
 
 import { setAjaxError, setFunctionError } from "../errors.js";
 
-import { setHeadlineBlock }               from '../blockHeadline.js';
+import { createHeadline }                 from '../viewHeadline/layout.js';
 import { showElem, hideElem }             from '../commonFunctions.js';
 
 
@@ -218,20 +218,23 @@ function setAttributes(elem){
             const chart          = this.getNode();
             const htmlCollection = chart.getElementsByTagName('map');
             const mapTag         = htmlCollection.item(0);
-            const areas          = mapTag.childNodes;
- 
-            if (elem.action){
-                setCursorPointer(areas, true);
-            } else if (elem.data){
-                elem.data.forEach(function(el,i){
-                    // if (i == 1 || i == 4 ){
-                    //     el.action = action; 
-                    // }
-                   
-                    if (el.action){
-                        setCursorPointer(areas, false, el.id);
-                    }
-                });
+            if (mapTag){
+         
+                const areas          = mapTag.childNodes;
+    
+                if (elem.action){
+                    setCursorPointer(areas, true);
+                } else if (elem.data){
+                    elem.data.forEach(function(el,i){
+                        // if (i == 1 || i == 4 ){
+                        //     el.action = action; 
+                        // }
+                    
+                        if (el.action){
+                            setCursorPointer(areas, false, el.id);
+                        }
+                    });
+                }
             }
 
         },
@@ -554,7 +557,8 @@ function createSpace( inputsArray, idsParam ){
     }
 
     function createDashInfo(){
-        const template  = setHeadlineBlock("dash-template");
+        
+        const template  = createHeadline("dash-template");
         const container = $$("dashboardInfoContainer");
 
         const dashCharts = {

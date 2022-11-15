@@ -1,6 +1,7 @@
 
-import { hideElem,showElem } from "../commonFunctions.js";
-import { setFunctionError  } from "../errors.js";
+import { hideElem, showElem } from "../commonFunctions.js";
+import { setFunctionError  }  from "../errors.js";
+import { Button }             from "../../viewTemplates/buttons.js";
 
 const logNameFile = "tableEditForm => toolbarBtn";
 
@@ -75,57 +76,42 @@ function editBtnClick() {
 
 
 
-function toolbarEditButton (idTable){
+function toolbarEditButton (idTable, visible){
     const idBtnEdit = idTable + "-editTableBtnId";
 
     function returnValue( empty = true ){
-        const icon = "<span class='webix_icon icon-pencil' style='font-size:13px!important'></span>";
-        const text = "<span style='padding-left: 5px; font-size:13px!important' >Редактор записи</span>";
+        const icon = "<span class='webix_icon  icon-pencil' style='font-size:13px!important;'></span>";
+        const text = "<span style='padding-left: 5px; font-size:13px!important; margin-right: 11px;' >Редактор записи</span>";
 
         if (empty){
             return icon;
         } else {
-            return icon+text;
+            return icon + text;
         }
     }   
 
-    return {   
-        view    : "button",
-        maxWidth: 200, 
-        value   : returnValue( false ),
-        id      : idBtnEdit,
-        css     : "webix_btn-edit",
-        title   : "текст",
-        hotkey  : "ctrl+shift+x",
-        height  : 42,
-        minWidth: 40,
-        onlyIcon: false,
-        click   : function(){
-            editBtnClick(idBtnEdit);
+    const btn = new Button({
+        config   : {
+            id       : idBtnEdit,
+            hotkey   : "Ctrl+Shift+X",
+            value    : returnValue( false ),
+            hidden   : visible,
+            css      : "edit-btn-icon",
+            minWidth : 40,
+            maxWidth : 200, 
+            onlyIcon : false,
+            click    : function(){
+                editBtnClick(idBtnEdit);
+            },
         },
-        on      : {
-            onAfterRender: function () {
-                try{
-                    if(idTable !== "table" && this.isVisible()){
-                        this.hide();
-                    }
-                } catch (err) {   
-                    setFunctionError(err,logNameFile,"btn edit onAfterRender");
-                }
+        titleAttribute : "Показать/скрыть фильтры",
+        adaptValue     : returnValue( ),
+    
+       
+    }).maxView();
 
-            
-                if ( this.$width < 160 &&  !this.config.onlyIcon ){
-                    this.setValue(returnValue( ));
-                    this.config.onlyIcon = true;
-                } else if (this.$width > 160 && this.config.onlyIcon){
-                    this.setValue(returnValue( false ));
-                    this.config.onlyIcon = false;
-                }
+    return btn;
 
-                this.getInputNode().setAttribute("title","Редактировать запись (Ctrl+Shift+X)");
-            }
-        } 
-    };
 }
 
 export {

@@ -1010,38 +1010,7 @@ function filterBtnClick (idTable){
     }
 }
 
-
-function toolbarFilterBtn(idTable,visible){
-    let idBtnEdit = idTable + "-editTableBtnId",
-        idFilter  = idTable + "-filterId"
-    ;
-
-    const btn = 
-    {   view    : "button",
-        width   : 50, 
-        type    : "icon",
-        id      : idFilter,
-        hidden  : visible,
-        icon    : "icon-filter",
-        css     : "webix_btn-filter webix-transparent-btn ",
-        disabled: true,
-        title   : "текст",
-        hotkey  : "ctrl+shift+f",
-        height  : 42,
-        click   : function(){
-            filterBtnClick(idTable,idBtnEdit);
-        },
-        on      : {
-            onAfterRender: function () {
-                this.getInputNode().setAttribute("title","Показать/скрыть фильтры (Ctrl+Shift+F)");
-            }
-        } 
-    };
-
-    return btn;
-}
-
 export {
-    toolbarFilterBtn,
+    filterBtnClick,
     createChildFields
 };

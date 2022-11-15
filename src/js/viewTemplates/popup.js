@@ -9,7 +9,7 @@ class Popup {
             template    : "<div class='no-wrap-headline'>" + 
                             options.headline + 
                             "</div>", 
-            css         : "webix_template-recover", 
+            css         : "webix_popup-headline", 
             borderless  : true, 
             height      : 40 
         };
@@ -39,18 +39,19 @@ class Popup {
   
         this.popupView  = {
             view    : "popup",
-            css     : "webix_popup-filter-container webix_popup-config",
+            css     : "webix_popup-config",
             modal   : true,
             escHide : true,
             position: "center",
             body    : {
                 scroll : "y",
                 rows   : [
-                    {   css : "webix_filter-headline-wrapper", 
+                    {   css : "webix_popup-headline-wrapper", 
                         cols: [ 
                             this.headline,
-                            {width : 150},
-                            this.closeBtn
+                           // {},
+                            this.closeBtn,
+                            {width:12},
                         ]
                     },
 

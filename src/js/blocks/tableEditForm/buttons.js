@@ -1,11 +1,15 @@
-import {setFunctionError,setAjaxError} from "../errors.js";
-import {setLogValue} from "../logBlock.js";
-import {modalBox, popupExec} from "../notifications.js";
-import {getItemId, hideElem, showElem} from "../commonFunctions.js";
+import { setFunctionError, setAjaxError }               from "../errors.js";
+import { setLogValue }                                  from "../logBlock.js";
+import { modalBox, popupExec }                          from "../notifications.js";
+import { getItemId, hideElem, showElem }                from "../commonFunctions.js";
 
-import {setDirtyProperty} from "./property.js";
-import {validateProfForm,setLogError,uniqueData} from "./validation.js";
-import {createEditFields,defaultStateForm} from "./states.js";
+import { setDirtyProperty }                             from "./property.js";
+import { validateProfForm, setLogError, uniqueData }    from "./validation.js";
+import { createEditFields, defaultStateForm }           from "./states.js";
+
+import { Button }                                       from "../../viewTemplates/buttons.js";
+import { createEmptyTemplate }                          from "../../viewTemplates/emptyTemplate.js";
+
 
 const logNameFile = "tableEditForm => buttons";
 
@@ -446,121 +450,86 @@ function backTableBtnClick() {
 }
 
 
-function setAdaptiveValue(btn, adaptVal, mainVal){
-    const width  = btn.$width;
-   
-    if (width < 120 &&  btn.config.value !== adaptVal ){
-        btn.config.value = adaptVal;
-        btn.refresh();
-      
-    } else if (width > 120 &&  btn.config.value !== mainVal ) {
-        btn.config.value = mainVal;
-        btn.refresh();
-    }
-}
-
-const newAddBtn = {   
-    view    : "button",
-    id      : "table-newAddBtnId",
-    height  : 48,
-    minWidth: 50, 
-    disabled: true,
-    hotkey  : "alt+a",
-    value   : "Новая запись", 
-    click   : addItem,
-    on      : {
-        onAfterRender: function () {
-            this.getInputNode().setAttribute("title", "Добавить новую запись (Alt+A)");
-            setAdaptiveValue(this, "+", "Новая запись");
-
-        },
+const newAddBtn = new Button({
     
-    } 
-};
+    config   : {
+        id          : "table-newAddBtnId",
+        hotkey      : "Alt+A",
+        disabled    : true,
+        value       : "Новая запись", 
+        click       : addItem,
+    },
+    titleAttribute : "Добавить новую запись",
+    adaptValue     : "+",
 
-const delBtn = {  
-    view:"button",
-    id:"table-delBtnId",
-    disabled:true,
-    height:48,
-    width:50,
-    hotkey: "ctrl+enter",
-    css:"webix_danger", 
-    type:"icon", 
-    icon:"icon-trash", 
-    click:removeItem,
-    on: {
-        onAfterRender: function () {
-            this.getInputNode().setAttribute("title","Удалить запись из таблицы (Ctrl+Enter)");
-        }
-    },
-     
-};
+   
+}).maxView();
 
-const saveBtn = { 
-    view    : "button", 
-    id      : "table-saveBtn",
-    hidden  : true, 
-    value   : "Сохранить", 
-    hotkey  : "shift+space",
-    height  : 48, 
-    css     : "webix_primary", 
-    click   : function(){
-        saveItem();
+const delBtn = new Button({
+    
+    config   : {
+        id       : "table-delBtnId",
+        hotkey   : "Ctrl+Enter",
+        disabled : true,
+        icon     : "icon-trash", 
+        click    : removeItem,
     },
-    on: {
-        onAfterRender: function () {
-            this.getInputNode().setAttribute("title","Удалить запись из таблицы (Shift+Space)");
-        }
-    },
-};
+    titleAttribute : "Удалить запись из таблицы"
 
-const saveNewBtn = { 
-    view    : "button", 
-    id      : "table-saveNewBtn",
-  //  value   : "Сохранить новую запись",
-    value   : "Сохранить",
-    hidden  : true,  
-    height  : 48,
-    css     : "webix_primary", 
-    hotkey  : "ctrl+shift+space",
-    click   : function(){
-        saveNewItem();
-    },
-    on: {
-        onAfterRender: function () {
-            this.getInputNode().setAttribute("title","Удалить запись из таблицы (Ctrl+Shift+Space)");
-        }
-    },
-};
+   
+}).minView("delete");
 
-const backTableBtn = { 
-    view    : "button", 
-    id      : "table-backTableBtn",
-    type    : "icon",
-    icon    : "icon-arrow-left",
-    value   : "Вернуться к таблице",
-    hidden  : true,  
-    height  : 48,
-    minWidth: 60,
-    width   : 90,
-    hotkey  : "shift+q",
-    click   : function(){
-        backTableBtnClick();
-    },
-    on: {
-        onAfterRender: function () {
-            this.getInputNode().setAttribute( "title", "Вернуться к таблице (Shift+Q)" );
-        }
-    } 
-};
 
-const emptyTmplate = {   
-    id         : "EditEmptyTempalte",
-    css        : "webix_empty-template",
-    template   : "Добавьте новую запись или выберите существующую из таблицы", 
-    borderless : true,
-};
+const saveBtn = new Button({
+    
+    config   : {
+        id       : "table-saveBtn",
+        hotkey   : "Shift+Space",
+        hidden   : true, 
+        value    : "Сохранить", 
+        click    : function(){
+            saveItem();
+        },
+    },
+    titleAttribute : "Сохранить запись в таблицу"
+
+   
+}).maxView("primary");
+
+
+const saveNewBtn = new Button({
+    
+    config   : {
+        id       : "table-saveNewBtn",
+        hotkey   : "Ctrl+Shift+Space",
+        hidden   : true, 
+        value    : "Сохранить", 
+        click    : function(){
+            saveNewItem();
+        },
+    },
+    titleAttribute : "Сохранить новую запись в таблицу"
+
+   
+}).maxView("primary");
+
+
+const backTableBtn = new Button({
+    
+    config   : {
+        id       : "table-backTableBtn",
+        hotkey   : "Shift+Q",
+        hidden   : true,  
+        icon     : "icon-arrow-left", 
+        click    : backTableBtnClick,
+    },
+    titleAttribute : "Вернуться к таблице"
+
+   
+}).minView();
+
+
+
 
 const editFormBtns = {
     minHeight : 48,
@@ -592,7 +561,13 @@ const editFormBtns = {
                     rows   : [ 
                         saveBtn,
                         saveNewBtn,
-                        emptyTmplate,
+                        {   id        : "EditEmptyTempalte",
+                            rows      : [
+                                {height:20},
+                                createEmptyTemplate("Добавьте новую запись или выберите существующую из таблицы")
+                            ],
+                        }
+                    
                     ]
                 },
              

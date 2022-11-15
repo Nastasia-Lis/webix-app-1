@@ -258,18 +258,22 @@ function createPopupOpenBtn(elem){
             const popup = new Popup({
                 headline : "Редактор поля  «" + elem.label + "»",
                 config   : {
-                    id    : "editTablePopupText",
-                    width:400,
-                    minHeight:300,
+                    id        : "editTablePopupText",
+                    width     : 400,
+                    minHeight : 300,
             
                 },
 
                 closeClick :  closePopupClick,
             
                 elements   : {
+                    padding:{
+                        left  : 9,
+                        right : 9
+                    },
                     rows   : [
                         textarea,
-                        {height:15},
+                        {height : 15},
                         btnSave,
                     ]
                   
@@ -384,25 +388,28 @@ function createDatePopup(elem){
 
             const errors = [];
 
-            function validTime(item,count,idEl){
+            function validTime(item, count, idEl){
+
+                function markInvalid (){
+                    $$("timeForm").markInvalid(idEl);
+                    errors.push(idEl);
+                }
+                 
                 try{
                     if (item > count){
-                        $$("timeForm").markInvalid(idEl);
-                        errors.push(idEl);
+                        markInvalid ();
                     }
 
                     if ( !( /^\d+$/.test(item) ) ){
-                        $$("timeForm").markInvalid(idEl);
-                        errors.push(idEl);
+                        markInvalid ();
                     }
 
                     if (item.length < 2){
-                        $$("timeForm").markInvalid(idEl);
-                        errors.push(idEl);
+                        markInvalid ();
                     }
 
                 } catch (err){
-                    setFunctionError(err,logNameFile,"validTime element: "+idEl);
+                    setFunctionError(err, logNameFile, "validTime element: " + idEl);
                 }
             }
 
@@ -412,25 +419,33 @@ function createDatePopup(elem){
 
             function setValToProperty(){
                 try{
-                    if ( !(errors,errors.length) ){
-                        property.setValues({ [elem.id]:sentVal}, true);
+                    if ( !(errors, errors.length) ){
+                        property.setValues({ [elem.id] : sentVal}, true);
+
                         if(propId){
-                            property.setValues({ id:propId}, true);
+                            property.setValues({ id : propId}, true);
+
                         }
+
                         destructorPopup( $$("editTablePopupCalendar"));
                     }
                 } catch (err){
-                    setFunctionError(err,logNameFile,"setValToProperty");
+                    setFunctionError(err, logNameFile, "setValToProperty");
                 }
             }
 
             setValToProperty();
+
+            
+            return errors.length;
         }
 
         function popupEdit(){
 
             const closePopupClick = function (){
-                let check = false;
+                const calendar = $$("editTablePopupCalendar");
+                let check      = false;
+
                 function checkDirty(elem){
                     if ( elem.config.dirtyProp && !check ){
                         check = true;
@@ -441,21 +456,31 @@ function createDatePopup(elem){
                 checkDirty ( $$("hourInp") );
                 checkDirty ( $$("minInp" ) );
                 checkDirty ( $$("secInp" ) );
-   
+
+                
                 if (check){
+              
                     modalBox().then(function(result){
+
+                        if (result == 1){
+                            destructorPopup( calendar );
+                        }
         
-                        if (result == 1 || result == 2){
+                        if (result == 2){
 
                             if (result == 2){
-                                editPropCalendarSubmitClick ();
+                                const clickResult = editPropCalendarSubmitClick ();
+                   
+                                if (!clickResult){
+                                    destructorPopup( calendar );
+                                }
                             }
 
-                           destructorPopup( $$("editTablePopupCalendar"));
+                          
                         }
                     });
                 } else {
-                    destructorPopup( $$("editTablePopupCalendar"));
+                    destructorPopup( calendar );
                 }
 
             };
@@ -641,7 +666,6 @@ function setToolBtns(){
         }
 
         propertyElems.forEach(function(el,i){
-
             if        (el.type == "combo"){
                 createRefBtn(el.id);
 
@@ -774,9 +798,6 @@ function createEditFields (parentElement) {
 
                 if (el.type == "datetime"){
                     createDateTimeInput();
-
-                    
-                
 
                 } else if (el.type.includes("reference")) {
                     createReferenceInput();

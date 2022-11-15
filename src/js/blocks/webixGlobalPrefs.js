@@ -33,8 +33,17 @@ function webixGlobalPrefs (){
     setMsgPosition      ();
 }
 
+function backButtonBrowserLogic (){
+    window.addEventListener('popstate', function(event) {
+        window.location.replace(window.location.href);
+        window.location.reload();
+        
+    });
+}
+
 
 export {
     webixGlobalPrefs,
-    protoUIEdittree
+    protoUIEdittree,
+    backButtonBrowserLogic
 };

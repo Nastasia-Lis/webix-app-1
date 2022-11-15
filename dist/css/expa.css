@@ -82,8 +82,8 @@
   -o-transition: 0.2s;
   transition: 0.2s;
   border-radius: 4px !important;
-  font-size: 14px !important;
-  font-weight: 500 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
 }
 
 .webix_primary .webix_button:hover {
@@ -101,8 +101,8 @@
   -o-transition: 0.2s;
   transition: 0.2s;
   border-radius: 4px !important;
-  font-size: 14px !important;
-  font-weight: 500 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
 }
 
 .webix_secondary .webix_button .webix_icon_btn {
@@ -155,14 +155,6 @@
   background: var(--danger-dark) !important;
 }
 
-.webix_danger .webix_icon_btn,
-.webix_btn-download .webix_icon_btn,
-.webix_log-btn .webix_icon_btn,
-.webix_btn-filter .webix_icon_btn,
-.webix_btn-edit .webix_icon_btn {
-  margin: 0px !important;
-}
-
 .webix_add-btn > .webix_el_box > .webix_button {
   background: var(--add) !important;
   -webkit-transition: 0.2s;
@@ -190,8 +182,8 @@
   -o-transition: 0.2s;
   transition: 0.2s;
   border-radius: 4px !important;
-  font-size: 14px !important;
-  font-weight: 500 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
 }
 
 .webix_pager_item_selected:hover {
@@ -211,8 +203,8 @@
   -o-transition: 0.2s;
   transition: 0.2s;
   border-radius: 4px !important;
-  font-size: 14px !important;
-  font-weight: 500 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
 }
 
 .webix_view .webix_pager_item:hover {
@@ -277,8 +269,8 @@
   -o-transition: 0.2s;
   transition: 0.2s;
   border-radius: 4px !important;
-  font-size: 14px !important;
-  font-weight: 500 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
 }
 
 .webix_segment_N:hover,
@@ -294,6 +286,18 @@
 
 .webix_all_segments {
   text-align: center;
+}
+
+.edit-btn-icon .webix_button .webix_icon {
+  color: var(--primary) !important;
+}
+
+.edit-btn-icon .webix_button .webix_icon {
+  color: var(--primary) !important;
+}
+
+.edit-btn-icon .webix_button:hover .webix_icon {
+  color: var(--white) !important;
 }
 
 @font-face {
@@ -537,8 +541,8 @@ body {
   -o-transition: 0.2s;
   transition: 0.2s;
   border-radius: 4px !important;
-  font-size: 14px !important;
-  font-weight: 500 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
 }
 
 .webix_modal-custom-save .webix_popup_controls div:nth-child(2):hover {
@@ -556,8 +560,8 @@ body {
   -o-transition: 0.2s;
   transition: 0.2s;
   border-radius: 4px !important;
-  font-size: 14px !important;
-  font-weight: 500 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
   color: #fff !important;
 }
 
@@ -625,12 +629,6 @@ body {
   height: 45px !important;
 }
 
-.webix_template-recover .webix_template {
-  font-weight: 600;
-  font-size: 17px;
-  padding-top: 8px !important;
-}
-
 .webix_btn-recover {
   margin: 5px 0px !important;
 }
@@ -639,17 +637,9 @@ body {
   padding: 0px 10px !important;
 }
 
-.webix_template-recover-descr > .webix_template {
-  padding: 2px 12px 0px !important;
-}
-
 .webix_form-adaptive {
   min-height: 98px !important;
   max-height: 151px !important;
-}
-
-.webix_template {
-  padding: 5px 12px !important;
 }
 
 .webix_layout_space {
@@ -892,8 +882,8 @@ button {
   -o-transition: 0.2s;
   transition: 0.2s;
   border-radius: 4px !important;
-  font-size: 14px !important;
-  font-weight: 500 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
 }
 
 .webix_popup_button.confirm:hover {
@@ -915,8 +905,8 @@ button {
   -o-transition: 0.2s;
   transition: 0.2s;
   border-radius: 4px !important;
-  font-size: 14px !important;
-  font-weight: 500 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
 }
 
 .webix_popup_controls > :first-child:hover {
@@ -985,8 +975,8 @@ button {
   -o-transition: 0.2s;
   transition: 0.2s;
   border-radius: 4px !important;
-  font-size: 14px !important;
-  font-weight: 500 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
   height: 35px !important;
   cursor: pointer;
 }
@@ -1091,11 +1081,16 @@ button {
 }
 
 .webix_icon_btn {
-  font-size: 14px !important;
+  font-size: 13px !important;
+  margin-right: 0px !important;
 }
 
 .webix_img_btn > .webix_icon_btn {
-  margin: 2.5px !important;
+  margin-bottom: 1px !important;
+}
+
+.webix_img_btn > .icon-trash {
+  margin-bottom: 2px !important;
 }
 
 .webix_filter-popup-tabbar .webix_item_tab.webix_selected {
@@ -1152,8 +1147,8 @@ button {
   -o-transition: 0.2s;
   transition: 0.2s;
   border-radius: 4px !important;
-  font-size: 14px !important;
-  font-weight: 500 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
 }
 
 .webix_prompt-filter-lib > .webix_popup_controls div:nth-child(2):hover {
@@ -1291,7 +1286,7 @@ button {
 }
 
 .popup_close-btn .webix_icon_btn {
-  font-size: 23px !important;
+  font-size: 20px !important;
 }
 
 .popup_subtitle {
@@ -1430,7 +1425,7 @@ button {
   border-radius: 0px 0px 6px 6px;
 }
 
-.list-filter-empty {
+.list-filter-empty .webix_empty-template {
   background-color: var(--bg) !important;
 }
 
@@ -1463,6 +1458,10 @@ button {
      text-overflow: ellipsis !important;
   white-space: nowrap;
   overflow: hidden;
+  font-size: 15px !important;
+  font-weight: 600;
+  padding-top: 5px !important;
+  width: 100% !important;
 }
 
 .webix_property {

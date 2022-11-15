@@ -194,11 +194,6 @@ margin-left: 0px!important;
 
 
 
-.webix_template-recover .webix_template{
-    font-weight: 600;
-    font-size: 17px;
-    padding-top: 8px!important;
-}
 .webix_btn-recover{
     margin: 5px 0px!important;
 }
@@ -206,17 +201,10 @@ margin-left: 0px!important;
     padding:  0px 10px!important;
 }
 
-.webix_template-recover-descr > .webix_template{
-    padding: 2px  12px 0px!important;
-}
 
 .webix_form-adaptive{
     min-height: 98px!important;
     max-height: 151px!important;
-}
-
-.webix_template{
-    padding: 5px 12px!important;
 }
 
 .webix_layout_space{
@@ -623,13 +611,18 @@ label, button{
 }
 
 .webix_icon_btn{
-    font-size: 14px!important; 
+    font-size: 13px!important; 
+    margin-right: 0px!important;
 }
+
+
 
 .webix_img_btn > .webix_icon_btn{
-    margin: 2.5px !important;
+    margin-bottom: 1px !important;
 }
-
+.webix_img_btn > .icon-trash{
+    margin-bottom: 2px!important;
+}
 
 
 
@@ -834,7 +827,6 @@ label, button{
 
 
 .webix_template-not-found-descr > .webix_template{
-    //padding: 2px  12px 0px!important;
     padding: 0px 0px 0px 8px!important;
 }
 
@@ -854,7 +846,7 @@ label, button{
 }
 
 .popup_close-btn .webix_icon_btn{
-    font-size: 23px!important;
+    font-size: 20px!important;
 }
 
 .popup_subtitle{
@@ -1024,7 +1016,7 @@ label, button{
     background-color:var(--bg)!important;
     border-radius: 0px 0px 6px 6px;
 }
-.list-filter-empty{
+.list-filter-empty .webix_empty-template{
     background-color:var(--bg)!important;
 }
 .list-filter-headline{
@@ -1059,12 +1051,20 @@ label, button{
 
 
 
-/// headlines
+/// popup
 .no-wrap-headline{
-    text-overflow: ellipsis!important;
-    white-space: nowrap;
-    overflow: hidden;
+    text-overflow   : ellipsis!important;
+    white-space     : nowrap;
+    overflow        : hidden;
+    font-size       : 15px!important;
+    font-weight     : 600;
+    padding-top     : 5px!important;
+    width           : 100%!important;
 }
+
+// .webix_popup-headline  .webix_template{
+//     padding-left: 5px!important;
+// }
 
 
 /// property

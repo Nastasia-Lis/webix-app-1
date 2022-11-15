@@ -381,6 +381,7 @@ function createTableRows (idCurrTable,idsParam, offset = 0){
                     }, 1000);
                 } else {
            
+    
                 
                     data.forEach(function(el,i){
                         checkNotUnique(el.id);
@@ -1592,7 +1593,7 @@ function getInfoTable (idCurrTable,idsParam) {
                 function addInputs(){
                    
                     try{
-                        $$("viewToolsContainer").addView( inpObj,0 );
+                        $$("viewToolsContainer").addView( inpObj, 0 );
                   
                     } catch (err){
                         setFunctionError(err,logNameFile,"adaptiveCustomInputs => addInputs");

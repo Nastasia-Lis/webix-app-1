@@ -13,6 +13,8 @@ import { getItemId, showElem, hideElem,
 
 import { Popup }                             from "../../viewTemplates/popup.js";
 
+import { createEmptyTemplate }               from "../../viewTemplates/emptyTemplate.js";
+
 
 let filterTemplateValue;
 
@@ -255,13 +257,6 @@ function removeBtnClick (){
         }
     });
 }
-
-const filterPrompt = {
-    css         : "webix_empty-template",
-    template    : "Выберите нужные поля или шаблон из библиотеки", 
-    borderless  : true, 
-    height      : 47
-};
 
 function tabbarClick (id){
 
@@ -542,7 +537,7 @@ function createFilterPopup() {
     
         elements : {
             rows : [
-                filterPrompt,
+                createEmptyTemplate("Выберите нужные поля или шаблон из библиотеки"),
                 editFormPopup
             ]
           

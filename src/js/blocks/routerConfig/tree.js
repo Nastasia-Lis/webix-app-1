@@ -11,6 +11,8 @@ import { getWorkspace }         from "./common.js";
 const logNameFile = "router => tree";
 
 function treeRouter(id){
+     
+    
     function notFoundPopup(){
 
         const popupHeadline = {   
@@ -172,9 +174,11 @@ function treeRouter(id){
     }
     
     function setTableName (){
-        
-        if ($$("table-templateHeadline")){
-            const headline = $$("table-templateHeadline");
+        const tempalte     = "table-templateHeadline";
+        const tempalteView = "table-view-templateHeadline";
+         
+        if ($$(tempalte)){
+            const headline = $$(tempalte);
             try{
                 STORAGE.tableNames.forEach(function(el,i){
                     if (el.id == id){
@@ -185,12 +189,12 @@ function treeRouter(id){
                     
                 });
             } catch (err){
-                setFunctionError(err,logNameFile,"setTableName");
+                setFunctionError(err, logNameFile, "setTableName");
             }
         } 
         
-        if ($$("table-view-templateHeadline")){
-            const headline = $$("table-view-templateHeadline");
+        if ($$(tempalteView)){
+            const headline = $$(tempalteView);
             try{
                 STORAGE.tableNames.forEach(function(el,i){
                     if (el.id == id){
@@ -202,11 +206,56 @@ function treeRouter(id){
                     
                 });
             } catch (err){
-                setFunctionError(err,logNameFile,"setTableName element table-view-templateHeadline");
+                setFunctionError(
+                    err, 
+                    logNameFile, 
+                    "setTableName element table-view-templateHeadline"
+                );
             }
         }
     }
     
+    function selectTreeItem(){
+        const tree = $$("tree");
+        const firstId = tree.getFirstId();
+
+
+        const pull = $$("tree").data.pull;
+        const values = Object.values(pull);
+      
+        let topParent;
+        values.forEach(function(el,i){
+       
+            if (el.webix_kids && !(tree.exists(id))){
+
+                const obj = [el.id];
+
+                tree.callEvent("onBeforeOpen", obj);
+
+                topParent = el.id;
+            }
+
+        });
+
+        function setScroll(){
+            const scroll = tree.getScrollState();
+            tree.scrollTo(0, scroll.y); 
+        }
+
+        if (tree.exists(id)){
+            if (topParent){
+            
+                tree.open     (topParent, true);
+                tree.select   (id);
+                tree.showItem (id);
+
+                setScroll();
+            }
+
+        }
+
+    }
+
     async function getTableData (){
         
       
@@ -216,9 +265,9 @@ function treeRouter(id){
         }
      
         if (STORAGE.fields){
-            showTableData ();
-            setTableName ();
-
+            showTableData   ();
+            setTableName    ();
+            selectTreeItem  ();
 
         }
     }
@@ -269,7 +318,7 @@ function treeRouter(id){
     }
    
     checkTable();
-   
+  
 }
 
 export {

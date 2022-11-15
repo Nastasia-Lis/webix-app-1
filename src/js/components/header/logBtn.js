@@ -1,3 +1,5 @@
+import { Button } from "../../viewTemplates/buttons.js";
+
 function logBtnClick(id){
     const btn = $$(id);
 
@@ -18,12 +20,12 @@ function onChangeLogBtn(newValue){
     const lastItemList = list.getLastId();
 
     function setState (height,icon){
-        logBtn.config.badge = "";
+        logBtn.config.badge     = "";
 
         logLayout.config.height = height;
         logLayout.resize();
 
-        logBtn.config.icon = icon;
+        logBtn.config.icon      = icon;
         logBtn.refresh();
     }
 
@@ -37,32 +39,26 @@ function onChangeLogBtn(newValue){
 }
 
 
-const logBtn = {   
-    view    : "button",  
-    id      : "webix_log-btn",
-    type    : "icon", 
-    icon    : "icon-eye",
-    height  : 42, 
-    badge   : 0,
-    width   : 50,
-    hotkey  : "ctrl+m",
-    css     : "webix_log-btn",
-    click   : function(id){
-        logBtnClick(id)
-    }  ,
-
-    on: {
-        onAfterRender: function () {
-            this.getInputNode().setAttribute("title","Показать/скрыть системные сообщения (Ctrl+M)");
+const logBtn = new Button({
+    
+    config   : {
+        id       : "webix_log-btn",
+        hotkey   : "Ctrl+M",
+        icon     : "icon-eye", 
+        badge    : 0,
+        click   : function(id){
+            logBtnClick(id)
         },
-
-        onChange:function(newValue, oldValue, config){
+    },
+    onFunc   :{
+        onChange:function(newValue){
             onChangeLogBtn(newValue);
         }
     },
+    titleAttribute : "Показать/скрыть системные сообщения"
 
-};
-
+   
+}).minView();
 
 export {
     logBtn

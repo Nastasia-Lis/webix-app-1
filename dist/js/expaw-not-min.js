@@ -437,7 +437,7 @@ function setLogValue (typeNotify,notifyText,specificSrc) {
         }
 
         if (srcTable == "version"){
-            name = 'Expa v1.0.52';
+            name = 'Expa v1.0.53';
 
         } else if (srcTable == "cp") {
             name = 'Смена пароля';
@@ -5260,7 +5260,7 @@ function table (idTable, onFunc, editableParam=false) {
         editable    : editableParam,
         editaction  :"dblclick",
         minHeight   : 350,
-        //height:200,
+       // height:200,
         footer      : true,
         select      : true,
         resizeColumn: true,
@@ -5688,7 +5688,180 @@ function uniqueData (itemData){
 
 
 
+;// CONCATENATED MODULE: ./src/js/viewTemplates/buttons.js
+class Button{
+
+    constructor (options){
+        this.buttonView = {
+            view    : "button",
+            height  : 42,
+            on      : {
+
+            }
+        };
+        this.options    = options.config;
+
+        this.values     = Object.values(this.options);
+        this.keys       = Object.keys  (this.options);
+        this.adaptValue = options.adaptValue;
+
+        this.title      = options.titleAttribute;
+
+        this.onFunc     = options.onFunc;
+    }
+
+
+    modifyTitle(index){
+        this.title = this.title + " (" + this.values[index] + ")";
+    }
+
+    setAdaptiveValue(btn, adaptVal, mainVal){
+   
+        const width  = btn.$width;
+
+        if (width < 120 &&  btn.config.value !== adaptVal ){
+            btn.config.value = adaptVal;
+            btn.refresh();
+          
+        } else if (width > 120 &&  btn.config.value !== mainVal ) {
+            btn.config.value = mainVal;
+            btn.refresh();
+        }
+    }
+
+    addOnFunctions(button){
+        const self = this;
+       
+        if (this.onFunc){
+            const names  = Object.keys  (this.onFunc);
+            const values = Object.values(this.onFunc);
+
+            names.forEach(function(name,i){
+                button.on[name] = values[i];
+            });
+
+        }
+
+        button.on.onAfterRender = function () {
+        
+            this.getInputNode().setAttribute("title", self.title);
+
+            if (self.adaptValue){
+                self.setAdaptiveValue(this, self.adaptValue, self.options.value);
+            }
+        };
+    }
+
+    addCss(type){
+        const button = this.buttonView; 
+
+        if (type == "primary"){
+            button.css = "webix_primary";
+        } else if (type == "delete"){
+            button.css = "webix_danger";
+        } else {
+            button.css = type;
+        }
+      
+    }
+
+    
+    addConfig(){
+        const button = this.buttonView; 
+        const values = this.values;
+        const self   = this;
+
+        this.keys.forEach(function(option,i){
+
+            button[option] = values[i];
+
+            if (option === "hotkey"){
+                self.modifyTitle(i);
+            }
+
+        });
+
+        this.addOnFunctions (button);
+     
+        return button;
+
+    }
+
+    maxView(type){
+        this.addCss(type);
+        return this.addConfig();
+    }
+
+    minView(type){
+        this.addCss(type);
+
+        const button = this.buttonView;
+   
+        button.width = 50;
+        button.type  = "icon";
+
+        return this.addConfig();
+    }
+
+    transparentView(){
+        this.addCss("webix-transparent-btn");
+
+        const button = this.buttonView;
+   
+        button.width = 50;
+        button.type  = "icon";
+        return this.addConfig();
+    }
+
+}
+
+   
+const prevBtn = {
+    view    : "button",
+    id      : webix.uid(),
+    css     : "webix-transparent-btn btn-history",
+    type    : "icon",
+    icon    : "icon-arrow-left",
+    width   : 50,
+    hotkey  : "ctrl+shift+p",
+    click   : function(){
+        prevBtnClick();
+    },
+    on      : {
+        onAfterRender: function () {
+            this.getInputNode().setAttribute("title","Вернуться назад (Ctrl+Shift+P)");
+        },
+    }
+
+    
+};
+
+
+
+;// CONCATENATED MODULE: ./src/js/viewTemplates/emptyTemplate.js
+
+function createEmptyTemplate(text, id){
+    const formEmptyTemplate = {   
+        css         : "webix_empty-template",
+        template    : text,
+        borderless  : true,
+        height      : 47
+    };
+
+    if (id){
+        formEmptyTemplate.id = id;
+    }
+
+    return formEmptyTemplate;
+     
+}
+
+
 ;// CONCATENATED MODULE: ./src/js/blocks/tableEditForm/buttons.js
+
+
+
+
 
 
 
@@ -6137,121 +6310,86 @@ function backTableBtnClick() {
 }
 
 
-function setAdaptiveValue(btn, adaptVal, mainVal){
-    const width  = btn.$width;
-   
-    if (width < 120 &&  btn.config.value !== adaptVal ){
-        btn.config.value = adaptVal;
-        btn.refresh();
-      
-    } else if (width > 120 &&  btn.config.value !== mainVal ) {
-        btn.config.value = mainVal;
-        btn.refresh();
-    }
-}
-
-const newAddBtn = {   
-    view    : "button",
-    id      : "table-newAddBtnId",
-    height  : 48,
-    minWidth: 50, 
-    disabled: true,
-    hotkey  : "alt+a",
-    value   : "Новая запись", 
-    click   : addItem,
-    on      : {
-        onAfterRender: function () {
-            this.getInputNode().setAttribute("title", "Добавить новую запись (Alt+A)");
-            setAdaptiveValue(this, "+", "Новая запись");
-
-        },
+const newAddBtn = new Button({
     
-    } 
-};
+    config   : {
+        id          : "table-newAddBtnId",
+        hotkey      : "Alt+A",
+        disabled    : true,
+        value       : "Новая запись", 
+        click       : addItem,
+    },
+    titleAttribute : "Добавить новую запись",
+    adaptValue     : "+",
 
-const delBtn = {  
-    view:"button",
-    id:"table-delBtnId",
-    disabled:true,
-    height:48,
-    width:50,
-    hotkey: "ctrl+enter",
-    css:"webix_danger", 
-    type:"icon", 
-    icon:"icon-trash", 
-    click:removeItem,
-    on: {
-        onAfterRender: function () {
-            this.getInputNode().setAttribute("title","Удалить запись из таблицы (Ctrl+Enter)");
-        }
-    },
-     
-};
+   
+}).maxView();
 
-const saveBtn = { 
-    view    : "button", 
-    id      : "table-saveBtn",
-    hidden  : true, 
-    value   : "Сохранить", 
-    hotkey  : "shift+space",
-    height  : 48, 
-    css     : "webix_primary", 
-    click   : function(){
-        saveItem();
+const delBtn = new Button({
+    
+    config   : {
+        id       : "table-delBtnId",
+        hotkey   : "Ctrl+Enter",
+        disabled : true,
+        icon     : "icon-trash", 
+        click    : removeItem,
     },
-    on: {
-        onAfterRender: function () {
-            this.getInputNode().setAttribute("title","Удалить запись из таблицы (Shift+Space)");
-        }
-    },
-};
+    titleAttribute : "Удалить запись из таблицы"
 
-const saveNewBtn = { 
-    view    : "button", 
-    id      : "table-saveNewBtn",
-  //  value   : "Сохранить новую запись",
-    value   : "Сохранить",
-    hidden  : true,  
-    height  : 48,
-    css     : "webix_primary", 
-    hotkey  : "ctrl+shift+space",
-    click   : function(){
-        saveNewItem();
-    },
-    on: {
-        onAfterRender: function () {
-            this.getInputNode().setAttribute("title","Удалить запись из таблицы (Ctrl+Shift+Space)");
-        }
-    },
-};
+   
+}).minView("delete");
 
-const backTableBtn = { 
-    view    : "button", 
-    id      : "table-backTableBtn",
-    type    : "icon",
-    icon    : "icon-arrow-left",
-    value   : "Вернуться к таблице",
-    hidden  : true,  
-    height  : 48,
-    minWidth: 60,
-    width   : 90,
-    hotkey  : "shift+q",
-    click   : function(){
-        backTableBtnClick();
-    },
-    on: {
-        onAfterRender: function () {
-            this.getInputNode().setAttribute( "title", "Вернуться к таблице (Shift+Q)" );
-        }
-    } 
-};
 
-const emptyTmplate = {   
-    id         : "EditEmptyTempalte",
-    css        : "webix_empty-template",
-    template   : "Добавьте новую запись или выберите существующую из таблицы", 
-    borderless : true,
-};
+const saveBtn = new Button({
+    
+    config   : {
+        id       : "table-saveBtn",
+        hotkey   : "Shift+Space",
+        hidden   : true, 
+        value    : "Сохранить", 
+        click    : function(){
+            saveItem();
+        },
+    },
+    titleAttribute : "Сохранить запись в таблицу"
+
+   
+}).maxView("primary");
+
+
+const saveNewBtn = new Button({
+    
+    config   : {
+        id       : "table-saveNewBtn",
+        hotkey   : "Ctrl+Shift+Space",
+        hidden   : true, 
+        value    : "Сохранить", 
+        click    : function(){
+            saveNewItem();
+        },
+    },
+    titleAttribute : "Сохранить новую запись в таблицу"
+
+   
+}).maxView("primary");
+
+
+const backTableBtn = new Button({
+    
+    config   : {
+        id       : "table-backTableBtn",
+        hotkey   : "Shift+Q",
+        hidden   : true,  
+        icon     : "icon-arrow-left", 
+        click    : backTableBtnClick,
+    },
+    titleAttribute : "Вернуться к таблице"
+
+   
+}).minView();
+
+
+
 
 const editFormBtns = {
     minHeight : 48,
@@ -6283,7 +6421,13 @@ const editFormBtns = {
                     rows   : [ 
                         saveBtn,
                         saveNewBtn,
-                        emptyTmplate,
+                        {   id        : "EditEmptyTempalte",
+                            rows      : [
+                                {height:20},
+                                createEmptyTemplate("Добавьте новую запись или выберите существующую из таблицы")
+                            ],
+                        }
+                    
                     ]
                 },
              
@@ -6309,7 +6453,7 @@ class Popup {
             template    : "<div class='no-wrap-headline'>" + 
                             options.headline + 
                             "</div>", 
-            css         : "webix_template-recover", 
+            css         : "webix_popup-headline", 
             borderless  : true, 
             height      : 40 
         };
@@ -6339,18 +6483,19 @@ class Popup {
   
         this.popupView  = {
             view    : "popup",
-            css     : "webix_popup-filter-container webix_popup-config",
+            css     : "webix_popup-config",
             modal   : true,
             escHide : true,
             position: "center",
             body    : {
                 scroll : "y",
                 rows   : [
-                    {   css : "webix_filter-headline-wrapper", 
+                    {   css : "webix_popup-headline-wrapper", 
                         cols: [ 
                             this.headline,
-                            {width : 150},
-                            this.closeBtn
+                           // {},
+                            this.closeBtn,
+                            {width:12},
                         ]
                     },
 
@@ -6667,18 +6812,22 @@ function createPopupOpenBtn(elem){
             const popup = new Popup({
                 headline : "Редактор поля  «" + elem.label + "»",
                 config   : {
-                    id    : "editTablePopupText",
-                    width:400,
-                    minHeight:300,
+                    id        : "editTablePopupText",
+                    width     : 400,
+                    minHeight : 300,
             
                 },
 
                 closeClick :  closePopupClick,
             
                 elements   : {
+                    padding:{
+                        left  : 9,
+                        right : 9
+                    },
                     rows   : [
                         textarea,
-                        {height:15},
+                        {height : 15},
                         btnSave,
                     ]
                   
@@ -6793,25 +6942,28 @@ function createDatePopup(elem){
 
             const errors = [];
 
-            function validTime(item,count,idEl){
+            function validTime(item, count, idEl){
+
+                function markInvalid (){
+                    $$("timeForm").markInvalid(idEl);
+                    errors.push(idEl);
+                }
+                 
                 try{
                     if (item > count){
-                        $$("timeForm").markInvalid(idEl);
-                        errors.push(idEl);
+                        markInvalid ();
                     }
 
                     if ( !( /^\d+$/.test(item) ) ){
-                        $$("timeForm").markInvalid(idEl);
-                        errors.push(idEl);
+                        markInvalid ();
                     }
 
                     if (item.length < 2){
-                        $$("timeForm").markInvalid(idEl);
-                        errors.push(idEl);
+                        markInvalid ();
                     }
 
                 } catch (err){
-                    errors_setFunctionError(err,states_logNameFile,"validTime element: "+idEl);
+                    errors_setFunctionError(err, states_logNameFile, "validTime element: " + idEl);
                 }
             }
 
@@ -6821,25 +6973,33 @@ function createDatePopup(elem){
 
             function setValToProperty(){
                 try{
-                    if ( !(errors,errors.length) ){
-                        property.setValues({ [elem.id]:sentVal}, true);
+                    if ( !(errors, errors.length) ){
+                        property.setValues({ [elem.id] : sentVal}, true);
+
                         if(propId){
-                            property.setValues({ id:propId}, true);
+                            property.setValues({ id : propId}, true);
+
                         }
+
                         destructorPopup( $$("editTablePopupCalendar"));
                     }
                 } catch (err){
-                    errors_setFunctionError(err,states_logNameFile,"setValToProperty");
+                    errors_setFunctionError(err, states_logNameFile, "setValToProperty");
                 }
             }
 
             setValToProperty();
+
+            
+            return errors.length;
         }
 
         function popupEdit(){
 
             const closePopupClick = function (){
-                let check = false;
+                const calendar = $$("editTablePopupCalendar");
+                let check      = false;
+
                 function checkDirty(elem){
                     if ( elem.config.dirtyProp && !check ){
                         check = true;
@@ -6850,21 +7010,31 @@ function createDatePopup(elem){
                 checkDirty ( $$("hourInp") );
                 checkDirty ( $$("minInp" ) );
                 checkDirty ( $$("secInp" ) );
-   
+
+                
                 if (check){
+              
                     modalBox().then(function(result){
+
+                        if (result == 1){
+                            destructorPopup( calendar );
+                        }
         
-                        if (result == 1 || result == 2){
+                        if (result == 2){
 
                             if (result == 2){
-                                editPropCalendarSubmitClick ();
+                                const clickResult = editPropCalendarSubmitClick ();
+                   
+                                if (!clickResult){
+                                    destructorPopup( calendar );
+                                }
                             }
 
-                           destructorPopup( $$("editTablePopupCalendar"));
+                          
                         }
                     });
                 } else {
-                    destructorPopup( $$("editTablePopupCalendar"));
+                    destructorPopup( calendar );
                 }
 
             };
@@ -7050,7 +7220,6 @@ function setToolBtns(){
         }
 
         propertyElems.forEach(function(el,i){
-
             if        (el.type == "combo"){
                 createRefBtn(el.id);
 
@@ -7183,9 +7352,6 @@ function createEditFields (parentElement) {
 
                 if (el.type == "datetime"){
                     createDateTimeInput();
-
-                    
-                
 
                 } else if (el.type.includes("reference")) {
                     createReferenceInput();
@@ -8468,6 +8634,29 @@ const userprefsLayout = {
 
 
 function contextMenu (){
+    const combo     = $$("editTreeCombo");
+    const comboData = combo.getPopup().getList();
+    
+    function addOption(option){     
+        const pull      = comboData.data.pull;
+
+        Object.values(pull).forEach(function(el,i){
+
+            if (el.id !== option.id){
+                comboData.parse(option);
+            }
+
+        });
+
+    }
+
+    function renameOption(option){
+        comboData.parse(option);
+    }
+
+    function removeOption(option){
+        combo.getList().remove(option.id);
+    }
 
     return {
         view:"contextmenu",
@@ -8484,6 +8673,7 @@ function contextMenu (){
         master: $$("treeEdit"),
         on:{
             onMenuItemClick:function(id){
+             
                 let context = this.getContext();
 
                 let tree = $$("treeEdit");
@@ -8509,7 +8699,8 @@ function contextMenu (){
                 switch (cmd) {
                     case "Добавить": {
                     
-                        let text = prompt("Имя нового подэлемента '"+titem.value+"'", "");
+                        const text = prompt("Имя нового подэлемента '"+titem.value+"'", "");
+
                     
                         if (text != null) {
                             postObj.name = text;
@@ -8531,6 +8722,17 @@ function contextMenu (){
                                         }, 0, titem.id);
                                         
                                         tree.open(titem.id);
+                                        console.log(titem,titem.id)
+
+                              
+                              
+                          
+                                        const comboOption = {
+                                            id      : titem.id, 
+                                            value   : titem.value
+                                        };
+       
+                                        addOption(comboOption);
                                     
                                         setLogValue("success","Данные сохранены");
                                     } else {
@@ -8566,6 +8768,10 @@ function contextMenu (){
                                     if (data.err_type == "i"){
                                         titem.value = text;
                                         tree.updateItem(titem.id, titem);
+                                        renameOption({
+                                            id    : titem.id, 
+                                            value : titem.value
+                                        });
                                         setLogValue("success","Данные изменены");
                                     } else {
                                         errors_setFunctionError( data.err,"editTree","case rename put msg");
@@ -8590,6 +8796,10 @@ function contextMenu (){
                                 data = data.json();
                                 if (data.err_type == "i"){
                                     tree.remove(titem.id);
+                                    removeOption({
+                                        id    : titem.id, 
+                                        value : titem.value
+                                    });
                                     setLogValue("success","Данные удалены");
                                 } else {
                                     errors_setFunctionError( data.err,"editTree","case delete del msg");
@@ -8639,6 +8849,38 @@ function contextMenu (){
 }
 
 
+
+function editTreeClick (){
+    webix.message({
+        text:"Блок находится в разработке",
+        type:"debug"
+    });
+
+    const combo = $$("editTreeCombo");
+    const tree  = $$("treeEdit");
+    const value = combo.getValue();
+
+    function openFullBranch(value){
+       const parent = tree.getParentId(value);
+      
+        if (parent && tree.getParentId(parent)){
+            tree.open(parent);
+            openFullBranch(parent);
+        } else {
+            tree.open(value);
+        }  
+    }
+    
+    if (tree.exists(value)){
+      //  console.log(tree.getItemNode(value),tree.getNode(value),)
+        openFullBranch  (value);
+        tree.showItem   (value);
+        tree.open       (value);
+    
+    }
+}
+
+
 function editTreeLayout () {
     const tree = {
         view:"edittree",
@@ -8648,48 +8890,47 @@ function editTreeLayout () {
         editValue:"value",
         css:"webix_tree-edit",
         editaction:"dblclick",
-        data:[
-        ],
+        data:[],
         on:{
             onAfterEditStop:function(state, editor, ignoreUpdate){
-            try {
-                let url = "/init/default/api/trees/";
-                
-                if(state.value != state.old){
-                    let pid = $$("treeEdit").getParentId(editor.id);
+                try {
+                    let url = "/init/default/api/trees/";
                     
-                    let postObj = {
-                        name : state.value,
-                        pid : pid,
-                        id:editor.id,
-                        owner : null,
-                        descr : "",
-                        ttype : 1,
-                        value : "",
-                        cdt : null,
-                    };
+                    if(state.value != state.old){
+                        let pid = $$("treeEdit").getParentId(editor.id);
+                        
+                        let postObj = {
+                            name    : state.value,
+                            pid     : pid,
+                            id      : editor.id,
+                            owner   : null,
+                            descr   : "",
+                            ttype   : 1,
+                            value   : "",
+                            cdt     : null,
+                        };
 
-                    const postData = webix.ajax().put(url+editor.id, postObj);
+                        const postData = webix.ajax().put(url + editor.id, postObj);
 
-                    postData.then(function(data){
-                        data = data.json();
-                        if (data.err_type == "i"){
-                            setLogValue("success","Данные изменены");
-                        } else {
-                            errors_setFunctionError(data.err,"editTree","tree onAfterEditStop postData msg");
-                        }
-                    });
+                        postData.then(function(data){
+                            data = data.json();
+                            if (data.err_type == "i"){
+                                setLogValue("success","Данные изменены");
+                            } else {
+                                errors_setFunctionError(data.err,"editTree","tree onAfterEditStop postData msg");
+                            }
+                        });
 
-                    postData.fail(function(err){
-                        setAjaxError(err, "editTree","tree onAfterEditStop postData");
-                    });
+                        postData.fail(function(err){
+                            setAjaxError(err, "editTree","tree onAfterEditStop postData");
+                        });
 
 
+                    }
+                } catch (err){
+                    setAjaxError(err, "editTree","tree onAfterEditStop");
                 }
-            } catch (err){
-                setAjaxError(err, "editTree","tree onAfterEditStop");
-            }
-        },
+            },
         }
     
     };
@@ -8703,7 +8944,24 @@ function editTreeLayout () {
                         tree,
                     ],
                 },
-                {}
+                {rows: [
+                    {
+                        view:"combo", 
+                        id:"editTreeCombo",
+                        labelPosition:"top",
+                        label:"Выберите элемент для редактирования", 
+                        options:[]
+                    },
+
+                    {   view:"button", 
+                        value:"Применить" ,
+                        css:"webix_primary",
+                        click:editTreeClick
+                    },
+                    {},
+                ]},
+                
+                  
             ]
         }
 
@@ -9103,6 +9361,7 @@ function createTableRows (idCurrTable,idsParam, offset = 0){
                     }, 1000);
                 } else {
            
+    
                 
                     data.forEach(function(el,i){
                         checkNotUnique(el.id);
@@ -10314,7 +10573,7 @@ function getInfoTable (idCurrTable,idsParam) {
                 function addInputs(){
                    
                     try{
-                        $$("viewToolsContainer").addView( inpObj,0 );
+                        $$("viewToolsContainer").addView( inpObj, 0 );
                   
                     } catch (err){
                         errors_setFunctionError(err,getInfoTable_logNameFile,"adaptiveCustomInputs => addInputs");
@@ -10482,15 +10741,37 @@ function getInfoTable (idCurrTable,idsParam) {
 
 const lazyLoad_limitLoad   = 80;
 
+
+function refreshTable(table){
+    const tableId           = table.config.idTable;
+    const oldOffset         = table.config.offsetAttr;
+
+    const newOffset         = oldOffset + lazyLoad_limitLoad;
+
+    table.config.offsetAttr = newOffset;
+    table.refresh();
+
+    createTableRows ("table", tableId, oldOffset);
+}
+
+
 function sortTable(table){
-    table.attachEvent("onAfterSort", function(id,sortType,colType){
+    table.attachEvent("onAfterSort", function(id, sortType){
+        
         const sortInfo = {
             idCol : id,
             type  : sortType
         };
-        table.config.sort = sortInfo;
+
+        table.config.sort       = sortInfo;
+        table.config.offsetAttr = 0;
+
+        table.clearAll();
+        refreshTable(table);
+        
     });
 }
+
 
 function scrollTableLoad(table){
     table.attachEvent("onScrollY", function(){
@@ -10498,22 +10779,12 @@ function scrollTableLoad(table){
         const scrollState  = table.getScrollState();
         const maxHeight    = table._dtable_height;
         const offsetHeight = table._dtable_offset_height;
-    
-    
-    
+ 
         if (maxHeight - scrollState.y == offsetHeight){ 
-    
-            const tableId           = table.config.idTable;
-            const oldOffset         = table.config.offsetAttr;
-    
-            const newOffset         = oldOffset + lazyLoad_limitLoad;
-    
-            table.config.offsetAttr = newOffset;
-            table.refresh();
-    
-            createTableRows ("table",tableId, oldOffset);
+            refreshTable(table);
         }
-         
+      
+
     });
 }
 
@@ -10594,6 +10865,408 @@ function columnResize(table){
 
     });
 }
+
+
+;// CONCATENATED MODULE: ./src/js/blocks/viewHeadline/title.js
+
+
+function setHeadlineBlock ( idTemplate, title ){
+    let templateTitle;
+    try{
+        if(title){
+            templateTitle = title;
+        } else {
+            templateTitle = function(){
+                const value = $$(idTemplate).getValues();
+                if (Object.keys(value).length !==0){
+                    return "<div class='no-wrap-headline'>" + value + "</div>";
+                } else {
+                    return "<div class='no-wrap-headline'> Имя не указано </div>";
+                }
+            };
+        }
+    } catch (err){
+        errors_setFunctionError(err,"blockHeadline","setHeadlineBlock");
+    } 
+
+
+    const headline = {   
+        view        : "template",
+        id          : idTemplate,
+        borderless  : true,
+        css         : "webix_block-headline",
+        height      : 34,
+        template    : templateTitle,
+        on:{
+
+        }
+    };
+
+    return headline;
+}
+
+
+;// CONCATENATED MODULE: ./src/js/blocks/viewHeadline/historyBtns.js
+
+
+
+function historyBtns_prevBtnClick (){
+    history.back();
+}
+
+function nextBtnClick (){
+    history.forward();
+}   
+
+function createHistoryBtns(){
+
+    
+    const prevBtn = new Button({
+        
+        config   : {
+            id       : webix.uid(),
+            hotkey   : "Ctrl+Shift+P",
+            icon     : "icon-arrow-left", 
+            click    : function(){
+                historyBtns_prevBtnClick();
+            },
+        },
+        titleAttribute : "Вернуться назад"
+
+    
+    }).transparentView();
+
+    const nextBtn = new Button({
+        
+        config   : {
+            id       : webix.uid(),
+            hotkey   : "Ctrl+Shift+B",
+            icon     : "icon-arrow-right", 
+            click    : function(){
+                nextBtnClick();
+            },
+        },
+        titleAttribute : "Перейти вперёд "
+
+    
+    }).transparentView();
+   
+
+    return {
+        css  : "btn-history",
+        cols : [
+            prevBtn,
+            nextBtn,
+        ]
+    };
+}
+
+ 
+ 
+
+;// CONCATENATED MODULE: ./src/js/blocks/viewHeadline/favoriteBtn.js
+
+//import { saveFavsClick } from "../favsLink.js";
+
+
+
+
+
+
+
+
+
+function saveFavsClick(){
+
+
+    async function getLinkName(){
+        
+        if (!STORAGE.fields){
+            await getData("fields"); 
+        }
+
+        function findName (id){
+            try{
+                const nameTemplate = $$("favNameLink");
+                STORAGE.tableNames.forEach(function(el,i){
+                    if (el.id == id){
+                        if(nameTemplate){
+                            nameTemplate.setValues(el.name);
+                        }
+                    }
+                    
+                });
+            } catch (err){
+                errors_setFunctionError(err,"favsLink","findName");
+            }
+        }
+        if (STORAGE.tableNames){
+            const id = getItemId();
+            findName (id);
+        }
+      
+    }
+
+    function getLink(){
+        try{
+            const link = window.location.href;
+            const favTemplate = $$("favLink");
+            if (favTemplate){
+                favTemplate.setValues(link);
+            }
+        } catch (err){
+            errors_setFunctionError(err,"favsLink","getLink");
+        }
+    }
+
+    function destructPopupSave(){
+        const popup = $$("popupFavsLinkSave");
+        try{
+            if (popup){
+                popup.destructor();
+            }
+        } catch (err){
+            errors_setFunctionError(err,"favsLink","destrucPopupSave");
+        }
+    }
+     
+    function createTemplate(id, name,nonName){
+        return {   
+            id:id,
+            css:"popup_subtitle", 
+            borderless:true, 
+            height:20 ,
+            template: function(){
+                if (Object.keys($$(id).getValues()).length !==0){
+                    return "<div style='font-weight:600'>"+name+": </div>"+$$(id).getValues();
+                } else {
+                    return "<div style='font-weight:600'>"+name+": </div>"+name+" "+nonName;
+                }
+          
+            }
+        }
+    }
+
+    function btnSaveLinkClick(){
+   
+        let favNameLinkVal;
+        let favLinkVal ;
+        const namePref = getItemId();
+        function getData(){
+            try{
+                favNameLinkVal = $$("favNameLink").getValues();
+                favLinkVal     = $$("favLink").getValues();
+            } catch (err){
+                errors_setFunctionError(err,"favsLink","btnSaveLinkClick => getData");
+            }
+        }
+
+
+        function postContent(){
+            let user = webix.storage.local.get("user");
+            let ownerData;
+
+
+            if (!user){
+                getUserData();
+                user = webix.storage.local.get("user");
+            }
+
+            if (user){
+                ownerData = user.id;
+
+                const postObj = {
+                    name:"fav-link_"+namePref,
+                    owner:ownerData,
+                    prefs:{
+                        name: favNameLinkVal,
+                        link: favLinkVal,
+                        id:namePref,
+                    }
+                };
+                const postData = webix.ajax().post("/init/default/api/userprefs/",postObj);
+
+                postData.then(function(data){
+                    data = data.json();
+            
+                    if (data.err_type == "i"){
+                        setLogValue("success", "Ссылка" + " «" + favNameLinkVal + "» " + " сохранёна в избранное");
+                    } else {
+                        errors_setFunctionError(data.err, "favsLink", "btnSaveLinkClick => postContent msg" );
+                    }
+
+                    destructPopupSave();
+                });
+
+                postData.fail(function(err){
+                    setAjaxError(err, "favsLink", "btnSaveLinkClick => postContent");
+                });
+            }
+        }
+
+
+        function getUserprefs(){
+            const getData = webix.ajax().get("/init/default/api/userprefs/");
+            getData.then(function(data){
+                data = data.json().content;
+                const favPrefs = [];
+
+                function getFavPrefs(){
+                    try{
+                        data.forEach(function(pref){
+            
+                            if (pref.name.includes("fav-link")){
+                                favPrefs.push(pref.name);
+                            }
+                    
+                        });
+                    } catch (err){
+                        errors_setFunctionError(err,"favsLink","getUserprefs => getFavPrefs");
+                    }
+                }
+
+                function getNotUniquePrefs (){
+                    try{
+                        let unique = true;
+                        if (favPrefs.length){
+                            favPrefs.forEach(function(el){
+                             
+                                if (el.includes(namePref)){
+                                    
+                                    const index = el.indexOf("_")+1;
+                                    const id = el.slice(index);
+                            
+                                    if (id == namePref && unique){
+                                        unique = false;
+                                        setLogValue("success", "Такая ссылка уже есть в избранном");
+                                    } 
+                                } 
+                            });
+                        } 
+                        
+                     
+                        if (!(favPrefs.length) || unique) {
+                            postContent();
+                        } else if (!unique){
+                            destructPopupSave();
+                        }
+                    } catch (err){
+                        errors_setFunctionError(err,"favsLink","getUserprefs => getNotUniquePrefs");
+                    }
+                }
+      
+                getFavPrefs();
+                getNotUniquePrefs ();
+           
+            });
+            getData.fail(function(err){
+                setAjaxError(err, "favsLink","getUserprefs getData");
+            });
+            }
+
+
+       
+        getData();
+        getUserprefs();
+    }
+   
+    const btnSaveLink = new Button({
+    
+        config   : {
+           // hotkey   : "Ctrl+Shift+Space",
+            value    : "Сохранить ссылку", 
+            click    : function(){
+                btnSaveLinkClick();
+            },
+        },
+        titleAttribute : "Сохранить ссылку в избранное"
+    
+       
+    }).maxView("primary");
+    
+
+    const popup = new Popup({
+        headline : "Сохранить ссылку",
+        config   : {
+            id    : "popupFavsLinkSave",
+            width : 500,
+    
+        },
+
+        elements : {
+            rows : [
+                createTemplate("favNameLink", "Имя",    "не указано"),
+                {height : 5},
+                createTemplate("favLink",     "Ссылка", "не указана"),
+                {height : 10},
+                {   padding:{
+                        left  : 8,
+                        right : 8
+                    },
+                    rows:[
+                        btnSaveLink,
+                    ]
+                },
+                
+                {}
+            ]
+          
+        }
+    });
+
+    popup.createView ();
+    popup.showPopup  ();
+
+
+    getLinkName();
+    getLink();
+}
+
+
+function createFavoriteBtn(){
+
+       
+    const favsBtn = new Button({
+    
+        config   : {
+            id       : webix.uid(),
+            hotkey   : "Ctrl+Shift+L",
+            icon     : "icon-star",
+            click    : function(){
+                saveFavsClick();
+            },
+        },
+        titleAttribute : "Добавить ссылку в избранное"
+    
+       
+    }).transparentView();
+
+    return favsBtn;
+}
+
+
+
+
+;// CONCATENATED MODULE: ./src/js/blocks/viewHeadline/layout.js
+
+
+
+
+function createHeadline(idTemplate, title = null){
+    const headlineLayout = {
+        css : "webix_block-headline",
+        cols: [
+            setHeadlineBlock(idTemplate, title),
+            {},
+            createHistoryBtns(),
+            createFavoriteBtn()
+        ]
+    };
+
+    return headlineLayout;
+}
+
+
 
 
 ;// CONCATENATED MODULE: ./src/js/blocks/columnsSettings/common.js
@@ -10815,602 +11488,760 @@ function postPrefsValues(values, visCol=false){
 
 
 
-;// CONCATENATED MODULE: ./src/js/blocks/columnsSettings/columnsWidth.js
+;// CONCATENATED MODULE: ./src/js/blocks/columnsSettings/visibleColumns.js
 
 
-function setColsWidthStorage(table){
-    table.attachEvent("onColumnResize",function(id,newWidth, oldWidth, action){
-        if (action){
-           
-            const cols   = table.getColumns();
-            const values = [];
 
+
+
+
+
+
+
+
+function searchColsListPress (){
+    const list      = $$("visibleList");
+    const search    = $$("searchColsList");
+    const value     = search.getValue().toLowerCase();
+    let counter     = 0;
+    try{
+    
+        list.filter(function(obj){
+            const condition = obj.label.toLowerCase().indexOf(value) !== -1;
+
+            if (condition){
+                counter ++;
+            }
+    
+            return condition;
+        });
+
+        if (counter == 0){
+           showElem($$("visibleColsEmptyTempalte"));
+        } else {
+            hideElem($$("visibleColsEmptyTempalte"));
+        }
+      
+    } catch(err){
+        errors_setFunctionError(err,"visibleColumns","searchColsListPress");
+    }
+
+}
+
+
+function setBtnSubmitState(state){
+    const btnSubmit  = $$("visibleColsSubmit");
+    const check      = btnSubmit.isEnabled();
+
+    if (state == "enable" && !(check) ){
+        btnSubmit.enable();
+    } else if ( state == "disable" && check ){
+        btnSubmit.disable();
+    }
+}
+
+function setColsSize(col,listItems){
+    const table      = common_getTable();
+    const countCols  = listItems.length;
+    const tableWidth = $$("tableContainer").$width-17;
+    const colWidth   = tableWidth / countCols;
+
+    table.setColumnWidth(col, colWidth);
+}
+
+function clearBtnColsClick (){
+    const table  = common_getTable();
+    const cols   = table.getColumns(true);
+    const values = [];
+  
+    function returnWidthCol(){
+        const containerWidth = window.innerWidth - $$("tree").$width - 77; 
+        const cols           = table.getColumns(true).length;
+        const colWidth   = containerWidth / cols;
+        return colWidth.toFixed(2);
+    }
+
+
+
+    function returnPosition(column){
+        const defaultColsPosition = Object.keys(table.data.pull[1]);
+        let position;
+        defaultColsPosition.forEach(function(el,i){
+            if (el == column){
+                position = i;
+            }
+        });
+
+        return position;
+    }
+
+    function showCols(){
+        try{
             cols.forEach(function(el,i){
+                const colWidth    = returnWidthCol();
+                const positionCol = returnPosition(el.id);
+
+                setColsSize(el.id,cols);
+                
+                if( !( table.isColumnVisible(el.id) ) ){
+                    table.showColumn(el.id);
+                }
+           
+                table.setColumnWidth(el.id, colWidth);
 
                 values.push({
-                    column  : el.id, 
-                    position: table.getColumnIndex(el.id),
-                    width   : el.width.toFixed(2)
+                    column   : el.id,
+                    position : positionCol,
+                    width    : colWidth 
                 });
             });
+        } catch(err){
+            errors_setFunctionError(err,"visibleColumns","clearBtnColsClick => showCols");
+        }
+    }
+    modalBox(   "Будут установлены стандартные настройки", 
+            "Вы уверены?", 
+            ["Отмена", "Сохранить изменения"]
+    )
+    .then(function(result){
+
+        if (result == 1){
+            showCols();
             postPrefsValues(values);
+            destructPopup();
+            setLogValue   ("success","Рабочая область таблицы обновлена");
         }
-    });     
-}
-
-
-;// CONCATENATED MODULE: ./src/js/blocks/favsLink.js
-
-
-
-
-
-
-
-function favsLink_getUserData(){
-    const userprefsGetData = webix.ajax("/init/default/api/whoami");
-    userprefsGetData.then(function(data){
-        data = data.json().content;
-
-        let userData = {};
-    
-        userData.id       = data.id;
-        userData.name     = data.first_name;
-        userData.username = data.username;
-        
-        setStorageData("user", JSON.stringify(userData));
-        
-    });
-    userprefsGetData.fail(function(err){
-        setAjaxError(err, "favsLink","btnSaveLpostContentinkClick => getUserData");
     });
 }
 
-function setAdaptiveSize(popup){
-    if (window.innerWidth < 1200 ){
-        const size  = window.innerWidth * 0.89;
-        try{
-            popup.config.width = size;
-            popup.resize();
-        } catch (err){
-            errors_setFunctionError(err,"favsLink","function setAdaptiveSize");
-        }
+
+function visibleColsSubmitClick (){
+
+    const list      = $$("visibleListSelected");
+    const listPull  = list.data.pull;
+    const listItems = Object.values(listPull);
+    const values    = [];
+    const table     = common_getTable();
+
+    const containerWidth = window.innerWidth - $$("tree").$width - 77; 
+
+    function returnMinSize(){
+        const allCols = table.getColumns(true).length;
+        const width  = containerWidth / allCols;
+
+        return width.toFixed(2);
     }
+
+    function setLastColWidth(lastColumn,widthCols){
+        const sumWidth       = widthCols.reduce((a, b) => a + b, 0);
+
+
+        let widthLastCol   =  containerWidth - sumWidth;
+
+        if (widthLastCol < 50){
+            widthLastCol = returnMinSize();
+        }
+
+        lastColumn.width = Number(widthLastCol);
  
-}
+        values.push(lastColumn); 
+    }
 
-function favsPopupCollectionClick (){
-    const getData = webix.ajax().get("/init/default/api/userprefs/");
-    
-    getData.then(function(data){
-        data = data.json().content;
-        const favCollection = [];
 
-        let user = webix.storage.local.get("user");
-
-        if (!user){
-            favsLink_getUserData();
-            user = webix.storage.local.get("user");
-        }
-    
+    try{
+        const widthCols = [];
+        const lastColumn = {};
+ 
         
-        function getFavsCollection(){
-            try{
-                data.forEach(function(el){
-                    if (el.name.includes("fav-link") && user.id == el.owner){
-                        favCollection.push(JSON.parse(el.prefs));
-                    }
-                });
-            } catch (err){
-                errors_setFunctionError(err,"favsLink","favsPopupCollectionClick => getFavsCollection");
-            }
-        }
-
-        function createOptions(){
-            const radio = $$("favCollectionLinks");
-            try{
-                if (favCollection.length){
-                    favCollection.forEach(function(el){
-                        radio.addOption(
-                            {   id:el.id,
-                                value:el.name,
-                                favLink: el.link
-                            }
-                        );
-                        radio.removeOption(
-                            "radioNoneContent"
-                        );
-                    });
-                }
-                $$("popupFavsLink").show();
-            } catch (err){
-                errors_setFunctionError(err,"favsLink","favsPopupCollectionClick => createOptions");
-            }
+        listItems.forEach(function(el,i){
+            const positionElem = list.getIndexById(el.id);
+            const lastCol      = list.getLastId();
          
-        }
-        
-        if (user){
-            getFavsCollection();
-            createOptions();
-        }
-   
-    
-    });
+            let colWidth;
 
-    getData.fail(function(err){
-        setAjaxError(err, "favsLink","favsPopupCollectionClick getData");
-    });
-
-    
-}
-
-function favsPopupSubmitClick(){
-    try{
-        const radio  = $$("favCollectionLinks");
-        const value  = radio.getValue();
-        const option = radio.getOption(value);
-        window.location.replace(option.favLink);
-    } catch (err){
-        errors_setFunctionError(err,"favsLink","favsPopupSubmitClick");
-    }
-}
-
-function favsPopup(){
-
-
-    const radioLinks = {
-        view:"radio", 
-        id:"favCollectionLinks",
-        vertical:true,
-        options:[
-            {   id:"radioNoneContent", disabled:true, value:"Здесь будут сохранены Ваши ссылки"}
-        ],
-        on:{
-            onChange:function(newValue, oldValue){
-                try{
-                    const submitBtn = $$("favLinkSubmit");
-                    if (newValue !== oldValue){
-                        if (submitBtn && !(submitBtn.isEnabled())){
-                            submitBtn.enable();
-                        }
-                    }
-                } catch (err){
-                    errors_setFunctionError(err,"favsLink","favsPopup => radioLinks");
+            if ( el.id !== lastCol){
+                colWidth = table.getColumnConfig(el.column).width;
+              
+                if ( colWidth >= containerWidth ){
+                    colWidth = returnMinSize();
                 }
-            }
-        }
-    };
-
-    const btnSaveLink = {
-        view:"button",
-        id:"favLinkSubmit", 
-        value:"Открыть ссылку", 
-        css:"webix_primary", 
-        disabled:true,
-        click:function(){
-            favsPopupSubmitClick();
-        }
- 
-    };
- 
- 
-    const popupFavsLink = new Popup({
-        headline : "Избранное",
-        config   : {
-            id    : "popupFavsLink",
-            width     : 400,
-            minHeight : 300,
-    
-        },
-
-        elements : {
-            rows : [
-                radioLinks,
-                {height:15},
-                btnSaveLink,
-            ]
-          
-        }
-    });
-
-    popupFavsLink.createView ();
-    
-    favsPopupCollectionClick ();
-    setAdaptiveSize($$("popupFavsLink"));
-}
-
-
-function getCurrId(){
-    let id;
-    try{
-        const tree = $$("tree");
-        
-        if (tree && tree.getSelectedId()){
-            id = tree.getSelectedId();
-        } else {
-            const url = window.location.pathname;
-            const index =  window.location.pathname.lastIndexOf("/")+1;
-            id = url.slice(index);
-        
-        }
-    } catch (err){
-        errors_setFunctionError(err,"favsLink","getCurrId");
-    }
-    return id;
-}
-
-function saveFavsClick(){
-
-
-    async function getLinkName(){
-        
-        if (!STORAGE.fields){
-            await getData("fields"); 
-        }
-
-        function findName (id){
-            try{
-                const nameTemplate = $$("favNameLink");
-                STORAGE.tableNames.forEach(function(el,i){
-                    if (el.id == id){
-                        if(nameTemplate){
-                            nameTemplate.setValues(el.name);
-                        }
-                    }
-                    
-                });
-            } catch (err){
-                errors_setFunctionError(err,"favsLink","findName");
-            }
-        }
-        if (STORAGE.tableNames){
-            const id = getCurrId();
-            findName (id);
-        }
-      
-    }
-
-    function getLink(){
-        try{
-            const link = window.location.href;
-            const favTemplate = $$("favLink");
-            if (favTemplate){
-                favTemplate.setValues(link);
-            }
-        } catch (err){
-            errors_setFunctionError(err,"favsLink","getLink");
-        }
-    }
-
-    function destructPopupSave(){
-        const popup = $$("popupFavsLinkSave");
-        try{
-            if (popup){
-                popup.destructor();
-            }
-        } catch (err){
-            errors_setFunctionError(err,"favsLink","destrucPopupSave");
-        }
-    }
-     
-    function createTemplate(id, name,nonName){
-        return {   
-            id:id,
-            css:"popup_subtitle", 
-            borderless:true, 
-            height:20 ,
-            template: function(){
-                if (Object.keys($$(id).getValues()).length !==0){
-                    return "<div style='font-weight:600'>"+name+": </div>"+$$(id).getValues();
-                } else {
-                    return "<div style='font-weight:600'>"+name+": </div>"+name+" "+nonName;
-                }
-          
-            }
-        }
-    }
-
-    function btnSaveLinkClick(){
-   
-        let favNameLinkVal;
-        let favLinkVal ;
-        const namePref = getCurrId();
-        function getData(){
-            try{
-                favNameLinkVal = $$("favNameLink").getValues();
-                favLinkVal     = $$("favLink").getValues();
-            } catch (err){
-                errors_setFunctionError(err,"favsLink","btnSaveLinkClick => getData");
-            }
-        }
-
-
-        function postContent(){
-            let user = webix.storage.local.get("user");
-            let ownerData;
-
-
-            if (!user){
-                favsLink_getUserData();
-                user = webix.storage.local.get("user");
-            }
-
-            if (user){
-                ownerData = user.id;
-
-                const postObj = {
-                    name:"fav-link_"+namePref,
-                    owner:ownerData,
-                    prefs:{
-                        name: favNameLinkVal,
-                        link: favLinkVal,
-                        id:namePref,
-                    }
-                };
-                const postData = webix.ajax().post("/init/default/api/userprefs/",postObj);
-
-                postData.then(function(data){
-                    data = data.json();
             
-                    if (data.err_type == "i"){
-                        setLogValue("success", "Ссылка" + " «" + favNameLinkVal + "» " + " сохранёна в избранное");
-                    } else {
-                        errors_setFunctionError(data.err, "favsLink", "btnSaveLinkClick => postContent msg" );
-                    }
-
-                    destructPopupSave();
-                });
-
-                postData.fail(function(err){
-                    setAjaxError(err, "favsLink", "btnSaveLinkClick => postContent");
-                });
-            }
-        }
-
-
-        function getUserprefs(){
-            const getData = webix.ajax().get("/init/default/api/userprefs/");
-            getData.then(function(data){
-                data = data.json().content;
-                const favPrefs = [];
-
-                function getFavPrefs(){
-                    try{
-                        data.forEach(function(pref){
-            
-                            if (pref.name.includes("fav-link")){
-                                favPrefs.push(pref.name);
-                            }
-                    
-                        });
-                    } catch (err){
-                        errors_setFunctionError(err,"favsLink","getUserprefs => getFavPrefs");
-                    }
-                }
-
-                function getNotUniquePrefs (){
-                    try{
-                        let unique = true;
-                        if (favPrefs.length){
-                            favPrefs.forEach(function(el){
-                             
-                                if (el.includes(namePref)){
-                                    
-                                    const index = el.indexOf("_")+1;
-                                    const id = el.slice(index);
-                            
-                                    if (id == namePref && unique){
-                                        unique = false;
-                                        setLogValue("success", "Такая ссылка уже есть в избранном");
-                                    } 
-                                } 
-                            });
-                        } 
-                        
-                     
-                        if (!(favPrefs.length) || unique) {
-                            postContent();
-                        } else if (!unique){
-                            destructPopupSave();
-                        }
-                    } catch (err){
-                        errors_setFunctionError(err,"favsLink","getUserprefs => getNotUniquePrefs");
-                    }
-                }
-      
-                getFavPrefs();
-                getNotUniquePrefs ();
+                widthCols.push(colWidth);
            
-            });
-            getData.fail(function(err){
-                setAjaxError(err, "favsLink","getUserprefs getData");
-            });
+                values.push({
+                    column   : el.column, 
+                    position : positionElem,
+                    width    : Number(colWidth)
+                });
+            } else {
+                lastColumn.column   = el.column;
+                lastColumn.position = positionElem;
+            } 
+ 
+      
+
+        });
+        setLastColWidth(lastColumn,widthCols);
+
+    } catch (err){
+        errors_setFunctionError(err,"visibleColumns","visibleColsSubmitClick");
+    }
+
+    postPrefsValues(values,true);
+
+}
+
+function createMsg(){
+    if(!($$("visibleColsMsg")) ){
+        webix.message({
+            id:"visibleColsMsg",
+            type:"debug", 
+            text:"Элемент не выбран",
+        });
+    }
+}
+
+function colsMove(action){
+    const list        = $$("visibleListSelected");
+    const listElement = list.getSelectedId();
+
+    if( listElement ){
+        if (action == "up"){
+            list.moveUp(listElement,1);
+            setBtnSubmitState("enable");
+        } else if (action == "down"){
+            list.moveDown(listElement,1);
+            setBtnSubmitState("enable");
+        }   
+    } else {
+        createMsg();
+    }
+}
+
+function colsPopupSelect(action){
+
+    const list                  = $$("visibleList");
+    const listSelect            = $$("visibleListSelected");
+    const emptyTemplateSelected = $$("visibleColsEmptyTempalteSelected");
+    const emptyTemplate         = $$("visibleColsEmptyTempalte");
+
+    function showEmptyElem(list,emptyEl,btn){
+        const listPull      = Object.values(list.data.pull);
+        if ( !(listPull.length) ){
+            showElem(emptyEl);
+
+            if( btn && btn.isEnabled() ){
+                btn.disable();
+            } 
+
+            setBtnSubmitState("disable");
+
+        }
+    }
+
+    function hideEmptyElem(type){
+
+        if ( type == "available" ){
+            const pull = Object.values(list.data.pull);
+            if ( pull.length ){
+                hideElem(emptyTemplateSelected);
+                setBtnSubmitState("enable");
+            } 
+             
+        } else if ( type == "selected"  ){
+            const pull = Object.values(listSelect.data.pull);
+        
+            if ( pull.length ){
+                hideElem(emptyTemplate);
+                setBtnSubmitState("enable");
+                
+            } 
+        }  
+    }
+
+
+    if ( action == "add"){
+        const selectedItem  = list.getSelectedItem();
+        const selectedId    = list.getSelectedId  ();
+        if (selectedItem){
+            hideEmptyElem("available");
+            listSelect.add(selectedItem);
+            list.remove(selectedId);
+            showEmptyElem(list,emptyTemplate, $$("addColsBtn"));
+        
+            setBtnSubmitState("enable");
+        } else {
+            createMsg();
+        }
+
+      
+
+    } else if ( action == "remove" ){
+        const selectedItem  = listSelect.getSelectedItem();
+        const selectedId    = listSelect.getSelectedId();
+    
+        if (selectedItem){
+            hideEmptyElem("selected");
+            list.add(selectedItem);
+            listSelect.remove(selectedId);
+
+            showEmptyElem(listSelect,emptyTemplateSelected, $$("removeColsBtn"));
+         
+        } else {
+            createMsg();
+        }
+    }
+
+
+}
+
+
+function createSpace(){
+    const table    = common_getTable();
+    const list     = $$("visibleList");
+    const listPull = Object.values(list.data.pull);
+    const cols     = table.getColumns(); 
+    
+    function findRemoveEl(elem){
+        let check = false;
+
+        cols.forEach(function(item,i){
+            
+            if (elem == item.id){
+                check = true;
             }
 
-
-       
-        getData();
-        getUserprefs();
+        });
+        return check;
     }
-   
 
     
-    const btnSaveLink = {
-        view    : "button", 
-        value   : "Сохранить ссылку", 
-        css     : "webix_primary", 
-        click   : function(){
-            btnSaveLinkClick();
-        }
- 
-    };
+    function removeListItem(){
 
-    const popup = new Popup({
-        headline : "Сохранить ссылку",
-        config   : {
-            id    : "popupFavsLinkSave",
-            width : 500,
-    
-        },
+        try{
+            listPull.forEach(function(el,i){
+            
+                if (findRemoveEl(el.column)){
+                list.remove(el.id);
+                }
 
-        elements : {
-            rows : [
-                createTemplate("favNameLink", "Имя",    "не указано"),
-                {height : 5},
-                createTemplate("favLink",     "Ссылка", "не указана"),
-                {height : 10},
-                btnSaveLink,
-                {}
-            ]
-          
-        }
-    });
+            });
+        } catch (err){
+            errors_setFunctionError(err,"visibleColumns","createSpace => removeListItem");
+        }  
+    }
 
-    popup.createView ();
-    popup.showPopup  ();
-
-
-    getLinkName();
-    getLink();
-
-    setAdaptiveSize($$("popupFavsLinkSave"));   
-   
-
-}
-
-
-
-
-;// CONCATENATED MODULE: ./src/js/blocks/historyBtns.js
-function prevBtnClick (){
-    history.back();
-}
-
-function nextBtnClick (){
-    history.forward();
-}   
-
-function backButtonBrowserLogic (){
-    window.addEventListener('popstate', function(event) {
-        window.location.replace(window.location.href);
-        window.location.reload();
+    function addListSelectedItem(){
+        const viewList = $$("visibleListSelected");
+        const emptyEl  = $$("visibleColsEmptyTempalteSelected");
         
-    });
+        if (cols.length){
+            hideElem(emptyEl);
+        }
+        try{
+            cols.forEach(function(col,i){
+                viewList.add({
+                    column  :col.id,
+                    label   :col.label,
+                });
+            });
+        } catch (err){
+            errors_setFunctionError(err,"visibleColumns","createSpace => addListSelectedItem");
+        } 
+    }
+
+    if (listPull.length !== cols.length){
+        removeListItem();
+        addListSelectedItem();
+    }
+
+
 }
 
+function  visibleColsButtonClick(idTable){
+    const currTable  = $$(idTable);
+    let columns      = $$(idTable).getColumns(true);
 
-;// CONCATENATED MODULE: ./src/js/blocks/blockHeadline.js
+    
 
+    function createCheckboxes(){
 
+        function createListItems(){
 
+            try{
 
-function setHeadlineBlock ( idTemplate, title=null ){
-    let templateTitle;
-    try{
-        if(title){
-            templateTitle = title;
-        } else {
-            templateTitle = function(){
-                const value = $$(idTemplate).getValues();
-                if (Object.keys(value).length !==0){
-                    return "<div class='no-wrap-headline'>" + value + "</div>";
-                } else {
-                    return "<div class='no-wrap-headline'> Имя не указано </div>";
+                columns = currTable.getColumns(true);
+                const sortCols = _.sortBy(columns,"label");
+
+                sortCols.forEach(function(col){
+
+                    if(col.css !== "action-column" && !col.hiddenCustomAttr ){
+                      
+                        $$("visibleList").add({
+                            column  :col.id,
+                            label   :col.label,
+                        });
+                     
+                    }
+                   
+                });
+
+            } catch (err){
+                errors_setFunctionError(err,"visibleColumns","getCheckboxArray");
+            }
+        }
+
+        createListItems();
+        hideElem($$("visibleColsEmptyTempalte"));
+        showElem($$("popupVisibleCols"));
+
+    }
+
+    function createPopup(){
+       
+        function generateEmptyTemplate(id,text){
+
+            const layout = {
+                css:"list-filter-empty",
+                rows:[
+                    createEmptyTemplate(text, id)
+                ]
+            };
+
+            return  layout;
+        }
+
+        function genetateScrollView(idCheckboxes,inner){
+            return {
+                view        : "scrollview",
+                css         : "webix_multivew-cell",
+                borderless  : true,
+                scroll      : false,
+                body        : { 
+                    id  : idCheckboxes,
+                    rows: inner
                 }
             };
         }
-    } catch (err){
-        errors_setFunctionError(err,"blockHeadline","setHeadlineBlock");
+
+        const btnSaveState = {
+            view    : "button",
+            id      : "visibleColsSubmit", 
+            value   : "Сохранить состояние", 
+            css     : "webix_primary",
+            hotkey  : "shift+s", 
+            disabled: true,
+            click   : function(){
+                visibleColsSubmitClick();
+            },
+            on      : {
+                onAfterRender: function () {
+                    this.getInputNode().setAttribute("title","Изменить отображение колонок в таблице (Shift+S)");
+                }
+            } 
+    
+        };
+
+        const scrollView = [
+            {   template    : "Доступные колонки", 
+                css         : "list-filter-headline",
+                height      : 25, 
+                borderless  : true
+            },
+            generateEmptyTemplate(
+                "visibleColsEmptyTempalte",
+                "Нет доступных колонок"
+            ),
+
+            {
+                view      : "list", 
+                id        : "visibleList",
+                template  : "#label#",
+                select    : true,
+                css       : "list-filter-borders",
+                borderless: true,
+                data      : [],
+                on        : {
+                    onAfterAdd:function(){
+                        const btnAdd    = $$("addColsBtn");
+
+                        function enableBtn(){
+                            if ( btnAdd && !(btnAdd.isEnabled()) ){
+                                btnAdd.enable();
+                            }
+                        }
+
+                        enableBtn();
+  
+                    },
+                    onAfterDelete:function(id){
+                        const prevItem =  this.getNextId(id);
+                        if(prevItem){
+                            this.select(prevItem);
+                        }
+                    },
+                }
+            }
+            
+        ];
+   
+        const scrollViewSelected = [
+            {   template    : "Выбранные колонки",
+                css         : "list-filter-headline",
+                height      : 25, 
+                borderless  : true,
+             
+            },
+            generateEmptyTemplate(
+                "visibleColsEmptyTempalteSelected",
+                "Выберите колонки из доступных"
+            ),
+
+            {
+                view      : "list", 
+                id        : "visibleListSelected",
+                template  : "#label#",
+                css       : "list-filter-borders",
+                select    : true,
+                borderless: true,
+                data      : [],
+                on        : {
+                    onAfterAdd : function(){
+                        const btnRemove    = $$("removeColsBtn");
+
+                        function enableBtn(){
+                            if ( btnRemove && !(btnRemove.isEnabled()) ){
+                                btnRemove.enable();
+                            }
+                        }
+
+                        enableBtn();
+                    },
+                    onAfterDelete : function(id){
+                        const prevItem = this.getNextId(id);
+                        if(prevItem){
+                            this.select(prevItem);
+                        }
+                    },
+                
+                }
+            }
+
+        ];
+  
+
+        const moveBtns = {
+            rows:[
+
+                {   
+                    view    : "button",
+                    width   : 50, 
+                    type    : "icon",
+                    id      : "addColsBtn",
+                    css     : "list-filter-move-btns",
+                    disabled: true,
+                    icon    : "icon-arrow-right",
+                    hotkey  : "shift+a", 
+                    height  : 30,
+                    click   : function(){
+                       colsPopupSelect("add");
+                    },
+                    on: {
+                        onAfterRender : function () {
+                            this.getInputNode().setAttribute("title","Добавить выбранные колонки (Shift+A)");
+                        }
+                    } 
+                },
+                {   
+                    view    : "button",
+                    width   : 50, 
+                    type    : "icon",
+                    id      : "removeColsBtn",
+                    css     : "list-filter-move-btns",
+                    disabled: true,
+                    icon    : "icon-arrow-left",
+                    hotkey  : "shift+d",
+                    height  : 30,
+                    click   : function(){
+                        colsPopupSelect("remove");
+                    },
+                    on: {
+                        onAfterRender : function () {
+                            this.getInputNode().setAttribute("title","Убрать выбранные колонки (Shift+D)");
+                        }
+                    } 
+                },
+              
+            ]
+        };
+
+        const moveSelcted =  {
+            cols:[
+                {   
+                    view    : "button",
+                    width   : 50, 
+                    type    : "icon",
+                    id      : "moveSelctedUp",
+                    icon    : "icon-arrow-up",
+                    hotkey  : "shift+u",
+                    css     : "webix-transparent-btn",
+                    height  : 42,
+                    click   : function(){
+                        colsMove("up");
+                    },
+                    on      : {
+                        onAfterRender: function () {
+                            this.getInputNode().setAttribute("title","Поднять выбраную колонку вверх (Shift+U)");
+                        }
+                    } 
+                },
+                {   
+                    view    : "button",
+                    width   : 50, 
+                    type    : "icon",
+                    id      : "moveSelctedDown",
+                    icon    : "icon-arrow-down",
+                    css     : "webix-transparent-btn",
+                    hotkey  : "shift+w",
+                    height  : 42,
+                    click   : function(){
+                        colsMove("down");
+                    },
+                    on      : {
+                        onAfterRender: function () {
+                            this.getInputNode().setAttribute("title","Опустить выбраную колонку вниз (Shift+W)");
+                        }
+                    } 
+                },
+                {},
+            ]
+        };
+
+        const clearBtn = {   
+            view    : "button",
+            width   : 50, 
+            type    : "icon",
+            id      : "clearBtnCols",
+            icon    : "icon-trash",
+            hotkey  : "shift+r",
+            css     : "webix-transparent-btn webix-trash-btn-color",
+            height  : 42,
+            click   : function(){
+                clearBtnColsClick();
+            },
+            on: {
+                onAfterRender : function () {
+                    this.getInputNode().setAttribute("title","Установить стандартные настройки (Shift+R)");
+                }
+            } 
+        };
+
+        const search = {   
+            view        : "search", 
+            id          : "searchColsList",
+            placeholder : "Поиск (Shift+F)", 
+            css         : "searchTable",
+            height      : 42, 
+            //width       : 276,
+            hotkey      : "shift+f", 
+            on          : {
+                onTimedKeyPress : function(){
+                    searchColsListPress();
+                }
+            }
+        };
+
+        const popup = new Popup({
+            headline : "Видимость колонок",
+            config   : {
+                id    : "popupVisibleCols",
+                width       : 600,
+                maxHeight   : 400,
+            },
+    
+            elements : {
+                rows:[
+                    { cols:[
+                        {   
+                            rows:[
+                                search,
+
+                                genetateScrollView(
+                                    
+                                    "listContent",
+                                    scrollView
+                                ),
+                            ]
+                        },
+                        {width:10},
+                        { rows:[
+                            {height:45},
+                            {},
+                            moveBtns,
+                            {}
+                        ]},
+                        {width:10},
+                        { rows:[
+                        
+                            {cols:[
+                                moveSelcted,
+                                clearBtn,
+                            ]},
+                            genetateScrollView(
+                                "listSelectedContent",
+                                scrollViewSelected
+                            ),
+                        ]},
+                    ]},
+
+                    {height:20},
+
+                    btnSaveState,
+                ]
+              
+            }
+        });
+    
+        popup.createView ();
+    
+        createCheckboxes();
+        createSpace();
     }
 
-    const headline = {   
-        view        : "template",
-        id          : idTemplate,
-        borderless  : true,
-        css         : "webix_block-headline",
-        height      : 34,
-        template    : templateTitle,
-        on:{
+    createPopup();
 
-        }
-    };
-
-
-    const favsBtn = {
-        view    : "button", 
-        css     : "webix-transparent-btn",
-        type    : "icon",
-        icon    : "icon-star",
-        hotkey  : "ctrl+shift+l",
-        width   : 50,
-        click   : function(){
-            saveFavsClick();
-        },
-        on      : {
-            onAfterRender: function () {
-                this.getInputNode().setAttribute("title","Добавить ссылку в избранное (Ctrl+Shift+L)");
-            },
-        }
-    
-        
-    };
-
-    const prevBtn = {
-        view    : "button", 
-        css     : "webix-transparent-btn btn-history",
-        type    : "icon",
-        icon    : "icon-arrow-left",
-        width   : 50,
-        hotkey  : "ctrl+shift+p",
-        click   : function(){
-            prevBtnClick();
-        },
-        on      : {
-            onAfterRender: function () {
-                this.getInputNode().setAttribute("title","Вернуться назад (Ctrl+Shift+P)");
-            },
-        }
-    
-        
-    };
- 
-    const nextBtn = {
-        view    : "button", 
-        css     : "webix-transparent-btn btn-history",
-        type    : "icon",
-        icon    : "icon-arrow-right",
-        width   : 50,
-        hotkey  : "ctrl+shift+b",
-        click   : function(){
-            nextBtnClick();
-        },
-        on      : {
-            onAfterRender: function () {
-                this.getInputNode().setAttribute("title","Перейти вперёд (Ctrl+Shift+B)");
-            },
-        }
-    
-        
-    };
- 
-
-
-    const headlineLayout = {
-        css : "webix_block-headline",
-        cols: [
-            headline,
-            {},
-            {   cols:[
-                    prevBtn,
-                    nextBtn,
-                ]
-            },
-            favsBtn
-        ]
-    };
-
-    return headlineLayout;
 }
+
+
+
+
+
+;// CONCATENATED MODULE: ./src/js/blocks/tableToolbar/visibleColsBtn.js
+
+
+
+function toolbarVisibleColsBtn(idTable){
+    const idVisibleCols = idTable + "-visibleCols";
+
+    const visibleCols = new Button({
+    
+        config   : {
+            id       : idVisibleCols,
+            hotkey   : "Ctrl+Shift+A",
+            disabled : true,
+            icon     : "icon-columns",
+            click    : function(){
+                visibleColsButtonClick(idTable);
+            },
+        },
+        titleAttribute : "Показать/скрыть колонки"
+    
+       
+    }).transparentView();
+
+    return visibleCols;
+}
+
 
 
 ;// CONCATENATED MODULE: ./src/js/blocks/tableFilter/common.js
@@ -12661,43 +13492,44 @@ function filterBtnClick (idTable){
 }
 
 
-function toolbarFilterBtn(idTable,visible){
+;// CONCATENATED MODULE: ./src/js/blocks/tableToolbar/filterBtn.js
+
+
+
+
+function toolbarFilterBtn(idTable, visible){
     let idBtnEdit = idTable + "-editTableBtnId",
         idFilter  = idTable + "-filterId"
     ;
 
-    const btn = 
-    {   view    : "button",
-        width   : 50, 
-        type    : "icon",
-        id      : idFilter,
-        hidden  : visible,
-        icon    : "icon-filter",
-        css     : "webix_btn-filter webix-transparent-btn ",
-        disabled: true,
-        title   : "текст",
-        hotkey  : "ctrl+shift+f",
-        height  : 42,
-        click   : function(){
-            filterBtnClick(idTable,idBtnEdit);
+    const btn = new Button({
+        config   : {
+            id       : idFilter,
+            hotkey   : "Ctrl+Shift+F",
+            css      :  "webix_btn-filter webix-transparent-btn ",
+            disabled : true,
+            hidden   : visible,
+            icon     : "icon-filter",
+            click    : function(){
+                filterBtnClick(idTable,idBtnEdit);
+            },
         },
-        on      : {
-            onAfterRender: function () {
-                this.getInputNode().setAttribute("title","Показать/скрыть фильтры (Ctrl+Shift+F)");
-            }
-        } 
-    };
+        titleAttribute : "Показать/скрыть фильтры"
+    
+       
+    }).transparentView();
 
     return btn;
 }
 
 
-;// CONCATENATED MODULE: ./src/js/blocks/tableEditForm/toolbarBtn.js
+;// CONCATENATED MODULE: ./src/js/blocks/tableToolbar/editFormBtn.js
 
 
 
 
-const tableEditForm_toolbarBtn_logNameFile = "tableEditForm => toolbarBtn";
+
+const editFormBtn_logNameFile = "tableEditForm => toolbarBtn";
 
 function setSecondaryState(){
     const btnClass       = document.querySelector(".webix_btn-filter");
@@ -12708,7 +13540,7 @@ function setSecondaryState(){
         btnClass.classList.add   (secondaryClass);
         btnClass.classList.remove(primaryClass  );
     } catch (err) {   
-        errors_setFunctionError(err,tableEditForm_toolbarBtn_logNameFile,"setSecondaryState");
+        errors_setFunctionError(err,editFormBtn_logNameFile,"setSecondaryState");
     }
 }
 
@@ -12770,815 +13602,46 @@ function editBtnClick() {
 
 
 
-function toolbarEditButton (idTable){
+function toolbarEditButton (idTable, visible){
     const idBtnEdit = idTable + "-editTableBtnId";
 
     function returnValue( empty = true ){
-        const icon = "<span class='webix_icon icon-pencil' style='font-size:13px!important'></span>";
-        const text = "<span style='padding-left: 5px; font-size:13px!important' >Редактор записи</span>";
+        const icon = "<span class='webix_icon  icon-pencil' style='font-size:13px!important;'></span>";
+        const text = "<span style='padding-left: 5px; font-size:13px!important; margin-right: 11px;' >Редактор записи</span>";
 
         if (empty){
             return icon;
         } else {
-            return icon+text;
+            return icon + text;
         }
     }   
 
-    return {   
-        view    : "button",
-        maxWidth: 200, 
-        value   : returnValue( false ),
-        id      : idBtnEdit,
-        css     : "webix_btn-edit",
-        title   : "текст",
-        hotkey  : "ctrl+shift+x",
-        height  : 42,
-        minWidth: 40,
-        onlyIcon: false,
-        click   : function(){
-            editBtnClick(idBtnEdit);
+    const btn = new Button({
+        config   : {
+            id       : idBtnEdit,
+            hotkey   : "Ctrl+Shift+X",
+            value    : returnValue( false ),
+            hidden   : visible,
+            css      : "edit-btn-icon",
+            minWidth : 40,
+            maxWidth : 200, 
+            onlyIcon : false,
+            click    : function(){
+                editBtnClick(idBtnEdit);
+            },
         },
-        on      : {
-            onAfterRender: function () {
-                try{
-                    if(idTable !== "table" && this.isVisible()){
-                        this.hide();
-                    }
-                } catch (err) {   
-                    errors_setFunctionError(err,tableEditForm_toolbarBtn_logNameFile,"btn edit onAfterRender");
-                }
-
-            
-                if ( this.$width < 160 &&  !this.config.onlyIcon ){
-                    this.setValue(returnValue( ));
-                    this.config.onlyIcon = true;
-                } else if (this.$width > 160 && this.config.onlyIcon){
-                    this.setValue(returnValue( false ));
-                    this.config.onlyIcon = false;
-                }
-
-                this.getInputNode().setAttribute("title","Редактировать запись (Ctrl+Shift+X)");
-            }
-        } 
-    };
-}
-
-
-;// CONCATENATED MODULE: ./src/js/blocks/columnsSettings/visibleColumns.js
-
-
-
-
-
-
-
-
-function searchColsListPress (){
-    const list      = $$("visibleList");
-    const search    = $$("searchColsList");
-    const value     = search.getValue().toLowerCase();
-    let counter     = 0;
-    try{
+        titleAttribute : "Показать/скрыть фильтры",
+        adaptValue     : returnValue( ),
     
-        list.filter(function(obj){
-            const condition = obj.label.toLowerCase().indexOf(value) !== -1;
+       
+    }).maxView();
 
-            if (condition){
-                counter ++;
-            }
-    
-            return condition;
-        });
-
-        if (counter == 0){
-           showElem($$("visibleColsEmptyTempalte"));
-        } else {
-            hideElem($$("visibleColsEmptyTempalte"));
-        }
-      
-    } catch(err){
-        errors_setFunctionError(err,"visibleColumns","searchColsListPress");
-    }
+    return btn;
 
 }
 
 
-function setBtnSubmitState(state){
-    const btnSubmit  = $$("visibleColsSubmit");
-    const check      = btnSubmit.isEnabled();
-
-    if (state == "enable" && !(check) ){
-        btnSubmit.enable();
-    } else if ( state == "disable" && check ){
-        btnSubmit.disable();
-    }
-}
-
-
-function setColsSize(col,listItems){
-    const table      = common_getTable();
-    const countCols  = listItems.length;
-    const tableWidth = $$("tableContainer").$width-17;
-    const colWidth   = tableWidth / countCols;
-
-    table.setColumnWidth(col, colWidth);
-}
-
-function clearBtnColsClick (){
-    const table  = common_getTable();
-    const cols   = table.getColumns(true);
-    const values = [];
-  
-    function returnWidthCol(){
-        const containerWidth = window.innerWidth - $$("tree").$width - 77; 
-        const cols           = table.getColumns(true).length;
-        const colWidth   = containerWidth / cols;
-        return colWidth.toFixed(2);
-    }
-
-
-
-    function returnPosition(column){
-        const defaultColsPosition = Object.keys(table.data.pull[1]);
-        let position;
-        defaultColsPosition.forEach(function(el,i){
-            if (el == column){
-                position = i;
-            }
-        });
-
-        return position;
-    }
-
-    function showCols(){
-        try{
-            cols.forEach(function(el,i){
-                const colWidth    = returnWidthCol();
-                const positionCol = returnPosition(el.id);
-
-                setColsSize(el.id,cols);
-                
-                if( !( table.isColumnVisible(el.id) ) ){
-                    table.showColumn(el.id);
-                }
-           
-                table.setColumnWidth(el.id, colWidth);
-
-                values.push({
-                    column   : el.id,
-                    position : positionCol,
-                    width    : colWidth 
-                });
-            });
-        } catch(err){
-            errors_setFunctionError(err,"visibleColumns","clearBtnColsClick => showCols");
-        }
-    }
-    modalBox(   "Будут установлены стандартные настройки", 
-            "Вы уверены?", 
-            ["Отмена", "Сохранить изменения"]
-    )
-    .then(function(result){
-
-        if (result == 1){
-            showCols();
-            postPrefsValues(values);
-            destructPopup();
-            setLogValue   ("success","Рабочая область таблицы обновлена");
-        }
-    });
-}
-
-
-function visibleColsSubmitClick (){
-
-    const list      = $$("visibleListSelected");
-    const listPull  = list.data.pull;
-    const listItems = Object.values(listPull);
-    const values    = [];
-    const table     = common_getTable();
-
-    const containerWidth = window.innerWidth - $$("tree").$width - 77; 
-
-    function returnMinSize(){
-        const allCols = table.getColumns(true).length;
-        const width  = containerWidth / allCols;
-
-        return width.toFixed(2);
-    }
-
-    function setLastColWidth(lastColumn,widthCols){
-        const sumWidth       = widthCols.reduce((a, b) => a + b, 0);
-
-
-        let widthLastCol   =  containerWidth - sumWidth;
-
-        if (widthLastCol < 50){
-            widthLastCol = returnMinSize();
-        }
-
-        lastColumn.width = Number(widthLastCol);
- 
-        values.push(lastColumn); 
-    }
-
-
-    try{
-        const widthCols = [];
-        const lastColumn = {};
- 
-        
-        listItems.forEach(function(el,i){
-            const positionElem = list.getIndexById(el.id);
-            const lastCol      = list.getLastId();
-         
-            let colWidth;
-
-            if ( el.id !== lastCol){
-                colWidth = table.getColumnConfig(el.column).width;
-              
-                if ( colWidth >= containerWidth ){
-                    colWidth = returnMinSize();
-                }
-            
-                widthCols.push(colWidth);
-           
-                values.push({
-                    column   : el.column, 
-                    position : positionElem,
-                    width    : Number(colWidth)
-                });
-            } else {
-                lastColumn.column   = el.column;
-                lastColumn.position = positionElem;
-            } 
- 
-      
-
-        });
-        setLastColWidth(lastColumn,widthCols);
-
-    } catch (err){
-        errors_setFunctionError(err,"visibleColumns","visibleColsSubmitClick");
-    }
-
-    postPrefsValues(values,true);
-
-}
-
-function createMsg(){
-    if(!($$("visibleColsMsg")) ){
-        webix.message({
-            id:"visibleColsMsg",
-            type:"debug", 
-            text:"Элемент не выбран",
-        });
-    }
-}
-
-function colsMove(action){
-    const list        = $$("visibleListSelected");
-    const listElement = list.getSelectedId();
-
-    if( listElement ){
-        if (action == "up"){
-            list.moveUp(listElement,1);
-            setBtnSubmitState("enable");
-        } else if (action == "down"){
-            list.moveDown(listElement,1);
-            setBtnSubmitState("enable");
-        }   
-    } else {
-        createMsg();
-    }
-}
-
-function colsPopupSelect(action){
-
-    const list                  = $$("visibleList");
-    const listSelect            = $$("visibleListSelected");
-    const emptyTemplateSelected = $$("visibleColsEmptyTempalteSelected");
-    const emptyTemplate         = $$("visibleColsEmptyTempalte");
-
-    function showEmptyElem(list,emptyEl,btn){
-        const listPull      = Object.values(list.data.pull);
-        if ( !(listPull.length) ){
-            showElem(emptyEl);
-
-            if( btn && btn.isEnabled() ){
-                btn.disable();
-            } 
-
-            setBtnSubmitState("disable");
-
-        }
-    }
-
-    function hideEmptyElem(type){
-
-        if ( type == "available" ){
-            const pull = Object.values(list.data.pull);
-            if ( pull.length ){
-                hideElem(emptyTemplateSelected);
-                setBtnSubmitState("enable");
-            } 
-             
-        } else if ( type == "selected"  ){
-            const pull = Object.values(listSelect.data.pull);
-        
-            if ( pull.length ){
-                hideElem(emptyTemplate);
-                setBtnSubmitState("enable");
-                
-            } 
-        }  
-    }
-
-
-    if ( action == "add"){
-        const selectedItem  = list.getSelectedItem();
-        const selectedId    = list.getSelectedId  ();
-        if (selectedItem){
-            hideEmptyElem("available");
-            listSelect.add(selectedItem);
-            list.remove(selectedId);
-            showEmptyElem(list,emptyTemplate, $$("addColsBtn"));
-        
-            setBtnSubmitState("enable");
-        } else {
-            createMsg();
-        }
-
-      
-
-    } else if ( action == "remove" ){
-        const selectedItem  = listSelect.getSelectedItem();
-        const selectedId    = listSelect.getSelectedId();
-    
-        if (selectedItem){
-            hideEmptyElem("selected");
-            list.add(selectedItem);
-            listSelect.remove(selectedId);
-
-            showEmptyElem(listSelect,emptyTemplateSelected, $$("removeColsBtn"));
-         
-        } else {
-            createMsg();
-        }
-    }
-
-
-}
-
-
-function createSpace(){
-    const table    = common_getTable();
-    const list     = $$("visibleList");
-    const listPull = Object.values(list.data.pull);
-    const cols     = table.getColumns(); 
-    
-    function findRemoveEl(elem){
-        let check = false;
-
-        cols.forEach(function(item,i){
-            
-            if (elem == item.id){
-                check = true;
-            }
-
-        });
-        return check;
-    }
-
-    
-    function removeListItem(){
-
-        try{
-            listPull.forEach(function(el,i){
-            
-                if (findRemoveEl(el.column)){
-                list.remove(el.id);
-                }
-
-            });
-        } catch (err){
-            errors_setFunctionError(err,"visibleColumns","createSpace => removeListItem");
-        }  
-    }
-
-    function addListSelectedItem(){
-        const viewList = $$("visibleListSelected");
-        const emptyEl  = $$("visibleColsEmptyTempalteSelected");
-        
-        if (cols.length){
-            hideElem(emptyEl);
-        }
-        try{
-            cols.forEach(function(col,i){
-                viewList.add({
-                    column  :col.id,
-                    label   :col.label,
-                });
-            });
-        } catch (err){
-            errors_setFunctionError(err,"visibleColumns","createSpace => addListSelectedItem");
-        } 
-    }
-
-    if (listPull.length !== cols.length){
-        removeListItem();
-        addListSelectedItem();
-    }
-
-
-}
-
-function  visibleColsButtonClick(idTable){
-    const currTable  = $$(idTable);
-    let columns      = $$(idTable).getColumns(true);
-
-    
-
-    function createCheckboxes(){
-
-        function createListItems(){
-
-            try{
-
-                columns = currTable.getColumns(true);
-                const sortCols = _.sortBy(columns,"label");
-
-                sortCols.forEach(function(col){
-
-                    if(col.css !== "action-column" && !col.hiddenCustomAttr ){
-                      
-                        $$("visibleList").add({
-                            column  :col.id,
-                            label   :col.label,
-                        });
-                     
-                    }
-                   
-                });
-
-            } catch (err){
-                errors_setFunctionError(err,"visibleColumns","getCheckboxArray");
-            }
-        }
-
-        createListItems();
-        hideElem($$("visibleColsEmptyTempalte"));
-        showElem($$("popupVisibleCols"));
-
-    }
-
-    function createPopup(){
-
-        function generateEmptyTemplate(id,text){
-            return {   
-                id        : id,
-                css       : "webix_empty-template list-filter-empty",
-                template  : text, 
-                borderless: true
-            };
-        }
-
-        function genetateScrollView(idCheckboxes,inner){
-            return {
-                view        : "scrollview",
-                css         : "webix_multivew-cell",
-                borderless  : true,
-                scroll      : false,
-                body        : { 
-                    id  : idCheckboxes,
-                    rows: inner
-                }
-            };
-        }
-
-        const btnSaveState = {
-            view    : "button",
-            id      : "visibleColsSubmit", 
-            value   : "Сохранить состояние", 
-            css     : "webix_primary",
-            hotkey  : "shift+s", 
-            disabled: true,
-            click   : function(){
-                visibleColsSubmitClick();
-            },
-            on      : {
-                onAfterRender: function () {
-                    this.getInputNode().setAttribute("title","Изменить отображение колонок в таблице (Shift+S)");
-                }
-            } 
-    
-        };
-
-        const scrollView = [
-            {   template    : "Доступные колонки", 
-                css         : "list-filter-headline",
-                height      : 25, 
-                borderless  : true
-            },
-            generateEmptyTemplate(
-                "visibleColsEmptyTempalte",
-                "Нет доступных колонок"
-            ),
-
-            {
-                view      : "list", 
-                id        : "visibleList",
-                template  : "#label#",
-                select    : true,
-                css       : "list-filter-borders",
-                borderless: true,
-                data      : [],
-                on        : {
-                    onAfterAdd:function(){
-                        const btnAdd    = $$("addColsBtn");
-
-                        function enableBtn(){
-                            if ( btnAdd && !(btnAdd.isEnabled()) ){
-                                btnAdd.enable();
-                            }
-                        }
-
-                        enableBtn();
-  
-                    },
-                    onAfterDelete:function(id){
-                        const prevItem =  this.getNextId(id);
-                        if(prevItem){
-                            this.select(prevItem);
-                        }
-                    },
-                }
-            }
-            
-        ];
-   
-        const scrollViewSelected = [
-            {   template    : "Выбранные колонки",
-                css         : "list-filter-headline",
-                height      : 25, 
-                borderless  : true,
-             
-            },
-            generateEmptyTemplate(
-                "visibleColsEmptyTempalteSelected",
-                "Выберите колонки из доступных"
-            ),
-
-            {
-                view      : "list", 
-                id        : "visibleListSelected",
-                template  : "#label#",
-                css       : "list-filter-borders",
-                select    : true,
-                borderless: true,
-                data      : [],
-                on        : {
-                    onAfterAdd : function(){
-                        const btnRemove    = $$("removeColsBtn");
-
-                        function enableBtn(){
-                            if ( btnRemove && !(btnRemove.isEnabled()) ){
-                                btnRemove.enable();
-                            }
-                        }
-
-                        enableBtn();
-                    },
-                    onAfterDelete : function(id){
-                        const prevItem = this.getNextId(id);
-                        if(prevItem){
-                            this.select(prevItem);
-                        }
-                    },
-                
-                }
-            }
-
-        ];
-  
-
-        const moveBtns = {
-            rows:[
-
-                {   
-                    view    : "button",
-                    width   : 50, 
-                    type    : "icon",
-                    id      : "addColsBtn",
-                    css     : "list-filter-move-btns",
-                    disabled: true,
-                    icon    : "icon-arrow-right",
-                    hotkey  : "shift+a", 
-                    height  : 30,
-                    click   : function(){
-                       colsPopupSelect("add");
-                    },
-                    on: {
-                        onAfterRender : function () {
-                            this.getInputNode().setAttribute("title","Добавить выбранные колонки (Shift+A)");
-                        }
-                    } 
-                },
-                {   
-                    view    : "button",
-                    width   : 50, 
-                    type    : "icon",
-                    id      : "removeColsBtn",
-                    css     : "list-filter-move-btns",
-                    disabled: true,
-                    icon    : "icon-arrow-left",
-                    hotkey  : "shift+d",
-                    height  : 30,
-                    click   : function(){
-                        colsPopupSelect("remove");
-                    },
-                    on: {
-                        onAfterRender : function () {
-                            this.getInputNode().setAttribute("title","Убрать выбранные колонки (Shift+D)");
-                        }
-                    } 
-                },
-              
-            ]
-        };
-
-        const moveSelcted =  {
-            cols:[
-                {   
-                    view    : "button",
-                    width   : 50, 
-                    type    : "icon",
-                    id      : "moveSelctedUp",
-                    icon    : "icon-arrow-up",
-                    hotkey  : "shift+u",
-                    css     : "webix-transparent-btn",
-                    height  : 42,
-                    click   : function(){
-                        colsMove("up");
-                    },
-                    on      : {
-                        onAfterRender: function () {
-                            this.getInputNode().setAttribute("title","Поднять выбраную колонку вверх (Shift+U)");
-                        }
-                    } 
-                },
-                {   
-                    view    : "button",
-                    width   : 50, 
-                    type    : "icon",
-                    id      : "moveSelctedDown",
-                    icon    : "icon-arrow-down",
-                    css     : "webix-transparent-btn",
-                    hotkey  : "shift+w",
-                    height  : 42,
-                    click   : function(){
-                        colsMove("down");
-                    },
-                    on      : {
-                        onAfterRender: function () {
-                            this.getInputNode().setAttribute("title","Опустить выбраную колонку вниз (Shift+W)");
-                        }
-                    } 
-                },
-                {},
-            ]
-        };
-
-        const clearBtn = {   
-            view    : "button",
-            width   : 50, 
-            type    : "icon",
-            id      : "clearBtnCols",
-            icon    : "icon-trash",
-            hotkey  : "shift+r",
-            css     : "webix-transparent-btn webix-trash-btn-color",
-            height  : 42,
-            click   : function(){
-                clearBtnColsClick();
-            },
-            on: {
-                onAfterRender : function () {
-                    this.getInputNode().setAttribute("title","Установить стандартные настройки (Shift+R)");
-                }
-            } 
-        };
-
-        const search = {   
-            view        : "search", 
-            id          : "searchColsList",
-            placeholder : "Поиск (Shift+F)", 
-            css         : "searchTable",
-            height      : 42, 
-            //width       : 276,
-            hotkey      : "shift+f", 
-            on          : {
-                onTimedKeyPress : function(){
-                    searchColsListPress();
-                }
-            }
-        };
-
-        const popup = new Popup({
-            headline : "Видимость колонок",
-            config   : {
-                id    : "popupVisibleCols",
-                width       : 600,
-                maxHeight   : 400,
-            },
-    
-            elements : {
-                rows:[
-                    { cols:[
-                        {   
-                            rows:[
-                                search,
-
-                                genetateScrollView(
-                                    
-                                    "listContent",
-                                    scrollView
-                                ),
-                            ]
-                        },
-                        {width:10},
-                        { rows:[
-                            {height:45},
-                            {},
-                            moveBtns,
-                            {}
-                        ]},
-                        {width:10},
-                        { rows:[
-                        
-                            {cols:[
-                                moveSelcted,
-                                clearBtn,
-                            ]},
-                            genetateScrollView(
-                                "listSelectedContent",
-                                scrollViewSelected
-                            ),
-                        ]},
-                    ]},
-
-                    {height:20},
-
-                    btnSaveState,
-                ]
-              
-            }
-        });
-    
-        popup.createView ();
-    
-        createCheckboxes();
-        createSpace();
-    }
-
-    createPopup();
-
-}
-
-function toolbarVisibleColsBtn(idTable){
-    const idVisibleCols = idTable+"-visibleCols";
-    return {   
-        view    : "button",
-        width   : 50, 
-        type    : "icon",
-        id      : idVisibleCols,
-        disabled: true,
-        icon    : "icon-columns",
-        css     : "webix_btn-download webix-transparent-btn",
-        title   : "текст",
-        height  : 42,
-        hotkey  :"ctrl+shift+c",
-        click   : function(){
-            visibleColsButtonClick(idTable);
-        },
-        on: {
-            onAfterRender : function () {
-                this.getInputNode().setAttribute("title","Показать/скрыть колонки (Ctrl+Shift+C)");
-            }
-        } 
-    };
-}
-
-
-
-
-;// CONCATENATED MODULE: ./src/js/blocks/toolbarTable.js
-
-
-
-
-
-
-
+;// CONCATENATED MODULE: ./src/js/blocks/tableToolbar/exportBtn.js
 
 
 
@@ -13586,51 +13649,55 @@ function toolbarVisibleColsBtn(idTable){
 function exportToExcel(idTable){
     try{
         webix.toExcel(idTable, {
-        filename:"Table",
-        filterHTML:true,
-        styles:true
+            filename    : "Table",
+            filterHTML  : true,
+            styles      : true
         });
-        setLogValue("success","Таблица сохранена");
+        setLogValue("success", "Таблица сохранена");
+
     } catch (err) {   
-        errors_setFunctionError(err,"toolbarTable","exportToExcel");
+        errors_setFunctionError(err, "toolbarTable", "exportToExcel");
     }
 }
 
-function toolbarDownloadButton(idTable,visible){
-    const idExport = idTable+"-exportBtn";
-    return {   
-        view:"button",
-        width: 50, 
-        type:"icon",
-        id:idExport,
-        hidden:visible,
-        icon:"icon-arrow-circle-down",
-        css:"webix_btn-download webix-transparent-btn",
-        title:"текст",
-        height:42,
-        hotkey  :"ctrl+shift+y",
-        click:function(){
-            exportToExcel(idTable);
+function toolbarDownloadButton(idTable, visible){
+    const idExport = idTable + "-exportBtn";
+
+    const exportBtn = new Button({
+    
+        config   : {
+            id       : idExport,
+            hotkey   : "Ctrl+Shift+Y",
+            hidden   : visible, 
+            icon     : "icon-arrow-circle-down",
+            click    : function(){
+                exportToExcel(idTable);
+            },
         },
-        on: {
-            onAfterRender: function () {
-                this.getInputNode().setAttribute("title","Экспорт таблицы (Ctrl+Shift+Y)");
-            }
-        } 
-    };
+        titleAttribute : "Экспорт таблицы"
+    
+       
+    }).transparentView();
+    
+    return exportBtn;
 }
 
-function createTemplateCounter(idEl,text){
+
+
+;// CONCATENATED MODULE: ./src/js/blocks/tableToolbar/counter.js
+function createTemplateCounter(idEl, text){
     const view = {   
-        view:"template",
-        id:idEl,
-        css:"webix_style-template-count",
-        height:30,
+        view    : "template",
+        id      : idEl,
+        css     : "webix_style-template-count",
+        height  : 30,
         template:function () {
-            if (Object.keys($$(idEl).getValues()).length !==0){
+            const values = $$(idEl).getValues();
+            const keys   = Object.keys(values);
+            if (keys.length !==0){
                 
-                return "<div style='color:#999898;'>"+text+":"+
-                        " "+$$(idEl).getValues()+
+                return "<div style='color:#999898;'>" + 
+                        text + ": " + values + 
                         " </div>";
             } else {
                 return "";
@@ -13641,7 +13708,19 @@ function createTemplateCounter(idEl,text){
     return view;
 }
 
-function tableToolbar (idTable,visible=false) {
+
+;// CONCATENATED MODULE: ./src/js/blocks/tableToolbar/layout.js
+
+
+
+
+
+
+
+
+
+
+function tableToolbar (idTable, visible=false) {
 
     const idFindElements   = idTable+"-findElements",
           idFilterElements = idTable+"-idFilterElements",
@@ -13651,8 +13730,7 @@ function tableToolbar (idTable,visible=false) {
     return { 
         
         rows:[
-            setHeadlineBlock(idHeadline),
-
+            createHeadline(idHeadline),
             {
                 css:"webix_filterBar",
                 padding:{
@@ -13660,11 +13738,11 @@ function tableToolbar (idTable,visible=false) {
                 }, 
                 height: 40,
                 cols: [
-                    toolbarFilterBtn(idTable,visible),
-                    toolbarEditButton(idTable),
+                    toolbarFilterBtn        (idTable, visible),
+                    toolbarEditButton       (idTable, visible),
                     {},
-                    toolbarVisibleColsBtn(idTable),
-                    toolbarDownloadButton(idTable,visible)
+                    toolbarVisibleColsBtn   (idTable),
+                    toolbarDownloadButton   (idTable, visible)
                 ],
             },
 
@@ -13676,6 +13754,29 @@ function tableToolbar (idTable,visible=false) {
     };
 }
 
+
+;// CONCATENATED MODULE: ./src/js/blocks/columnsSettings/columnsWidth.js
+
+
+function setColsWidthStorage(table){
+    table.attachEvent("onColumnResize",function(id,newWidth, oldWidth, action){
+        if (action){
+           
+            const cols   = table.getColumns();
+            const values = [];
+
+            cols.forEach(function(el,i){
+
+                values.push({
+                    column  : el.id, 
+                    position: table.getColumnIndex(el.id),
+                    width   : el.width.toFixed(2)
+                });
+            });
+            postPrefsValues(values);
+        }
+    });     
+}
 
 
 ;// CONCATENATED MODULE: ./src/js/blocks/tableEditForm/layout.js
@@ -13879,6 +13980,8 @@ function getLibraryData(){
 
 
 ;// CONCATENATED MODULE: ./src/js/blocks/tableFilter/popup.js
+
+
 
 
 
@@ -14135,13 +14238,6 @@ function removeBtnClick (){
         }
     });
 }
-
-const filterPrompt = {
-    css         : "webix_empty-template",
-    template    : "Выберите нужные поля или шаблон из библиотеки", 
-    borderless  : true, 
-    height      : 47
-};
 
 function tabbarClick (id){
 
@@ -14422,7 +14518,7 @@ function createFilterPopup() {
     
         elements : {
             rows : [
-                filterPrompt,
+                createEmptyTemplate("Выберите нужные поля или шаблон из библиотеки"),
                 editFormPopup
             ]
           
@@ -14439,6 +14535,8 @@ function createFilterPopup() {
 
 
 ;// CONCATENATED MODULE: ./src/js/blocks/tableFilter/buttons.js
+
+
 
 
 
@@ -15515,102 +15613,77 @@ function resetFilterBtn (){
 
 function buttonsFormFilter (name) {
 
-    const formResetBtn = {  
-        view    : "button",
-        id      : "resetFilterBtn",
-        disabled: true,
-        height  : 48,
-        minWidth: 50,
-        width   : 65,
-        hotkey  : "shift+esc",
-        css     : "webix_danger", 
-        type    : "icon", 
-        icon    : "icon-trash", 
-        click   : resetFilterBtn,
-        on      : {
-            onAfterRender: function () {
-                this.getInputNode().setAttribute("title", "Сбросить фильтры");
-            }
-        } 
-    };
+    const formResetBtn = new Button({
     
-    const formBtnSubmit = {   
-        view    : "button",
-        id      : "btnFilterSubmit",
-        height  : 48,
-        minWidth: 70, 
-        css     : "webix_primary",
-     //   hotkey  : "Enter",
-        disabled: true,
-        value   : "Применить фильтры", 
-        click   : filterSubmitBtn,
-        on      : {
-            onAfterRender: function () {
-                this.getInputNode().setAttribute(
-                    "title","Применить фильтры"
-                );
-            },
+        config   : {
+            id       : "resetFilterBtn",
+            hotkey   : "Shift+Esc",
+            disabled : true,
+            icon     : "icon-trash", 
+            click    : resetFilterBtn
         },
-    };
+        titleAttribute : "Сбросить фильтры"
     
-    const formEditBtn = {   
-        view    : "button",
-        value   : "Открыть редактор",
-        height  : 48,
-        minWidth: 140, 
-        click   : editFiltersBtn,
-        on      : {
-            onAfterRender: function () {
-                this.getInputNode().setAttribute(
-                    "title","Добавить/удалить фильтры"
-                );
-            },
-        },
-    };    
-    
-    const filterBackTableBtn = { 
-        view    : "button", 
-        id      : "table-backTableBtnFilter",
-        type    : "icon",
-        icon    : "icon-arrow-left",
-        value   : "Вернуться к таблице",
-        hidden  : true,  
-        height  : 48,
-        minWidth: 50,
-        width   : 55,
        
-        click   : function(){
-            buttons_backTableBtnClick();
+    }).minView("delete");
+
+    const formBtnSubmit = new Button({
+    
+        config   : {
+            id       : "btnFilterSubmit",
+            hotkey   : "Ctrl+Shift+Space",
+            disabled : true,
+            value    : "Применить фильтры", 
+            click    : filterSubmitBtn,
         },
+        titleAttribute : "Применить фильтры"
     
-        on      : {
-            onAfterRender: function () {
-                this.getInputNode().setAttribute(
-                    "title","Вернуться к таблице"
-                );
-            }
-        } 
-    };
+       
+    }).maxView("primary");
+
     
-    const formLibrarySaveBtn = {   
-        view    : "button",
-        id      : "filterLibrarySaveBtn",
-        disabled: true,
-        height  : 48,
-        minWidth: 50,
-        width   : 65,
-        hotkey  : "shift+esc",
-        type    : "icon", 
-        icon    : "icon-file", 
-        click   : filterLibraryBtn,
-        on      : {
-            onAfterRender: function () {
-                this.getInputNode().setAttribute(
-                    "title", "Сохранить шаблон с полями в библиотеку"
-                );
-            }
-        } 
-    };
+    const formEditBtn = new Button({
+    
+        config   : {
+            hotkey   : "Alt+A",
+            value    : "Открыть редактор", 
+            click    : editFiltersBtn
+        },
+        titleAttribute : "Добавить/удалить фильтры"
+    
+       
+    }).maxView();
+
+    const filterBackTableBtn = new Button({
+    
+        config   : {
+            id       : "table-backTableBtnFilter",
+            hotkey   : "Shift+Q",
+            hidden   : true,  
+            icon     : "icon-arrow-left", 
+            click   : function(){
+                buttons_backTableBtnClick();
+            },
+        },
+        titleAttribute : "Вернуться к таблице"
+    
+       
+    }).minView();
+    
+    const formLibrarySaveBtn = new Button({
+    
+        config   : {
+            id       : "filterLibrarySaveBtn",
+            hotkey   : "Shift+Esc",
+            icon     : "icon-file", 
+            click    : filterLibraryBtn
+        },
+        titleAttribute : "Сохранить шаблон с полями в библиотеку"
+    
+       
+    }).minView();
+    
+  
     
     if ( name == "formResetBtn" ) {
         return formResetBtn;
@@ -15631,46 +15704,20 @@ function buttonsFormFilter (name) {
 
 
 
-function layout_setAdaptiveValue(btn, adaptVal, mainVal){
-    const width  = btn.$width;
-   
-    if (width < 120 &&  btn.config.value !== adaptVal ){
-        btn.config.value = adaptVal;
-        btn.refresh();
-      
-    } else if (width > 120 &&  btn.config.value !== mainVal ) {
-        btn.config.value = mainVal;
-        btn.refresh();
-    }
-}
-
-
-const formEmptyTemplate = {   
-   // id:"filterEmptyTempalte",
-    css:"webix_empty-template",
-    template:"Добавьте фильтры из редактора",
-    borderless:true
-};
-
 const filterTableForm = {
     view        : "form", 
     hidden      : true,
     id          : "filterTableForm",
     minHeight   : 350,
-   // width       : 320,
     scroll      : true,
-    borderless  : true,
     elements    : [
         {   
-           // minHeight : 125,
             css       : "webix_form-adaptive",
-            margin    : 5,
             rows      : [
-                {   margin : 5, 
-                    rows   : [
+                {   rows   : [
                       
                     {   
-                        margin      : 5, 
+                        margin      : 2, 
                         cols        : [
                             buttonsFormFilter("filterBackTableBtn"),
                             buttonsFormFilter("formEditBtn"),
@@ -15681,25 +15728,22 @@ const filterTableForm = {
                 },
 
                 {   id   : "btns-adaptive",
-                    css  : {"margin-top":"5px!important"},
                     rows : [
                         {  
-                            margin      : 5, 
+                            margin      : 2, 
                             cols        : [
                                 buttonsFormFilter("formBtnSubmit"),
                                 buttonsFormFilter("formLibrarySaveBtn"),
                             ]
                         },
-                        {height:10},
                         
                     ]
                 }
             ]
         },
-        {   minHeight :  25,
-            id:"filterEmptyTempalte",
-            rows: [
-                formEmptyTemplate
+        {   id        : "filterEmptyTempalte",
+            rows      : [
+                createEmptyTemplate("Добавьте фильтры из редактора")
             ],
         }
 
@@ -15821,8 +15865,9 @@ const viewTools = {
 
 
 
- 
+
 // other blocks
+
 
 
 
@@ -16521,20 +16566,23 @@ function setAttributes(elem){
             const chart          = this.getNode();
             const htmlCollection = chart.getElementsByTagName('map');
             const mapTag         = htmlCollection.item(0);
-            const areas          = mapTag.childNodes;
- 
-            if (elem.action){
-                setCursorPointer(areas, true);
-            } else if (elem.data){
-                elem.data.forEach(function(el,i){
-                    // if (i == 1 || i == 4 ){
-                    //     el.action = action; 
-                    // }
-                   
-                    if (el.action){
-                        setCursorPointer(areas, false, el.id);
-                    }
-                });
+            if (mapTag){
+         
+                const areas          = mapTag.childNodes;
+    
+                if (elem.action){
+                    setCursorPointer(areas, true);
+                } else if (elem.data){
+                    elem.data.forEach(function(el,i){
+                        // if (i == 1 || i == 4 ){
+                        //     el.action = action; 
+                        // }
+                    
+                        if (el.action){
+                            setCursorPointer(areas, false, el.id);
+                        }
+                    });
+                }
             }
 
         },
@@ -16857,7 +16905,8 @@ function getInfoDashboard_createSpace( inputsArray, idsParam ){
     }
 
     function createDashInfo(){
-        const template  = setHeadlineBlock("dash-template");
+        
+        const template  = createHeadline("dash-template");
         const container = $$("dashboardInfoContainer");
 
         const dashCharts = {
@@ -17447,6 +17496,8 @@ function getInfoDashboard ( idsParam ){
 const tree_logNameFile = "router => tree";
 
 function treeRouter(id){
+     
+    
     function notFoundPopup(){
 
         const popupHeadline = {   
@@ -17608,9 +17659,11 @@ function treeRouter(id){
     }
     
     function setTableName (){
-        
-        if ($$("table-templateHeadline")){
-            const headline = $$("table-templateHeadline");
+        const tempalte     = "table-templateHeadline";
+        const tempalteView = "table-view-templateHeadline";
+         
+        if ($$(tempalte)){
+            const headline = $$(tempalte);
             try{
                 STORAGE.tableNames.forEach(function(el,i){
                     if (el.id == id){
@@ -17621,12 +17674,12 @@ function treeRouter(id){
                     
                 });
             } catch (err){
-                errors_setFunctionError(err,tree_logNameFile,"setTableName");
+                errors_setFunctionError(err, tree_logNameFile, "setTableName");
             }
         } 
         
-        if ($$("table-view-templateHeadline")){
-            const headline = $$("table-view-templateHeadline");
+        if ($$(tempalteView)){
+            const headline = $$(tempalteView);
             try{
                 STORAGE.tableNames.forEach(function(el,i){
                     if (el.id == id){
@@ -17638,11 +17691,56 @@ function treeRouter(id){
                     
                 });
             } catch (err){
-                errors_setFunctionError(err,tree_logNameFile,"setTableName element table-view-templateHeadline");
+                errors_setFunctionError(
+                    err, 
+                    tree_logNameFile, 
+                    "setTableName element table-view-templateHeadline"
+                );
             }
         }
     }
     
+    function selectTreeItem(){
+        const tree = $$("tree");
+        const firstId = tree.getFirstId();
+
+
+        const pull = $$("tree").data.pull;
+        const values = Object.values(pull);
+      
+        let topParent;
+        values.forEach(function(el,i){
+       
+            if (el.webix_kids && !(tree.exists(id))){
+
+                const obj = [el.id];
+
+                tree.callEvent("onBeforeOpen", obj);
+
+                topParent = el.id;
+            }
+
+        });
+
+        function setScroll(){
+            const scroll = tree.getScrollState();
+            tree.scrollTo(0, scroll.y); 
+        }
+
+        if (tree.exists(id)){
+            if (topParent){
+            
+                tree.open     (topParent, true);
+                tree.select   (id);
+                tree.showItem (id);
+
+                setScroll();
+            }
+
+        }
+
+    }
+
     async function getTableData (){
         
       
@@ -17652,9 +17750,9 @@ function treeRouter(id){
         }
      
         if (STORAGE.fields){
-            showTableData ();
-            setTableName ();
-
+            showTableData   ();
+            setTableName    ();
+            selectTreeItem  ();
 
         }
     }
@@ -17705,7 +17803,7 @@ function treeRouter(id){
     }
    
     checkTable();
-   
+  
 }
 
 
@@ -17968,7 +18066,7 @@ const getInfoEditTree_logNameFile = "getContent => getInfoEditTree";
 
 function getInfoEditTree() {
     const treeEdit  = $$("treeEdit");
-    const url       = "/init/default/api/"+"trees";
+    const url       = "/init/default/api/" + "trees";
     const getData   = webix.ajax().get(url);
 
     treeEdit.clearAll();
@@ -17977,7 +18075,6 @@ function getInfoEditTree() {
 
         data = data.json().content;
         data[0].pid = 0;
-        
 
         const map = {}, 
             treeStruct = [],
@@ -18013,6 +18110,7 @@ function getInfoEditTree() {
             }
         }
 
+ 
         function createStruct(){
             try{
                 treeData.forEach(function(el,i){
@@ -18026,8 +18124,55 @@ function getInfoEditTree() {
                     }
                 });
             } catch (err) {
-                errors_setFunctionError(err,getInfoEditTree_logNameFile,"createStruct")
+                errors_setFunctionError(err, getInfoEditTree_logNameFile, "createStruct")
             }
+        }
+
+        function isParent(el){
+            let res          = false;
+            const firstChild = treeEdit.getFirstChildId(el);
+
+            if (firstChild){
+                res = true;
+            }
+
+            return res;
+        }
+
+        function findParents(){
+            const parents = [];
+     
+            treeData.forEach(function(item,i){
+
+                if (isParent(item.id)){
+                    parents.push(item);
+                }
+               
+            });
+
+            return parents;
+        }
+
+        function setComboValues(){
+            const parents = findParents();
+            const options = [];
+            const combo   = $$("editTreeCombo");
+
+            parents.forEach(function(parent,i){
+                options.push({
+                    id    : parent.id,
+                    value : parent.value
+                });
+            });
+
+ 
+       
+
+            combo.getPopup().getList().parse(options);
+
+            const firstOption = options[0].id;
+            combo.setValue(firstOption);
+
         }
 
         pushTreeData();
@@ -18035,10 +18180,14 @@ function getInfoEditTree() {
 
         treeEdit.parse(treeStruct);
 
+        setComboValues();
+
+
+
     });
 
     getData.fail(function(err){
-        setAjaxError(err, "content","getInfoEditTree");
+        setAjaxError(err, "content", "getInfoEditTree");
     });
 
   
@@ -18509,6 +18658,8 @@ const collapseBtn = {
 
 
 ;// CONCATENATED MODULE: ./src/js/components/header/logBtn.js
+
+
 function logBtnClick(id){
     const btn = $$(id);
 
@@ -18529,12 +18680,12 @@ function onChangeLogBtn(newValue){
     const lastItemList = list.getLastId();
 
     function setState (height,icon){
-        logBtn.config.badge = "";
+        logBtn.config.badge     = "";
 
         logLayout.config.height = height;
         logLayout.resize();
 
-        logBtn.config.icon = icon;
+        logBtn.config.icon      = icon;
         logBtn.refresh();
     }
 
@@ -18548,35 +18699,219 @@ function onChangeLogBtn(newValue){
 }
 
 
-const logBtn = {   
-    view    : "button",  
-    id      : "webix_log-btn",
-    type    : "icon", 
-    icon    : "icon-eye",
-    height  : 42, 
-    badge   : 0,
-    width   : 50,
-    hotkey  : "ctrl+m",
-    css     : "webix_log-btn",
-    click   : function(id){
-        logBtnClick(id)
-    }  ,
-
-    on: {
-        onAfterRender: function () {
-            this.getInputNode().setAttribute("title","Показать/скрыть системные сообщения (Ctrl+M)");
+const logBtn = new Button({
+    
+    config   : {
+        id       : "webix_log-btn",
+        hotkey   : "Ctrl+M",
+        icon     : "icon-eye", 
+        badge    : 0,
+        click   : function(id){
+            logBtnClick(id)
         },
-
-        onChange:function(newValue, oldValue, config){
+    },
+    onFunc   :{
+        onChange:function(newValue){
             onChangeLogBtn(newValue);
         }
     },
+    titleAttribute : "Показать/скрыть системные сообщения"
 
-};
+   
+}).minView();
+
+
+;// CONCATENATED MODULE: ./src/js/blocks/favsLink.js
+
+
+
+
+
+
+
+
+
+function favsLink_getUserData(){
+    const userprefsGetData = webix.ajax("/init/default/api/whoami");
+    userprefsGetData.then(function(data){
+        data = data.json().content;
+
+        let userData = {};
+    
+        userData.id       = data.id;
+        userData.name     = data.first_name;
+        userData.username = data.username;
+        
+        setStorageData("user", JSON.stringify(userData));
+        
+    });
+    userprefsGetData.fail(function(err){
+        setAjaxError(err, "favsLink","btnSaveLpostContentinkClick => getUserData");
+    });
+}
+
+function setAdaptiveSize(popup){
+    if (window.innerWidth < 1200 ){
+        const size  = window.innerWidth * 0.89;
+        try{
+            popup.config.width = size;
+            popup.resize();
+        } catch (err){
+            errors_setFunctionError(err,"favsLink","function setAdaptiveSize");
+        }
+    }
+ 
+}
+
+function favsPopupCollectionClick (){
+    const getData = webix.ajax().get("/init/default/api/userprefs/");
+    
+    getData.then(function(data){
+        data = data.json().content;
+        const favCollection = [];
+
+        let user = webix.storage.local.get("user");
+
+        if (!user){
+            favsLink_getUserData();
+            user = webix.storage.local.get("user");
+        }
+    
+        
+        function getFavsCollection(){
+            try{
+                data.forEach(function(el){
+                    if (el.name.includes("fav-link") && user.id == el.owner){
+                        favCollection.push(JSON.parse(el.prefs));
+                    }
+                });
+            } catch (err){
+                errors_setFunctionError(err,"favsLink","favsPopupCollectionClick => getFavsCollection");
+            }
+        }
+
+        function createOptions(){
+            const radio = $$("favCollectionLinks");
+            try{
+                if (favCollection.length){
+                    favCollection.forEach(function(el){
+                        radio.addOption(
+                            {   id:el.id,
+                                value:el.name,
+                                favLink: el.link
+                            }
+                        );
+                        radio.removeOption(
+                            "radioNoneContent"
+                        );
+                    });
+                }
+                $$("popupFavsLink").show();
+            } catch (err){
+                errors_setFunctionError(err,"favsLink","favsPopupCollectionClick => createOptions");
+            }
+         
+        }
+        
+        if (user){
+            getFavsCollection();
+            createOptions();
+        }
+   
+    
+    });
+
+    getData.fail(function(err){
+        setAjaxError(err, "favsLink","favsPopupCollectionClick getData");
+    });
+
+    
+}
+
+function favsPopupSubmitClick(){
+    try{
+        const radio  = $$("favCollectionLinks");
+        const value  = radio.getValue();
+        const option = radio.getOption(value);
+        window.location.replace(option.favLink);
+    } catch (err){
+        errors_setFunctionError(err,"favsLink","favsPopupSubmitClick");
+    }
+}
+
+function favsPopup(){
+
+
+    const radioLinks = {
+        view:"radio", 
+        id:"favCollectionLinks",
+        vertical:true,
+        options:[
+            {   id:"radioNoneContent", disabled:true, value:"Здесь будут сохранены Ваши ссылки"}
+        ],
+        on:{
+            onChange:function(newValue, oldValue){
+                try{
+                    const submitBtn = $$("favLinkSubmit");
+                    if (newValue !== oldValue){
+                        if (submitBtn && !(submitBtn.isEnabled())){
+                            submitBtn.enable();
+                        }
+                    }
+                } catch (err){
+                    errors_setFunctionError(err,"favsLink","favsPopup => radioLinks");
+                }
+            }
+        }
+    };
+
+    const btnSaveLink = {
+        view:"button",
+        id:"favLinkSubmit", 
+        value:"Открыть ссылку", 
+        css:"webix_primary", 
+        disabled:true,
+        click:function(){
+            favsPopupSubmitClick();
+        }
+ 
+    };
+ 
+ 
+    const popupFavsLink = new Popup({
+        headline : "Избранное",
+        config   : {
+            id    : "popupFavsLink",
+            width     : 400,
+            minHeight : 300,
+    
+        },
+
+        elements : {
+            padding:{
+                left  : 5,
+                right : 5
+            },
+            rows : [
+                radioLinks,
+                {height:15},
+                btnSaveLink,
+            ]
+          
+        }
+    });
+
+    popupFavsLink.createView ();
+    
+    favsPopupCollectionClick ();
+    setAdaptiveSize($$("popupFavsLink"));
+}
+
 
 
 
 ;// CONCATENATED MODULE: ./src/js/components/header/userContextBtn.js
+
 
 
 
@@ -18607,7 +18942,6 @@ function hideContentElements(id){
 }
 
 function navigateTo (path){
-    console.log(path)
     return Backbone.history.navigate(path, {trigger : true});
 }
 
@@ -18867,32 +19201,36 @@ function onItemClickBtn(){
  
 }
 
-const userContextBtn = {   
-    view    : "button",
-    id      : "button-context-menu",
-    type    : "icon",
-    disabled: true,
-    icon    : 'icon-user',
-    height  : 38, 
-    width   : 50,
-    popup   : {
 
-        view    : 'contextmenu',
-        id      : "contextmenu",
-        css     : "webix_contextmenu",
-        data    : [],
-        on      : {
-            onItemClick: function(id, e, node){
-                itemClickContext(id);
+const userContextBtn = new Button({
+    
+    config   : {
+        id       : "button-context-menu",
+        hotkey   : "Ctrl+L",
+        icon     : "icon-user", 
+        disabled : true,
+        popup   : {
+
+            view    : 'contextmenu',
+            id      : "contextmenu",
+            css     : "webix_contextmenu",
+            data    : [],
+            on      : {
+                onItemClick: function(id, e, node){
+                    itemClickContext(id);
+                }
             }
-        }
+        },
     },
-    on:{
+    onFunc   :{
         onItemClick: function(){
             onItemClickBtn();
         }
-    }
-};
+    },
+    titleAttribute : "Пользователь"
+
+   
+}).minView();
 
 
 ;// CONCATENATED MODULE: ./src/js/components/header/layout.js
@@ -19707,10 +20045,11 @@ function onBeforeSelectFunc(data){
 const onBeforeOpen_logNameFile = "treeSidebar => onBeforeOpen";
 
 function onBeforeOpenFunc(id){
+ 
     const tree          = $$("tree");
-    const selectedItem  = $$("tree").getItem(id);
-    const idLoadElement = "q-load_data-tree_"+ webix.uid();
-    const idNoneElement = "q-none_data-tree_"+ webix.uid();
+    const selectedItem  = tree.getItem(id);
+    const idLoadElement = "q-load_data-tree_" + webix.uid();
+    const idNoneElement = "q-none_data-tree_" + webix.uid();
 
     function createLoadEl(){
         tree.data.add({
@@ -19737,8 +20076,8 @@ function onBeforeOpenFunc(id){
       
         }
 
-        const content   = STORAGE.fields.content;
-        const obj       = Object.keys(content); 
+        const content = STORAGE.fields.content;
+        const obj     = Object.keys(content); 
 
         function findNotUniqueItem (data){
             let check = false;
@@ -19760,6 +20099,7 @@ function onBeforeOpenFunc(id){
                 if( tree.exists(idLoadElement)){
                     tree.remove(idLoadElement);
                 }
+                
                 if( tree.exists(idNoneElement) && noneEl){
                     tree.remove(idNoneElement);
                 }
@@ -19777,11 +20117,11 @@ function onBeforeOpenFunc(id){
                     if (content[data].type == typeChild && !findNotUniqueItem(data)){ 
              
                         tree.data.add({
-                                id:data, 
-                                value:(content[data].plural) ? 
+                                id      : data, 
+                                value   : (content[data].plural) ? 
                                 content[data].plural         : 
                                 content[data].singular       , 
-                                "type":content[data].type
+                                "type"  : content[data].type
                         }, 0, id ); 
 
                         if (!itemsExists){
@@ -19812,14 +20152,14 @@ function onBeforeOpenFunc(id){
 
         if (selectedItem.action.includes("all_")){
             const index = selectedItem.action.indexOf("_");
-            const type  = selectedItem.action.slice(index+1);
+            const type  = selectedItem.action.slice(index + 1);
             generateMenuData (type);
         }
     
         
     }
 
-    if ($$("tree").getItem(id).$count===-1){
+    if (tree.getItem(id).$count === -1){
      
         createLoadEl();
         getMenuChilds();
@@ -19879,7 +20219,7 @@ function treeSidebar () {
         id          : "tree",
         css         : "webix_tree-main",
         minWidth    : 100,
-        width       : 250,
+        width       : 300,
         editable    : false,
         select      : true,
         editor      : "text",
@@ -20324,6 +20664,14 @@ function webixGlobalPrefs (){
     setMsgPosition      ();
 }
 
+function backButtonBrowserLogic (){
+    window.addEventListener('popstate', function(event) {
+        window.location.replace(window.location.href);
+        window.location.reload();
+        
+    });
+}
+
 
 
 ;// CONCATENATED MODULE: ./src/js/blocks/routerConfig/routerStart.js
@@ -20337,7 +20685,7 @@ function setRouterStart(){
 
 
 ;// CONCATENATED MODULE: ./src/js/app.js
-console.log("expa 1.0.52"); 
+console.log("expa 1.0.53"); 
 
 
 
@@ -20353,7 +20701,9 @@ console.log("expa 1.0.52");
 
 
 
+         
 
+ 
 
 
 const emptySpace = {

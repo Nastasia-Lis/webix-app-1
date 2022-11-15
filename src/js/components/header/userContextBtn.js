@@ -10,6 +10,7 @@ import { favsPopup }                              from "../../blocks/favsLink.js
 import { setFunctionError, setAjaxError }         from "../../blocks/errors.js";
 import { hideElem, showElem }                     from "../../blocks/commonFunctions.js";
 
+import { Button }                                 from "../../viewTemplates/buttons.js";
 
 
 const logNameFile = "header => userContextBtn";
@@ -28,7 +29,6 @@ function hideContentElements(id){
 }
 
 function navigateTo (path){
-    console.log(path)
     return Backbone.history.navigate(path, {trigger : true});
 }
 
@@ -288,32 +288,36 @@ function onItemClickBtn(){
  
 }
 
-const userContextBtn = {   
-    view    : "button",
-    id      : "button-context-menu",
-    type    : "icon",
-    disabled: true,
-    icon    : 'icon-user',
-    height  : 38, 
-    width   : 50,
-    popup   : {
 
-        view    : 'contextmenu',
-        id      : "contextmenu",
-        css     : "webix_contextmenu",
-        data    : [],
-        on      : {
-            onItemClick: function(id, e, node){
-                itemClickContext(id);
+const userContextBtn = new Button({
+    
+    config   : {
+        id       : "button-context-menu",
+        hotkey   : "Ctrl+L",
+        icon     : "icon-user", 
+        disabled : true,
+        popup   : {
+
+            view    : 'contextmenu',
+            id      : "contextmenu",
+            css     : "webix_contextmenu",
+            data    : [],
+            on      : {
+                onItemClick: function(id, e, node){
+                    itemClickContext(id);
+                }
             }
-        }
+        },
     },
-    on:{
+    onFunc   :{
         onItemClick: function(){
             onItemClickBtn();
         }
-    }
-};
+    },
+    titleAttribute : "Пользователь"
+
+   
+}).minView();
 
 export {
     userContextBtn

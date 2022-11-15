@@ -6,6 +6,8 @@ import { postPrefsValues, getTable, destructPopup }     from "./common.js";
 
 import { Popup }                                        from "../../viewTemplates/popup.js";
 
+import { createEmptyTemplate }                          from "../../viewTemplates/emptyTemplate.js";
+
 function searchColsListPress (){
     const list      = $$("visibleList");
     const search    = $$("searchColsList");
@@ -46,7 +48,6 @@ function setBtnSubmitState(state){
         btnSubmit.disable();
     }
 }
-
 
 function setColsSize(col,listItems){
     const table      = getTable();
@@ -406,14 +407,17 @@ function  visibleColsButtonClick(idTable){
     }
 
     function createPopup(){
-
+       
         function generateEmptyTemplate(id,text){
-            return {   
-                id        : id,
-                css       : "webix_empty-template list-filter-empty",
-                template  : text, 
-                borderless: true
+
+            const layout = {
+                css:"list-filter-empty",
+                rows:[
+                    createEmptyTemplate(text, id)
+                ]
             };
+
+            return  layout;
         }
 
         function genetateScrollView(idCheckboxes,inner){
@@ -717,31 +721,8 @@ function  visibleColsButtonClick(idTable){
 
 }
 
-function toolbarVisibleColsBtn(idTable){
-    const idVisibleCols = idTable+"-visibleCols";
-    return {   
-        view    : "button",
-        width   : 50, 
-        type    : "icon",
-        id      : idVisibleCols,
-        disabled: true,
-        icon    : "icon-columns",
-        css     : "webix_btn-download webix-transparent-btn",
-        title   : "текст",
-        height  : 42,
-        hotkey  :"ctrl+shift+c",
-        click   : function(){
-            visibleColsButtonClick(idTable);
-        },
-        on: {
-            onAfterRender : function () {
-                this.getInputNode().setAttribute("title","Показать/скрыть колонки (Ctrl+Shift+C)");
-            }
-        } 
-    };
-}
 
 export {
-    toolbarVisibleColsBtn 
+    visibleColsButtonClick 
 };
 

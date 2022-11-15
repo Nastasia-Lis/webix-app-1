@@ -119,13 +119,13 @@
         background: var(--danger-dark)!important;
     }
 
-    &_danger .webix_icon_btn,
-    &_btn-download .webix_icon_btn,
-    &_log-btn .webix_icon_btn,
-    &_btn-filter .webix_icon_btn,
-    &_btn-edit .webix_icon_btn{
-        margin: 0px !important;
-    }
+    // &_danger .webix_icon_btn,
+    // &_btn-download .webix_icon_btn,
+    // &_log-btn .webix_icon_btn,
+    // &_btn-filter .webix_icon_btn,
+    // &_btn-edit .webix_icon_btn{
+    //     margin: 0px !important;
+    // }
 
     
 
@@ -255,3 +255,17 @@
 
 
 
+
+
+// editBtn
+.edit-btn-icon .webix_button .webix_icon{
+    color:var(--primary)!important;
+}
+
+.edit-btn-icon .webix_button .webix_icon{
+    color:var(--primary)!important;
+}
+
+.edit-btn-icon .webix_button:hover .webix_icon {
+    color: var(--white) !important;
+  }

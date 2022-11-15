@@ -10,6 +10,8 @@ import { visibleInputs, clearSpace }             from "./common.js";
 import { getItemId, getTable, hideElem, 
         getUserData, showElem }                  from "../commonFunctions.js";
 
+import { Button }                                       from "../../viewTemplates/buttons.js";
+
 const PREFS_STORAGE = {};  
 const logNameFile   = "tableFilter => buttons";
 
@@ -1075,102 +1077,77 @@ function resetFilterBtn (){
 
 function buttonsFormFilter (name) {
 
-    const formResetBtn = {  
-        view    : "button",
-        id      : "resetFilterBtn",
-        disabled: true,
-        height  : 48,
-        minWidth: 50,
-        width   : 65,
-        hotkey  : "shift+esc",
-        css     : "webix_danger", 
-        type    : "icon", 
-        icon    : "icon-trash", 
-        click   : resetFilterBtn,
-        on      : {
-            onAfterRender: function () {
-                this.getInputNode().setAttribute("title", "Сбросить фильтры");
-            }
-        } 
-    };
+    const formResetBtn = new Button({
     
-    const formBtnSubmit = {   
-        view    : "button",
-        id      : "btnFilterSubmit",
-        height  : 48,
-        minWidth: 70, 
-        css     : "webix_primary",
-     //   hotkey  : "Enter",
-        disabled: true,
-        value   : "Применить фильтры", 
-        click   : filterSubmitBtn,
-        on      : {
-            onAfterRender: function () {
-                this.getInputNode().setAttribute(
-                    "title","Применить фильтры"
-                );
-            },
+        config   : {
+            id       : "resetFilterBtn",
+            hotkey   : "Shift+Esc",
+            disabled : true,
+            icon     : "icon-trash", 
+            click    : resetFilterBtn
         },
-    };
+        titleAttribute : "Сбросить фильтры"
     
-    const formEditBtn = {   
-        view    : "button",
-        value   : "Открыть редактор",
-        height  : 48,
-        minWidth: 140, 
-        click   : editFiltersBtn,
-        on      : {
-            onAfterRender: function () {
-                this.getInputNode().setAttribute(
-                    "title","Добавить/удалить фильтры"
-                );
-            },
-        },
-    };    
-    
-    const filterBackTableBtn = { 
-        view    : "button", 
-        id      : "table-backTableBtnFilter",
-        type    : "icon",
-        icon    : "icon-arrow-left",
-        value   : "Вернуться к таблице",
-        hidden  : true,  
-        height  : 48,
-        minWidth: 50,
-        width   : 55,
        
-        click   : function(){
-            backTableBtnClick();
+    }).minView("delete");
+
+    const formBtnSubmit = new Button({
+    
+        config   : {
+            id       : "btnFilterSubmit",
+            hotkey   : "Ctrl+Shift+Space",
+            disabled : true,
+            value    : "Применить фильтры", 
+            click    : filterSubmitBtn,
         },
+        titleAttribute : "Применить фильтры"
     
-        on      : {
-            onAfterRender: function () {
-                this.getInputNode().setAttribute(
-                    "title","Вернуться к таблице"
-                );
-            }
-        } 
-    };
+       
+    }).maxView("primary");
+
     
-    const formLibrarySaveBtn = {   
-        view    : "button",
-        id      : "filterLibrarySaveBtn",
-        disabled: true,
-        height  : 48,
-        minWidth: 50,
-        width   : 65,
-        hotkey  : "shift+esc",
-        type    : "icon", 
-        icon    : "icon-file", 
-        click   : filterLibraryBtn,
-        on      : {
-            onAfterRender: function () {
-                this.getInputNode().setAttribute(
-                    "title", "Сохранить шаблон с полями в библиотеку"
-                );
-            }
-        } 
-    };
+    const formEditBtn = new Button({
+    
+        config   : {
+            hotkey   : "Alt+A",
+            value    : "Открыть редактор", 
+            click    : editFiltersBtn
+        },
+        titleAttribute : "Добавить/удалить фильтры"
+    
+       
+    }).maxView();
+
+    const filterBackTableBtn = new Button({
+    
+        config   : {
+            id       : "table-backTableBtnFilter",
+            hotkey   : "Shift+Q",
+            hidden   : true,  
+            icon     : "icon-arrow-left", 
+            click   : function(){
+                backTableBtnClick();
+            },
+        },
+        titleAttribute : "Вернуться к таблице"
+    
+       
+    }).minView();
+    
+    const formLibrarySaveBtn = new Button({
+    
+        config   : {
+            id       : "filterLibrarySaveBtn",
+            hotkey   : "Shift+Esc",
+            icon     : "icon-file", 
+            click    : filterLibraryBtn
+        },
+        titleAttribute : "Сохранить шаблон с полями в библиотеку"
+    
+       
+    }).minView();
+    
+  
     
     if ( name == "formResetBtn" ) {
         return formResetBtn;

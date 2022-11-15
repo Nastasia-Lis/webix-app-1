@@ -9,20 +9,21 @@ import { editTreeLayout,contextMenu } from "../../components/editTree.js";
 import { sortTable, scrollTableLoad } from "../../components/table/lazyLoad.js";
 import { onResizeTable }              from "../../components/table/onResize.js";
 import { columnResize }               from "../../components/table/onColumnResize.js";
-import { setColsWidthStorage }        from "../columnsSettings/columnsWidth.js"
- 
+
+
 // other blocks
-import {tableToolbar}               from "../toolbarTable.js";
-import {editTableBar}               from "../tableEditForm/layout.js";
-import {propertyTemplate}           from "../viewPropertyTable.js";
-import {filterForm}                 from "../tableFilter/layout.js"
-import {setStorageData}             from "../storageSetting.js";
-import {viewTools}                  from "../viewTools.js";
+import { tableToolbar }               from "../tableToolbar/layout.js"
+import { setColsWidthStorage }        from "../columnsSettings/columnsWidth.js"
+import { editTableBar }               from "../tableEditForm/layout.js";
+import { propertyTemplate }           from "../viewPropertyTable.js";
+import { filterForm }                 from "../tableFilter/layout.js"
+import { setStorageData }             from "../storageSetting.js";
+import { viewTools }                  from "../viewTools.js";
 
 
-import {STORAGE,getData}           from "../globalStorage.js";
+import {STORAGE,getData}              from "../globalStorage.js";
 
-import {setFunctionError}           from "../errors.js";
+import {setFunctionError}             from "../errors.js";
 
 
 

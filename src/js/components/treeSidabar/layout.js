@@ -13,7 +13,7 @@ function treeSidebar () {
         id          : "tree",
         css         : "webix_tree-main",
         minWidth    : 100,
-        width       : 250,
+        width       : 300,
         editable    : false,
         select      : true,
         editor      : "text",

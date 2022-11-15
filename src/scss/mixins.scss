@@ -2,8 +2,8 @@
   background: var(--primary)!important;
   transition: .2s;
   border-radius: 4px!important;
-  font-size: 14px!important;
-  font-weight: 500!important;
+  font-size: 13px!important;
+  font-weight: 600!important;
 }
 @mixin primary-btn--hover {
   background: var(--primary-light)!important;
@@ -18,8 +18,8 @@
   color:var(--primary)!important;
   transition: .2s;
   border-radius: 4px!important;
-  font-size: 14px!important;
-  font-weight: 500!important;
+  font-size: 13px!important;
+  font-weight: 600!important;
 }
 @mixin secondary-btn--hover {
   background: var(--primary)!important;

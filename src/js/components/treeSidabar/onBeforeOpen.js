@@ -5,10 +5,11 @@ import {setAjaxError,setFunctionError} from "../../blocks/errors.js";
 const logNameFile = "treeSidebar => onBeforeOpen";
 
 function onBeforeOpenFunc(id){
+ 
     const tree          = $$("tree");
-    const selectedItem  = $$("tree").getItem(id);
-    const idLoadElement = "q-load_data-tree_"+ webix.uid();
-    const idNoneElement = "q-none_data-tree_"+ webix.uid();
+    const selectedItem  = tree.getItem(id);
+    const idLoadElement = "q-load_data-tree_" + webix.uid();
+    const idNoneElement = "q-none_data-tree_" + webix.uid();
 
     function createLoadEl(){
         tree.data.add({
@@ -35,8 +36,8 @@ function onBeforeOpenFunc(id){
       
         }
 
-        const content   = STORAGE.fields.content;
-        const obj       = Object.keys(content); 
+        const content = STORAGE.fields.content;
+        const obj     = Object.keys(content); 
 
         function findNotUniqueItem (data){
             let check = false;
@@ -58,6 +59,7 @@ function onBeforeOpenFunc(id){
                 if( tree.exists(idLoadElement)){
                     tree.remove(idLoadElement);
                 }
+                
                 if( tree.exists(idNoneElement) && noneEl){
                     tree.remove(idNoneElement);
                 }
@@ -75,11 +77,11 @@ function onBeforeOpenFunc(id){
                     if (content[data].type == typeChild && !findNotUniqueItem(data)){ 
              
                         tree.data.add({
-                                id:data, 
-                                value:(content[data].plural) ? 
+                                id      : data, 
+                                value   : (content[data].plural) ? 
                                 content[data].plural         : 
                                 content[data].singular       , 
-                                "type":content[data].type
+                                "type"  : content[data].type
                         }, 0, id ); 
 
                         if (!itemsExists){
@@ -110,14 +112,14 @@ function onBeforeOpenFunc(id){
 
         if (selectedItem.action.includes("all_")){
             const index = selectedItem.action.indexOf("_");
-            const type  = selectedItem.action.slice(index+1);
+            const type  = selectedItem.action.slice(index + 1);
             generateMenuData (type);
         }
     
         
     }
 
-    if ($$("tree").getItem(id).$count===-1){
+    if (tree.getItem(id).$count === -1){
      
         createLoadEl();
         getMenuChilds();
