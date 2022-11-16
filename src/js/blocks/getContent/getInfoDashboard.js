@@ -7,6 +7,7 @@ import { createHeadline }                 from '../viewHeadline/layout.js';
 import { showElem, hideElem }             from '../commonFunctions.js';
 
 
+import { Button }                         from '../../viewTemplates/buttons.js';
 
 const logNameFile = "getContent => getInfoDashboard";
 
@@ -209,7 +210,7 @@ function setCursorPointer(areas, fullElems, idElem){
 
 function setAttributes(elem){
 
-  //  elem.action = action;
+   // elem.action = action;
   
     elem.borderless  = true;
     elem.minWidth    = 250;
@@ -724,10 +725,10 @@ async function getFieldsData ( idsParam ){
 
         function setAdaptiveWidth(elem){
             const child       = elem.getNode().firstElementChild;
-            child.style.width = elem.$width+"px";
+            child.style.width = elem.$width + "px";
 
             const inp         = elem.getInputNode();
-            inp.style.width   = elem.$width-5+"px";
+            inp.style.width   = elem.$width - 5 + "px";
         }
      
         function createFilterElems (inputs,el){
@@ -739,7 +740,7 @@ async function getFieldsData ( idsParam ){
                     editable    : true,
                     value       : new Date(),
                     placeholder : input.label,
-                    height      : 48,
+                    height      : 42,
                     on          : {
                         onAfterRender : function () {
                             this.getInputNode().setAttribute("title",input.comment);
@@ -762,11 +763,11 @@ async function getFieldsData ( idsParam ){
             }
 
             function createTime (type){
-                let timeTemplate =  {   
+                const timeTemplate =  {   
                     view        : "datepicker",
                     format      : "%H:%i:%s",
                     placeholder : "Время",
-                    height      : 48,
+                    height      : 42,
                     editable    : true,
                     value       : "00:00:00",
                     type        : "time",
@@ -774,6 +775,7 @@ async function getFieldsData ( idsParam ){
                     suggest     : {
 
                         type    : "timeboard",
+                        css     : "dash-timeboard",
                         hotkey  : "enter",
                         body    : {
                             button  : true,
@@ -781,13 +783,14 @@ async function getFieldsData ( idsParam ){
                             value   : "00:00:00",
                             twelve  : false,
                             height  : 110, 
-                        },
+                        }
                     },
                     on: {
                         onAfterRender: function () {
                             this.getInputNode().setAttribute("title","Часы, минуты, секунды");
                             setAdaptiveWidth(this);
-                        },
+                        }
+                       
                     }
                 };
 
@@ -824,7 +827,7 @@ async function getFieldsData ( idsParam ){
                                 const value = $$(elem.config.id).getValue();
                           
                                 try{
-                                    if (value !==null ){
+                                    if (value !== null ){
 
                                         if (type == "sdt"){
                                             sdtDate = sdtDate.concat( " " + postformatTime(value) );
@@ -944,9 +947,14 @@ async function getFieldsData ( idsParam ){
                             
                             if ( !(compareValue) || compareDates[0] == compareDates[1] ){
 
-                                const getUrl = findAction.url+"?"+dateArray.join("&");
+                                const getUrl = findAction.url + "?" + dateArray.join("&");
                                 removeCharts();
-                                getAjax(getUrl, inputsArray,idsParam, true);
+                                getAjax(
+                                    getUrl, 
+                                    inputsArray,
+                                    idsParam, 
+                                    true)
+                                    ;
                                 setStateBtn();
 
                             } else {
@@ -962,33 +970,27 @@ async function getFieldsData ( idsParam ){
                 }
 
 
-                
-
-                const btnFilter = {   
-                    rows: [
-                        { height:10 },
-                        {   view        :"button", 
-                            css         :"webix_primary", 
-                            id          :"dashBtn"+i,
-                            inputHeight :48,
-                            height      :48, 
-                            minWidth    :100,
-                            maxWidth    :200,
-                            value       :input.label,
-                            click       :function () {
-                                clickBtn();
-                            },
-                            on          : {
-                                onAfterRender: function () {
-                                    this.getInputNode().setAttribute("title",input.comment);
-                                    setAdaptiveWidth(this);
-                                },
-                            },
-
+                const btnFilter = new Button({
+                    
+                    config   : {
+                        id       : "dashBtn" + i,
+                        hotkey   : "Ctrl+Shift+Space",
+                        value    : input.label,
+                        click    : function(){
+                            clickBtn();
                         },
-                        {}
-                    ]
-                };
+                    },
+                    titleAttribute : input.comment,
+                    onFunc :{
+                        onViewResize:function(){
+                            setAdaptiveWidth(this);
+                        }
+                    }
+
+                
+                }).maxView("primary");
+
+           
 
                 return  btnFilter;
             }
@@ -1003,8 +1005,6 @@ async function getFieldsData ( idsParam ){
             }
             
             function createFilter (el){
-
-        
          
                 Object.values(inputs).forEach(function(input,i){
                     function createInputs(){
@@ -1038,7 +1038,7 @@ async function getFieldsData ( idsParam ){
                         try{
                             inputsArray.push( inputs );
                         } catch (err){  
-                            setFunctionError(err,logNameFile,"createInputs");
+                            setFunctionError(err, logNameFile, "createInputs");
                         }
                     }
 
@@ -1050,7 +1050,9 @@ async function getFieldsData ( idsParam ){
 
                         const actionType    = input.action;
                         findAction          = el.actions[actionType];
-                    
+                        inputsArray.push(
+                           {height : 15}
+                        );
                         inputsArray.push(
                             createBtn (input, i)
                         );

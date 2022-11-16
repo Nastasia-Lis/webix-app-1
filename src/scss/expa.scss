@@ -952,13 +952,21 @@ label, button{
 }
 
 
-.tree_load-items, .tree_none-items{
+.tree_load-items, .tree_none-items, .tree_disabled-item{
     pointer-events: none;
 }
 
 .tree_load-items .webix_tree_file{
     color: transparent!important;
 }
+
+.tree_disabled-item .webix_tree_folder_open,
+.tree_disabled-item .webix_tree_close      ,
+.tree_disabled-item .webix_tree_open,
+.tree_disabled-item {
+    color : var(--gray)!important;
+}
+
 
 
 
@@ -1087,4 +1095,48 @@ label, button{
 
 .webix_list.list-filter-borders .webix_scroll_cont{
     padding-bottom: 28px!important;
+}
+
+
+
+
+// table counter
+.webix_style-template-count{
+    font-size: 13px!important;
+}
+
+
+
+
+// password input
+.password-icon {
+    padding     : 7px 6px 0px 0px!important;
+    font-size   : 18px!important;
+    transition  : .2s;
+    cursor      : pointer;
+
+}
+.password-icon:hover{
+    color       :var(--gray);
+}
+
+.password-icon:active{
+    color       :var(--gray-dark);
+    
+}
+
+
+
+//property
+.propery-error{
+    background-color: var(--danger-light); 
+}
+
+
+
+
+
+// dashboard timepicker
+.dash-timeboard{
+    display: none!important;
 }

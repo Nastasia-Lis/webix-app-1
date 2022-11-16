@@ -4,7 +4,10 @@ import { STORAGE,getData }                  from "../globalStorage.js";
 import { setAjaxError,setFunctionError }    from "../errors.js";
 
 import { getComboOptions, removeElem }      from '../commonFunctions.js';
-import { showElem,hideElem }                from '../commonFunctions.js';
+import { showElem, hideElem }               from '../commonFunctions.js';
+
+import { Button }                           from '../../viewTemplates/buttons.js';
+import { Popup }                            from '../../viewTemplates/popup.js';
 
 
 const logNameFile = "getContent => getInfoTable";
@@ -562,24 +565,7 @@ function createTableRows (idCurrTable,idsParam, offset = 0){
                                     setFunctionError(err,logNameFile,"notAuthPopup btnClosePopup click");
                                 }
                             }
-                            const popupHeadline = {   
-                                template    : "Вы не авторизованы", 
-                                width       : 250,
-                                css         : "webix_template-not-found", 
-                                borderless  : true, 
-                                height      : 20 
-                            };
-                            const btnClosePopup = {
-                                view  : "button",
-                                id    : "buttonClosePopup",
-                                css   : "popup_close-btn",
-                                type  : "icon",
-                                width : 35,
-                                icon: 'wxi-close',
-                                click:function(){
-                                    destructPopup();
-                                }
-                            };
+
             
                             const popupSubtitle = {   
                                 template    : "Войдите в систему, чтобы продолжить.",
@@ -587,52 +573,73 @@ function createTableRows (idCurrTable,idsParam, offset = 0){
                                 borderless  : true, 
                                 height      : 35 
                             };
-            
-                            const mainBtnPopup = {
-                                view    : "button",
-                                css     : "webix_btn-go-login",
-                                height  : 46,
-                                value   : "Войти",
-                                click   : function(){
-                                    function navigate(){
-                                        try{
-                                            Backbone.history.navigate("/", { trigger:true});
-                                            window.location.reload();
-                                        } catch (err){
-                                            setFunctionError(err,logNameFile,"notAuthPopup navigate");
-                                        }
+
+                            function submitClick(){
+                                function navigate(){
+                                    try{
+                                        Backbone.history.navigate("/", { trigger:true});
+                                        window.location.reload();
+                                    } catch (err){
+                                        setFunctionError(
+                                            err, 
+                                            logNameFile,
+                                            "notAuthPopup navigate"
+                                        );
                                     }
-                                    destructPopup();
-                                    navigate();
-                                 
-                               
                                 }
-                            };
+                                destructPopup();
+                                navigate();
+                             
+                            }
             
-                            webix.ui({
-                                view    : "popup",
-                                id      : "popupNotAuth",
-                                css     : "webix_popup-prev-href",
-                                width   : 340,
-                                height  : 125,
-                                modal   : true,
-                                position: "center",
-                                body    : {
-                                    rows: [
-                                    {rows: [ 
-                                        { cols: [
-                                            popupHeadline,
-                                            {},
-                                            btnClosePopup,
-                                        ]},
-                                        popupSubtitle,
-                                        mainBtnPopup,
-                                        { height : 20 }
-                                    ]}]
-                                    
+                            const mainBtnPopup = new Button({
+    
+                                config   : {
+                                    id       : "webix_btn-go-login",
+                                    hotkey   : "Shift+Space",
+                                    value    : "Войти", 
+                                    click   : function(){
+                                        submitClick();
+                                    },
                                 },
+                                titleAttribute : "Перейти на страницу авторизации"
+                            
+                               
+                            }).maxView("primary");
+
             
-                            }).show();
+                            const popup = new Popup({
+                                headline : "Вы не авторизованы",
+                                config   : {
+                                    id    : "popupNotAuth",
+                                    width   : 340,
+                                    height  : 125,
+                                },
+                        
+                                elements : {
+                                    padding:{
+                                        left : 5,
+                                        right: 5
+                                    },
+                                    rows:[
+                                        popupSubtitle,
+                                        {   padding:{
+                                                left : 5,
+                                                right: 5
+                                            },
+                                            rows:[
+                                                mainBtnPopup,
+                                            ]
+                                        }
+                                    
+                                    ]
+                                  
+                                }
+                            });
+                        
+                            popup.createView ();
+                            popup.showPopup  ();
+
                         }
 
                         tableErrorState ();
@@ -642,7 +649,6 @@ function createTableRows (idCurrTable,idsParam, offset = 0){
                             if (!($$("popupNotAuth"))){
                                 notAuthPopup();
                             }
-                      
                         } 
 
                         setAjaxError(err, "getInfoTable","getData");
@@ -1175,15 +1181,16 @@ function getInfoTable (idCurrTable,idsParam) {
     function createDynamicElems (){
         const dataContent       = STORAGE.fields.content;
         const data              = dataContent[idsParam];  
-     //   console.log(data)
+ 
         const dataInputsArray   = data.inputs;
 
         function setAdaptiveWidth(elem){
+
             const child       = elem.getNode().firstElementChild;
-            child.style.width = elem.$width+"px";
+            child.style.width = elem.$width + "px";
 
             const inp         = elem.getInputNode();
-            inp.style.width   = elem.$width-5+"px";
+            inp.style.width   = elem.$width - 5 + "px";
         }
       
         function generateCustomInputs (){  
@@ -1321,6 +1328,7 @@ function getInfoTable (idCurrTable,idsParam) {
             }
 
             function getInputsId        (element){
+
                 const parent     = element.getParentView();
                 const childs     = parent .getChildViews();
                 const idElements = [];
@@ -1357,74 +1365,82 @@ function getInfoTable (idCurrTable,idsParam) {
             }
     
             function createDeleteBtn    (el,findAction,i){
-                return {   
-                    view        : "button", 
-                    id          : "customBtnDel"+i,
-                    css         : "webix_danger", 
-                    type        : "icon", 
-                //    disabled    : true,
-                    icon        : "icon-trash",
-                    inputWidth  : 55,
-                    inputHeight : 35,
-                    value       : dataInputsArray[el].label,
-                    click       : function (id) {
-                        const idElements = getInputsId (this);
-                        submitBtn( idElements, findAction.url, "delete" );
-                    },
-                    on          : {
-                        onAfterRender: function () {
-                            this.getInputNode().setAttribute( "title", dataInputsArray[el].comment );
+
+                const btn = new Button({
+    
+                    config   : {
+                        id       : "customBtnDel" + i,
+                        hotkey   : "Shift+Q",
+                        icon     : "icon-trash", 
+                        value    : dataInputsArray[el].label,
+                        click       : function (id) {
+                            const idElements = getInputsId (this);
+                            submitBtn( idElements, findAction.url, "delete" );
                         },
                     },
-                };
+                    titleAttribute : dataInputsArray[el].comment
+                
+                   
+                }).minView("delete");
+
+                return btn;
             }
     
             function createCustomBtn    (el,findAction,i){
-                return {   
-                    view        : "button", 
-                    css         : "webix_primary", 
-                    id          : "customBtn"+i,
-                    height      : 42,
-                    value       : dataInputsArray[el].label,
-                    click       : function (id) {
-                        const idElements = getInputsId (this);
-                        const btn        =  $$("contextActionsPopup");
 
-                        if (findAction.verb== "GET"){
-                            if ( findAction.rtype == "refresh") {
-                                submitBtn( idElements, findAction.url, "get", "refresh" );
-                            } else if (findAction.rtype == "download") {
-                                submitBtn( idElements, findAction.url, "get", "download");
-                            }
-                            
-                        } else if ( findAction.verb == "POST" ){
-                            submitBtn( idElements, findAction.url, "post" );
-                            $$("customBtn" + i ).disable();
-                        } 
-                        else if (findAction.verb == "download"){
-                            submitBtn( idElements, findAction.url, "get", "download", id );
+                function submitClick(id, elem){
+ 
+                    const idElements = getInputsId (elem);
+                    const btn        =  $$("contextActionsPopup");
+
+                    if (findAction.verb== "GET"){
+                        if ( findAction.rtype == "refresh") {
+                            submitBtn( idElements, findAction.url, "get", "refresh" );
+                        } else if (findAction.rtype == "download") {
+                            submitBtn( idElements, findAction.url, "get", "download");
                         }
-                            
-                        if (btn){
-                            btn.hide();
-                        }
+                        
+                    } else if ( findAction.verb == "POST" ){
+                        submitBtn( idElements, findAction.url, "post" );
+                        $$("customBtn" + i ).disable();
+                    } 
+                    else if (findAction.verb == "download"){
+                        submitBtn( idElements, findAction.url, "get", "download", id );
+                    }
+                        
+                    if (btn){
+                        btn.hide();
+                    }
+                }
+                
+                const btn = new Button({
                     
-                    },
-                    on: {
-                        onAfterRender: function () {
-                            this.getInputNode().setAttribute( "title", dataInputsArray[el].comment );
-                            setAdaptiveWidth(this);
+                    config   : {
+                        id       : "customBtn" + i,
+                        value    : dataInputsArray[el].label,
+                        click    : function (id) {
+                            submitClick(id, this);
                         },
                     },
-                };
+                    titleAttribute : dataInputsArray[el].comment,
+                    onFunc:{
+                        onViewResize:function(){
+                            setAdaptiveWidth(this);
+                        }
+                    }
+
+                
+                }).maxView("primary");
+
+                return btn;
             }
     
             function createUpload       (el,i){
                 return  {   
                     view         : "uploader", 
                     value        : "Upload file", 
-                    id           : "customUploader"+i,
-                    height       : 48,
+                    id           : "customUploader" + i,
+                    height       : 42,
                     autosend     : false,
                     upload       : data.actions.submit.url,
                     label        : dataInputsArray[el].label, 
@@ -1685,24 +1701,21 @@ function getInfoTable (idCurrTable,idsParam) {
                 const customInputs  = generateCustomInputs ();
                 const filterBar     = $$("table-view-filterId").getParentView();
 
-                const btnTools = {   
-                    view    : "button",
-                    width   : 50, 
-                    type    : "icon",
-                    id      : "viewToolsBtn",
-                    icon    : "icon-filter",
-                    css     : "webix_btn-filter webix-transparent-btn",
-                    title   : "текст",
-                    height  : 42,
-                    click   : function(){
-                        viewToolsBtnClick();
+                const btnTools = new Button({
+                    config   : {
+                        id       : "viewToolsBtn",
+                        hotkey   : "Ctrl+Shift+G",
+                        icon     : "icon-filter",
+                        click    : function(){
+                            viewToolsBtnClick();
+                        },
                     },
-                    on: {
-                        onAfterRender: function () {
-                            this.getInputNode().setAttribute("title","Показать/скрыть доступные дейсвтия");
-                        }
-                    } 
-                };
+                    css            :  "webix_btn-filter",
+                    titleAttribute : "Показать/скрыть фильтры доступные дейсвтия"
+                
+                   
+                }).transparentView();
+   
                 
                 if( !viewToolsBtn ){
                     filterBar.addView( btnTools, 2 );

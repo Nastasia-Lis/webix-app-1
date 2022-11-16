@@ -14,7 +14,7 @@ function setSecondaryState(){
         btnClass.classList.add   (secondaryClass);
         btnClass.classList.remove(primaryClass  );
     } catch (err) {   
-        setFunctionError(err,logNameFile,"setSecondaryState");
+        setFunctionError(err, logNameFile, "setSecondaryState");
     }
 }
 
@@ -55,7 +55,7 @@ function editBtnClick() {
         hideElem(tree);
         showElem(backBtn);
         
-        editForm.config.width = window.innerWidth-45;
+        editForm.config.width = window.innerWidth - 45;
         editForm.resize();
     }
 
@@ -96,7 +96,6 @@ function toolbarEditButton (idTable, visible){
             hotkey   : "Ctrl+Shift+X",
             value    : returnValue( false ),
             hidden   : visible,
-            css      : "edit-btn-icon",
             minWidth : 40,
             maxWidth : 200, 
             onlyIcon : false,
@@ -104,6 +103,7 @@ function toolbarEditButton (idTable, visible){
                 editBtnClick(idBtnEdit);
             },
         },
+        css            : "edit-btn-icon",
         titleAttribute : "Показать/скрыть фильтры",
         adaptValue     : returnValue( ),
     

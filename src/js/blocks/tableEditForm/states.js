@@ -8,7 +8,7 @@ import { saveItem, saveNewItem }                from "./buttons.js";
 import { setDirtyProperty }                     from "./property.js";
 
 import { Popup }                                from "../../viewTemplates/popup.js";
-
+import { Button }                               from "../../viewTemplates/buttons.js";
 
 
 
@@ -243,17 +243,21 @@ function createPopupOpenBtn(elem){
                 }
             };
 
-            const btnSave = {
-                view:"button",
-                id:"editPropSubmitBtn", 
-                value:"Добавить значение", 
-                css:"webix_primary", 
-                disabled:true,
-                click:function(){
-                    editPropSubmitClick();
-                }
             
-            };
+            const btnSave = new Button({
+    
+                config   : {
+                    id       : "editPropSubmitBtn",
+                    hotkey   : "Ctrl+Space",
+                    value    : "Добавить значение", 
+                    click    : function(){
+                        editPropSubmitClick();
+                    },
+                },
+                titleAttribute : "Добавить значение в запись таблицы"
+            
+               
+            }).maxView("primary");
             
             const popup = new Popup({
                 headline : "Редактор поля  «" + elem.label + "»",
@@ -571,17 +575,21 @@ function createDatePopup(elem){
             };
             
         
-
-            const btnSave = {
-                view:"button",
-                id:"editPropCalendarSubmitBtn", 
-                value:"Добавить значение", 
-                css:"webix_primary", 
-                click:function(){
-                    editPropCalendarSubmitClick();
-                }
+            const btnSave = new Button({
+    
+                config   : {
+                    id       : "editPropCalendarSubmitBtn",
+                    hotkey   : "Ctrl+Space",
+                    value    : "Добавить значение", 
+                    click    : function(){
+                        editPropCalendarSubmitClick();
+                    },
+                },
+                titleAttribute : "Добавить значение в запись таблицы"
             
-            };
+               
+            }).maxView("primary");
+
             
             const popup = new Popup({
                 headline : "Редактор поля  «" + elem.label + "»",

@@ -102,7 +102,7 @@ function saveItem(addBtnClick = false, refBtnClick = false){
         if (!(validateProfForm().length)){
 
             if( itemData.id ) {
-                const link       = "/init/default/api/"+currId+"/"+itemData.id;
+                const link       = "/init/default/api/" + currId+"/" + itemData.id;
                 
                 const editForm       = $$("table-editForm");
                 const property       = $$("editTableFormProperty");
@@ -141,10 +141,10 @@ function saveItem(addBtnClick = false, refBtnClick = false){
                             editForm.hide();
                         }
  
-                        setLogValue("success","Данные сохранены",currId);
+                        setLogValue("success", "Данные сохранены", currId);
 
                     } else {
-                        setLogValue("error",logNameFile+" function saveItem: "+data.err);
+                        setLogValue("error", logNameFile + " function saveItem: " + data.err);
                     }
                 });
                 putData.fail(function(err){

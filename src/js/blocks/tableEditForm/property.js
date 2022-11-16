@@ -127,11 +127,17 @@ const propertyEditForm = {
         },
 
         onAfterEditStop:function(state, editor){
-
-            if (state.value !==state.old ){
-                editingEnd (editor.id,state.value);
+            if (state.value !== state.old ){
+                editingEnd (editor.id, state.value);
             }
         },
+
+        onItemClick:function(id){
+            const property = $$("editTableFormProperty");
+            const item     =  property.getItem(id);
+            item.css       = "";
+            property.refresh();
+        }
 
     }
 };

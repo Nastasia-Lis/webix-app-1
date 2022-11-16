@@ -1,27 +1,27 @@
 
-import {catchErrorTemplate,ajaxErrorTemplate,setLogValue} from "../blocks/logBlock.js";
-import {setStorageData} from "../blocks/storageSetting.js";
-import {setFunctionError,setAjaxError} from "../blocks/errors.js";
+import { setLogValue }                      from "../blocks/logBlock.js";
+import { setStorageData }                   from "../blocks/storageSetting.js";
+import { setFunctionError,setAjaxError  }   from "../blocks/errors.js";
 
-let defaultValue = {
-    userprefsOther    :{},
-    userprefsWorkspace:{},
+import { Button }                           from "../viewTemplates/buttons.js";
+
+const defaultValue = {
+    userprefsOther     : {},
+    userprefsWorkspace : {},
 };
 
 function saveSettings (){
-    const tabbarVal = $$("userprefsTabbar").getValue()+"Form" ;
-    const form = $$(tabbarVal);
+    const tabbar    = $$("userprefsTabbar");
+    const value     = tabbar.getValue();
+    const tabbarVal = value + "Form" ;
+    const form      = $$(tabbarVal);
     
     function getUserprefsData(){
-
-        const getData =  webix.ajax().get("/init/default/api/userprefs/");
+        const url     = "/init/default/api/userprefs/";
+        const getData =  webix.ajax().get(url);
      
         getData.then(function(data){
             data = data.json().content;
-
-            if (data.err_type == "e"){
-                setLogValue("error",data.error);
-            }
 
             let settingExists = false;
 
@@ -33,27 +33,28 @@ function saveSettings (){
             };
 
             function putPrefs(el){
-                const url     = "/init/default/api/userprefs/"+el.id;
+                const url     = "/init/default/api/userprefs/" + el.id;
                 const putData = webix.ajax().put(url, sentObj);
 
                 putData.then(function(data){
                     data = data.json();
                     if (data.err_type == "i"){
-                        setStorageData (tabbarVal, JSON.stringify(form.getValues()));
-                        setLogValue("success","Настройки сохранены");
+                        const formVals = JSON.stringify(form.getValues());
+                        setStorageData (tabbarVal, formVals);
+                        setLogValue("success", "Настройки сохранены");
 
-                    } if (data.err_type == "e"){
-                        setLogValue("error",data.error);
+                    } if (data.err_type !== "i"){
+                        setLogValue("error", data.error);
                     }
 
-                    const name         = $$("userprefsTabbar").getValue();
+                    const name         = tabbar.getValue();
                     defaultValue[name] = values;
 
                     form.setDirty(false);
                 });
 
                 putData.fail(function(err){
-                    setAjaxError(err, "userprefs","putPrefs");
+                    setAjaxError(err, "userprefs", "putPrefs");
                 });
             }
      
@@ -67,7 +68,7 @@ function saveSettings (){
                         } 
                     });
                 } catch (err){
-                    setFunctionError(err,"userprefs","findExistsData");
+                    setFunctionError(err, "userprefs", "findExistsData");
                 }
             }
 
@@ -104,13 +105,13 @@ function saveSettings (){
                     data = data.json();
 
                     if (data.err_type == "i"){
-                        setLogValue("success","Настройки сохранены");
+                        setLogValue("success", "Настройки сохранены");
 
-                    } else if (data.err_type == "e"){
-                        setLogValue("error",data.error);
+                    } else {
+                        setLogValue("error", data.error);
                     }
 
-                    const tabbarVal         = $$("userprefsTabbar").getValue();
+                    const tabbarVal         = tabbar.getValue();
                     defaultValue[tabbarVal] = values;
 
                     form.setDirty(false);
@@ -148,6 +149,30 @@ function saveSettings (){
     }
 }
 
+function clearSettings (){
+    const tabbar    = $$("userprefsTabbar");
+    const value     = tabbar.getValue();
+    const tabbarVal = value + "Form" ;
+    const form      = $$(tabbarVal);
+
+    if (tabbarVal === "userprefsWorkspaceForm"){
+        form.setValues({
+            logBlockOpt    : '1', 
+            LoginActionOpt : '1'
+        });
+
+    } else if (tabbarVal === "userprefsOtherForm"){
+        form.setValues({
+            autorefOpt        : '1', 
+            autorefCounterOpt : 15000, 
+            visibleIdOpt      : '1'
+        });
+    }
+
+    form.setDirty(true);
+
+    saveSettings ();
+}
 
 const autorefRadio   = {
     view            : "radio",
@@ -160,19 +185,25 @@ const autorefRadio   = {
         {"id" : 2, "value" : "Выключено"}
     ],
     on:{
-        onChange:function(newValue, oldValue,config){
+        onChange:function(newValue){
             try{
+
                 const counter = $$("userprefsAutorefCounter");
-                if (newValue == 1 && !(counter.isVisible()) ){
+
+                if (newValue == 1 ){
                     counter.show();
                 }
 
-                if (newValue == 2 &&  counter.isVisible()   ){
+                if (newValue == 2){
                     counter.hide();
                 }
         
             } catch (err){
-                setFunctionError(err,"userprefs","autorefRadio => onChange");
+                setFunctionError(
+                    err, 
+                    "userprefs", 
+                    "autorefRadio => onChange"
+                );
             }
          
         }
@@ -191,9 +222,9 @@ const autorefCounter = {
         onChange:function(newValue, oldValue, config){
             function createMsg (textMsg){
                 return webix.message({
-                    type:"debug",
-                    expire:1000, 
-                    text:textMsg
+                    type   : "debug",
+                    expire : 1000, 
+                    text   : textMsg
                 });
             }
 
@@ -209,7 +240,11 @@ const autorefCounter = {
                     createMsg ("Максимально возможное значение");
                 }
             } catch (err){
-                setFunctionError(err,"userprefs","autorefCounter => onChange");
+                setFunctionError(
+                    err,
+                    "userprefs",
+                    "autorefCounter => onChange"
+                );
             }
 
 
@@ -409,36 +444,52 @@ const userprefsWorkspace = {
 };
 
 
-const userprefsConfirmBtns =  { 
-    id:"a1", 
-    rows:[
-        {   responsive : "a1",
-            cols:[
-        
-            {   view    : "button", 
-            
-                height  : 48,
-                minWidth: 200,
-                value   : "Сбросить" ,
-                id      : "userprefsResetBtn",
-                disabled: true,
-            },
 
-            {   view    : "button", 
-                value   : "Сохранить настройки" ,
-                height  : 48, 
-                minWidth: 200,
-                id      : "userprefsSaveBtn",
-                css     : "webix_primary",
-                disabled: true,
-                click   : saveSettings,
-            },
-        ]}
+const clearBtn = new Button({
+    
+    config   : {
+        id       : "userprefsResetBtn",
+        hotkey   : "Shift+X",
+        disabled : true,
+        value    : "Сбросить", 
+        click    : clearSettings,
+    },
+    titleAttribute : "Вернуть начальные настройки"
+
+   
+}).maxView();
+
+const submitBtn = new Button({
+    
+    config   : {
+        id       : "userprefsSaveBtn",
+        hotkey   : "Shift+Space",
+        disabled : true,
+        value    : "Сохранить настройки", 
+        click    : saveSettings,
+    },
+    titleAttribute : "Применить настройки"
+
+   
+}).maxView("primary");
+
+
+const userprefsConfirmBtns =  { 
+    id:"adaptiveUp", 
+    rows:[
+        {   responsive : "adaptiveUserprefs",
+            cols:[
+                clearBtn,
+                submitBtn,
+            ]
+        }
     ]
 };
 
 function createHeadlineSpan(headMsg){
-    return `<span class='webix_tabbar-filter-headline'>${headMsg}</span>`;
+    return `<span class='webix_tabbar-filter-headline'>
+            ${headMsg}
+            </span>`;
 }
 
 const tabbar = {   
@@ -459,7 +510,9 @@ const tabbar = {
 
     on       :{
         onBeforeTabClick:function(id){
-            const tabbarVal = $$("userprefsTabbar").getValue()+"Form";
+            const tabbar    = $$("userprefsTabbar");
+            const value     = tabbar.getValue();
+            const tabbarVal = value + "Form";
             const form      = $$(tabbarVal);
 
             function disableBtn(btn){
@@ -487,7 +540,7 @@ const tabbar = {
                             const storageData = webix.storage.local.get(tabbarVal);
                             const saveBtn     = $$("userprefsSaveBtn");
                             const resetBtn    = $$("userprefsResetBtn");
-                            const tabbar      = $$("userprefsTabbar");
+                           
 
                             form.setValues(storageData);
 

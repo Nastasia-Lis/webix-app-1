@@ -7,10 +7,10 @@ function validateProfForm (){
 
     const errors = {};
     const messageErrors = [];
-
+    const property      = $$("editTableFormProperty");
     
     function checkConditions (){ 
-        const property = $$("editTableFormProperty");
+       
         const propVals = Object.keys(property.getValues());
 
         propVals.forEach(function(el,i){
@@ -97,8 +97,8 @@ function validateProfForm (){
                
                     if(values[el]){
                         
-                        if (values[el].length > propElement.length && propElement.length !==0){
-                            errors[el].length = "Длина строки не должна превышать "+propElement.length+" симв.";
+                        if (values[el].length > propElement.length && propElement.length !== 0){
+                            errors[el].length = "Длина строки не должна превышать " + propElement.length + " симв.";
                         } else {
                             errors[el].length = null;
                         }
@@ -123,13 +123,36 @@ function validateProfForm (){
             function valUnique (){
                 try{
                     errors[el].unique = null;
+                                            
                     if (propElement.unique == true){
+
                         const tableRows   = Object.values($$("table").data.pull);
-                        const tableSelect = $$("table").getSelectedId().id;
+                        const tableSelect = $$("editTableFormProperty").getValues().id;
+      
 
                         tableRows.forEach(function(row,i){
-                            if (values[el].localeCompare(row[el]) == 0 && row.id !== tableSelect){
-                                errors[el].unique = "Поле должно быть уникальным";
+
+                            function numToString(element){
+                                if (element && typeof element === "number"){
+                                    return element.toString();
+                                } else {
+                                    return element;
+                                }
+                            }
+                        
+                          
+                             row[el]    = numToString(row[el]);
+                             values[el] = numToString(values[el]);
+                   
+                            if (row[el] && typeof row[el] == "number"){
+                                row[el] = row[el].toString();
+                            }
+
+                            if (values[el] && row[el]){
+                                if (values[el].localeCompare(row[el]) == 0 || row.id == tableSelect.toString()){
+                                    errors[el].unique = "Поле должно быть уникальным";
+                                } 
+                              
                             }
                         });
                     }
@@ -176,7 +199,20 @@ function validateProfForm (){
         checkConditions ();
         createErrorMessage ();
     } catch (err){
-        setFunctionError(err,logNameFile,"validateProfForm");
+        setFunctionError(err, logNameFile, "validateProfForm");
+    }
+
+  
+    if (messageErrors.length){
+     
+        messageErrors.forEach(function(prop){
+            const item =  property.getItem(prop.nameCol);
+            item.css = "propery-error";
+            property.refresh();
+
+        });
+
+       
     }
     return messageErrors;
 }
@@ -184,21 +220,22 @@ function validateProfForm (){
 function setLogError (){
     try{
         const table = $$("table");
-        validateProfForm ().forEach(function(el,i){
+        validateProfForm ().forEach(function(el){
 
             let nameEl;
 
-            table.getColumns().forEach(function(col,i){
+            table.getColumns(true).forEach(function(col){
+             
                 if (col.id == el.nameCol){
                     nameEl = col.label;
                 }
             });
 
-            setLogValue("error",el.textError+" (Поле: "+nameEl+")");
+            setLogValue("error", el.textError + " (Поле: " + nameEl + ")");
         });
 
     } catch (err){
-        setFunctionError(err,logNameFile,"setLogError");
+        setFunctionError(err, logNameFile, "setLogError");
     }
 }
 
@@ -208,9 +245,9 @@ function uniqueData (itemData){
     try{
         const table = $$("table");
 
-        Object.values(itemData).forEach(function(el,i){
+        Object.values(itemData).forEach(function(el, i){
 
-            const oldValues    = table.getItem(itemData.id)
+            const oldValues    = table.getItem(itemData.id);
             const oldValueKeys = Object.keys(oldValues);
 
             function compareVals (){
@@ -230,7 +267,7 @@ function uniqueData (itemData){
             compareVals ();
         });
     } catch (err){
-        setFunctionError(err,logNameFile,"uniqueData");
+        setFunctionError(err, logNameFile, "uniqueData");
     }
 
     return validateData;

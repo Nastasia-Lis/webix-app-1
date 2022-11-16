@@ -11,7 +11,6 @@ function toolbarFilterBtn(idTable, visible){
         config   : {
             id       : idFilter,
             hotkey   : "Ctrl+Shift+F",
-            css      :  "webix_btn-filter webix-transparent-btn ",
             disabled : true,
             hidden   : visible,
             icon     : "icon-filter",
@@ -19,6 +18,7 @@ function toolbarFilterBtn(idTable, visible){
                 filterBtnClick(idTable,idBtnEdit);
             },
         },
+        css            :  "webix_btn-filter",
         titleAttribute : "Показать/скрыть фильтры"
     
        

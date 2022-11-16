@@ -12,7 +12,7 @@ import { getItemId, showElem, hideElem,
          disableElem, enableElem }           from "../commonFunctions.js";
 
 import { Popup }                             from "../../viewTemplates/popup.js";
-
+import { Button }                            from "../../viewTemplates/buttons.js";
 import { createEmptyTemplate }               from "../../viewTemplates/emptyTemplate.js";
 
 
@@ -455,44 +455,37 @@ const tabLib = {
     ],
 
 };
+const submitBtn = new Button({
+    
+    config   : {
+        id       : "popupFilterSubmitBtn",
+        hotkey   : "Shift+Space",
+        disabled : true, 
+        value    : "Применить", 
+        click    : popupSubmitBtn
+    },
+    titleAttribute : "Выбранные фильтры будут" +
+    "добавлены в рабочее поле, остальные скрыты"
 
-const submitBtn =  {   
-    view    : "button",
-    id      : "popupFilterSubmitBtn",
-    height  : 48,
-    minWidth: 140,
-    disabled: true, 
-    css     : "webix_primary",
-    hotkey  : "Enter",
-    value   : "Применить", 
-    on      : {
-        onAfterRender: function () {
-            this.getInputNode().setAttribute("title",
-            "Выбранные фильтры будут добавлены в рабочее поле, остальные скрыты");
+}).maxView("primary");
+
+
+const removeBtn = new Button({
+    
+    config   : {
+        id       : "editFormPopupLibRemoveBtn",
+        hotkey   : "Shift+Q",
+        hidden   : true,  
+        disabled : true,
+        icon     : "icon-trash", 
+        click   : function(){
+            removeBtnClick ();
         },
     },
-    click:popupSubmitBtn
-};
+    titleAttribute : "Выбранный шаблон будет удален"
 
-
-const removeBtn = {   
-    view    : "button",
-    css     : "webix_danger",
-    id      : "editFormPopupLibRemoveBtn",
-    type    : "icon",
-    icon    : 'icon-trash',
-    hidden  : true,
-    disabled: true,
-    width   : 50,
-    click   : function(){
-        removeBtnClick ();
-    },
-    on      : {
-        onAfterRender: function () {
-            this.getInputNode().setAttribute("title","Выбранный шаблон будет удален");
-        },
-    },
-};
+   
+}).minView("delete");
 
 const editFormPopup = {
     view        : "form", 

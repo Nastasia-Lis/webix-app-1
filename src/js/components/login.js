@@ -94,10 +94,38 @@ function login () {
         name            : "password",
         invalidMessage  : invalidMsgText,
         type            : "password",
+        icon            : "password-icon wxi-eye",   
         on              : {
-            onItemClick:function(){
+            onItemClick:function(id, event){
+                const className = event.target.className;
+                const input     = this.getInputNode();
+
+                function removeCss(className){
+                    webix.html.removeCss(event.target, className);
+                }
+
+                function updateInput(type, className){
+                    webix.html.addCss(event.target, className);
+                    input.type = type;
+                }
+       
+                if (className.includes("password-icon")){
+                    removeCss("wxi-eye-slash");
+                    removeCss("wxi-eye");
+
+                    if(input.type == "text"){    
+                        updateInput("password", "wxi-eye"); 
+                    } else {
+                        updateInput("text", "wxi-eye-slash"); 
+ 
+
+                    }
+ 
+                }
+                
                 $$('formAuth').clearValidation();
-            }
+     
+            },
         } 
     };
 

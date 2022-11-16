@@ -1,11 +1,10 @@
-import { STORAGE ,getData }                 from "./globalStorage.js";
-import { setLogValue }                      from "./logBlock.js";
+
 import { setAjaxError, setFunctionError }   from "./errors.js";
 import { setStorageData }                   from "./storageSetting.js";
-import { getItemId }                        from "./commonFunctions.js";
 
 
 import { Popup }                            from "../viewTemplates/popup.js";
+import { Button }                           from "../viewTemplates/buttons.js";
 
 function getUserData(){
     const userprefsGetData = webix.ajax("/init/default/api/whoami");
@@ -141,17 +140,33 @@ function favsPopup(){
         }
     };
 
-    const btnSaveLink = {
-        view:"button",
-        id:"favLinkSubmit", 
-        value:"Открыть ссылку", 
-        css:"webix_primary", 
-        disabled:true,
-        click:function(){
-            favsPopupSubmitClick();
+    const container = {
+        view       : "scrollview",
+        scroll     : "y",
+        maxHeight  : 300,
+        borderless : true,
+        body       : {
+            rows: [
+                radioLinks
+            ]
         }
- 
     };
+
+    const btnSaveLink = new Button({
+    
+        config   : {
+            id       : "favLinkSubmit",
+            hotkey   : "Ctrl+Shift+Space",
+            value    : "Открыть ссылку", 
+            disabled : true,
+            click    : function(){
+                favsPopupSubmitClick();
+            },
+        },
+        titleAttribute : "Открыть ссылку"
+    
+       
+    }).maxView("primary");
  
  
     const popupFavsLink = new Popup({
@@ -169,7 +184,7 @@ function favsPopup(){
                 right : 5
             },
             rows : [
-                radioLinks,
+                container,
                 {height:15},
                 btnSaveLink,
             ]

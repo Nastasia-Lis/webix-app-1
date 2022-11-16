@@ -1377,12 +1377,20 @@ button {
 }
 
 .tree_load-items,
-.tree_none-items {
+.tree_none-items,
+.tree_disabled-item {
   pointer-events: none;
 }
 
 .tree_load-items .webix_tree_file {
   color: transparent !important;
+}
+
+.tree_disabled-item .webix_tree_folder_open,
+.tree_disabled-item .webix_tree_close,
+.tree_disabled-item .webix_tree_open,
+.tree_disabled-item {
+  color: var(--gray) !important;
 }
 
 .popup-date_template .webix_template {
@@ -1474,4 +1482,33 @@ button {
 
 .webix_list.list-filter-borders .webix_scroll_cont {
   padding-bottom: 28px !important;
+}
+
+.webix_style-template-count {
+  font-size: 13px !important;
+}
+
+.password-icon {
+  padding: 7px 6px 0px 0px !important;
+  font-size: 18px !important;
+  -webkit-transition: 0.2s;
+  -o-transition: 0.2s;
+  transition: 0.2s;
+  cursor: pointer;
+}
+
+.password-icon:hover {
+  color: var(--gray);
+}
+
+.password-icon:active {
+  color: var(--gray-dark);
+}
+
+.propery-error {
+  background-color: var(--danger-light);
+}
+
+.dash-timeboard {
+  display: none !important;
 }

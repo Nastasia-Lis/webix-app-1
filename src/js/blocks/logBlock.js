@@ -1,7 +1,7 @@
-import {setStorageData}     from "./storageSetting.js";
-import {STORAGE,getData}    from "./globalStorage.js";
+import { setStorageData }     from "./storageSetting.js";
+import { STORAGE, getData }   from "./globalStorage.js";
 
-import {setFunctionError}   from "./errors.js";
+import { setFunctionError }   from "./errors.js";
 
 
 function createCurrDate(){
@@ -10,14 +10,14 @@ function createCurrDate(){
     const month   = String(date.getMonth() + 1).padStart(2, '0');
     const year    = date.getFullYear();
     const hours   = date.getHours();
-    const minutes = String( date.getMinutes()).padStart(2, '0');
-    const seconds = String( date.getSeconds()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
 
     return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
 }
 
 
-function setLogValue (typeNotify,notifyText,specificSrc) {
+function setLogValue (typeNotify, notifyText, specificSrc) {
 
     const currentDate = createCurrDate();
 
@@ -56,7 +56,7 @@ function setLogValue (typeNotify,notifyText,specificSrc) {
         }
 
         if (srcTable == "version"){
-            name = 'Expa v1.0.53';
+            name = 'Expa v1.0.54';
 
         } else if (srcTable == "cp") {
             name = 'Смена пароля';

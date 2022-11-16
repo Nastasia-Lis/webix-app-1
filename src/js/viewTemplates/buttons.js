@@ -17,6 +17,8 @@ class Button{
         this.title      = options.titleAttribute;
 
         this.onFunc     = options.onFunc;
+
+        this.css        = options.css;
     }
 
 
@@ -40,7 +42,7 @@ class Button{
 
     addOnFunctions(button){
         const self = this;
-       
+        
         if (this.onFunc){
             const names  = Object.keys  (this.onFunc);
             const values = Object.values(this.onFunc);
@@ -62,14 +64,18 @@ class Button{
     }
 
     addCss(type){
-        const button = this.buttonView; 
+        const button    = this.buttonView; 
+        const customCss = this.css || "";
 
         if (type == "primary"){
-            button.css = "webix_primary";
+            button.css = "webix_primary ";
+
         } else if (type == "delete"){
-            button.css = "webix_danger";
+            button.css  = "webix_danger ";
+
         } else {
-            button.css = type;
+            button.css = type || "";
+            button.css = button.css + " " + customCss || "";
         }
       
     }

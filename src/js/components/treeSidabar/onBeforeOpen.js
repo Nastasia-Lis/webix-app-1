@@ -64,7 +64,7 @@ function onBeforeOpenFunc(id){
                     tree.remove(idNoneElement);
                 }
             } catch (err){
-                setFunctionError(err,logNameFile,"removeTreeEls");
+                setFunctionError(err, logNameFile, "removeTreeEls");
             }
         }
 

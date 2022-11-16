@@ -1,15 +1,19 @@
-import {setLogValue} from '../blocks/logBlock.js';
-
-import {setAjaxError,setFunctionError} from "../blocks/errors.js";
-
+import { setLogValue }                   from '../blocks/logBlock.js';
+import { setAjaxError,setFunctionError } from "../blocks/errors.js";
+ 
 function contextMenu (){
-    const combo     = $$("editTreeCombo");
-    const comboData = combo.getPopup().getList();
-    
-    function addOption(option){     
-        const pull      = comboData.data.pull;
+    const combo      = $$("editTreeCombo");
+    const comboData  = combo.getPopup().getList();
 
-        Object.values(pull).forEach(function(el,i){
+    function returnPullValues(){
+        const comboData  = combo.getPopup().getList();
+        return Object.values(comboData.data.pull);
+    }
+
+    function addOption(option){     
+  
+        const pullValues = returnPullValues();
+        pullValues.forEach(function(el,i){
 
             if (el.id !== option.id){
                 comboData.parse(option);
@@ -20,48 +24,61 @@ function contextMenu (){
     }
 
     function renameOption(option){
-        comboData.parse(option);
+        const pullValues = returnPullValues();
+   
+        pullValues.forEach(function (el, i){
+
+            if (el.id == option.id){
+                comboData.parse(option);
+            }
+           
+        });
+      
     }
 
     function removeOption(option){
-        combo.getList().remove(option.id);
+        const pullValues = returnPullValues();
+   
+        pullValues.forEach(function (el, i){
+
+            if (el.id == option.id){
+                combo.getList().remove(option.id);
+            }
+           
+        });
     }
 
     return {
-        view:"contextmenu",
-        id:"contextMenuEditTree",
-        data:[
+        view : "contextmenu",
+        id   : "contextMenuEditTree",
+        data : [
                 "Добавить",
                 "Переименовать",
-                { $template:"Separator" },
+                { $template : "Separator" },
                 "Свернуть всё",
                 "Развернуть всё",
-                { $template:"Separator" },
+                { $template : "Separator" },
                 "Удалить"
             ],
         master: $$("treeEdit"),
         on:{
             onMenuItemClick:function(id){
              
-                let context = this.getContext();
-
-                let tree = $$("treeEdit");
-
-                let titem = tree.getItem(context.id); 
-
-                let menu = this.getMenu(id);
-                let cmd = menu.getItem(id).value;
-
-                let url = "/init/default/api/trees/";
+                const context = this.getContext();
+                const tree    = $$("treeEdit");
+                const titem   = tree.getItem(context.id); 
+                const menu    = this.getMenu(id);
+                const cmd     = menu.getItem(id).value;
+                const url     = "/init/default/api/trees/";
             
                 let postObj = {
-                    name : "",
-                    pid : "",
+                    name  : "",
+                    pid   : "",
                     owner : null,
                     descr : "",
                     ttype : 1,
                     value : "",
-                    cdt : null,
+                    cdt   : null,
                 };
 
           
@@ -85,16 +102,13 @@ function contextMenu (){
                                         let idNewItem = data.content.id;
                                     
                                         tree.data.add({
-                                            id:idNewItem,
-                                            value:text, 
-                                            pid:titem.id
+                                            id    : idNewItem,
+                                            value : text, 
+                                            pid   : titem.id
                                         }, 0, titem.id);
                                         
                                         tree.open(titem.id);
-                                        console.log(titem,titem.id)
 
-                              
-                              
                           
                                         const comboOption = {
                                             id      : titem.id, 
@@ -105,7 +119,11 @@ function contextMenu (){
                                     
                                         setLogValue("success","Данные сохранены");
                                     } else {
-                                        setFunctionError( data.err,"editTree","case add post msg");
+                                        setFunctionError( 
+                                            data.err,
+                                            "editTree",
+                                            "case add post msg"
+                                        );
                                     }
                                 } catch (err){
                                     setFunctionError( err,"editTree","case add");
@@ -143,7 +161,11 @@ function contextMenu (){
                                         });
                                         setLogValue("success","Данные изменены");
                                     } else {
-                                        setFunctionError( data.err,"editTree","case rename put msg");
+                                        setFunctionError( 
+                                            data.err,
+                                            "editTree",
+                                            "case rename put msg"
+                                        );
                                     }
                                 } catch (err){
                                     setFunctionError( err,"editTree","case rename");
@@ -158,7 +180,7 @@ function contextMenu (){
                     }
                     case "Удалить": {
 
-                        const delData =  webix.ajax().del(url+titem.id,titem);
+                        const delData =  webix.ajax().del(url + titem.id, titem);
 
                         delData.then(function(data){
                             try{
@@ -171,15 +193,19 @@ function contextMenu (){
                                     });
                                     setLogValue("success","Данные удалены");
                                 } else {
-                                    setFunctionError( data.err,"editTree","case delete del msg");
+                                    setFunctionError( 
+                                        data.err, 
+                                        "editTree", 
+                                        "case delete del msg"
+                                    );
                                 }
                             } catch (err){
-                                setFunctionError( err,"editTree","case delete");
+                                setFunctionError(err, "editTree", "case delete");
                             }
                         });
 
                         delData.fail(function(err){
-                            setAjaxError(err, "editTree","case delete");
+                            setAjaxError(err, "editTree", "case delete");
                         });
 
                         break;
@@ -219,56 +245,91 @@ function contextMenu (){
 
 
 
-function editTreeClick (){
-    webix.message({
-        text:"Блок находится в разработке",
-        type:"debug"
-    });
 
-    const combo = $$("editTreeCombo");
+function editTreeClick (){
     const tree  = $$("treeEdit");
-    const value = combo.getValue();
+
+    
+    function cssItems(action, selectItems){
+        const pull       = tree.data.pull;
+        const values     = Object.values(pull);
+        const css        = "tree_disabled-item";
+
+        values.forEach(function(item, i){
+
+            if (action == "remove"){
+                tree.removeCss(item.id, css);
+
+            } else if (action == "add" && selectItems) {
+                const result = selectItems.find((id) => id == item.id);
+
+                if (!result){
+                    tree.addCss   (item.id, css);
+                }
+            }
+        
+        });
+    }
+
+    cssItems("remove");
+
+    const combo  = $$("editTreeCombo");
+    const value  = combo.getValue();
+    const branch = [];
 
     function openFullBranch(value){
        const parent = tree.getParentId(value);
       
         if (parent && tree.getParentId(parent)){
-            tree.open(parent);
+            tree  .open   (parent);
+            branch.push   (parent);
             openFullBranch(parent);
         } else {
             tree.open(value);
         }  
     }
+
+    function returnSelectItems(){
+        const res = [value];
+        tree.data.eachSubItem(value,function(obj){ 
+            res.push(obj.id);
+        });   
+
+        return res;
+    }
     
+
     if (tree.exists(value)){
-      //  console.log(tree.getItemNode(value),tree.getNode(value),)
         openFullBranch  (value);
         tree.showItem   (value);
         tree.open       (value);
-    
+
+        const selectItems = returnSelectItems();
+
+        cssItems("add", selectItems);
     }
 }
 
 
 function editTreeLayout () {
     const tree = {
-        view:"edittree",
-        id:"treeEdit",
-        editable:true,
-        editor:"text",
-        editValue:"value",
-        css:"webix_tree-edit",
-        editaction:"dblclick",
-        data:[],
-        on:{
-            onAfterEditStop:function(state, editor, ignoreUpdate){
+        view       : "edittree",
+        id         : "treeEdit",
+        editable   : true,
+        editor     : "text",
+        editValue  : "value",
+        css        : "webix_tree-edit",
+        editaction : "dblclick",
+        data       : [],
+        on         : {
+            onAfterEditStop:function(state, editor){
                 try {
-                    let url = "/init/default/api/trees/";
+                    const url = "/init/default/api/trees/";
                     
                     if(state.value != state.old){
-                        let pid = $$("treeEdit").getParentId(editor.id);
+                        const pid = $$("treeEdit").getParentId(editor.id);
                         
-                        let postObj = {
+                        const postObj = {
                             name    : state.value,
                             pid     : pid,
                             id      : editor.id,
@@ -307,25 +368,25 @@ function editTreeLayout () {
 
     return [
 
-        {id:"treeEditContainer", 
-            cols:[
+        {   id  : "treeEditContainer", 
+            cols: [
                 {rows: [
                         tree,
                     ],
                 },
                 {rows: [
                     {
-                        view:"combo", 
-                        id:"editTreeCombo",
-                        labelPosition:"top",
-                        label:"Выберите элемент для редактирования", 
-                        options:[]
+                        view          :"combo", 
+                        id            :"editTreeCombo",
+                        labelPosition :"top",
+                        label         :"Выберите элемент для редактирования", 
+                        options       :[]
                     },
 
-                    {   view:"button", 
-                        value:"Применить" ,
-                        css:"webix_primary",
-                        click:editTreeClick
+                    {   view  : "button", 
+                        value : "Применить" ,
+                        css   : "webix_primary",
+                        click : editTreeClick
                     },
                     {},
                 ]},

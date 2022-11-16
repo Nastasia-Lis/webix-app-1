@@ -5,8 +5,10 @@ import { modalBox }                                     from "../notifications.j
 import { postPrefsValues, getTable, destructPopup }     from "./common.js";
 
 import { Popup }                                        from "../../viewTemplates/popup.js";
-
+import { Button }                                       from "../../viewTemplates/buttons.js";
 import { createEmptyTemplate }                          from "../../viewTemplates/emptyTemplate.js";
+
+
 
 function searchColsListPress (){
     const list      = $$("visibleList");
@@ -73,14 +75,20 @@ function clearBtnColsClick (){
 
 
     function returnPosition(column){
-        const defaultColsPosition = Object.keys(table.data.pull[1]);
         let position;
-        defaultColsPosition.forEach(function(el,i){
-            if (el == column){
-                position = i;
-            }
-        });
-
+        const pull = table.data.pull[1];
+       
+        if (pull){
+            const defaultColsPosition = Object.keys(pull);
+            
+            defaultColsPosition.forEach(function(el,i){
+                if (el == column){
+                    position = i;
+                }
+            });
+    
+        }
+   
         return position;
     }
 
@@ -152,7 +160,7 @@ function visibleColsSubmitClick (){
         }
 
         lastColumn.width = Number(widthLastCol);
- 
+
         values.push(lastColumn); 
     }
 
@@ -433,23 +441,21 @@ function  visibleColsButtonClick(idTable){
             };
         }
 
-        const btnSaveState = {
-            view    : "button",
-            id      : "visibleColsSubmit", 
-            value   : "Сохранить состояние", 
-            css     : "webix_primary",
-            hotkey  : "shift+s", 
-            disabled: true,
-            click   : function(){
-                visibleColsSubmitClick();
-            },
-            on      : {
-                onAfterRender: function () {
-                    this.getInputNode().setAttribute("title","Изменить отображение колонок в таблице (Shift+S)");
-                }
-            } 
+        const btnSaveState = new Button({
     
-        };
+            config   : {
+                id       : "visibleColsSubmit",
+                hotkey   : "Shift+S",
+                disabled : true,
+                value    : "Сохранить состояние", 
+                click    : function(){
+                    visibleColsSubmitClick();
+                },
+            },
+            titleAttribute : "Изменить отображение колонок в таблице"
+        
+           
+        }).maxView("primary");
 
         const scrollView = [
             {   template    : "Доступные колонки", 
@@ -584,66 +590,60 @@ function  visibleColsButtonClick(idTable){
             ]
         };
 
+        const moveUpBtn = new Button({
+    
+            config   : {
+                id       : "moveSelctedUp",
+                hotkey   : "Shift+U",
+                icon     : "icon-arrow-up",
+                click   : function(){
+                    colsMove("up");
+                },
+            },
+
+            titleAttribute : "Поднять выбраную колонку вверх"
+           
+        }).transparentView(); 
+
+        const moveDownBtn = new Button({
+    
+            config   : {
+                id       : "moveSelctedDown",
+                hotkey   : "Shift+W",
+                icon     : "icon-arrow-down",
+                click   : function(){
+                    colsMove("down");
+                },
+            },
+
+            titleAttribute : "Опустить выбраную колонку вниз"
+           
+        }).transparentView(); 
+
         const moveSelcted =  {
-            cols:[
-                {   
-                    view    : "button",
-                    width   : 50, 
-                    type    : "icon",
-                    id      : "moveSelctedUp",
-                    icon    : "icon-arrow-up",
-                    hotkey  : "shift+u",
-                    css     : "webix-transparent-btn",
-                    height  : 42,
-                    click   : function(){
-                        colsMove("up");
-                    },
-                    on      : {
-                        onAfterRender: function () {
-                            this.getInputNode().setAttribute("title","Поднять выбраную колонку вверх (Shift+U)");
-                        }
-                    } 
-                },
-                {   
-                    view    : "button",
-                    width   : 50, 
-                    type    : "icon",
-                    id      : "moveSelctedDown",
-                    icon    : "icon-arrow-down",
-                    css     : "webix-transparent-btn",
-                    hotkey  : "shift+w",
-                    height  : 42,
-                    click   : function(){
-                        colsMove("down");
-                    },
-                    on      : {
-                        onAfterRender: function () {
-                            this.getInputNode().setAttribute("title","Опустить выбраную колонку вниз (Shift+W)");
-                        }
-                    } 
-                },
+            cols : [
+                moveUpBtn,
+                moveDownBtn,
                 {},
             ]
         };
 
-        const clearBtn = {   
-            view    : "button",
-            width   : 50, 
-            type    : "icon",
-            id      : "clearBtnCols",
-            icon    : "icon-trash",
-            hotkey  : "shift+r",
-            css     : "webix-transparent-btn webix-trash-btn-color",
-            height  : 42,
-            click   : function(){
-                clearBtnColsClick();
+        const clearBtn = new Button({
+    
+            config   : {
+                id       : "clearBtnCols",
+                hotkey   : "Shift+R",
+                icon     : "icon-trash",
+         
+                click    : function(){
+                    clearBtnColsClick();
+                },
             },
-            on: {
-                onAfterRender : function () {
-                    this.getInputNode().setAttribute("title","Установить стандартные настройки (Shift+R)");
-                }
-            } 
-        };
+            css            : "webix-trash-btn-color",
+            titleAttribute : "Установить стандартные настройки"
+           
+        }).transparentView();
+
 
         const search = {   
             view        : "search", 
@@ -651,7 +651,6 @@ function  visibleColsButtonClick(idTable){
             placeholder : "Поиск (Shift+F)", 
             css         : "searchTable",
             height      : 42, 
-            //width       : 276,
             hotkey      : "shift+f", 
             on          : {
                 onTimedKeyPress : function(){
