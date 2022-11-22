@@ -1,5 +1,5 @@
-import {setFunctionError, setAjaxError} from "./errors.js";
-import {setStorageData} from "./storageSetting.js";
+import { setFunctionError, setAjaxError }   from "./errors.js";
+import { setStorageData }                   from "./storageSetting.js";
 
 let visibleTable;
 
@@ -32,55 +32,68 @@ function getTable(){
     return visibleTable;
 }
 
-function hideElem(elem){
-    try{
-        if (elem){
-            elem.hide();
+class Action {
+    static hideItem(item){
+        if (item){
+            item.hide();
         }
-    } catch (err){
-        setFunctionError(err,"commonFunctions","hideElem, element: "+elem);
+    }
+
+    static showItem(item){
+        if (item){
+            item.show();
+        }
+    }
+
+    static removeItem(item){
+        if(item){
+            const parent = item.getParentView();
+            parent.removeView(item);
+        }
+    }
+
+    static disableItem(item){
+        if (item && item.isEnabled()){
+            item.disable();
+        }
+    }
+
+    static enableItem(item){
+        if ( item && !(item.isEnabled()) ){
+            item.enable();
+        }
     }
 }
 
-function showElem (elem){
-    try{
-        if (elem && !(elem.isVisible())){
-            elem.show();
-        }
-    } catch (err){
-        setFunctionError(err,"commonFunctions","showElem element: "+elem);
-    }
-}
+class TableConfig {
 
-function removeElem (elem){
-    try{
-        if(elem){
-            const parent = elem.getParentView();
-            parent.removeView(elem);
-        }
+    static getView (){
+        let view;
     
-    } catch (err){
-        setFunctionError(err,"commonFunctions","removeElem element: "+elem);
-    }
-}
-
-function disableElem(element){
-    try{
-        if (element && element.isEnabled()){
-            element.disable();
+        try{
+            const table     = $$("table");
+            const tableView = $$("table-view");
+            console.log(table.isVisible(), tableView.isVisible());
+            if ($$("tables").isVisible()){
+        
+                view = table;
+            } else if ($$("forms").isVisible()){
+             
+                view = tableView; 
+      
+            }
+    
+        } catch (err){
+            setFunctionError(err, "commonFunctions", "getView");
         }
-    } catch (err){
-        setFunctionError(err,"sidebar","disableElements");
+        console.log(view);
+        return view;
     }
-}
 
-function enableElem(element){
-    try{
-        if ( element && !(element.isEnabled()) ){
-            element.enable();
-        }
-    } catch (err){
-        setFunctionError(err,"sidebar","enableElements");
+    static getIdField (){
+        const table = this.getView ();
+        console.log(table);
+        return table.config.idTable;
     }
 }
 
@@ -111,8 +124,8 @@ function getComboOptions (refTable){
         $proxy:true,
         load: function(){
             return ( webix.ajax().get(url).then(function (data) {
-                        data = data.json().content;
-                        let dataArray=[];
+                        data            = data.json().content;
+                        const dataArray = [];
                         let keyArray;
 
                         function stringOption(l,el){
@@ -125,7 +138,11 @@ function getComboOptions (refTable){
                                     l++;
                                 }
                             } catch (err){  
-                                setFunctionError(err,"commonFunctions","getComboOptions => stringOption");
+                                setFunctionError(
+                                    err,
+                                    "commonFunctions",
+                                    "getComboOptions => stringOption"
+                                );
                             }
                         }
 
@@ -156,14 +173,23 @@ function getComboOptions (refTable){
                                 
                                 });
                             } catch (err){  
-                                setFunctionError(err,"commonFunctions","getComboOptions => createComboValues");
+                                setFunctionError(
+                                    err,
+                                    "commonFunctions",
+                                    "getComboOptions => createComboValues"
+                                );
                             }
                         }
                         createComboValues();
+  
                         return dataArray;
                     
                     }).catch(err => {
-                        setAjaxError(err, "commonFunctions","getComboOptions");
+                        setAjaxError(
+                            err, 
+                            "commonFunctions",
+                            "getComboOptions"
+                        );
                     })
             );
             
@@ -199,16 +225,13 @@ function getUserData(){
 export {
     getItemId,
     getTable,
-
-    hideElem,
-    showElem,
-    removeElem,
-    disableElem,
-    enableElem,
-
+    
     textInputClean,
     
     getComboOptions,
     getUserData,
+
+    Action,
+    TableConfig
    
 };

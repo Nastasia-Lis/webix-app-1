@@ -1,5 +1,5 @@
-import {setAjaxError,setFunctionError} from "./errors.js";
-import {getUserData} from './commonFunctions.js';
+import { setAjaxError, setFunctionError } from "./errors.js";
+
 function setStorageData (name, value){
     if (typeof(Storage) !== 'undefined') {
         localStorage.setItem(name, value);
@@ -173,7 +173,8 @@ function setUserPrefs (userData){
         setLogPref();
     });
     userprefsData.fail(function(err){
-        setAjaxError(err, "storageSettings","setUserPrefs");
+        console.log(err);
+        console.log("storageSettings function setUserPrefs");
     });
 
 }

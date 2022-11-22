@@ -1,17 +1,18 @@
-//import {getInfoTable,getInfoDashboard} from "../../blocks/content.js";
-import {getInfoTable}                               from "../../blocks/getContent/getInfoTable.js";
-import {getInfoDashboard}                           from "../../blocks/getContent/getInfoDashboard.js";
 
-import {STORAGE,getData}                            from "../../blocks/globalStorage.js";
+import { createTable }               from "../table/createSpace/generateTable.js";
+import { createDashboard }           from "../dashboard/createDashboard.js";
 
-import {setFunctionError}                           from "../../blocks/errors.js";
-import {setStateFilterBtn}                          from "./common.js";
-import {hideElem,showElem,removeElem}               from "../../blocks/commonFunctions.js";
+import { LoadServerData, GetFields }  from "../../blocks/globalStorage.js";
+
+import { setFunctionError }           from "../../blocks/errors.js";
+import { setStateFilterBtn }          from "./common.js";
+import { Action }                     from "../../blocks/commonFunctions.js";
 
 
 const logNameFile = "treeSidebar => onBeforeSelect";
 
 function onBeforeSelectFunc(data){
+
 
     const tree          = $$("tree");
     const selectItem    = tree.getItem(data);
@@ -30,13 +31,12 @@ function onBeforeSelectFunc(data){
 
                 filterForm.hide();
                 setStateFilterBtn();
-            
-                showElem ($$("table-editForm"));
+                Action.showItem($$("table-editForm"));
             
             }
 
             if (inputs){
-                removeElem (inputs);
+                Action.removeItem(inputs);
             }
         } catch (err){
             setFunctionError(err,logNameFile,"setFilterDefaultState");
@@ -59,8 +59,9 @@ function onBeforeSelectFunc(data){
         const formsTools     = $$("formsTools");
         const formsContainer = $$("formsContainer");
   
-        hideElem (formsTools);
-        showElem (formsContainer);
+        Action.hideItem(formsTools);
+        Action.showItem(formsContainer);
+
 
     }
 
@@ -68,16 +69,13 @@ function onBeforeSelectFunc(data){
 
         const container = $$("tableContainer");
         const tables    = $$("tables");
-        
-        hideElem  ($$("editTableBarContainer"));
-        hideElem  ($$("table-backTableBtn"));
-        hideElem  ($$("table-editForm"));
-        showElem  ($$("tableContainer"));
+        Action.hideItem($$("editTableBarContainer"));
+        Action.hideItem($$("table-backTableBtn"));
+        Action.hideItem($$("table-editForm"));
+        Action.showItem($$("tableContainer"));
 
         if(tables.$width - container.$width > 9){
-           // $$("flexlayoutTable").config.width = tables.$width - 9;
             $$("tableContainer").resize();
-            //tables.resize();
         }
 
     }
@@ -86,8 +84,8 @@ function onBeforeSelectFunc(data){
         const dashTool      = $$("dashboardTool");
         const dashContainer = $$("dashboardInfoContainer");
 
-        hideElem (dashTool);
-        showElem (dashContainer);
+        Action.hideItem(dashTool);
+        Action.showItem(dashContainer);
     }
 
     function disableVisibleBtn(){
@@ -110,9 +108,8 @@ function onBeforeSelectFunc(data){
 
     setBtnCssState();
     setFilterDefaultState();
-
-    hideElem   ($$("editTableFormProperty"));
-
+    Action.hideItem($$("editTableFormProperty"));
+ 
     setFormToolsDefaultState();
 
     adaptiveViewDashFilter();
@@ -123,39 +120,40 @@ function onBeforeSelectFunc(data){
 
     async function getSingleTreeItem() {
 
-        if (!STORAGE.fields){
-            await getData("fields"); 
-        }
-      
-        const content   = STORAGE.fields.content;
-        const obj       = Object.keys(content); 
+        await LoadServerData.content("fields");
 
+        const keys   = GetFields.keys;
     
         function generateItem (){
+    
             try{
-                obj.forEach(function(el) {
+                keys.forEach(function(el) {
                     if (el == data){ 
-                        hideElem ($$("webix__none-content"));
-                        removeElem ($$("webix__null-content"));
+                        const type   = GetFields.attribute (el, "type");
+                        const parent = $$("tree").getParentId(el);
+                        
+                        Action.hideItem  ($$("webix__none-content"));
+                        Action.removeItem($$("webix__null-content"));
 
-                        if (content[el].type == "dbtable"){
-                            showElem ($$("tables"));
-                            getInfoTable ("table", data);
+                        if (type == "dbtable"){
+                            Action.showItem($$("tables"));
+                            createTable   ("table", data);
                             
-                        } else if (content[el].type == "tform"){
-                            showElem ($$("forms"));
-                            getInfoTable ("table-view", data);
+                        } else if (type == "tform"){
+                            Action.showItem($$("forms"));
+                            createTable   ("table-view", data);
 
-                        } else if (content[el].type == "dashboard"){
-                            showElem ($$("dashboards"));
-                            getInfoDashboard(data);
+                        } else if (type == "dashboard"){
+                            Action.showItem($$("dashboards"));
+                            createDashboard(data);
                             
                         }
+
     
                     }
                 });
             } catch (err){
-                setFunctionError(err,logNameFile,"generateItem");
+                setFunctionError(err, logNameFile, "generateItem");
             }
         }
 

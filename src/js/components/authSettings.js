@@ -1,5 +1,5 @@
 
-import {setLogValue} from '../blocks/logBlock.js';
+import {setLogValue}                   from './logBlock.js';
 import {setAjaxError,setFunctionError} from "../blocks/errors.js";
 
 function doAuthCp (){

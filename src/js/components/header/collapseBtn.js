@@ -1,6 +1,6 @@
 import { checkFonts }               from "../../blocks/checkFonts.js";
 import { setFunctionError }         from "../../blocks/errors.js";
-import { hideElem, showElem }       from "../../blocks/commonFunctions.js";
+import { Action }                   from "../../blocks/commonFunctions.js";
 
 
 function setSearchInputState(visible = false){
@@ -30,7 +30,7 @@ function collapseClick (){
         try {
             tree.show();
             if(window.innerWidth >= 800){
-                showElem(resizer);
+                Action.showItem(resizer);
             } 
         } catch (err){
             setFunctionError(err,"header","showTree");
@@ -43,7 +43,7 @@ function collapseClick (){
         if (window.innerWidth > 850 ){
             if (tree.isVisible()){
                 tree.hide();
-                hideElem(resizer);
+                Action.hideItem(resizer);
 
             } else {
                 showTree(); 
@@ -52,8 +52,7 @@ function collapseClick (){
         } else {
             if (tree.isVisible()){
                 tree.hide();
-
-                hideElem(resizer);
+                Action.hideItem(resizer);
 
                 setSearchInputState(true);
 

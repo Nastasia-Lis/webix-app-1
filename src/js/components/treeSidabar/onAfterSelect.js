@@ -1,17 +1,15 @@
 
-import {STORAGE,getData}    from "../../blocks/globalStorage.js";
-import {setFunctionError}   from "../../blocks/errors.js";
+import { GetMenu }          from "../../blocks/globalStorage.js";
+import { setFunctionError }  from "../../blocks/errors.js";
 
 function onAfterSelectFunc(id){
     
     async function getFields (){
-        if (!STORAGE.mmenu){
-            await getData("fields"); 
-        }
+        const menu  = GetMenu.content;
 
-        if (STORAGE.fields){
+        if (menu){
             try{
-                Backbone.history.navigate("tree/"+id, { trigger:true });
+                Backbone.history.navigate("tree/" + id, { trigger : true });
             } catch (err){
                 setFunctionError(err,"treeSidebar => onAfterSelect","getFields");
             }

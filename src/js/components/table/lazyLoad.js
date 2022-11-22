@@ -1,4 +1,4 @@
-import { createTableRows } from "../../blocks/getContent/getInfoTable.js";
+import { createTableRows } from './createSpace/rows/createRows.js';
 
 const limitLoad   = 80;
 

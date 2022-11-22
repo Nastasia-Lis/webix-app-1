@@ -1,4 +1,4 @@
-import {setLogValue} from "./logBlock.js";
+import { setLogValue } from "../components/logBlock.js";
 
 function checkFonts (){
 
@@ -14,7 +14,7 @@ function checkFonts (){
         });
 
         if (!check){
-            setLogValue("success","Не удалось загрузить шрифт иконок", 'expa');
+            setLogValue("success", "Не удалось загрузить шрифт иконок", 'expa');
         }
 
 

@@ -1,10 +1,10 @@
  
-import { defaultStateForm, createEditFields }                   from '../../blocks/tableEditForm/states.js';
-import { validateProfForm }                                     from '../../blocks/tableEditForm/validation.js';
+import { defaultStateForm, createEditFields }                   from './editForm/states.js';
+import { validateProfForm }                                     from './editForm/validation.js';
 import { modalBox }                                             from "../../blocks/notifications.js";
-import { setLogValue }                                          from '../../blocks/logBlock.js';
+import { setLogValue }                                          from '../logBlock.js';
 import { setAjaxError, setFunctionError }                       from "../../blocks/errors.js";
-import { showElem, hideElem, removeElem, getItemId, getTable }  from "../../blocks/commonFunctions.js";
+import { Action, getItemId, getTable }                          from "../../blocks/commonFunctions.js";
 
 import { toEditForm, validateError, putData}                    from "./common.js";
 
@@ -46,8 +46,8 @@ const onFuncTable = {
                 const filterForm      = $$("filterTableForm");
                 const btnClass        = document.querySelector(".webix_btn-filter");
 
-                hideElem(filterContainer);
-                hideElem(filterForm);
+                Action.hideItem(filterContainer);
+                Action.hideItem(filterForm);
       
                 btnClass.classList.add   ("webix-transparent-btn");
                 btnClass.classList.remove("webix-transparent-btn--primary");
@@ -63,14 +63,13 @@ const onFuncTable = {
             try{
                 const newAddBtn = $$("table-newAddBtnId");
                 const editForm  = $$("table-editForm");
-
-                showElem($$("editTableBarContainer"));
+                Action.showItem($$("editTableBarContainer"));
 
                 if (newAddBtn){
                     newAddBtn.enable();
                 }
-           
-                hideElem($$("EditEmptyTempalte"));
+                Action.hideItem($$("EditEmptyTempalte"));
+
 
                 if( !(editForm.isVisible()) ){
                     editForm.show();
@@ -90,20 +89,19 @@ const onFuncTable = {
                 const container = $$("container");
 
                 if (container.$width < 850){
-
-                    hideElem($$("tree"))
+                    Action.hideItem($$("tree"));
+       
 
                     if (container.$width< 850){
-                        hideElem($$("tableContainer"));
-
+                        Action.hideItem($$("tableContainer"));
+    
                         form.config.width = window.innerWidth;
                         form.resize();
-
-                        showElem($$("table-backTableBtn"));
+                        Action.showItem($$("table-backTableBtn"));
                     }
-                  
-                    showElem(form);
-                    hideElem($$("EditEmptyTempalte"));
+                    Action.showItem(form);
+                    Action.hideItem($$("EditEmptyTempalte"));
+           
                 }
             } catch (err){
                 setFunctionError(err,logNameFile,"onAfterSelect => adaptiveEditForm");
@@ -143,7 +141,7 @@ const onFuncTable = {
                     if (data.content.id !== null){
                         tableUpdate ();
                         toEditForm(nextItem);
-                        removeElem($$("propertyRefbtnsContainer"));
+                        Action.removeItem($$("propertyRefbtnsContainer"));
                         table.select(nextItem);
                         setLogValue("success","Данные успешно добавлены");
                     } else {
@@ -180,7 +178,7 @@ const onFuncTable = {
                         if (result == 1){
                             toEditForm(nextItem);
                             table.select(selection.id);
-                            removeElem($$("propertyRefbtnsContainer"));
+                            Action.removeItem($$("propertyRefbtnsContainer"));
                         } 
 
                         else if (result == 2){

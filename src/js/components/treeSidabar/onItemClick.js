@@ -1,9 +1,9 @@
  
-import {validateProfForm} from "../../blocks/tableEditForm/validation.js";
-import {modalBox} from "../../blocks/notifications.js";
-import {setLogValue} from "../../blocks/logBlock.js";
-import {setAjaxError,setFunctionError} from "../../blocks/errors.js";
-import {hideElem,showElem,removeElem} from "../../blocks/commonFunctions.js";
+import {validateProfForm}               from "../table/editForm/validation.js";
+import {modalBox}                       from "../../blocks/notifications.js";
+import {setLogValue}                    from "../logBlock.js";
+import {setAjaxError,setFunctionError}  from "../../blocks/errors.js";
+import {Action}                         from "../../blocks/commonFunctions.js";
 
 
 const logNameFile = "treeSidebar => onItemClick";
@@ -133,7 +133,7 @@ function onItemClickFunc(id){
                 data = data.json();
                 if (data.content.id !== null){
                     setDirtyProperty ();
-                    removeElem ($$("propertyRefbtnsContainer"));
+                    Action.removeItem($$("propertyRefbtnsContainer"));
                     selectTree(id);
                     setLogValue("success","Данные успешно добавлены",currId);
                 } else {
@@ -174,7 +174,7 @@ function onItemClickFunc(id){
                 
                     if (data.err_type == "i"){
                         setDirtyProperty ();
-                        removeElem ($$("propertyRefbtnsContainer"));
+                        Action.removeItem($$("propertyRefbtnsContainer"));
                         selectTree(id);
                         setLogValue("success","Данные успешно добавлены",currId);
                 
@@ -217,7 +217,7 @@ function onItemClickFunc(id){
             }
 
             if (result == 1 || result == 2){
-                removeElem ($$("propertyRefbtnsContainer"));
+                Action.removeItem($$("propertyRefbtnsContainer"));
             }
 
         });

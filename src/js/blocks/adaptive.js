@@ -1,7 +1,5 @@
-import {setFunctionError} from "./errors.js";
-import  {STORAGE,getData} from "./globalStorage.js";
-
-import  {hideElem,showElem} from "./commonFunctions.js";
+import { setFunctionError } from "./errors.js";
+import { Action }           from "./commonFunctions.js";
 
 
 function resizeSidebar(){
@@ -14,18 +12,18 @@ function resizeSidebar(){
                 tree.resize();
             }
         } catch (err){
-            setFunctionError(err,"adaptive","resizeSidebar => resizeTree");
+            setFunctionError(err, "adaptive", "resizeSidebar => resizeTree");
         }
     } 
 
     
     if (window.innerWidth < 850){
-        hideElem(tree);
+        Action.hideItem(tree);
     }
 
     if (!tree.isVisible()  && 
         window.innerWidth <= 800 ){
-        hideElem($$("sideMenuResizer"));
+        Action.hideItem($$("sideMenuResizer"));
     }
 
     if (window.innerWidth > 850 && $$("tree")){
@@ -47,10 +45,10 @@ function resizeForms(){
             tools.config.width = window.innerWidth - 45;
             tools.resize();
 
-            hideElem (сontainer  );
-            hideElem (formResizer);
-            hideElem ($$("tree") );
-            showElem (backBtn    );
+            Action.hideItem(сontainer);
+            Action.hideItem(formResizer);
+            Action.hideItem($$("tree"));
+            Action.showItem(backBtn);
           
         }
     }
@@ -58,12 +56,11 @@ function resizeForms(){
     function createFormMain(){
         if (tools.isVisible()          && 
             tools.config.width !== 350 ){
-
-            tools.config.width = 350;
+            tools.config.width  = 350;
             tools.resize();
-            showElem (formResizer);
-            showElem (сontainer  );
-            hideElem (backBtn    );
+            Action.showItem(formResizer);
+            Action.showItem(сontainer);
+            Action.hideItem(backBtn);
         }
     }
  
@@ -93,9 +90,9 @@ function resizeDashboards(){
             dashTool.config.width = window.innerWidth-45;
             dashTool.resize();
 
-            hideElem (dashContainer);
-            hideElem (tree         );
-            showElem (backBtn      );
+            Action.hideItem(dashContainer);
+            Action.showItem(tree);
+            Action.showItem(backBtn);
         }
     }
 
@@ -107,11 +104,13 @@ function resizeDashboards(){
             dashTool.config.width = 350;
             dashTool.resize();
 
-            $$("dashboardTool").config.width = 350;
-            $$("dashboardTool").resize();
+            const tools = $$("dashboardTool");
 
-            showElem (dashContainer);
-            hideElem (backBtn      );
+            tools.config.width = 350;
+            tools.resize();
+
+            Action.showItem(dashContainer);
+            Action.hideItem(backBtn);
         }
      
     }
@@ -142,9 +141,9 @@ function resizeTableEditForm(){
             editForm.config.width = window.innerWidth-45;
             editForm.resize();
 
-            hideElem (container);
-            hideElem (tree);
-            showElem (backBtn);
+            Action.hideItem(container);
+            Action.hideItem(tree);
+            Action.showItem(backBtn);
         }
     }
 
@@ -156,15 +155,15 @@ function resizeTableEditForm(){
             editForm.config.width = 350;
             editForm.resize();
 
-            showElem (container);
-            hideElem (backBtn);
+            Action.showItem(container);
+            Action.hideItem(backBtn);
         }
 
     }
 
     
     if ($$("container").$width < 850 && editForm.isVisible()){
-        hideElem (tree);
+        Action.hideItem(tree);
     }
 
 
@@ -190,10 +189,10 @@ function resizeTableFilterForm (){
         if (filterForm.isVisible()){
             filterForm.config.width = window.innerWidth-45;
             filterForm.resize();
- 
-            hideElem (container);
-            hideElem (tree     );
-            showElem (backBtn  );
+
+            Action.hideItem(container);
+            Action.hideItem(tree);
+            Action.showItem(backBtn);
 
         }
     }
@@ -205,8 +204,8 @@ function resizeTableFilterForm (){
         filterForm.config.width = 350;
         filterForm.resize();
 
-        showElem (container);
-        hideElem (backBtn  );
+        Action.showItem(container);
+        Action.hideItem(backBtn);
     }
     }
    
@@ -215,7 +214,7 @@ function resizeTableFilterForm (){
     }
 
     if ($$("container").$width < 850 && filterForm.isVisible()){
-        hideElem (tree);
+        Action.hideItem(tree);
     }
 
 
@@ -236,21 +235,11 @@ function setSearchInputState(){
 }
 
 
-function resizeTableCols(){
-    
-}
-
-
-
 function resizeAdaptive (){
 
     window.addEventListener('resize', function(event) {
   
         async function getActiveView (){  
-
-            if (!STORAGE.mmenu){
-                await getData("mmenu"); 
-            }
 
             function setAdaptiveLogic(visibleEl){
                 if (visibleEl == "forms"){
@@ -273,16 +262,23 @@ function resizeAdaptive (){
             }
 
             function initLogic(){
-                if (STORAGE.mmenu){
-                    const menuData = STORAGE.mmenu.mmenu;
-                    menuData.forEach(function(el,i){
-                        if($$(el.name) && $$(el.name).isVisible()){
-                            let visibleEl = el.name;
-                            setAdaptiveLogic(visibleEl);
-                        }
-                    });
+
+                const elements = [
+                    "forms", 
+                    "dashboards", 
+                    "tables", 
+                    "userprefs", 
+                    "user_auth"
+                ];
+
+                elements.forEach(function(el,i){
+                    const elem = $$(el);
+                    if(elem && elem.isVisible()){
+                        setAdaptiveLogic(el);
+                    }
+                });
                     
-                }
+                
             }
 
             initLogic();
@@ -316,10 +312,10 @@ function adaptivePoints (){
             const editContainer = $$("editTableBarContainer");
 
             tree.attachEvent("onAfterLoad", function(){
-                hideElem(editContainer);
+                Action.hideItem(editContainer);
             });
  
-            hideElem(editContainer);
+            Action.hideItem(editContainer);
 
         }
     }

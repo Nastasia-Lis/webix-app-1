@@ -1,16 +1,14 @@
-import {setFunctionError}                           from "../../blocks/errors.js"; 
-//import {getInfoTable,getInfoDashboard}              from "../../blocks/content.js";
+import { setFunctionError }                           from "../../blocks/errors.js"; 
 
-import {getInfoTable}                               from "../../blocks/getContent/getInfoTable.js";
-import {getInfoDashboard}                           from "../../blocks/getContent/getInfoDashboard.js";
+import { createDashboard }                            from "../dashboard/createDashboard.js";
  
-import {defaultStateForm}                           from "../../blocks/tableEditForm/states.js";
+import { defaultStateForm }                           from "../table/editForm/states.js";
 
-import {hideElem,showElem,disableElem,removeElem}   from "../../blocks/commonFunctions.js";
+import { Action }                                     from "../../blocks/commonFunctions.js";
 
-import {STORAGE,getData}                            from "../../blocks/globalStorage.js";
+import { LoadServerData, GetFields }                  from "../../blocks/globalStorage.js";
 
-import {setStateFilterBtn}                          from "./common.js";
+import { setStateFilterBtn }                          from "./common.js";
 
 
 const logNameFile = "treeSidebar => onSelectChange";
@@ -31,7 +29,7 @@ function onSelectChangeFunc(ids){
                 editForm.refresh();
             }
         } catch (err){
-            setFunctionError(err,logNameFile,"setWidthEditForm");
+            setFunctionError(err, logNameFile, "setWidthEditForm");
         }
     }
 
@@ -64,39 +62,13 @@ function onSelectChangeFunc(ids){
     function hideNoneContent(){
         try{
             if (ids[0] && getItemParent!==0){
-                hideElem ($$("webix__none-content"));
+                Action.hideItem($$("webix__none-content"));
             }
         } catch (err){
             setFunctionError(err,logNameFile,"hideNoneContent");
         }
     }
  
-    function setTableName (id){
-        try{
-           
-            const tableHeadline = $$("table-templateHeadline");
-            const tableViewHeadline = $$("table-view-templateHeadline");
-       
-            if (tableHeadline){
-                STORAGE.tableNames.forEach(function(el,i){
-                    if (el.id == id){
-                        tableHeadline.setValues(el.name);
-                    }
-                });
-            } 
-            
-            if (tableViewHeadline){
-                STORAGE.tableNames.forEach(function(el,i){
-                    if (el.id == id){
-                        tableViewHeadline.setValues(el.name);
-                    }
-                    
-                });
-            }
-        } catch (err){
-            setFunctionError(err,logNameFile,"setTableName");
-        }
-    }
 
     function setSearchInputState(){
         const headerChilds = $$("header").getChildViews();
@@ -107,20 +79,22 @@ function onSelectChangeFunc(ids){
             }
         });
     }
-    removeElem  ($$("propertyRefbtnsContainer"));
-    hideElem    ($$("tablePropBtnsSpace"));
-    hideElem    ($$("editTableFormProperty"));
+    Action.removeItem($$("propertyRefbtnsContainer"));
+    Action.hideItem($$("tablePropBtnsSpace"));
+    Action.hideItem($$("editTableFormProperty"));
     
     setSearchInputState();
     
-    hideElem    ($$("filterTableBarContainer"));
+    Action.hideItem($$("filterTableBarContainer"));
 
-    showElem    ($$("filterEmptyTempalte"));
-    showElem    ($$("EditEmptyTempalte"));
+    Action.showItem($$("filterEmptyTempalte"));
+    Action.showItem($$("EditEmptyTempalte"));
 
-    disableElem ($$("btnFilterSubmit"));
-    disableElem ($$("filterLibrarySaveBtn"));
-    disableElem ($$("resetFilterBtn"));
+
+    Action.disableItem($$("btnFilterSubmit"));
+    Action.disableItem($$("filterLibrarySaveBtn"));
+    Action.disableItem($$("resetFilterBtn"));
+  
     
     setWidthEditForm  ();
     
@@ -133,30 +107,31 @@ function onSelectChangeFunc(ids){
     function visibleTreeItem(idsUndefined){
 
         async function findSingleEl () {
-            let single;
-            if (!STORAGE.fields){
-                await getData("fields"); 
+            await LoadServerData.content("fields");
+            const keys   = GetFields.keys;
+       
+            let single = false;
+
+            function isExists(key) {
+                return key === idsUndefined;
             }
+ 
+        
+            if (keys.find(isExists)){
+                const type = GetFields.attribute (idsUndefined, "type");
+                
+                single = true;
+                if        (type == "dbtable"  ){
+                    Action.showItem($$("tables"));
 
-            if (STORAGE.fields){
-                let storageData = STORAGE.fields.content;
-                single = false;
-                    if (storageData[idsUndefined]){
-                      
-                        single = true;
-                        if        (storageData[idsUndefined].type == "dbtable"  ){
-                            showElem ($$("tables"));
+                } else if (type == "tform"    ){
+                    Action.showItem($$("forms"));
 
-                        } else if (storageData[idsUndefined].type == "tform"    ){
-                            showElem ($$("forms"));
+                } else if (type == "dashboard"){
+                  
+                    Action.showItem($$("dashboards"));
+                }
 
-                        } else if (storageData[idsUndefined].type == "dashboard"){
-                            showElem ($$("dashboards"));
-                        }
-
-                        setTableName (idsUndefined);
-                    }
-           
             }
 
             return single;
@@ -168,7 +143,8 @@ function onSelectChangeFunc(ids){
                 let viewEl  = $$("webix__null-content");
                 
                 if(viewEl){
-                    removeElem (viewEl);
+                    Action.removeItem(viewEl);
+
                 }
             } catch (err){
                 setFunctionError(err,logNameFile,"removeNullContent");
@@ -177,8 +153,9 @@ function onSelectChangeFunc(ids){
 
     
         removeNullContent();
-        hideElem ($$("user_auth"));
-        hideElem ($$("userprefs"));
+        Action.hideItem($$("user_auth"));
+        Action.hideItem($$("settings" ));
+ 
 
 
         function createUndefinedMsg(){
@@ -205,8 +182,7 @@ function onSelectChangeFunc(ids){
 
             findSingleEl().then(function(response) {
                 if (!response){
-         
-                    hideElem ($$("webix__none-content"));
+                    Action.hideItem($$("webix__none-content"));
                      
                     if(!($$("webix__null-content"))){
                         createUndefinedMsg();
@@ -227,11 +203,11 @@ function onSelectChangeFunc(ids){
   
                 if (singleAction !== treeItemAct && treeItemAct){
                     if (treeItemAct == "dbtable" || treeItemAct == "all_dbtable"){
-                        hideElem ($$("tables"));
+                        Action.hideItem($$("tables"));
                     } else if (treeItemAct == "tform" || treeItemAct == "all_tform"){
-                        hideElem ($$("forms"));
+                        Action.hideItem($$("forms"));
                     } else if (treeItemAct == "dashboard" || getItemParent !== "dashboards"){
-                        hideElem ($$("dashboards"));
+                        Action.hideItem($$("dashboards"));
                     }
                 }
                             
@@ -263,12 +239,12 @@ function onSelectChangeFunc(ids){
                         const treeItemAct  = $$("tree").getItem(el).action;
                        
                         if (treeItemAct == "dbtable" && getItemParent !== "tables"){
-                            hideElem ($$("tables"));
+                            Action.hideItem($$("tables"));
                         } else if (treeItemAct == "tform" && getItemParent !== "forms"){
-                            hideElem ($$("forms"));
+                            Action.hideItem($$("forms"));
                         } else if (treeItemAct == "dashboard" && getItemParent !== "dashboards"){
-                           
-                            hideElem ($$("dashboards"));
+                            Action.hideItem($$("dashboards"));
+                 
                         }
                     }     
                     
@@ -298,7 +274,7 @@ function onSelectChangeFunc(ids){
             visibleTreeItem(); 
 
         } else if( getItemParent == "forms"     ){
-            hideElem ($$("propTableView"));
+            Action.hideItem($$("propTableView"));
             visibleTreeItem();
 
         } else if ( getItemParent == 0           && 
@@ -314,25 +290,7 @@ function onSelectChangeFunc(ids){
         }
     }
 
-
-    function getInfoSelectElement (){
-        if (       getItemParent   == "tables"     ){
-            defaultStateForm();
-          //  getInfoTable ("table", ids[0]);
-            setTableName (treeItemId); 
-
-        } else if (getItemParent   == "dashboards" ){
-            getInfoDashboard ();
-
-        } else if (getItemParent   == "forms"      ){
-          //  getInfoTable ("table-view", ids[0]);
-            setTableName (treeItemId);
-
-        }
-    }
-
     selectItemAction     ();
-    getInfoSelectElement ();
 }
 
 export {

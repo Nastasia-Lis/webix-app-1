@@ -1,9 +1,6 @@
-import {router}                                 from "../blocks/routerConfig/router.js";
-import {createElements,removeElements}          from "../blocks/routerConfig/common.js";
+import { router }                                 from "./routerConfig/_router.js";
+import { createElements, removeElements }         from "./routerConfig/common.js";
 
-import {setStorageData, setUserPrefs}           from "../blocks/storageSetting.js";
-
-import {setFunctionError, setAjaxError}         from "../blocks/errors.js";
 
 function createSentObj(){
     const loginData = {};
@@ -16,7 +13,7 @@ function createSentObj(){
         loginData.np    = userData.password;
         
     } catch (err){
-        setFunctionError(err,"login","createSentObj");
+        console.log(err + " login function createSentObj");
     }
 
     return loginData;
@@ -57,7 +54,7 @@ function postLoginData(){
     });
 
     postData.fail(function(err){
-        setAjaxError(err, "login","postLoginData");
+        console.log(err + " login function postLoginData");
     });
 }
 

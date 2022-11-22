@@ -1,14 +1,15 @@
 
 import { modalBox }                               from "../../blocks/notifications.js";
-import { setLogValue }                            from '../../blocks/logBlock.js';
+import { setLogValue }                            from '../logBlock.js';
 import { setStorageData }                         from "../../blocks/storageSetting.js";
 
-import { saveItem, saveNewItem }                  from "../../blocks/tableEditForm/buttons.js";
+ 
+import { saveItem, saveNewItem }                  from "../table/editForm/buttons.js";
 
-import { favsPopup }                              from "../../blocks/favsLink.js";
+import { favsPopup }                              from "../favorites.js";
 
 import { setFunctionError, setAjaxError }         from "../../blocks/errors.js";
-import { hideElem, showElem }                     from "../../blocks/commonFunctions.js";
+import { Action }                                 from "../../blocks/commonFunctions.js";
 
 import { Button }                                 from "../../viewTemplates/buttons.js";
 
@@ -23,7 +24,8 @@ function hideContentElements(id){
     const childs =  $$("container").getChildViews();
     childs.forEach(function(el){
         if ( el.config.id !== id ){
-            hideElem($$(el.config.id));
+            Action.hideItem($$(el.config.id));
+
         }
     }); 
 }
@@ -155,14 +157,14 @@ function itemClickContext(id){
         hideContentElements("user_auth");
     }
 
-    function userprefsClick(){
+    function settingsClick(){
         if (editProperty && editProperty.config.dirty){
-            modalBoxTable ("userprefs");
+            modalBoxTable ("settings");
         } else {
             clearTree();
-            navigateTo ("/userprefs");
+            navigateTo ("/settings");
         }
-        hideContentElements("userprefs");
+        hideContentElements("settings");
     }
 
     if (id=="logout"){
@@ -171,8 +173,9 @@ function itemClickContext(id){
     } else if (id == "cp"){
         cpClick();
 
-    } else if (id == "userprefs"){
-        userprefsClick();
+    } else if (id == "settings"){
+        settingsClick();
+
 
     } else if (id == "favs"){
     
@@ -305,6 +308,8 @@ const userContextBtn = new Button({
             on      : {
                 onItemClick: function(id, e, node){
                     itemClickContext(id);
+                     
+ 
                 }
             }
         },

@@ -1,8 +1,8 @@
 
 import {popupExec}                              from "../../blocks/notifications.js";
-import {setLogValue}                            from '../../blocks/logBlock.js';
+import {setLogValue}                            from '../logBlock.js';
 import {setAjaxError,setFunctionError}          from "../../blocks/errors.js";
-import {showElem,hideElem,getItemId}            from "../../blocks/commonFunctions.js";
+import {Action, getItemId}            from "../../blocks/commonFunctions.js";
 
 const logNameFile = "table => btnsIntable";
 
@@ -53,8 +53,7 @@ function showPropBtn (cell){
         const btnClass          = document.querySelector(".webix_btn-filter");
         const primaryBtnClass   = "webix-transparent-btn--primary";
         const secondaryBtnClass = "webix-transparent-btn";
-        
-        hideElem($$("formsTools"));
+        Action.hideItem($$("formsTools"));
 
         if (btnClass.classList.contains(primaryBtnClass)){
             btnClass.classList.add(secondaryBtnClass);
@@ -111,7 +110,7 @@ function showPropBtn (cell){
             
             function initSpace(){
                 hideViewTools();
-                showElem(propertyElem);
+                Action.showItem(propertyElem);
             }
 
 
@@ -140,7 +139,7 @@ function showPropBtn (cell){
     if (!(propertyElem.isVisible()))   {
         getProp();
     } else {
-        hideElem(propertyElem);
+        Action.hideItem(propertyElem);
     }
 }
 

@@ -1,15 +1,15 @@
  
-import {validateProfForm}                       from '../../blocks/tableEditForm/validation.js';
-import {setLogValue}                            from '../../blocks/logBlock.js';
-import {setAjaxError,setFunctionError}          from "../../blocks/errors.js";
-import {removeElem}                             from "../../blocks/commonFunctions.js";
+import { validateProfForm }                   from './editForm/validation.js';
+import { setLogValue }                        from '../logBlock.js';
+import { setAjaxError, setFunctionError }     from "../../blocks/errors.js";
+import { Action }                             from "../../blocks/commonFunctions.js";
 
 
 const logNameFile = "table => common";
 
 
 function setDirtyProperty (){
-    const prop = $$("editTableFormProperty");
+    const prop        = $$("editTableFormProperty");
     prop.config.dirty = false;
     prop.refresh();
 }
@@ -63,7 +63,11 @@ function toEditForm (nextItem) {
             $$("table-delBtnId")  .enable();
 
         } catch (err){   
-            setFunctionError(err,logNameFile,"toEditForm => setPropState");
+            setFunctionError(
+                err,
+                logNameFile,
+                "toEditForm => setPropState"
+            );
         }
     }
 
@@ -85,7 +89,7 @@ function validateError (){
         } catch (err){ 
             setFunctionError(err,logNameFile,"validateError")
         }
-        setLogValue("error",el.textError+" (Поле: "+nameEl+")");
+        setLogValue("error",el.textError + " (Поле: " + nameEl + ")");
     });
 }
 
@@ -142,7 +146,7 @@ function putData (nextItem, valuesProp, currId, editInForm=false){
 
                     setLogValue("success","Данные сохранены");
                     table.updateItem(valuesProp.id, valuesProp);
-                    removeElem($$("propertyRefbtnsContainer"));
+                    Action.removeItem($$("propertyRefbtnsContainer"));
 
                     if (editInForm){
                         toEditForm(nextItem);
