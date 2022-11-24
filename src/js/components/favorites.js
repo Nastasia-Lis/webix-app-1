@@ -1,29 +1,11 @@
 
-import { setAjaxError, setFunctionError }   from "../blocks/errors.js";
-import { setStorageData }                   from "../blocks/storageSetting.js";
+import { setAjaxError, setFunctionError }           from "../blocks/errors.js";
+import { pushUserDataStorage, getUserDataStorage }  from "../blocks/commonFunctions.js";
+
+import { Popup }                                    from "../viewTemplates/popup.js";
+import { Button }                                   from "../viewTemplates/buttons.js";
 
 
-import { Popup }                            from "../viewTemplates/popup.js";
-import { Button }                           from "../viewTemplates/buttons.js";
-
-function getUserData(){
-    const userprefsGetData = webix.ajax("/init/default/api/whoami");
-    userprefsGetData.then(function(data){
-        data = data.json().content;
-
-        let userData = {};
-    
-        userData.id       = data.id;
-        userData.name     = data.first_name;
-        userData.username = data.username;
-        
-        setStorageData("user", JSON.stringify(userData));
-        
-    });
-    userprefsGetData.fail(function(err){
-        setAjaxError(err, "favsLink","btnSaveLpostContentinkClick => getUserData");
-    });
-}
 
 function setAdaptiveSize(popup){
     if (window.innerWidth < 1200 ){
@@ -38,21 +20,23 @@ function setAdaptiveSize(popup){
  
 }
 
-function favsPopupCollectionClick (){
+async function favsPopupCollectionClick (){
+
+    let user =  getUserDataStorage();
+
+    if (!user){
+        await pushUserDataStorage();
+        user =  getUserDataStorage();
+    }
+
+ 
     const getData = webix.ajax().get("/init/default/api/userprefs/");
     
     getData.then(function(data){
         data = data.json().content;
+
         const favCollection = [];
 
-        let user = webix.storage.local.get("user");
-
-        if (!user){
-            getUserData();
-            user = webix.storage.local.get("user");
-        }
-    
-        
         function getFavsCollection(){
             try{
                 data.forEach(function(el){
@@ -71,9 +55,9 @@ function favsPopupCollectionClick (){
                 if (favCollection.length){
                     favCollection.forEach(function(el){
                         radio.addOption(
-                            {   id:el.id,
-                                value:el.name,
-                                favLink: el.link
+                            {   id      :el.id,
+                                value   :el.name,
+                                favLink : el.link
                             }
                         );
                         radio.removeOption(
@@ -87,7 +71,8 @@ function favsPopupCollectionClick (){
             }
          
         }
-        
+
+
         if (user){
             getFavsCollection();
             createOptions();

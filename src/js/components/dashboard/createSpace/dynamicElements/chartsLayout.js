@@ -26,20 +26,30 @@ function createChart(dataCharts){
     try{
         // const table = {
         //     "view": "datatable",
+        //     "id"  : "auth_group",
         //     "height": 300,
         //     "scroll": "xy",
         //     "columns": [
         //         {
-        //             "id": "1",
+        //             "id": "id",
         //             "header": [
         //                 {
-        //                     "text": "заголовок"
+        //                     "text": "id"
         //                 }
         //             ],
         //             "width": 100,
         //         },
         //         {
-        //             "id": "2",
+        //             "id": "role",
+        //             "header": [
+        //                 {
+        //                     "text": "роль"
+        //                 }
+        //             ],
+                    
+        //         },
+        //         {
+        //             "id": "description",
         //             "header": [
         //                 {
         //                     "text": "описание"
@@ -51,19 +61,14 @@ function createChart(dataCharts){
         //     "data": [
         //         {
         //             "id": 1,
-        //             "1": "Нет данных",
-        //             "2": "2343225"
+        //             "role": "222",
+        //             "description": "333"
         //         },
-        //         {
-        //             "id": 2,
-        //             "1": "23222222",
-        //             "2": "3333"
-        //         }
+                
         //     ],
         //     "_inner": {
         //         "top": false
         //     },
-        //     "id": "$datatable1",
         //     "onDblClick": {}
         // };
      
@@ -99,8 +104,8 @@ function createChart(dataCharts){
     return layout;
 }
 
-async function setTableName(idsParam) {
-    const itemTreeId = getDashId(idsParam);
+async function setDashName(idsParam) {
+    const itemTreeId = getDashId (idsParam);
     try{
         await LoadServerData.content("fields");
 
@@ -119,9 +124,16 @@ async function setTableName(idsParam) {
      
         
     } catch (err){  
-        setFunctionError(err, logNameFile, "setTableName");
+        setFunctionError(err, logNameFile, "setDashName");
     }
-} 
+}
+
+function setIdAttribute(idsParam){
+    const container = $$("dashboardContainer");
+    if (container){
+        container.config.idDash = getDashId (idsParam);
+    }
+}
 
 
 function createDashLayout(dataCharts){
@@ -180,8 +192,8 @@ function createDashboardCharts(idsParam, dataCharts){
         setFunctionError(err, logNameFile, "createFilterLayout");
     } 
 
-    setTableName( idsParam );
-        
+    setDashName( idsParam );
+    setIdAttribute(idsParam);
 }
 
 

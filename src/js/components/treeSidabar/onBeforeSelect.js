@@ -1,13 +1,8 @@
-
-import { createTable }               from "../table/createSpace/generateTable.js";
-import { createDashboard }           from "../dashboard/createDashboard.js";
-
 import { LoadServerData, GetFields }  from "../../blocks/globalStorage.js";
-
 import { setFunctionError }           from "../../blocks/errors.js";
 import { setStateFilterBtn }          from "./common.js";
 import { Action }                     from "../../blocks/commonFunctions.js";
-
+import { selectElem }                 from "./selectVisualElem.js";
 
 const logNameFile = "treeSidebar => onBeforeSelect";
 
@@ -124,41 +119,9 @@ function onBeforeSelectFunc(data){
 
         const keys   = GetFields.keys;
     
-        function generateItem (){
-    
-            try{
-                keys.forEach(function(el) {
-                    if (el == data){ 
-                        const type   = GetFields.attribute (el, "type");
-                        const parent = $$("tree").getParentId(el);
-                        
-                        Action.hideItem  ($$("webix__none-content"));
-                        Action.removeItem($$("webix__null-content"));
-
-                        if (type == "dbtable"){
-                            Action.showItem($$("tables"));
-                            createTable   ("table", data);
-                            
-                        } else if (type == "tform"){
-                            Action.showItem($$("forms"));
-                            createTable   ("table-view", data);
-
-                        } else if (type == "dashboard"){
-                            Action.showItem($$("dashboards"));
-                            createDashboard(data);
-                            
-                        }
-
-    
-                    }
-                });
-            } catch (err){
-                setFunctionError(err, logNameFile, "generateItem");
-            }
-        }
-
-        generateItem ();
-        
+        if (keys){
+            selectElem(data);
+        }   
     }
     getSingleTreeItem() ;
 

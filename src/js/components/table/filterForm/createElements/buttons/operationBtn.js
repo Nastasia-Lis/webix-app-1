@@ -1,5 +1,6 @@
 
 import { setFunctionError }    from "../../../../../blocks/errors.js";
+import { Button }              from "../../../../../viewTemplates/buttons.js";
 
 const logNameFile = "tableFilter => createElement => buttons => operationBtn";
 
@@ -83,33 +84,34 @@ function filterOperationsBtnData (typeField){
 function createOperationBtn(typeField, elemId){
     
     const idBtnOperation = elemId + "-btnFilterOperations";
+
+    const btn = new Button({
     
-    return {
-        view        : "button",
-        id          : idBtnOperation,
-        css         : "webix_filterBtns",
-        value       : "=",
-        inputHeight : 38,
-        width       : 40,
-        popup       : {
-            view  : 'contextmenu',
-            width : 200,
-            data  : [],
-            on    : {
-                onMenuItemClick(id) {
-                    filterOperationsBtnLogic (idBtnOperation, id);
-                },
-                onAfterLoad: filterOperationsBtnData(typeField)
-               
-            }
-        },
-        on          :{
-            onAfterRender: function () {
-                this.getInputNode().setAttribute("title","Выбрать условие поиска по полю");
+        config   : {
+            id       : idBtnOperation,
+            value    : "=", 
+            width    : 40,
+            inputHeight:38,
+            popup    : {
+                view  : 'contextmenu',
+                width : 100,
+                data  : [],
+                on    : {
+                    onMenuItemClick(id) {
+                        filterOperationsBtnLogic (idBtnOperation, id);
+                    },
+                    onAfterLoad: filterOperationsBtnData(typeField)
+                   
+                }
             },
-        }
+        },
+        titleAttribute : "Выбрать условие поиска по полю",
+        css            : "webix_filterBtns",
     
-    };
+       
+    }).maxView();
+    
+    return btn;
 }
 
 export {

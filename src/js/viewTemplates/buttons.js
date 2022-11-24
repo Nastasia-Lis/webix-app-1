@@ -1,4 +1,4 @@
-class Button{
+class Button {
 
     constructor (options){
         this.buttonView = {
@@ -129,28 +129,6 @@ class Button{
     }
 
 }
-
-   
-const prevBtn = {
-    view    : "button",
-    id      : webix.uid(),
-    css     : "webix-transparent-btn btn-history",
-    type    : "icon",
-    icon    : "icon-arrow-left",
-    width   : 50,
-    hotkey  : "ctrl+shift+p",
-    click   : function(){
-        prevBtnClick();
-    },
-    on      : {
-        onAfterRender: function () {
-            this.getInputNode().setAttribute("title","Вернуться назад (Ctrl+Shift+P)");
-        },
-    }
-
-    
-};
-
 
 export{
     Button

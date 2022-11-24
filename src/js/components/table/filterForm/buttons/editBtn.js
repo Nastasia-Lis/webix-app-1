@@ -3,7 +3,8 @@ import { setFunctionError,setAjaxError }         from "../../../../blocks/errors
 
 import { createFilterPopup}                      from "../popup/_layoutPopup.js";
 
-import { getItemId, getUserData}                 from "../../../../blocks/commonFunctions.js";
+import { getItemId, pushUserDataStorage, 
+        getUserDataStorage}                      from "../../../../blocks/commonFunctions.js";
 
 import { Button }                                from "../../../../viewTemplates/buttons.js";
 
@@ -15,7 +16,12 @@ function editFiltersBtn (){
 
     createFilterPopup();
 
-    function userprefsData (){ 
+    async function userprefsData (){ 
+        let user = getUserDataStorage();
+        if (!user){
+            await pushUserDataStorage ();
+            user =  getUserDataStorage();
+        }
 
         const userprefsGetData = webix.ajax("/init/default/api/userprefs/");
 
@@ -52,7 +58,7 @@ function editFiltersBtn (){
                             if (prefs.table == currId){
                     
                                 lib.addOption( {
-                                    id    : i+1, 
+                                    id    : i + 1, 
                                     value : prefs.name
                                 });
                     
@@ -61,7 +67,7 @@ function editFiltersBtn (){
                     
                     });
                 } catch (err){
-                    setFunctionError(err,logNameFile,"function setTemplates");
+                    setFunctionError(err, logNameFile, "function setTemplates");
                 }
     
             }
@@ -76,13 +82,9 @@ function editFiltersBtn (){
             }
 
 
-            let user = webix.storage.local.get("user");
-
+           
             try{
-                if (!user){
-                    getUserData ();
-                    user = webix.storage.local.get("user");
-                }
+                
     
                 if(user){
                     setTemplates(user);
@@ -95,7 +97,7 @@ function editFiltersBtn (){
              
                 }
             } catch (err){
-                setFunctionError(err,logNameFile,"function userprefsData");
+                setFunctionError(err, logNameFile, "function userprefsData");
             }
             
         });
@@ -106,14 +108,6 @@ function editFiltersBtn (){
     }
 
     userprefsData ();
-
-    // function setValueLib(){
-    //     const lib = $$("filterEditLib");
-    //     if (lib){ 
-    //         lib.setValue(  returnTemplateValue () );   
-          
-    //     }
-    // }  
 
     function stateSubmitBtn(state){
         const btn = $$("popupFilterSubmitBtn");

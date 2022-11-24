@@ -4,17 +4,9 @@ import { Action }                           from "../../blocks/commonFunctions.j
 import { hideAllElements, checkTreeOrder, 
         closeTree, createElements }         from "./common.js";
 
-import { getInfoEditTree }                  from "../../components/treeEdit/getInfoEditTree.js";
+import { mediator }                         from "../../blocks/_mediator.js";
 
 const logNameFile = "router => experimental";
-
-function showTreeTempl(){
-    try{
-        $$("treeTempl").show();
-    } catch (err){
-        setFunctionError(err,logNameFile,"showTreeTempl");
-    }
-}
 
 function removeNullContent(){
     try{
@@ -39,12 +31,12 @@ function experimentalRouter(){
     
     
     if($$("treeTempl")){
-        showTreeTempl ();
-        getInfoEditTree();
+        mediator.treeEdit.showView();
+        mediator.treeEdit.load();
     }else {
         createElements("treeTempl");
-        getInfoEditTree();
-        showTreeTempl();
+        mediator.treeEdit.load();
+        mediator.treeEdit.showView();
     }
     
     closeTree();

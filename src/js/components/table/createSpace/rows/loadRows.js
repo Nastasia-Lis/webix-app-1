@@ -6,6 +6,10 @@ import { popupNotAuth }                     from './popupNotAuth.js';
 import {  formattingBoolVals,
           formattingDateVals, }             from './formattingData.js';
 
+import { setDefaultValues }                 from './setDefaultValues.js';
+
+          
+
 const logNameFile = "table => createSpace => loadData";
 
 
@@ -87,8 +91,11 @@ function parseRowData (data){
         idCurrView.clearAll();
     }
 
-    formattingBoolVals(idCurrView, data);
-
+    formattingBoolVals (idCurrView, data);
+    formattingDateVals (idCurrView, data);
+    setDefaultValues   (data);
+ 
+ 
     if ( !offsetParam ){
         changeFullTable(data);
     } else {
@@ -250,10 +257,29 @@ async function loadTableData(table, id, idsParam, offset){
                 setConfigTable(tableElem, data, limitLoad);
 
                 data  = data.content;
-
-                setTableState       (table);
-                formattingDateVals  (table, data);
-                parseRowData        (data);
+ 
+                // data = [
+                //     {
+                //         "created_on": "2022-11-23 17:33:03",
+                //         "id": 2,
+                //         "renew": true,
+                //         "service": "fffs",
+                //         "ticket": "ddddafa",
+                //         "user_id": 1,
+                //     },
+                //     {
+                //        // "created_on": "2021-02-13 20:33:03",
+                //         "id": 3,
+                //         //"renew": true,
+                //         "service": "22233323",
+                //         "ticket": "fffffff",
+                //         "user_id": 2,
+                //     }
+                // ]
+              
+          
+                setTableState(table);
+                parseRowData (data);
        
 
             });

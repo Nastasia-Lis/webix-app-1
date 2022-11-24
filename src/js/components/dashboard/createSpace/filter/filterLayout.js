@@ -1,6 +1,6 @@
 import { setFunctionError }               from "../../../../blocks/errors.js";
 import { Action }                         from '../../../../blocks/commonFunctions.js';
-
+import { Button }                         from '../../../../viewTemplates/buttons.js';
 const logNameFile = "dashboard => createSpace => dynamicElements => filterLayout";
 
 
@@ -20,29 +20,23 @@ function createMainView(inputsArray){
         borderless  : true
     };
 
+    const filterBackBtn = new Button({
     
-    const filterBackBtn = { 
-        view    : "button", 
-        id      : "dash-backDashBtn",
-        type    : "icon",
-        icon    : "icon-arrow-right",
-        value   : "Вернуться к дашбордам",
-        hidden  : true,  
-        height  : 15,
-        hotkey  : "esc",
-        minWidth: 50,
-        width   : 55,
-        
-        click:function(){
-            backBtnClick();
+        config   : {
+            id       : "dash-backDashBtn",
+            hotkey   : "Esc",
+            hidden   : true,  
+            icon     : "icon-arrow-right", 
+            click   : function(){
+                backBtnClick();
+            },
         },
-        
-        on: {
-            onAfterRender: function () {
-                this.getInputNode().setAttribute("title","Вернуться к дашбордам");
-            }
-        } 
-    };
+        titleAttribute : "Вернуться к дашбордам"
+    
+       
+    }).minView();
+    
+ 
     const mainView = {
         id      : "dashboard-tool-main",
         padding : 20,
@@ -143,24 +137,20 @@ function addViewToContainer(filterBtn){
 
 function createFilterBtn(){
 
-    const filterBtn = {
-        view    : "button", 
-        id      : "dashFilterBtn", 
-        css     : "webix-transparent-btn",
-        type    : "icon",
-        icon    : "icon-filter",
-        width   : 50,
-        click   : function() {
-            filterBtnClick();
-        },
-        on      : {
-            onAfterRender: function () {
-                this.getInputNode().setAttribute("title","Показать/скрыть фильтры");
+    const filterBtn = new Button({
+        config   : {
+            id       : "dashFilterBtn",
+            hotkey   : "Ctrl+Shift+F",
+            icon     : "icon-filter", 
+            click   : function(){
+                filterBtnClick();
             },
-        }
+        },
+        titleAttribute : "Показать/скрыть фильтры"
     
-        
-    };
+       
+    }).transparentView();
+
   
     addViewToContainer(filterBtn);
   

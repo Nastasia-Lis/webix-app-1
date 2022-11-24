@@ -1,12 +1,14 @@
  
-import { defaultStateForm, createEditFields }                   from './editForm/states.js';
-import { validateProfForm }                                     from './editForm/validation.js';
-import { modalBox }                                             from "../../blocks/notifications.js";
-import { setLogValue }                                          from '../logBlock.js';
-import { setAjaxError, setFunctionError }                       from "../../blocks/errors.js";
-import { Action, getItemId, getTable }                          from "../../blocks/commonFunctions.js";
+import { defaultStateForm }                  from './editForm/states.js';
+import { createProperty }                    from './editForm/createProperty.js';
 
-import { toEditForm, validateError, putData}                    from "./common.js";
+import { validateProfForm }                  from './editForm/validation.js';
+import { modalBox }                          from "../../blocks/notifications.js";
+import { setLogValue }                       from '../logBlock.js';
+import { setAjaxError, setFunctionError }    from "../../blocks/errors.js";
+import { Action, getItemId }                 from "../../blocks/commonFunctions.js";
+
+import { toEditForm, validateError, putData} from "./common.js";
 
 const logNameFile = "table => onFuncs";
 
@@ -16,7 +18,7 @@ const onFuncTable = {
         this.showOverlay("Загрузка...");
     },
 
-    onBeforeEditStop:function(state, editor, ignoreUpdate){
+    onBeforeEditStop:function(state, editor){
         const table      = $$("table");
         const valuesProp = table.getSelectedItem();
         const currId     = getItemId ();
@@ -194,7 +196,7 @@ const onFuncTable = {
 
                     return false;
                 } else {
-                    createEditFields("table-editForm");
+                    createProperty("table-editForm");
                     toEditForm(nextItem);
                 }
             } catch (err){ 

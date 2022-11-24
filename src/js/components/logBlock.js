@@ -1,7 +1,16 @@
 import { setStorageData }               from "../blocks/storageSetting.js";
 import { LoadServerData, GetFields }    from "../blocks/globalStorage.js";
-
 import { setFunctionError }             from "../blocks/errors.js";
+
+
+let typeNotify;
+let specificSrc;
+let notifyText;
+
+
+const eyeIcon      = "icon-eye";
+const eyeIconSlash = "icon-eye-slash";
+
 
 function createCurrDate(){
     const date    = new Date();
@@ -15,37 +24,37 @@ function createCurrDate(){
     return `${day}.${month}.${year} ${hours}:${minutes}:${seconds}`;
 }
 
-let typeNotify;
-let specificSrc;
-let notifyText;
 
 function openLog(){
     try{
         const layout =  $$("logLayout");
         const btn    = $$("webix_log-btn");
         
-        if (btn.config.icon =="icon-eye"){
+        if (btn.config.icon == eyeIcon){
             layout.config.height = 90;
             layout.resize();
-            btn.setValue(2);
+            btn   .setValue(2);
 
-            btn.config.icon ="icon-eye-slash";
+            btn.config.icon = eyeIconSlash;
             btn.refresh();
 
             setStorageData("LogVisible", JSON.stringify("show"));
         }
     } catch (err){
-        setFunctionError(err,"logBlock","openLog");
+        setFunctionError(err, "logBlock", "openLog");
     }
 }
 
 function addErrorStyle(id){
+    const list = $$("logBlock-list");
 
-    if (typeNotify == "error"){
+    if (typeNotify == "error" && list){
         try{
-            const item = $$("logBlock-list").getItemNode(id);
-            item.style.setProperty('color', 'red', 'important');
-            
+            const item = list.getItemNode(id);
+            if (item){
+                item.style.setProperty('color', 'red', 'important');
+            }
+ 
         } catch (err){
             setFunctionError(err, "logBlock" ,"addErrorStyle");
         }
@@ -74,25 +83,28 @@ function addLogMsg (src){
     logList.showItem(lastId);
 }
 
+function returnName(srcTable){
+    const names = GetFields.names;
+    let name;
+    try{
+        names.forEach(function(el,i){
+            if (el.id == srcTable){
+                name = el.name;
+            }
+        });
+
+    } catch (err){
+        setFunctionError(err, "logBlock", "findTableName");
+    }
+
+    return name;
+}
+
 async function createLogMessage(srcTable) {
     let name;
 
-    function findTableName(){
-        const names = GetFields.names;
-        try{
-            names.forEach(function(el,i){
-                if (el.id == srcTable){
-                    name = el.name;
-                }
-            });
-
-        } catch (err){
-            setFunctionError(err, "logBlock", "findTableName");
-        }
-    }
-
     if (srcTable == "version"){
-        name = 'Expa v1.0.55';
+        name = 'Expa v1.0.56';
 
     } else if (srcTable == "cp"){
         name = 'Смена пароля';
@@ -101,46 +113,37 @@ async function createLogMessage(srcTable) {
         await LoadServerData.content("fields");
         const keys   = GetFields.keys;
         if (keys){
-            findTableName();
+            name = returnName(srcTable);
         }
     }
 
     addLogMsg (name);
 }
 
-function setLogValue (type, text, src) {
-    typeNotify  = type;
-    specificSrc = src;
-    notifyText  = text;     
+function initLogMsg(){
+    try{
 
-    function initLogMsg(){
-        try{
-            let itemTreeId  = null;
-            const tree      = $$("tree");
+        let itemTreeId  = null;
+        const tree      = $$("tree");
 
-            if (tree && tree.getSelectedItem()){
-                itemTreeId  = tree.getSelectedItem().id;
-            } else {
-                const href  = window.location.pathname;
-                const index = href.lastIndexOf( "/" );
-                itemTreeId  = href.slice( index + 1 );
-            }
-
-            if (specificSrc){
-                createLogMessage(specificSrc);
-
-            } else if (itemTreeId){
-                createLogMessage(itemTreeId);
-
-            } 
-        } catch (err){
-            setFunctionError(err, "logBlock", "initLogMsg");
+        if (tree && tree.getSelectedItem()){
+            itemTreeId  = tree.getSelectedItem().id;
+        } else {
+            const href  = window.location.pathname;
+            const index = href.lastIndexOf( "/" );
+            itemTreeId  = href.slice( index + 1 );
         }
+
+        if (specificSrc){
+            createLogMessage(specificSrc);
+
+        } else if (itemTreeId){
+            createLogMessage(itemTreeId);
+
+        } 
+    } catch (err){
+        setFunctionError(err, "logBlock", "initLogMsg");
     }
-
- 
-    initLogMsg();
-
 }
 
 let notifyCounter = 0;
@@ -149,7 +152,7 @@ function addNotify(btn){
     try{
    
         if ( btn.config.badge == "" ){
-            notifyCounter=0;
+            notifyCounter = 0;
         }
         
         notifyCounter++;
@@ -195,9 +198,9 @@ const logBlock = {
         onAfterAdd:function(id){
             const btn = $$("webix_log-btn");
 
-            if ( btn.config.icon == "icon-eye" ){
+            if ( btn.config.icon == eyeIcon ){
                 addNotify(btn);
-            } else if ( btn.config.icon == "icon-eye-slash" ){
+            } else if ( btn.config.icon == eyeIconSlash ){
                 clearNotify(btn);
             }
             
@@ -207,7 +210,8 @@ const logBlock = {
 };
 
 const headline = {   
-    template:"<div class='webix_log-headline'>Системные сообщения</div>", 
+    template:
+    "<div class='webix_log-headline'>Системные сообщения</div>", 
     height:30
 };
 
@@ -221,6 +225,13 @@ const logLayout = {
     ]
 };
 
+function setLogValue (type, text, src) {
+    typeNotify  = type;
+    specificSrc = src;
+    notifyText  = text;     
+
+    initLogMsg();
+}
 
 export {
     logBlock,

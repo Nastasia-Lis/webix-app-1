@@ -19,15 +19,9 @@ function backTableBtnClick() {
         }
     }
     function defaultState(){
-        // if ( filterForm && filterForm.isVisible() ){
-        //     filterForm.hide();
-        // }
 
         Action.hideItem(filterForm);
         Action.showItem(tableContainer);
-        // if ( tableContainer && !(tableContainer.isVisible()) ){
-        //     tableContainer.show();
-        // }
 
         const table = $$("table");
         if (table){

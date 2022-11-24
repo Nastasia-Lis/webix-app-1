@@ -138,13 +138,13 @@ function createTableCols (idsParam, idCurrTable){
     try{
         colsName.forEach(function(data) {
             field = dataFields[data]; 
-
+         
             createField(field.type);
 
             setIdCol    (data);
             setFillCol  (dataFields);
             setHeaderCol();
-
+            
             if(field.id == "id"){
                 userPrefsId();
             }
@@ -152,7 +152,7 @@ function createTableCols (idsParam, idCurrTable){
             if (field.label){
                 columnsData.push(field);
             }
-    
+
         });
 
         refreshCols(columnsData);

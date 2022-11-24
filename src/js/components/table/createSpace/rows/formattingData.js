@@ -95,12 +95,16 @@ function getBoolFieldNames(){
 function setBoolValues(element){
     const boolFields = getBoolFieldNames();
 
-    boolFields.forEach(function(el,i){
-        if ( element[el] == false ){
-            element[el] = 2;
-        } else {
-            element[el] = 1;
+    boolFields.forEach(function(el){
+ 
+        if (element[el] !== undefined){
+            if ( element[el] == false ){
+                element[el] = 2;
+            } else {
+                element[el] = 1;
+            }
         }
+      
     });
 
 }

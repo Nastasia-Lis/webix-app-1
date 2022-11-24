@@ -19,23 +19,19 @@ function createSentObj(){
     return loginData;
 }
 
+
 function postLoginData(){
     const loginData = createSentObj();
     const form      = $$("formAuth");
 
-    const postData  = webix.ajax().post("/init/default/login",loginData);
+    const path      = "/init/default/login";
+    const postData  = webix.ajax().post(path, loginData);
 
     postData.then(function(data){
 
         if (data.json().err_type == "i"){
 
             data = data.json().content;
-            const userData     = {};
-
-
-            userData.id        = data.id;
-            userData.name      = data.first_name;
-            userData.username  = data.username;
 
             if (form){
                 form.clear();
@@ -45,6 +41,7 @@ function postLoginData(){
             window.location.reload();
  
         } else {
+
             if (form && form.isDirty()){
                 form.markInvalid("username", "");
                 form.markInvalid("password", "Неверный логин или пароль");
@@ -58,21 +55,9 @@ function postLoginData(){
     });
 }
 
-function getLogin(){
+const invalidMsgText = "Поле должно быть заполнено";
 
-    const form = $$("formAuth");
-
-    form.validate();
-    postLoginData();
-
-}
-
-function login () {
-  
-    router();
-
-    const invalidMsgText = "Поле должно быть заполнено";
-
+function returnLogin(){
     const login =  {   
         view            : "text", 
         label           : "Логин", 
@@ -85,6 +70,41 @@ function login () {
         }  
     };
 
+    return login;
+}
+
+
+function clickPass(event, self){
+    const className = event.target.className;
+    const input     = self.getInputNode();
+
+    function removeCss(className){
+        webix.html.removeCss(event.target, className);
+    }
+
+    function updateInput(type, className){
+        webix.html.addCss(event.target, className);
+        input.type = type;
+    }
+
+    if (className.includes("password-icon")){
+   
+        removeCss("wxi-eye-slash");
+        removeCss("wxi-eye");
+
+        if(input.type == "text"){    
+            updateInput("password", "wxi-eye"); 
+        } else {
+            updateInput("text", "wxi-eye-slash"); 
+        }
+
+    }
+    
+    $$('formAuth').clearValidation();
+}
+
+
+function returnPass(){
     const pass =  {   
         view            : "text", 
         label           : "Пароль", 
@@ -94,38 +114,25 @@ function login () {
         icon            : "password-icon wxi-eye",   
         on              : {
             onItemClick:function(id, event){
-                const className = event.target.className;
-                const input     = this.getInputNode();
-
-                function removeCss(className){
-                    webix.html.removeCss(event.target, className);
-                }
-
-                function updateInput(type, className){
-                    webix.html.addCss(event.target, className);
-                    input.type = type;
-                }
-       
-                if (className.includes("password-icon")){
-                    removeCss("wxi-eye-slash");
-                    removeCss("wxi-eye");
-
-                    if(input.type == "text"){    
-                        updateInput("password", "wxi-eye"); 
-                    } else {
-                        updateInput("text", "wxi-eye-slash"); 
- 
-
-                    }
- 
-                }
-                
-                $$('formAuth').clearValidation();
+                clickPass(event, this);
      
             },
         } 
     };
 
+    return pass;
+}
+
+function getLogin(){
+
+    const form = $$("formAuth");
+
+    form.validate();
+    postLoginData();
+
+}
+
+function returnBtnSubmit(){
     const btnSubmit = {   
         view    : "button", 
         value   : "Войти", 
@@ -135,15 +142,19 @@ function login () {
         click   :getLogin
     };
 
+    return btnSubmit;
+}
+
+function returnForm(){
     const form = {
         view        : "form",
         id          : "formAuth",
         width       : 250,
         borderless  : true,
         elements    : [
-            login,
-            pass,
-            btnSubmit, 
+            returnLogin     (),
+            returnPass      (),
+            returnBtnSubmit (), 
         ],
 
         rules:{
@@ -159,10 +170,14 @@ function login () {
         }
     
     };
-    
-    
-    return form;
 
+    return form;
+}
+
+
+function login () {
+    router();
+    return returnForm();
 }
 
 const auth = {

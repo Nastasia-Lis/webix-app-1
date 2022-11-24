@@ -2,10 +2,7 @@
 import { setFunctionError }             from "../../blocks/errors.js";
 import { LoadServerData, GetFields }    from "../../blocks/globalStorage.js";
 import { Action }                       from "../../blocks/commonFunctions.js";
-
-import { createTable }                  from "../table/createSpace/generateTable.js";
-
-import { createDashboard }              from "../dashboard/createDashboard.js";
+import { mediator }                     from "../../blocks/_mediator.js";
 
 import { getWorkspace }                 from "./common.js";
 
@@ -150,19 +147,17 @@ function treeRouter(id){
                                 Action.hideItem($$("webix__none-content"));
     
                             if (field.type == "dbtable"){
-                        
-                                showElem     ("tables");
-                              
-                                createTable ("table", id);
+                                mediator.tables.showView();
+                                mediator.tables.load(id);
+
                                 
                             } else if (field.type == "tform"){
-                         
-                                showElem     ("forms");
-                                createTable ("table-view", id);
+                                mediator.forms.showView(id);
+                                mediator.forms.load(id);
     
                             } else if (field.type == "dashboard"){
-                                showElem        ("dashboards");
-                                createDashboard(id);
+                                mediator.dashboards.showView();
+                                mediator.dashboards.load(id);
                             }
                             
                         } 

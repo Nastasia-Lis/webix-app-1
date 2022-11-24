@@ -1,22 +1,27 @@
 import { setFunctionError, setAjaxError }   from "./errors.js";
 import { setStorageData }                   from "./storageSetting.js";
 
-let visibleTable;
+let visibleItem;
 
 function getItemId (){
     let idTable;
 
+
     try{
         const table     = $$("table");
         const tableView = $$("table-view");
+        const dashboard = $$("dashboardContainer");
 
         if ($$("tables").isVisible()){
-            idTable = table.config.idTable;
-            visibleTable = table
+            idTable      = table.config.idTable;
+            visibleItem  = table;
         } else if ($$("forms").isVisible()){
-            idTable = tableView.config.idTable;
-            visibleTable = tableView; 
+            idTable      = tableView.config.idTable;
+            visibleItem  = tableView; 
   
+        } else if ($$("dashboardContainer").isVisible()){
+            idTable      = dashboard.config.idDash;
+            visibleItem  = dashboard; 
         }
 
     } catch (err){
@@ -28,8 +33,7 @@ function getItemId (){
 
 function getTable(){
     getItemId ();
-
-    return visibleTable;
+    return visibleItem;
 }
 
 class Action {
@@ -61,6 +65,13 @@ class Action {
     static enableItem(item){
         if ( item && !(item.isEnabled()) ){
             item.enable();
+        }
+    }
+
+    static destructItem(item){
+
+        if(item){
+            item.destructor();
         }
     }
 }
@@ -197,10 +208,13 @@ function getComboOptions (refTable){
     }});
 }
 
-function getUserData(){
+function getUserDataStorage(){
+    return  webix.storage.local.get("user");
+}
+
+async function pushUserDataStorage(){
     const userprefsGetData = webix.ajax("/init/default/api/whoami");
-    userprefsGetData.then(function(data){
-        const err = data.json();
+    await userprefsGetData.then(function(data){
         data      = data.json().content;
 
         const userData = {};
@@ -210,14 +224,11 @@ function getUserData(){
         userData.username = data.username;
         
         setStorageData("user", JSON.stringify(userData));
-    
-        if (err.err_type !== "i"){
-            setFunctionError(err,"commonFunctions","function getUserData");
-        }
+
     
     });
     userprefsGetData.fail(function(err){
-        setAjaxError(err, "favsLink","btnSaveLpostContentinkClick => getUserData");
+        setAjaxError(err, "commonFunctions", "getUserData");
     });
 }
 
@@ -229,7 +240,8 @@ export {
     textInputClean,
     
     getComboOptions,
-    getUserData,
+    pushUserDataStorage,
+    getUserDataStorage,
 
     Action,
     TableConfig

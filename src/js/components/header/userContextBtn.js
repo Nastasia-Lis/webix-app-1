@@ -1,17 +1,18 @@
 
-import { modalBox }                               from "../../blocks/notifications.js";
-import { setLogValue }                            from '../logBlock.js';
-import { setStorageData }                         from "../../blocks/storageSetting.js";
+import { modalBox }                                     from "../../blocks/notifications.js";
+import { setLogValue }                                  from '../logBlock.js';
+import { setStorageData }                               from "../../blocks/storageSetting.js";
 
  
-import { saveItem, saveNewItem }                  from "../table/editForm/buttons.js";
+import { saveItem, saveNewItem }                        from "../table/editForm/buttons.js";
 
-import { favsPopup }                              from "../favorites.js";
+import { favsPopup }                                    from "../favorites.js";
 
-import { setFunctionError, setAjaxError }         from "../../blocks/errors.js";
-import { Action }                                 from "../../blocks/commonFunctions.js";
+import { setFunctionError, setAjaxError }               from "../../blocks/errors.js";
+import { Action, pushUserDataStorage, 
+         getUserDataStorage }                           from "../../blocks/commonFunctions.js";
 
-import { Button }                                 from "../../viewTemplates/buttons.js";
+import { Button }                                       from "../../viewTemplates/buttons.js";
 
 
 const logNameFile = "header => userContextBtn";
@@ -178,13 +179,22 @@ function itemClickContext(id){
 
 
     } else if (id == "favs"){
-    
-        favsPopup();
+        if (!($$("popupFavsLink"))){
+            favsPopup();
+        } else {
+            $$("popupFavsLink").show();
+        }
     }
  
 }
 
-function onItemClickBtn(){
+async function onItemClickBtn(){
+    let ownerId = getUserDataStorage();
+
+    if (!ownerId){
+        await pushUserDataStorage();
+        ownerId = getUserDataStorage();
+    }
 
     const getData = webix.ajax().get("/init/default/api/userprefs/");
 
@@ -192,7 +202,7 @@ function onItemClickBtn(){
         data = data.json().content;
 
         if (data.err_type == "e"){
-            setFunctionError(data.error,logNameFile,"onItemClickBtn getData")
+            setFunctionError(data.error, logNameFile, "onItemClickBtn getData");
         }
 
         const localUrl    = "/index.html/content";
@@ -245,7 +255,7 @@ function onItemClickBtn(){
 
         function postUserprefsData (sentObj){
             const url           = "/init/default/api/userprefs/";
-            const postUserprefs = webix.ajax().post(url,sentObj);
+            const postUserprefs = webix.ajax().post(url, sentObj);
             checkError(postUserprefs);
         }
 
@@ -257,6 +267,7 @@ function onItemClickBtn(){
 
             const sentObj = {
                 name  : "userLocationHref",
+                owner : ownerId.id,
                 prefs : location
             };
 
@@ -270,16 +281,7 @@ function onItemClickBtn(){
             });
 
             if (!settingExists){
-
-                const ownerId = webix.storage.local.get("user").id;
-
-                if (ownerId){
-                    sentObj.owner = ownerId;
-                } else {
-                    getWhoData(sentObj);
-                }
                 postUserprefsData (sentObj);
-               
             }
          
         }
@@ -306,7 +308,7 @@ const userContextBtn = new Button({
             css     : "webix_contextmenu",
             data    : [],
             on      : {
-                onItemClick: function(id, e, node){
+                onItemClick: function(id){
                     itemClickContext(id);
                      
  

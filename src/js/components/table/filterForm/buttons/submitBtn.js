@@ -248,13 +248,13 @@ function filterSubmitBtn (){
                 setLogValue("error",notifyMsg);
             } 
         });
+
         queryData.fail(function(err){
-            setAjaxError(err, logNameFile,"createGetData");
+            setAjaxError(err, logNameFile, "createGetData");
         });
 
-        
     } else {
-        setLogValue("error","Не все поля формы заполнены");
+        setLogValue("error", "Не все поля формы заполнены");
     }
   
 

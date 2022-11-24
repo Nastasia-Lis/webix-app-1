@@ -2,8 +2,9 @@
 import { Action }                                           from "../../../../../blocks/commonFunctions.js";
 import { setFunctionError }                                 from "../../../../../blocks/errors.js";
 import { setLogValue }                                      from "../../../../logBlock.js";
-
 import { popupExec }                                        from "../../../../../blocks/notifications.js";
+
+import { Button }                                           from "../../../../../viewTemplates/buttons.js";
 
 import { addClass, removeClass, visibleInputs }             from "../../common.js";
 
@@ -147,62 +148,6 @@ function hideSegmentBtn (action, inputsKey, thisInput){
 
     }
 }
-
-
-// function hideLastSegmentBtn(inputsKey, thisInput, childActionRemove = false){
-
-//     const keys  = Object.keys(visibleInputs);
-
-//     function hideBtn(id, index){
-//         const inputs    = visibleInputs[id];
-//         const lastIndex = inputs.length - 1;
-//         const prevIndex = inputs.length - 2;
-
-//         const lastInput   = inputs[lastIndex]; 
-//         const prevInput   = inputs[prevIndex];
-     
-//         function getPrevCollection(){
-        
-//             const key        = keys[index] || keys[index - 1];
-//             const collection = visibleInputs[key];
-//             const length     = collection.length;
-//             const input      = collection[length - 1]; 
-
-//             return input;
-//         }
-
-//         function hide(condition, input){
-         
-//             if ( condition ){
-//                 input = getPrevCollection(); 
-//             }
-       
-//             const btn = $$(input + "_segmentBtn");
-//             Action.hideItem(btn);
-        
-//         }
-
-//         if ( isLastInput(lastInput, thisInput) ){
-     
-//             if (childActionRemove){
-//                 hide (prevIndex > 0  , prevInput);
-//             } else {
-//                 hide (lastIndex === 0, lastInput);
-           
-//             }
-      
-//         }
-
-//     }
-
-//     keys.forEach(function(input, i){
-//         const lastIndex = getVisibleInfo(true);
-//         if ( i === lastIndex && input == inputsKey ){
-//             hideBtn(input, i);
-//         }  
-//     });
-
-// }
 
 function hideHtmlEl(id){
     const idContainer = $$(id + "_filter_rows");
@@ -374,47 +319,45 @@ function clickContextBtnChild(id, el, thisElem){
 
 function createContextBtn (el, id, isChild){
 
-    const contextBtn = {   
-        view        : "button",
-        id          :  id + "_contextMenuFilter",
-        type        : "icon",
-        css         : "webix_filterBtns",
-        icon        : 'wxi-dots',
-        inputHeight : 38,
-        width       : 40,
-        popup       : {
-            view: 'contextmenu',
-            css :"webix_contextmenu",
-            data: [
-                {   id      : "add",   
-                    value   : "Добавить поле", 
-                    icon    : "icon-plus",
-                },
-                {   id      : "remove", 
-                    value   : "Удалить поле", 
-                    icon    : "icon-trash"
-                }
-            ],
-            on      :{
-                onMenuItemClick:function(id){
-                    if (isChild){
-                        clickContextBtnChild (id, el, this);
-                    } else {
-                        clickContextBtnParent(id, el); 
+    const contextBtn = new Button({
+    
+        config   : {
+            id       :  id + "_contextMenuFilter",
+            icon     : 'wxi-dots',
+            width    : 40,
+            inputHeight:38,
+            popup       : {
+                view: 'contextmenu',
+                css :"webix_contextmenu",
+                data: [
+                    {   id      : "add",   
+                        value   : "Добавить поле", 
+                        icon    : "icon-plus",
+                    },
+                    {   id      : "remove", 
+                        value   : "Удалить поле", 
+                        icon    : "icon-trash"
                     }
-                   
-                },
-             
-            }
-        },
-    
-        on:{
-            onAfterRender: function () {
-                this.getInputNode().setAttribute("title","Добавить/удалить поле");
+                ],
+                on      :{
+                    onMenuItemClick:function(id){
+                        if (isChild){
+                            clickContextBtnChild (id, el, this);
+                        } else {
+                            clickContextBtnParent(id, el); 
+                        }
+                       
+                    },
+                 
+                }
             },
-        }
+        },
+        titleAttribute : "Добавить/удалить поле",
+        css            : "webix_filterBtns",
     
-    };
+       
+    }).minView();
+
 
     return contextBtn;       
 }

@@ -5,7 +5,9 @@ import { getItemId, Action }                            from "../../../blocks/co
 
 import { setDirtyProperty }                             from "./property.js";
 import { validateProfForm, setLogError, uniqueData }    from "./validation.js";
-import { createEditFields, defaultStateForm }           from "./states.js";
+import { defaultStateForm }                             from "./states.js";
+import { createProperty }                               from "./createProperty.js";
+
 
 import { Button }                                       from "../../../viewTemplates/buttons.js";
 import { createEmptyTemplate }                          from "../../../viewTemplates/emptyTemplate.js";
@@ -45,7 +47,7 @@ function addNewStateSpace(){
     const saveNew = $$("table-saveNewBtn");
     try{
         table.filter(false);
-        createEditFields("table-editForm");
+        createProperty("table-editForm");
         delBtn.disable(); 
         saveBtn.hide();
         saveNew.show();
@@ -183,7 +185,7 @@ function addItem () {
         try{
             tableState();
             buttonsState();
-            createEditFields("table-editForm");
+            createProperty("table-editForm");
             Action.hideItem(emptyTemplate);
         } catch (err){
             setFunctionError(err,logNameFile,"addItem => setWorkspaceState");

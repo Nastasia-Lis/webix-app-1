@@ -6,11 +6,10 @@ import { createTableRows }                  from './rows/createRows.js';
 import { createTableCols }                  from './cols/createCols.js';
 import { createDetailAction }               from './cols/detailAction.js';
 import { createDynamicElems }               from './cols/dynamicElements/createElements.js';
-import { Action } from '../../../blocks/commonFunctions.js';
+import { Action }                           from '../../../blocks/commonFunctions.js';
 
 const logNameFile = "getContent => getInfoTable";
 
-let filterBar;
 let titem;
 let idsParam;
 let idCurrTable;
@@ -40,7 +39,7 @@ function setTableName(idCurrTable, idsParam) {
 
 function getValsTable (){
     titem     = $$("tree").getItem(idsParam);
-    filterBar = $$(idCurrTable + "-filterId").getParentView();
+  //  filterBar = $$(idCurrTable + "-filterId").getParentView();
 
     if (!titem){
         titem = idsParam;

@@ -1,10 +1,9 @@
-import { createDashboard }   from './createDashboard.js';
-
+import { mediator }          from '../../blocks/_mediator.js';
 let idsParam;
 
 function setIntervalConfig(counter){
     setInterval(function(){
-        createDashboard(idsParam);
+        mediator.dashboards.load(idsParam);
     },  counter );
 }
 

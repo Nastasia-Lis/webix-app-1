@@ -1,11 +1,9 @@
+import { LoadServerData, GetFields }        from "../../blocks/globalStorage.js";
 
-//import { saveFavsClick } from "../favsLink.js";
-
-import { STORAGE ,getData }                 from "../../blocks/globalStorage.js";
 import { setLogValue }                      from "../logBlock.js";
 import { setAjaxError, setFunctionError }   from "../../blocks/errors.js";
-import { getItemId, getUserData }           from "../../blocks/commonFunctions.js";
-
+import { getItemId, pushUserDataStorage, 
+        getUserDataStorage }                from "../../blocks/commonFunctions.js";
 
 import { Popup }                            from "../../viewTemplates/popup.js";
 import { Button }                           from "../../viewTemplates/buttons.js";
@@ -14,14 +12,14 @@ function saveFavsClick(){
 
     async function getLinkName(){
         
-        if (!STORAGE.fields){
-            await getData("fields"); 
-        }
+        await LoadServerData.content("fields");
+        const names = GetFields.names;
 
         function findName (id){
+    
             try{
                 const nameTemplate = $$("favNameLink");
-                STORAGE.tableNames.forEach(function(el,i){
+                names.forEach(function(el){
                     if (el.id == id){
                         if(nameTemplate){
                             nameTemplate.setValues(el.name);
@@ -30,10 +28,12 @@ function saveFavsClick(){
                     
                 });
             } catch (err){
-                setFunctionError(err,"favsLink","findName");
+                setFunctionError(err, "favsLink", "findName");
             }
         }
-        if (STORAGE.tableNames){
+
+
+        if (names){
             const id = getItemId();
             findName (id);
         }
@@ -62,62 +62,69 @@ function saveFavsClick(){
             setFunctionError(err,"favsLink","destrucPopupSave");
         }
     }
+
+    function createDivTemplate(name, text){
+        return "<div style='font-weight:600'>" + 
+                name + ": </div>" + text;
+    }
      
-    function createTemplate(id, name,nonName){
+    function createTemplate(id, name, nonName){
         return {   
-            id:id,
-            css:"popup_subtitle", 
-            borderless:true, 
-            height:20 ,
-            template: function(){
-                if (Object.keys($$(id).getValues()).length !==0){
-                    return "<div style='font-weight:600'>"+name+": </div>"+$$(id).getValues();
+            id          : id,
+            css         : "popup_subtitle", 
+            borderless  : true, 
+            height      : 20 ,
+            template    : function(){
+                const value = $$(id).getValues();
+                const keys = Object.keys(value);
+
+                if (keys.length !== 0){
+                    return createDivTemplate(name, value);
+
                 } else {
-                    return "<div style='font-weight:600'>"+name+": </div>"+name+" "+nonName;
+                    return createDivTemplate(name, nonName);
+
                 }
           
             }
-        }
+        };
     }
 
     function btnSaveLinkClick(){
    
         let favNameLinkVal;
-        let favLinkVal ;
+        let favLinkVal;
         const namePref = getItemId();
         function getData(){
             try{
                 favNameLinkVal = $$("favNameLink").getValues();
-                favLinkVal     = $$("favLink").getValues();
+                favLinkVal     = $$("favLink")    .getValues();
             } catch (err){
-                setFunctionError(err,"favsLink","btnSaveLinkClick => getData");
+                setFunctionError(err, "favsLink", "btnSaveLinkClick => getData");
             }
         }
 
 
-        function postContent(){
-            let user = webix.storage.local.get("user");
-            let ownerData;
-
-
+        async function postContent(){
+            let user = getUserDataStorage();
             if (!user){
-                getUserData();
-                user = webix.storage.local.get("user");
+                await pushUserDataStorage();
+                user = getUserDataStorage();
             }
 
+
             if (user){
-                ownerData = user.id;
 
                 const postObj = {
-                    name:"fav-link_"+namePref,
-                    owner:ownerData,
+                    name : "fav-link_" + namePref,
+                    owner: user.id,
                     prefs:{
                         name: favNameLinkVal,
                         link: favLinkVal,
-                        id:namePref,
+                        id  : namePref,
                     }
                 };
-                const postData = webix.ajax().post("/init/default/api/userprefs/",postObj);
+                const postData = webix.ajax().post("/init/default/api/userprefs/", postObj);
 
                 postData.then(function(data){
                     data = data.json();
@@ -206,7 +213,6 @@ function saveFavsClick(){
     const btnSaveLink = new Button({
     
         config   : {
-           // hotkey   : "Ctrl+Shift+Space",
             value    : "Сохранить ссылку", 
             click    : function(){
                 btnSaveLinkClick();

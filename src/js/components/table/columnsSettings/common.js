@@ -1,5 +1,6 @@
 
-import { getItemId }                        from "../../../blocks/commonFunctions.js";
+import { getItemId, pushUserDataStorage,
+        getUserDataStorage }                from "../../../blocks/commonFunctions.js";
 import { setFunctionError, setAjaxError }   from "../../../blocks/errors.js";
 import { setLogValue }                      from "../../logBlock.js";
 import { setStorageData }                   from "../../../blocks/storageSetting.js";
@@ -98,7 +99,14 @@ function setSize(sentVals){
         setColWidth(el);
     });
 }
-function postPrefsValues(values, visCol=false){
+async function postPrefsValues(values, visCol = false){
+
+    let userData = getUserDataStorage();
+    
+    if (!userData){
+        await pushUserDataStorage();
+        userData = getUserDataStorage();
+    }
    
     const id            = getItemId();
     const sentVals      = {
@@ -107,8 +115,9 @@ function postPrefsValues(values, visCol=false){
     };
 
     const sentObj = {
-        name:"visibleColsPrefs_"+id,
-        prefs:sentVals,
+        name  : "visibleColsPrefs_" + id,
+        owner : userData.id,
+        prefs : sentVals,
     };
 
     function saveExistsTemplate(sentObj,idPutData){
@@ -143,14 +152,10 @@ function postPrefsValues(values, visCol=false){
     } 
 
     function saveNewTemplate(){
-        const ownerId = webix.storage.local.get("user").id;
+      
         const url     = "/init/default/api/userprefs/";
         
-        if (ownerId){
-            sentObj.owner = ownerId;
-        }
-
-        const userprefsPost = webix.ajax().post(url,sentObj);
+        const userprefsPost = webix.ajax().post(url, sentObj);
         
         userprefsPost.then(function(data){
             data = data.json();

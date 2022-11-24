@@ -1,6 +1,6 @@
 
-import {setLogValue}                   from './logBlock.js';
-import {setAjaxError,setFunctionError} from "../blocks/errors.js";
+import {setLogValue}                   from '../logBlock.js';
+import {setAjaxError,setFunctionError} from "../../blocks/errors.js";
 
 function doAuthCp (){
     try{

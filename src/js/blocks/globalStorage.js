@@ -1,5 +1,5 @@
-import { setAjaxError, setFunctionError }   from "./errors.js";
-import { checkNotAuth }                     from "../components/logout/common.js";
+import { setFunctionError }   from "./errors.js";
+import { checkNotAuth }       from "../components/logout/common.js";
 
 const STORAGE = {};
 
