@@ -1,7 +1,8 @@
 import { setLogValue }                      from '../../../../logBlock.js';
 import { setAjaxError, setFunctionError }   from "../../../../../blocks/errors.js";
 
-const logNameFile = "table => createSpace => dynamicElements => buttonLogic";
+const logNameFile = 
+"table => createSpace => dynamicElements => buttonLogic";
 
 let idElements;
 let url;
@@ -14,9 +15,10 @@ function createQueryRefresh(){
     try{
         idElements.forEach((el,i) => {
             const val = $$(el.id).getValue();
-
+            
             if (el.id.includes("customCombo")){
                 const textVal = $$(el.id).getText();
+                console.log(val, textVal)
                 valuesArray.push (el.name + "=" + textVal);
 
             } else if ( el.id.includes("customInputs")     || 
@@ -32,21 +34,25 @@ function createQueryRefresh(){
 }
 
 function setTableState(tableView, data){
-   
+    const noneMsg = "Ничего не найдено";
     try{
         tableView.clearAll();
   
         if (data.length !== 0){
-            tableView.hideOverlay("Ничего не найдено");
+            tableView.hideOverlay(noneMsg);
             tableView.parse(data);
-            setLogValue("success","Данные обновлены");
+            setLogValue("success", "Данные обновлены");
 
         } else {
-            tableView.showOverlay("Ничего не найдено");
+            tableView.showOverlay(noneMsg);
 
         }
     } catch (err){  
-        setFunctionError(err,logNameFile,"refreshButton => setTableState");
+        setFunctionError(
+            err,
+            logNameFile,
+            "setTableState"
+        );
     }
 }
 
@@ -62,7 +68,6 @@ function setTableCounter(tableView){
 }
 
 function refreshButton(){
-
     createQueryRefresh();
     const path    = url + "?" + valuesArray.join("&");
     const getData = webix.ajax(path);
@@ -85,7 +90,11 @@ function refreshButton(){
     });
 
     getData.fail(function(err){
-        setAjaxError(err, logNameFile,"refreshButton");
+        setAjaxError(
+            err, 
+            logNameFile,
+            "refreshButton"
+        );
     });
 }
 
@@ -95,10 +104,18 @@ function downloadButton(){
         try {
             webix.html.download(blob, "table.docx");
         } catch (err){
-            setFunctionError(err, logNameFile, "downloadButton");
+            setFunctionError(
+                err, 
+                logNameFile, 
+                "downloadButton"
+            );
         } 
     }).catch(err => {
-        setAjaxError(err, logNameFile, "downloadButton");
+        setAjaxError(
+            err, 
+            logNameFile, 
+            "downloadButton"
+        );
     });
 }
 
@@ -115,16 +132,23 @@ async function uploadData(formData, link){
 
         if ( data.err_type == "i" ){
             loadEl.setValues( "Файл загружен" );
-            setLogValue( "success","Файл успешно загружен" );
+            setLogValue(
+                "success",
+                "Файл успешно загружен"
+            );
 
         } else {
             loadEl.setValues( "Ошибка" );
-            setLogValue( "error", data.err );
+            setLogValue     ( "error", data.err );
         }
     })
     
     .catch(function(err){
-        setFunctionError(err, logNameFile, "uploadData");
+        setFunctionError(
+            err, 
+            logNameFile, 
+            "uploadData"
+        );
     });
 
 }
@@ -166,7 +190,7 @@ function postButton(){
             }
         });
     } catch (err){  
-        setFunctionError(err,logNameFile,"postButton");
+        setFunctionError(err, logNameFile, "postButton");
     } 
 }
 

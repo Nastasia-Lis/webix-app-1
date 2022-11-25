@@ -1,7 +1,8 @@
 import { setFunctionError }                 from "../../blocks/errors.js";
 import { hideAllElements, checkTreeOrder,
-         closeTree, createElements }        from "./common.js";
+          createElements }        from "./common.js";
 
+import { mediator }                 from "../../blocks/_mediator.js";
 
 const logNameFile = "router => cp";
 
@@ -75,7 +76,7 @@ function cpRouter(){
    
     }
   
-    closeTree();
+    mediator.sidebar.close();
     setUserValues();
     hideNoneContent();
 

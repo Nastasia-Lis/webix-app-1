@@ -1,8 +1,8 @@
 import { setFunctionError, setAjaxError}    from "../../blocks/errors.js";
 import { hideAllElements, checkTreeOrder, 
-        closeTree, createElements }         from "./common.js";
+        createElements }                    from "./common.js";
 
-
+import { mediator }                         from "../../blocks/_mediator.js";
 const logNameFile = "router => settings";
 
 function showUserprefs(){
@@ -99,7 +99,7 @@ function settingsRouter(){
     }
 
     setUserprefsNameValue   ();
-    closeTree               ();
+    mediator.sidebar.close  ();
     hideNoneContent         ();
     removeNullContent       ();
   

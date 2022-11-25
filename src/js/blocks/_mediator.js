@@ -4,15 +4,16 @@ import { TreeEdit }      from "../components/treeEdit/_treeEditMediator.js";
 import { UserAuth }      from "../components/user_auth/_userAuthMediator.js";
 import { Settings }      from "../components/settings/_settingsMediator.js";
 
+import { Tree }          from "../components/treeSidabar/_treeMediator.js";
+import { Header }        from "../components/header/_headerMediator.js";
 
-const viewElements = [
+const elems = [
+    "dashboards",
     "tables",
     "forms",
-    "dashboards",
     "settings",
-    "cp"
+    "user_auth",
 ];
-
 
 const mediator = {
     dashboards  : new Dashboards(),
@@ -21,14 +22,11 @@ const mediator = {
     settings    : new Settings  (),
     user_auth   : new UserAuth  (),
     treeEdit    : new TreeEdit  (),
+    sidebar     : new Tree      (),
+    header      : new Header    (),
 
     getViews(){
-        const elems = Object.keys(this);
-
-        let arr     = [];
-        arr         = Object.assign(arr, elems);
-        arr.pop();
-        return arr;
+        return elems;
     }
 };
 

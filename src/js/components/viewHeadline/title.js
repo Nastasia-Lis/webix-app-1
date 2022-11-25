@@ -1,25 +1,8 @@
 import { setFunctionError }           from "../../blocks/errors.js";
 
-function setHeadlineBlock ( idTemplate, title ){
-    let templateTitle;
-    try{
-        if(title){
-            templateTitle = title;
-        } else {
-            templateTitle = function(){
-                const value = $$(idTemplate).getValues();
-                if (Object.keys(value).length !==0){
-                    return "<div class='no-wrap-headline'>" + value + "</div>";
-                } else {
-                    return "<div class='no-wrap-headline'> Имя не указано </div>";
-                }
-            };
-        }
-    } catch (err){
-        setFunctionError(err,"blockHeadline","setHeadlineBlock");
-    } 
+const logNameFile = "viewHeadline => title";
 
-
+function returnHeadline(idTemplate, templateTitle){
     const headline = {   
         view        : "template",
         id          : idTemplate,
@@ -33,6 +16,33 @@ function setHeadlineBlock ( idTemplate, title ){
     };
 
     return headline;
+}
+function returnDiv(title = "Имя не указано"){
+    return "<div class='no-wrap-headline'>" + title + "</div>";
+}
+
+function setHeadlineBlock ( idTemplate, title ){
+    let templateTitle;
+    try{
+        if(title){
+            templateTitle = title;
+        } else {
+            templateTitle = function(){
+                const value      = $$(idTemplate).getValues();
+                const valLength  = Object.keys(value).length;
+
+                if (valLength !==0){
+                    return returnDiv(title = value);
+                } else {
+                    return returnDiv();
+                }
+            };
+        }
+    } catch (err){
+        setFunctionError(err, logNameFile, "setHeadlineBlock");
+    } 
+
+    return returnHeadline(idTemplate, templateTitle);
 }
 
 export {

@@ -1,5 +1,5 @@
-import { setFunctionError }   from "./errors.js";
-import { checkNotAuth }       from "../components/logout/common.js";
+import { setFunctionError }             from "./errors.js";
+import { checkNotAuth, popupNotAuth }   from "../components/logout/common.js";
 
 const STORAGE = {};
 
@@ -17,14 +17,6 @@ function getTableNames (content){
     }
     return tableNames;
 }
-
-// function checkNotAuth (err){
-//     if (err.status               === 401                  && 
-//         window.location.pathname !== "/index.html"        && 
-//         window.location.pathname !== "/init/default/spaw/"){
-//         Backbone.history.navigate("/", { trigger:true});
-//     }
-// }
 
 function getData (fileName){
  
@@ -67,6 +59,9 @@ class LoadServerData {
                 self[nameFile] = data.json();
             })
             .fail(function (err){
+                if (checkNotAuth (err)){
+                    popupNotAuth();
+                }
             });
 
         }

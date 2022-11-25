@@ -11,6 +11,7 @@ import { createProperty }                               from "./createProperty.j
 
 import { Button }                                       from "../../../viewTemplates/buttons.js";
 import { createEmptyTemplate }                          from "../../../viewTemplates/emptyTemplate.js";
+import { EditForm }                                     from "./setState.js";
 
 
 const logNameFile = "tableEditForm => buttons";
@@ -35,7 +36,7 @@ function setDirtyProp (property){
         property.config.dirty = false;
         property.refresh();
     } catch (err){
-        setFunctionError(err,logNameFile,"saveItem => setDirtyProp");
+        setFunctionError(err, logNameFile, "saveItem => setDirtyProp");
     } 
 }
 
@@ -124,17 +125,19 @@ function saveItem(addBtnClick = false, refBtnClick = false){
 
                         if (!refBtnClick){
                             updateWorkspace (itemData);
-                            Action.hideItem(editForm);
+                         
                         }
-
+                     
                         if (!addBtnClick ){
                             addBtn.enable();
                             setDirtyProp(property);
+                            Action.hideItem(editForm);
                            
                         } else {
                             Action.showItem(property);
                             addNewStateSpace();
                             Action.hideItem(emptyTempl);
+            
                         }
                         Action.showItem(container);
 
@@ -168,76 +171,32 @@ function addItem () {
     const emptyTemplate = $$("EditEmptyTempalte");
     const property      = $$("editTableFormProperty");
     const table         = $$("table");
-
-    function setWorkspaceState (){
-        function tableState(){
-            table.filter(false);
-            table.clearSelection();
-        }
-
-        function buttonsState(){
-            $$("table-delBtnId")   .disable();
-            $$("table-saveBtn")    .hide();
-            $$("table-saveNewBtn") .show();
-            $$("table-newAddBtnId").disable();
-        }
-
-        try{
-            tableState();
-            buttonsState();
-            createProperty("table-editForm");
-            Action.hideItem(emptyTemplate);
-        } catch (err){
-            setFunctionError(err,logNameFile,"addItem => setWorkspaceState");
-        }
-    
-    }
-
-    function setDirtyProp (){
-        try{
-            property.config.dirty = false;
-            property.refresh();
-        } catch (err){
-            setFunctionError(err,logNameFile,"addItem => setDirtyProp");
-        }
-    }
     
     function modalBoxAddItem(){
         modalBox().then(function(result){
             if (result == 1){
-                setWorkspaceState ();
-                setDirtyProp ();
+                EditForm.postState();
             
             } else if (result == 2){
                 saveItem(true);
-                setDirtyProp ();
+                EditForm.postState();
                 Action.hideItem(emptyTemplate);
             }
         });
     }
-
-   
-
-    function initPropertyForm(){
-        Action.showItem(property);
-        property.clear();
-    }
-
 
     try {
   
         if ( property.config.dirty == true ){
             modalBoxAddItem();
         } else {
-            initPropertyForm();
-            setWorkspaceState ();
+            EditForm.postState();
             table.hideOverlay("Ничего не найдено");
         }
 
-    }catch (err){
-        setFunctionError(err,logNameFile,"addItem");
+    } catch (err){
+        setFunctionError(err, logNameFile, "addItem");
     }
-
 
 }
 
@@ -403,7 +362,6 @@ function removeItem() {
     }
     
 }
-
 
 function backTableBtnClick() {
     const form           = $$("table-editForm");

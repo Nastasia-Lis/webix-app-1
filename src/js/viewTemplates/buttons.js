@@ -1,3 +1,6 @@
+import { setFunctionError }           from "../blocks/errors.js";
+
+
 class Button {
 
     constructor (options){
@@ -126,6 +129,26 @@ class Button {
         button.width = 50;
         button.type  = "icon";
         return this.addConfig();
+    }
+
+    static transparentDefaultState(){
+        const primaryClass   = "webix-transparent-btn--primary";
+        const secondaryClass = "webix-transparent-btn";
+        try{
+            const btnClass = document.querySelector(".webix_btn-filter");
+            if (btnClass && btnClass.classList.contains (primaryClass)){
+            
+                btnClass.classList.add   (secondaryClass);
+                btnClass.classList.remove(primaryClass);
+            }
+        } catch (err){
+            setFunctionError(
+                err, 
+                "buttons",
+                "transparentViewDefaultState"
+            );
+        }
+        
     }
 
 }

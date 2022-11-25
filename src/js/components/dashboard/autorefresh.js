@@ -1,6 +1,9 @@
 import { mediator }          from '../../blocks/_mediator.js';
 let idsParam;
 
+
+
+
 function setIntervalConfig(counter){
     setInterval(function(){
         mediator.dashboards.load(idsParam);

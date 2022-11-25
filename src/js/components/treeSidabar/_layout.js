@@ -1,10 +1,12 @@
 import {setAjaxError}       from "../../blocks/errors.js"; 
 
-import {onSelectChangeFunc} from "./onSelectChange.js"; 
-import {onItemClickFunc}    from "./onItemClick.js"; 
-import {onBeforeSelectFunc} from "./onBeforeSelect.js"; 
-import {onBeforeOpenFunc}   from "./onBeforeOpen.js"; 
-import {onAfterSelectFunc}  from "./onAfterSelect.js"; 
+import {createModalBox}     from "./modalBox.js"; 
+
+import { preparationView }  from "./preparationView.js"; 
+
+import { loadFields }       from "./loadFields.js";
+import { getFields }        from "./navigate.js";
+import { setAdaptiveState } from "./adaptive.js";
 
 
 function treeSidebar () {
@@ -22,17 +24,13 @@ function treeSidebar () {
         clipboard   : true,
         data        : [],
         on          : {
-            
-            onSelectChange:function (ids) {
-                onSelectChangeFunc(ids);
-            },
 
             onItemClick:function(id) {
-                return onItemClickFunc(id);
+                return createModalBox(id);
             },
 
             onBeforeSelect: function(data) {
-                onBeforeSelectFunc(data);
+                preparationView(data);
             },
 
             onLoadError:function(xhr){
@@ -40,11 +38,12 @@ function treeSidebar () {
             },
 
             onBeforeOpen:function (id){
-                onBeforeOpenFunc(id);
+                loadFields(id);
             },
 
             onAfterSelect:function(id){
-                onAfterSelectFunc(id);
+                getFields (id);
+                setAdaptiveState();
             },
 
         },

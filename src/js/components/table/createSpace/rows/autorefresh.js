@@ -23,6 +23,7 @@ function autorefresh (data){
         if ( userprefsOther && counter !== undefined ){
             if ( counter >= 15000 ){
                 setIntervalConfig(data.type, counter);
+                
             } else {
                 setIntervalConfig(data.type, 120000);
             }

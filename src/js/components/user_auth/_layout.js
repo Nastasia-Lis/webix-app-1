@@ -2,19 +2,23 @@
 import {setLogValue}                   from '../logBlock.js';
 import {setAjaxError,setFunctionError} from "../../blocks/errors.js";
 
+let form;
+function returnPassData(){
+    const passData = form.getValues();
+
+    const objPass = {
+        op: passData.oldPass,
+        np: passData.newPass
+    };
+
+    return objPass;
+}
 function doAuthCp (){
     try{
-        const form = $$("cp-form");
+        form = $$("cp-form");
         if ( form && form.validate()){
 
-            
-        
-            let passData = form.getValues();
-
-            const objPass = {
-                op: passData.oldPass,
-                np: passData.newPass
-            };
+            const objPass = returnPassData();
             
             const url      = "/init/default/api/cp";
             const postData = webix.ajax().post(url, objPass);
@@ -23,9 +27,14 @@ function doAuthCp (){
                 data = data.json();
                 
                 if (data.err_type == "i"){
-                    setLogValue("success",data.err);
+                    setLogValue("success", data.err);
                 } else {
-                    setLogValue("error","authSettings function doAuthCp: "+data.err,"cp");
+                    setLogValue(
+                        "error",
+                        "authSettings function doAuthCp: " + 
+                        data.err, 
+                        "cp"
+                    );
 
                 }
 
@@ -33,7 +42,11 @@ function doAuthCp (){
             });
             
             postData.fail(function(err){
-                setAjaxError(err, "authSettings","doAuthCp post");
+                setAjaxError(
+                    err, 
+                    "authSettings",
+                    "doAuthCp"
+                );
             });
 
         }
@@ -61,8 +74,9 @@ const userName = {
         const keys   = Object.keys(values);
 
         function returnDiv(text){
-            const defaultStyles = "display:inline-block; font-size:13px!important; font-weight:600;" ;
-            return "<div style='"+defaultStyles+"color:var(--primary);'>"+
+            const defaultStyles = "display:inline-block; font-size:13px!important; font-weight:600;";
+
+            return "<div style='" + defaultStyles + "color:var(--primary);'>"+
             "Имя пользователя:</div>"+
             "⠀"+
             "<div style=' " + defaultStyles + " '>"+

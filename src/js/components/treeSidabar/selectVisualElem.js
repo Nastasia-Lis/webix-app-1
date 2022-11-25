@@ -3,9 +3,9 @@ import { GetFields }        from "../../blocks/globalStorage.js";
 import { setFunctionError } from "../../blocks/errors.js";
 
 import { mediator }         from "../../blocks/_mediator.js";
+import { collapseBtn } from "../header/collapseBtn.js";
 
 const logNameFile = "treeSidebar => selectVisualElem";
-
 
 
 function createUndefinedView(){
@@ -43,57 +43,63 @@ function createUndefinedView(){
    
 }
 
+function selectItemAction(type, id){
+    const visiualElements = mediator.getViews();
+    let selectElem;
+ 
+    if (type == "dbtable"){
+        selectElem = "tables";
+        mediator.tables.load(id);
+
+    } else if(type == "tform"){
+        selectElem = "forms";
+        mediator.forms.load(id);
+
+    } else if(type == "dashboard"){
+        selectElem = "dashboards";
+        mediator.dashboards.load(id);
+        Action.hideItem($$("propTableView"));
+
+    } 
+
+    const isBranch = $$("tree").isBranch(id);
+    if (!isBranch){
+
+    }
+
+    visiualElements.forEach(function(elem){
+        if (elem !== selectElem){
+            Action.hideItem($$(elem));
+        } 
+
+        if (elem == id){
+            Action.removeItem($$("webix__null-content"));
+            Action.showItem  ($$("webix__none-content"));
+        }
+    });
+
+    Action.showItem($$(selectElem));
+
+}
 
 function selectElem(id){
-    const visiualElements = mediator.getViews();
+   
     const type = GetFields.attribute (id, "type");
 
     Action.hideItem($$("webix__none-content"));
 
-    const idBranch = $$("tree").isBranch(id);
+    const isBranch = $$("tree").isBranch(id);
+    if (isBranch){
+        //return false;
+    }
 
-    if (!type && !idBranch){
+    if (!type && !isBranch){
         createUndefinedView();
     } else {
         Action.removeItem($$("webix__null-content")); 
     }
-
  
-    function selectItemAction(){
-   
-        let selectElem;
-     
-        if (type == "dbtable"){
-            selectElem = "tables";
-            mediator.tables.load(id);
-
-        } else if(type == "tform"){
-            selectElem = "forms";
-            mediator.forms.load(id);
-
-        } else if(type == "dashboard"){
-            selectElem = "dashboards";
-            mediator.dashboards.load(id);
-            Action.hideItem($$("propTableView"));
-
-        } 
-
-     
-
-        visiualElements.forEach(function(elem){
-            if (elem !== selectElem){
-                Action.hideItem($$(elem));
-            } 
-
-            if (elem == id){
-                Action.showItem($$("webix__none-content"));
-            }
-        });
-
-        Action.showItem($$(selectElem));
-    }
-
-    selectItemAction     ();
+    selectItemAction (type, id);
 }
 
 

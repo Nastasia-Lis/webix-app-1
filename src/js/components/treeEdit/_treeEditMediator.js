@@ -45,6 +45,18 @@ class TreeEdit {
         getInfoEditTree();
     }
 
+
+    defaultState(id){
+        try{
+            const elem = $$("treeTempl");
+            if(!($$(id))){
+                Action.hideItem(elem);
+            }
+        } catch (err){
+            setFunctionError(err, logNameFile, "hideTreeTempl");
+        }
+    }
+
 }
 
 

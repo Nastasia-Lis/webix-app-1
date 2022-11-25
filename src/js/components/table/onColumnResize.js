@@ -1,43 +1,50 @@
+
+let cols;
+let lengthCols;
+
+function returnCol(index){
+    const currIndex = lengthCols - index;
+    return cols[currIndex];
+}
+
+function returnSumWidthCols(){
+    let sum = 0;
+    cols.forEach(function(col){
+        sum += col.width;
+    });
+    return sum;
+}
+
+function setNewWidth(table){
+    const lastCol      = returnCol(1);
+    const scrollWidth  = 17;
+    const widthTable   = table.$width - scrollWidth
+    ;
+    const sumWidthCols = returnSumWidthCols();
+    if (sumWidthCols < widthTable){
+        const different = widthTable - sumWidthCols;
+        const newWidth  = lastCol.width + different;
+        
+        table.setColumnWidth(lastCol.id, newWidth);
+
+    }
+}
+
+
 function columnResize(table){
- 
 
     table.attachEvent("onColumnResize", function(id, newWidth, oldWidth, userAction){
-        const cols   = table.getColumns();
-        const length = cols.length;
-        function returnCol(index){
-          
-            const currIndex = length - index;
-            return cols[currIndex];
-        }
-    
+  
+        cols       = table.getColumns();
+        lengthCols = cols.length;
+  
         if (userAction){
-
-            const prevIndex = length - 2;
-
-            const prevCol   = returnCol(2);
-            const lastCol   = returnCol(1);
-
-
-            if ( prevIndex > -1 ){
-           
+            const lastResizer = 2;
+            const isExists    = lengthCols - lastResizer;
+            const prevCol     = returnCol(lastResizer);
             
-                if (prevCol.id == id){
-
-                    const width = table.$width - 17;
-                    let sum = 0;
-
-                    cols.forEach(function(col,i){
-                        sum += col.width;
-                    });
-
-                    if (sum < width){
-                        const different = width - sum;
-                        const newWidth = lastCol.width + different;
-                  
-                        table.setColumnWidth(lastCol.id, newWidth);
-              
-                    }
-                }
+            if ( isExists > -1 && prevCol.id == id){ // это последняя колонка
+                setNewWidth(table);
                
             }
         }

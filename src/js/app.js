@@ -1,11 +1,12 @@
-console.log("expa 1.0.56"); 
+console.log("expa 1.0.57"); 
 
 import { textInputClean }                     from "./blocks/commonFunctions.js";
 import { auth }                               from "./components/login.js";
 import { setUserPrefs }                       from "./blocks/storageSetting.js";
 import { header }                             from "./components/header/_layout.js";
 
-import { treeSidebar }                        from "./components/treeSidabar/_layout.js";
+import { mediator }                           from "./blocks/_mediator.js";
+ 
 
 import { logLayout }                          from "./components/logBlock.js";
 import { resetTimer }                         from  "./components/logout/autoLogout.js";
@@ -70,11 +71,11 @@ const mainLayout = {
                                             
             cols: [
                 { rows  : [
-                    header,
+                    mediator.header.create(),
                     adaptive,
                 
                     {cols : [
-                        treeSidebar(), 
+                        mediator.sidebar.create(),
                         sideMenuResizer,
                         container,
                     ]}

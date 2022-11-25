@@ -186,7 +186,277 @@ function setUserPrefs (userData){
 
 
 
+;// CONCATENATED MODULE: ./src/js/viewTemplates/buttons.js
+
+
+
+class Button {
+
+    constructor (options){
+        this.buttonView = {
+            view    : "button",
+            height  : 42,
+            on      : {
+
+            }
+        };
+        this.options    = options.config;
+
+        this.values     = Object.values(this.options);
+        this.keys       = Object.keys  (this.options);
+        this.adaptValue = options.adaptValue;
+
+        this.title      = options.titleAttribute;
+
+        this.onFunc     = options.onFunc;
+
+        this.css        = options.css;
+    }
+
+
+    modifyTitle(index){
+        this.title = this.title + " (" + this.values[index] + ")";
+    }
+
+    setAdaptiveValue(btn, adaptVal, mainVal){
+   
+        const width  = btn.$width;
+
+        if (width < 120 &&  btn.config.value !== adaptVal ){
+            btn.config.value = adaptVal;
+            btn.refresh();
+          
+        } else if (width > 120 &&  btn.config.value !== mainVal ) {
+            btn.config.value = mainVal;
+            btn.refresh();
+        }
+    }
+
+    addOnFunctions(button){
+        const self = this;
+        
+        if (this.onFunc){
+            const names  = Object.keys  (this.onFunc);
+            const values = Object.values(this.onFunc);
+
+            names.forEach(function(name,i){
+                button.on[name] = values[i];
+            });
+
+        }
+
+        button.on.onAfterRender = function () {
+        
+            this.getInputNode().setAttribute("title", self.title);
+
+            if (self.adaptValue){
+                self.setAdaptiveValue(this, self.adaptValue, self.options.value);
+            }
+        };
+    }
+
+    addCss(type){
+        const button    = this.buttonView; 
+        const customCss = this.css || "";
+
+        if (type == "primary"){
+            button.css = "webix_primary ";
+
+        } else if (type == "delete"){
+            button.css  = "webix_danger ";
+
+        } else {
+            button.css = type || "";
+            button.css = button.css + " " + customCss || "";
+        }
+      
+    }
+
+    
+    addConfig(){
+        const button = this.buttonView; 
+        const values = this.values;
+        const self   = this;
+
+        this.keys.forEach(function(option,i){
+
+            button[option] = values[i];
+
+            if (option === "hotkey"){
+                self.modifyTitle(i);
+            }
+
+        });
+
+        this.addOnFunctions (button);
+     
+        return button;
+
+    }
+
+    maxView(type){
+        this.addCss(type);
+        return this.addConfig();
+    }
+
+    minView(type){
+        this.addCss(type);
+
+        const button = this.buttonView;
+   
+        button.width = 50;
+        button.type  = "icon";
+
+        return this.addConfig();
+    }
+
+    transparentView(){
+        this.addCss("webix-transparent-btn");
+
+        const button = this.buttonView;
+   
+        button.width = 50;
+        button.type  = "icon";
+        return this.addConfig();
+    }
+
+    static transparentDefaultState(){
+        const primaryClass   = "webix-transparent-btn--primary";
+        const secondaryClass = "webix-transparent-btn";
+        try{
+            const btnClass = document.querySelector(".webix_btn-filter");
+            if (btnClass && btnClass.classList.contains (primaryClass)){
+            
+                btnClass.classList.add   (secondaryClass);
+                btnClass.classList.remove(primaryClass);
+            }
+        } catch (err){
+            errors_setFunctionError(
+                err, 
+                "buttons",
+                "transparentViewDefaultState"
+            );
+        }
+        
+    }
+
+}
+
+
+;// CONCATENATED MODULE: ./src/js/viewTemplates/popup.js
+class Popup {
+
+    constructor (options){
+
+
+        this.elements   = options.elements;
+
+        this.headline  = {
+            template    : "<div class='no-wrap-headline'>" + 
+                            options.headline + 
+                            "</div>", 
+            css         : "webix_popup-headline", 
+            borderless  : true, 
+            height      : 40 
+        };
+
+        this.closeBtn  =  {
+            view    : "button",
+            id      : "buttonClosePopup",
+            css     : "popup_close-btn",
+            type    : "icon",
+            hotkey  : "esc",
+            width   : 25,
+            icon    : 'wxi-close',
+            click   : function(){
+
+                if ( options.closeClick){
+                    options.closeClick();
+                } else {
+                    const popup = $$(options.config.id);
+                    if (popup){
+                        popup.destructor();
+                    }
+                }
+         
+             
+            }
+        };
+  
+        this.popupView  = {
+            view    : "popup",
+            css     : "webix_popup-config",
+            modal   : true,
+            escHide : true,
+            position: "center",
+            body    : {
+                scroll : "y",
+                rows   : [
+                    {   css : "webix_popup-headline-wrapper", 
+                        cols: [ 
+                            this.headline,
+                           // {},
+                            this.closeBtn,
+                            {width:12},
+                        ]
+                    },
+
+                    this.elements
+        
+                ]
+            }
+        };
+
+
+        this.options  = options.config;
+        this.id       = options.config.id;
+
+        this.values   = Object.values(this.options);
+        this.keys     = Object.keys  (this.options);
+
+      
+    }
+
+
+    addConfig(){
+        const popup  = this.popupView; 
+        const values = this.values;
+
+        this.keys.forEach(function(option,i){
+            popup[option] = values[i];
+
+        });
+     
+        return popup;
+
+    }
+
+    createView(){
+        const popup  = this.popupView; 
+        const values = this.values;
+
+        this.keys.forEach(function(option,i){
+            popup[option] = values[i];
+
+        });
+
+      
+        return webix.ui(this.addConfig());
+    }
+
+    showPopup(){
+        $$(this.id).show();
+     
+    }
+
+
+}
+
+
 ;// CONCATENATED MODULE: ./src/js/components/logout/common.js
+
+
+
 
 
 
@@ -317,12 +587,63 @@ function logout() {
   
 }
 
+function toLogin(){
+    window.location.reload();
+}
+
+function popupNotAuth(){
+    const subtitle = {
+        template    :"Войдите в систему, чтобы продолжить",
+        height      :40,
+        borderless  :true,
+    };
+
+    const btn = new Button({
+    
+        config   : {
+            id      : "authBtnNavigate",
+            hotkey  : "Shift+Space",
+            value   : "Войти в систему", 
+            click   : toLogin
+        },
+        titleAttribute : "Войти в систему"
+    
+    }).maxView("primary");
+
+    const popup = new Popup({
+        headline : "Отказ в доступе",
+        config   : {
+            id    : "popupNotAuth",
+            width     : 400,
+            minHeight : 300,
+    
+        },
+
+        elements : {
+            padding:{
+                left : 5,
+                right: 5
+            },
+            rows:[
+                subtitle,
+                btn
+            ]
+         
+          
+        }
+    });
+    if ( !($$("popupNotAuth")) ){
+        popup.createView ();
+    }
+    popup.showPopup  ();
+}
 
 function checkNotAuth (err){
+    let notAuth = false;
     if (err.status               === 401                  && 
         window.location.pathname !== "/index.html"        && 
         window.location.pathname !== "/init/default/spaw/"){
-        
+        notAuth = true;
         const prefs = {
             href : window.location.href
         };
@@ -330,6 +651,8 @@ function checkNotAuth (err){
         Backbone.history.navigate("/", { trigger:true});
 
     }
+
+    return notAuth;
 }
 
 
@@ -353,14 +676,6 @@ function getTableNames (content){
     }
     return tableNames;
 }
-
-// function checkNotAuth (err){
-//     if (err.status               === 401                  && 
-//         window.location.pathname !== "/index.html"        && 
-//         window.location.pathname !== "/init/default/spaw/"){
-//         Backbone.history.navigate("/", { trigger:true});
-//     }
-// }
 
 function getData (fileName){
  
@@ -403,6 +718,9 @@ class LoadServerData {
                 self[nameFile] = data.json();
             })
             .fail(function (err){
+                if (checkNotAuth (err)){
+                    popupNotAuth();
+                }
             });
 
         }
@@ -589,7 +907,7 @@ async function createLogMessage(srcTable) {
     let name;
 
     if (srcTable == "version"){
-        name = 'Expa v1.0.56';
+        name = 'Expa v1.0.57';
 
     } else if (srcTable == "cp"){
         name = 'Смена пароля';
@@ -5177,140 +5495,6 @@ function dashboardLayout () {
 }
 
 
-;// CONCATENATED MODULE: ./src/js/viewTemplates/buttons.js
-class Button {
-
-    constructor (options){
-        this.buttonView = {
-            view    : "button",
-            height  : 42,
-            on      : {
-
-            }
-        };
-        this.options    = options.config;
-
-        this.values     = Object.values(this.options);
-        this.keys       = Object.keys  (this.options);
-        this.adaptValue = options.adaptValue;
-
-        this.title      = options.titleAttribute;
-
-        this.onFunc     = options.onFunc;
-
-        this.css        = options.css;
-    }
-
-
-    modifyTitle(index){
-        this.title = this.title + " (" + this.values[index] + ")";
-    }
-
-    setAdaptiveValue(btn, adaptVal, mainVal){
-   
-        const width  = btn.$width;
-
-        if (width < 120 &&  btn.config.value !== adaptVal ){
-            btn.config.value = adaptVal;
-            btn.refresh();
-          
-        } else if (width > 120 &&  btn.config.value !== mainVal ) {
-            btn.config.value = mainVal;
-            btn.refresh();
-        }
-    }
-
-    addOnFunctions(button){
-        const self = this;
-        
-        if (this.onFunc){
-            const names  = Object.keys  (this.onFunc);
-            const values = Object.values(this.onFunc);
-
-            names.forEach(function(name,i){
-                button.on[name] = values[i];
-            });
-
-        }
-
-        button.on.onAfterRender = function () {
-        
-            this.getInputNode().setAttribute("title", self.title);
-
-            if (self.adaptValue){
-                self.setAdaptiveValue(this, self.adaptValue, self.options.value);
-            }
-        };
-    }
-
-    addCss(type){
-        const button    = this.buttonView; 
-        const customCss = this.css || "";
-
-        if (type == "primary"){
-            button.css = "webix_primary ";
-
-        } else if (type == "delete"){
-            button.css  = "webix_danger ";
-
-        } else {
-            button.css = type || "";
-            button.css = button.css + " " + customCss || "";
-        }
-      
-    }
-
-    
-    addConfig(){
-        const button = this.buttonView; 
-        const values = this.values;
-        const self   = this;
-
-        this.keys.forEach(function(option,i){
-
-            button[option] = values[i];
-
-            if (option === "hotkey"){
-                self.modifyTitle(i);
-            }
-
-        });
-
-        this.addOnFunctions (button);
-     
-        return button;
-
-    }
-
-    maxView(type){
-        this.addCss(type);
-        return this.addConfig();
-    }
-
-    minView(type){
-        this.addCss(type);
-
-        const button = this.buttonView;
-   
-        button.width = 50;
-        button.type  = "icon";
-
-        return this.addConfig();
-    }
-
-    transparentView(){
-        this.addCss("webix-transparent-btn");
-
-        const button = this.buttonView;
-   
-        button.width = 50;
-        button.type  = "icon";
-        return this.addConfig();
-    }
-
-}
-
-
 ;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/filter/filterLayout.js
 
 
@@ -5799,26 +5983,9 @@ function returnEl(element){
 ;// CONCATENATED MODULE: ./src/js/components/viewHeadline/title.js
 
 
-function setHeadlineBlock ( idTemplate, title ){
-    let templateTitle;
-    try{
-        if(title){
-            templateTitle = title;
-        } else {
-            templateTitle = function(){
-                const value = $$(idTemplate).getValues();
-                if (Object.keys(value).length !==0){
-                    return "<div class='no-wrap-headline'>" + value + "</div>";
-                } else {
-                    return "<div class='no-wrap-headline'> Имя не указано </div>";
-                }
-            };
-        }
-    } catch (err){
-        errors_setFunctionError(err,"blockHeadline","setHeadlineBlock");
-    } 
+const title_logNameFile = "viewHeadline => title";
 
-
+function returnHeadline(idTemplate, templateTitle){
     const headline = {   
         view        : "template",
         id          : idTemplate,
@@ -5832,6 +5999,33 @@ function setHeadlineBlock ( idTemplate, title ){
     };
 
     return headline;
+}
+function returnDiv(title = "Имя не указано"){
+    return "<div class='no-wrap-headline'>" + title + "</div>";
+}
+
+function setHeadlineBlock ( idTemplate, title ){
+    let templateTitle;
+    try{
+        if(title){
+            templateTitle = title;
+        } else {
+            templateTitle = function(){
+                const value      = $$(idTemplate).getValues();
+                const valLength  = Object.keys(value).length;
+
+                if (valLength !==0){
+                    return returnDiv(title = value);
+                } else {
+                    return returnDiv();
+                }
+            };
+        }
+    } catch (err){
+        errors_setFunctionError(err, title_logNameFile, "setHeadlineBlock");
+    } 
+
+    return returnHeadline(idTemplate, templateTitle);
 }
 
 
@@ -5893,116 +6087,6 @@ function createHistoryBtns(){
  
  
 
-;// CONCATENATED MODULE: ./src/js/viewTemplates/popup.js
-class Popup {
-
-    constructor (options){
-
-
-        this.elements   = options.elements;
-
-        this.headline  = {
-            template    : "<div class='no-wrap-headline'>" + 
-                            options.headline + 
-                            "</div>", 
-            css         : "webix_popup-headline", 
-            borderless  : true, 
-            height      : 40 
-        };
-
-        this.closeBtn  =  {
-            view    : "button",
-            id      : "buttonClosePopup",
-            css     : "popup_close-btn",
-            type    : "icon",
-            hotkey  : "esc",
-            width   : 25,
-            icon    : 'wxi-close',
-            click   : function(){
-
-                if ( options.closeClick){
-                    options.closeClick();
-                } else {
-                    const popup = $$(options.config.id);
-                    if (popup){
-                        popup.destructor();
-                    }
-                }
-         
-             
-            }
-        };
-  
-        this.popupView  = {
-            view    : "popup",
-            css     : "webix_popup-config",
-            modal   : true,
-            escHide : true,
-            position: "center",
-            body    : {
-                scroll : "y",
-                rows   : [
-                    {   css : "webix_popup-headline-wrapper", 
-                        cols: [ 
-                            this.headline,
-                           // {},
-                            this.closeBtn,
-                            {width:12},
-                        ]
-                    },
-
-                    this.elements
-        
-                ]
-            }
-        };
-
-
-        this.options  = options.config;
-        this.id       = options.config.id;
-
-        this.values   = Object.values(this.options);
-        this.keys     = Object.keys  (this.options);
-
-      
-    }
-
-
-    addConfig(){
-        const popup  = this.popupView; 
-        const values = this.values;
-
-        this.keys.forEach(function(option,i){
-            popup[option] = values[i];
-
-        });
-     
-        return popup;
-
-    }
-
-    createView(){
-        const popup  = this.popupView; 
-        const values = this.values;
-
-        this.keys.forEach(function(option,i){
-            popup[option] = values[i];
-
-        });
-
-      
-        return webix.ui(this.addConfig());
-    }
-
-    showPopup(){
-        $$(this.id).show();
-     
-    }
-
-
-}
-
-
 ;// CONCATENATED MODULE: ./src/js/components/viewHeadline/favoriteBtn.js
 
 
@@ -6012,222 +6096,247 @@ class Popup {
 
 
 
-function saveFavsClick(){
 
 
-    async function getLinkName(){
-        
-        await LoadServerData.content("fields");
-        const names = GetFields.names;
+const favoriteBtn_logNameFile = "viewHeadline => favoriteBtn";
 
-        function findName (id){
-    
-            try{
-                const nameTemplate = $$("favNameLink");
-                names.forEach(function(el){
-                    if (el.id == id){
-                        if(nameTemplate){
-                            nameTemplate.setValues(el.name);
-                        }
-                    }
-                    
-                });
-            } catch (err){
-                errors_setFunctionError(err, "favsLink", "findName");
-            }
-        }
+function findName (id, names){
 
-
-        if (names){
-            const id = getItemId();
-            findName (id);
-        }
-      
-    }
-
-    function getLink(){
-        try{
-            const link = window.location.href;
-            const favTemplate = $$("favLink");
-            if (favTemplate){
-                favTemplate.setValues(link);
-            }
-        } catch (err){
-            errors_setFunctionError(err,"favsLink","getLink");
-        }
-    }
-
-    function destructPopupSave(){
-        const popup = $$("popupFavsLinkSave");
-        try{
-            if (popup){
-                popup.destructor();
-            }
-        } catch (err){
-            errors_setFunctionError(err,"favsLink","destrucPopupSave");
-        }
-    }
-
-    function createDivTemplate(name, text){
-        return "<div style='font-weight:600'>" + 
-                name + ": </div>" + text;
-    }
-     
-    function createTemplate(id, name, nonName){
-        return {   
-            id          : id,
-            css         : "popup_subtitle", 
-            borderless  : true, 
-            height      : 20 ,
-            template    : function(){
-                const value = $$(id).getValues();
-                const keys = Object.keys(value);
-
-                if (keys.length !== 0){
-                    return createDivTemplate(name, value);
-
-                } else {
-                    return createDivTemplate(name, nonName);
-
+    try{
+        const nameTemplate = $$("favNameLink");
+        names.forEach(function(el){
+            if (el.id == id){
+                if(nameTemplate){
+                    nameTemplate.setValues(el.name);
                 }
-          
+            }
+            
+        });
+    } catch (err){
+        errors_setFunctionError(err, favoriteBtn_logNameFile, "findName");
+    }
+}
+
+async function getLinkName(){
+        
+    await LoadServerData.content("fields");
+    const names = GetFields.names;
+
+    if (names){
+        const id = getItemId();
+        findName (id, names);
+    }
+  
+}
+
+function getLink(){
+    try{
+        const link = window.location.href;
+        const favTemplate = $$("favLink");
+        if (favTemplate){
+            favTemplate.setValues(link);
+        }
+    } catch (err){
+        errors_setFunctionError(
+            err, 
+            favoriteBtn_logNameFile, 
+            "getLink"
+        );
+    }
+}
+
+
+function createDivTemplate(name, text){
+    return "<div style='font-weight:600'>" + 
+            name + ": </div>" + text;
+}
+ 
+function createTemplate(id, name, nonName){
+    return {   
+        id          : id,
+        css         : "popup_subtitle", 
+        borderless  : true, 
+        height      : 20 ,
+        template    : function(){
+            const value = $$(id).getValues();
+            const keys  = Object.keys(value);
+
+            if (keys.length !== 0){
+                return createDivTemplate(name, value);
+
+            } else {
+                return createDivTemplate(name, nonName);
+
+            }
+      
+        }
+    };
+}
+
+function getValue(elem){
+    return  $$(elem).getValues();   
+}
+
+
+
+async function postContent(namePref){
+    const favNameLinkVal = getValue("favNameLink");
+    const favLinkVal     = getValue("favLink");
+
+    let user = getUserDataStorage();
+
+    if (!user){
+        await pushUserDataStorage();
+        user = getUserDataStorage();
+    }
+
+
+    if (user){
+
+        const postObj = {
+            name : "fav-link_" + namePref,
+            owner: user.id,
+            prefs:{
+                name: favNameLinkVal,
+                link: favLinkVal,
+                id  : namePref,
             }
         };
-    }
 
-    function btnSaveLinkClick(){
-   
-        let favNameLinkVal;
-        let favLinkVal;
-        const namePref = getItemId();
-        function getData(){
-            try{
-                favNameLinkVal = $$("favNameLink").getValues();
-                favLinkVal     = $$("favLink")    .getValues();
-            } catch (err){
-                errors_setFunctionError(err, "favsLink", "btnSaveLinkClick => getData");
-            }
-        }
+        const path     = "/init/default/api/userprefs/";
+        const postData = webix.ajax().post(path, postObj);
 
-
-        async function postContent(){
-            let user = getUserDataStorage();
-            if (!user){
-                await pushUserDataStorage();
-                user = getUserDataStorage();
-            }
-
-
-            if (user){
-
-                const postObj = {
-                    name : "fav-link_" + namePref,
-                    owner: user.id,
-                    prefs:{
-                        name: favNameLinkVal,
-                        link: favLinkVal,
-                        id  : namePref,
-                    }
-                };
-                const postData = webix.ajax().post("/init/default/api/userprefs/", postObj);
-
-                postData.then(function(data){
-                    data = data.json();
-            
-                    if (data.err_type == "i"){
-                        setLogValue("success", "Ссылка" + " «" + favNameLinkVal + "» " + " сохранёна в избранное");
-                    } else {
-                        errors_setFunctionError(data.err, "favsLink", "btnSaveLinkClick => postContent msg" );
-                    }
-
-                    destructPopupSave();
-                });
-
-                postData.fail(function(err){
-                    setAjaxError(err, "favsLink", "btnSaveLinkClick => postContent");
-                });
-            }
-        }
-
-
-        function getUserprefs(){
-            const getData = webix.ajax().get("/init/default/api/userprefs/");
-            getData.then(function(data){
-                data = data.json().content;
-                const favPrefs = [];
-
-                function getFavPrefs(){
-                    try{
-                        data.forEach(function(pref){
-            
-                            if (pref.name.includes("fav-link")){
-                                favPrefs.push(pref.name);
-                            }
-                    
-                        });
-                    } catch (err){
-                        errors_setFunctionError(err,"favsLink","getUserprefs => getFavPrefs");
-                    }
-                }
-
-                function getNotUniquePrefs (){
-                    try{
-                        let unique = true;
-                        if (favPrefs.length){
-                            favPrefs.forEach(function(el){
-                             
-                                if (el.includes(namePref)){
-                                    
-                                    const index = el.indexOf("_")+1;
-                                    const id = el.slice(index);
-                            
-                                    if (id == namePref && unique){
-                                        unique = false;
-                                        setLogValue("success", "Такая ссылка уже есть в избранном");
-                                    } 
-                                } 
-                            });
-                        } 
-                        
-                     
-                        if (!(favPrefs.length) || unique) {
-                            postContent();
-                        } else if (!unique){
-                            destructPopupSave();
-                        }
-                    } catch (err){
-                        errors_setFunctionError(err,"favsLink","getUserprefs => getNotUniquePrefs");
-                    }
-                }
-      
-                getFavPrefs();
-                getNotUniquePrefs ();
-           
-            });
-            getData.fail(function(err){
-                setAjaxError(err, "favsLink","getUserprefs getData");
-            });
-            }
-
-
-       
-        getData();
-        getUserprefs();
-    }
-   
-    const btnSaveLink = new Button({
+        postData.then(function(data){
+            data = data.json();
     
-        config   : {
-            value    : "Сохранить ссылку", 
-            click    : function(){
-                btnSaveLinkClick();
-            },
+            if (data.err_type == "i"){
+                setLogValue(
+                    "success", 
+                    "Ссылка" + " «" + favNameLinkVal + "» " + 
+                    " сохранёна в избранное");
+            } else {
+                errors_setFunctionError(
+                    data.err, 
+                    favoriteBtn_logNameFile, 
+                    "postContent msg" 
+                );
+            }
+
+            Action.destructItem($$("popupFavsLinkSave"));
+        });
+
+        postData.fail(function(err){
+            setAjaxError(err, favoriteBtn_logNameFile, "postContent");
+        });
+    }
+}
+
+function getFavPrefs(data){
+    const prefs = [];
+    try{
+        data.forEach(function(pref){
+
+            if (pref.name.includes("fav-link")){
+                prefs.push(pref.name);
+            }
+    
+        });
+    } catch (err){
+        errors_setFunctionError(
+            err,
+            favoriteBtn_logNameFile,
+            "getFavPrefs"
+        );
+    }
+    return prefs;
+}
+
+function returnId(el){
+    const index = el.indexOf("_") + 1;
+    return el.slice(index);
+}
+
+function getNotUniquePref(favPrefs, namePref){
+    let unique = true;
+    favPrefs.forEach(function(el){
+                
+        if (el.includes(namePref)){
+            const id = returnId(el);
+
+            if (id == namePref && unique){
+                unique = false;
+                setLogValue(
+                    "success", 
+                    "Такая ссылка уже есть в избранном"
+                );
+            } 
+        } 
+    });
+
+    return unique;
+}
+
+
+function getNotUniquePrefs (data, namePref){
+    const favPrefs = getFavPrefs(data);
+    let unique = true;
+    try{
+        if (favPrefs.length){
+            unique = 
+            getNotUniquePref(favPrefs, namePref);
+            console.log(unique)
+        } 
+        
+        
+        if (!(favPrefs.length) || unique) {
+            postContent(namePref);
+        } else if (!unique){
+            Action.destructItem($$("popupFavsLinkSave"));
+        }
+    } catch (err){
+        errors_setFunctionError(
+            err,
+            favoriteBtn_logNameFile,
+            "getNotUniquePrefs"
+        );
+    }
+}
+
+function btnSaveLinkClick(){
+  
+    const namePref = getItemId();
+    const path     = "/init/default/api/userprefs/";
+    const getData  = webix.ajax().get(path);
+    getData.then(function(data){
+        data = data.json().content;
+        getNotUniquePrefs (data, namePref);
+    
+    });
+    getData.fail(function(err){
+        setAjaxError(
+            err, 
+            favoriteBtn_logNameFile,
+            "btnSaveLinkClick"
+        );
+    });
+
+}
+
+const btnSaveLink = new Button({
+
+    config   : {
+        value    : "Сохранить ссылку", 
+        click    : function(){
+            btnSaveLinkClick();
         },
-        titleAttribute : "Сохранить ссылку в избранное"
-    
-       
-    }).maxView("primary");
-    
+    },
+    titleAttribute : "Сохранить ссылку в избранное"
+
+   
+}).maxView("primary");
+
+
+function saveFavsClick(){
 
     const popup = new Popup({
         headline : "Сохранить ссылку",
@@ -6337,7 +6446,7 @@ function getDashId ( idsParam ){
 
 const chartsLayout_logNameFile = "dashboards => createSpace => dynamicElements => chartsLayout";
 
-function returnHeadline (titleTemplate){
+function chartsLayout_returnHeadline (titleTemplate){
     const headline = {   
         template    : titleTemplate,
         borderless  : true,
@@ -6419,7 +6528,7 @@ function createChart(dataCharts){
             layout.push({
                 css : "webix_dash-chart",
                 rows: [ 
-                    returnHeadline (titleTemplate),
+                    chartsLayout_returnHeadline (titleTemplate),
                     el
                 ]
             });
@@ -6608,12 +6717,37 @@ function setUserUpdateMsg(){
     } 
 }
 
+function addLoadElem(){
+    if (!($$("dashLoad"))){
+        const view = {
+            view  : "align", 
+            align : "middle, center",
+            id    : "dashLoad",
+            borderless : true, 
+            body  : {  
+                borderless : true, 
+                template   : "Загрузка ...", 
+                height     : 50, 
+                css        : {
+                    "color"     : "#858585",
+                    "font-size" : "14px!important"
+                }
+            }
+            
+        };
+    
+        $$("dashboardInfoContainer").addView(view, 2);
+    }   
+}
+
 function getChartsLayout(){
+    addLoadElem()
     const getData = webix.ajax().get(url);
-
+  
     getData.then(function(data){
+        Action.removeItem($$("dashLoad"));
         const dataCharts    = data.json().charts;
-
+  
         Action.removeItem($$("dashBodyScroll"));
  
         if ( !_layout_action ){ //не с помощью кнопки фильтра
@@ -7012,6 +7146,9 @@ function createFilter (inputs, el, ids){
 
 let autorefresh_idsParam;
 
+
+
+
 function setIntervalConfig(counter){
     setInterval(function(){
         mediator.dashboards.load(autorefresh_idsParam);
@@ -7143,6 +7280,11 @@ class Dashboards {
         createDashboard(id);
     }
 
+    defaultState(){
+        Action.hideItem($$("dashboardTool"));
+        Action.showItem($$("dashboardInfoContainer"));
+    }
+
 }
 
 
@@ -7172,6 +7314,7 @@ function autorefresh_autorefresh (data){
         if ( userprefsOther && counter !== undefined ){
             if ( counter >= 15000 ){
                 autorefresh_setIntervalConfig(data.type, counter);
+                
             } else {
                 autorefresh_setIntervalConfig(data.type, 120000);
             }
@@ -7329,7 +7472,7 @@ const mainBtnPopup = new Button({
 }).maxView("primary");
 
 
-function popupNotAuth(){
+function popupNotAuth_popupNotAuth(){
 
     const popup = new Popup({
         headline : "Вы не авторизованы",
@@ -7885,7 +8028,7 @@ async function loadTableData(table, id, idsParam, offset){
                 tableErrorState ();
 
                 if (err.status == 401 && !($$("popupNotAuth"))){
-                    popupNotAuth();
+                    popupNotAuth_popupNotAuth();
                 } 
 
                 setAjaxError(err, "getInfoTable", "getData");
@@ -8329,7 +8472,8 @@ function createDetailAction (columnsData, idsParam, idCurrTable){
 
 
 
-const buttonLogic_logNameFile = "table => createSpace => dynamicElements => buttonLogic";
+const buttonLogic_logNameFile = 
+"table => createSpace => dynamicElements => buttonLogic";
 
 let idElements;
 let buttonLogic_url;
@@ -8342,9 +8486,10 @@ function createQueryRefresh(){
     try{
         idElements.forEach((el,i) => {
             const val = $$(el.id).getValue();
-
+            
             if (el.id.includes("customCombo")){
                 const textVal = $$(el.id).getText();
+                console.log(val, textVal)
                 valuesArray.push (el.name + "=" + textVal);
 
             } else if ( el.id.includes("customInputs")     || 
@@ -8360,21 +8505,25 @@ function createQueryRefresh(){
 }
 
 function buttonLogic_setTableState(tableView, data){
-   
+    const noneMsg = "Ничего не найдено";
     try{
         tableView.clearAll();
   
         if (data.length !== 0){
-            tableView.hideOverlay("Ничего не найдено");
+            tableView.hideOverlay(noneMsg);
             tableView.parse(data);
-            setLogValue("success","Данные обновлены");
+            setLogValue("success", "Данные обновлены");
 
         } else {
-            tableView.showOverlay("Ничего не найдено");
+            tableView.showOverlay(noneMsg);
 
         }
     } catch (err){  
-        errors_setFunctionError(err,buttonLogic_logNameFile,"refreshButton => setTableState");
+        errors_setFunctionError(
+            err,
+            buttonLogic_logNameFile,
+            "setTableState"
+        );
     }
 }
 
@@ -8390,7 +8539,6 @@ function setTableCounter(tableView){
 }
 
 function refreshButton(){
-
     createQueryRefresh();
     const path    = buttonLogic_url + "?" + valuesArray.join("&");
     const getData = webix.ajax(path);
@@ -8413,7 +8561,11 @@ function refreshButton(){
     });
 
     getData.fail(function(err){
-        setAjaxError(err, buttonLogic_logNameFile,"refreshButton");
+        setAjaxError(
+            err, 
+            buttonLogic_logNameFile,
+            "refreshButton"
+        );
     });
 }
 
@@ -8423,10 +8575,18 @@ function downloadButton(){
         try {
             webix.html.download(blob, "table.docx");
         } catch (err){
-            errors_setFunctionError(err, buttonLogic_logNameFile, "downloadButton");
+            errors_setFunctionError(
+                err, 
+                buttonLogic_logNameFile, 
+                "downloadButton"
+            );
         } 
     }).catch(err => {
-        setAjaxError(err, buttonLogic_logNameFile, "downloadButton");
+        setAjaxError(
+            err, 
+            buttonLogic_logNameFile, 
+            "downloadButton"
+        );
     });
 }
 
@@ -8443,16 +8603,23 @@ async function uploadData(formData, link){
 
         if ( data.err_type == "i" ){
             loadEl.setValues( "Файл загружен" );
-            setLogValue( "success","Файл успешно загружен" );
+            setLogValue(
+                "success",
+                "Файл успешно загружен"
+            );
 
         } else {
             loadEl.setValues( "Ошибка" );
-            setLogValue( "error", data.err );
+            setLogValue     ( "error", data.err );
         }
     })
     
     .catch(function(err){
-        errors_setFunctionError(err, buttonLogic_logNameFile, "uploadData");
+        errors_setFunctionError(
+            err, 
+            buttonLogic_logNameFile, 
+            "uploadData"
+        );
     });
 
 }
@@ -8494,7 +8661,7 @@ function postButton(){
             }
         });
     } catch (err){  
-        errors_setFunctionError(err,buttonLogic_logNameFile,"postButton");
+        errors_setFunctionError(err, buttonLogic_logNameFile, "postButton");
     } 
 }
 
@@ -9435,2649 +9602,6 @@ function showPropBtn (cell){
 }
 
 
-;// CONCATENATED MODULE: ./src/js/components/table/_layout.js
-
-
-const limitLoad   = 80;
-
-function _layout_table (idTable, onFunc, editableParam=false) {
-    return {
-        view        : "datatable",
-        id          : idTable,
-        css         : "webix_table-style webix_header_border webix_data_border",
-        autoConfig  : true,
-        editable    : editableParam,
-        editaction  :"dblclick",
-        minHeight   : 350,
-       // height:200,
-        footer      : true,
-        select      : true,
-        resizeColumn: true,
-        sort        : [],
-        offsetAttr  : limitLoad,
-        on          : onFunc,
-        onClick     :{
-            "wxi-trash":function(event,config,html){
-                trashBtn(config,idTable);
-            },
-
-            "wxi-angle-down":function(event, cell, target){
-                showPropBtn (cell);
-            },
-            
-        },
-        ready:function(){ 
-            const firstCol = this.getColumns()[0];
-            this.markSorting(firstCol.id, "asc");
-        },
-    };
-}
-
-
-;// CONCATENATED MODULE: ./src/js/components/table/editForm/states.js
-
-
-
-const states_logNameFile = "tableEditForm => states";
-
-
-function defaultStateForm () {
-
-    const property = $$("editTableFormProperty");
-    
-    function btnsState(){
-        
-        const saveBtn    = $$("table-saveBtn");
-        const saveNewBtn = $$("table-saveNewBtn");
-        const delBtn     = $$("table-delBtnId");
-
-        if (saveNewBtn.isVisible()) {
-            saveNewBtn.hide();
-
-        } else if (saveBtn.isVisible()){
-            saveBtn.hide();
-
-        }
-
-        delBtn.disable();
-    }
-
-    function formPropertyState(){
- 
-        if (property){
-            property.clear();
-            property.hide();
-        }
-    }
-
-
-    function removeRefBtns(){
-        const refBtns = $$("propertyRefbtnsContainer");
-        const parent  = $$("propertyRefbtns");
-        if ( refBtns ){
-            parent.removeView( refBtns );
-        }
-    }
-
-    try{
-        btnsState();
-        formPropertyState();
-        Action.showItem($$("EditEmptyTempalte"));
-        removeRefBtns();
-
-    } catch (err){
-        errors_setFunctionError(err, states_logNameFile, "defaultStateForm");
-    }
-
-}
-
-
-;// CONCATENATED MODULE: ./src/js/components/table/editForm/propBtns/calendar.js
-
-
-
-
-
-
-
-let property;
-
-const calendar_logNameFile = "tableEditForm => propBtns => calendar";
-
-
-function unsetDirtyProp(elem){
-    elem.config.dirtyProp = false;
-}
-
-function formatDate(format){
-    return webix.Date.dateToStr("%" + format);
-}
-
-const formatHour = formatDate("H");
-const formatMin  = formatDate("i");
-const formatSec  = formatDate("s");
-
-
-function setTimeInputsValue(value){
-    $$("hourInp").setValue (formatHour(value));
-    $$("minInp") .setValue (formatMin (value));
-    $$("secInp") .setValue (formatSec (value));
-}
-
-function unsetDirtyPropInputs(calendar){
-    unsetDirtyProp( calendar     );
-    unsetDirtyProp( $$("hourInp"));
-    unsetDirtyProp( $$("minInp" ) );
-    unsetDirtyProp( $$("secInp" ) );
-}
-
-function setPropValues(elem){
- 
-    const val       = property.getValues()[elem.id];
-    const valFormat = formatHour(val);
-
-    const calendar  = $$("editCalendarDate");
-    const btn       = $$("editPropCalendarSubmitBtn");
-
-    try{
-
-        if ( val && !isNaN(valFormat) ){
-            calendar.setValue (val);
-            setTimeInputsValue(val);
-
-        } else {
-            calendar.setValue( new Date() );
-            Action.disableItem(btn);
-        }
-
-        unsetDirtyPropInputs(calendar);
-
-    } catch (err){
-        errors_setFunctionError(err, calendar_logNameFile, "setValuesDate");
-    }
-    
-}
-
-function returnTimeValue(h, m, s){
-    return h + ":" + m+":" + s;;
-}
-
-function returnSentValue(date, time){
-    return date + " " + time;
-}
-
-const errors = [];
-
-function validTime(item, count, idEl){
-
-    function markInvalid (){
-        try{
-            $$("timeForm").markInvalid(idEl);
-        } catch (err){
-            errors_setFunctionError(
-                err, 
-                calendar_logNameFile, 
-                "validTime element: " + idEl
-            );
-        }
-        errors.push(idEl);
-    }
-    
-    if (item > count){
-        markInvalid ();
-    }
-
-    if ( !( /^\d+$/.test(item) ) ){
-        markInvalid ();
-    }
-
-    if (item.length < 2){
-        markInvalid ();
-    }
-
-    return errors;
-}
-
-function setValToProperty(sentVal, elem){
-    const propId  = property.getValues().id;
-    try{
-        if ( !(errors, errors.length) ){
-            property.setValues({ [elem.id] : sentVal}, true);
-
-            if(propId){
-                property.setValues({ id : propId}, true);
-
-            }
-
-            Action.destructItem($$("editTablePopupCalendar"));
-        }
-    } catch (err){
-        errors_setFunctionError(err, calendar_logNameFile, "setValToProperty");
-    }
-}
-
-function inputItterate(name, count){
-    const val = $$(name).getValue();
-    validTime(val, count, name);
-    return val;
-}
-
-function calendar_submitClick (elem){
-    errors.length = 0;
-
-    const calendar=  $$("editCalendarDate");
-
-    const hour = inputItterate("hourInp", 23);
-    const min  = inputItterate("minInp",  59);
-    const sec  = inputItterate("secInp",  59);
-  
-    const calendarVal    = calendar.getValue();
-    const fullFormatDate = formatDate("d.%m.%y");
-    const dateVal        = fullFormatDate(calendarVal);
-
-    const timeVal        = returnTimeValue(hour, min, sec);
-
-    const sentVal = returnSentValue(dateVal, timeVal);
-    setValToProperty(sentVal, elem);
-
-    
-    return errors.length;
-}
-
-function isDirty(){
-    let check      = false;
-    function checkDirty(elem){
-        if ( elem.config.dirtyProp && !check ){
-            check = true;
-        }
-    }
-
-    checkDirty ($$("editCalendarDate"));
-    checkDirty ($$("hourInp"         ));
-    checkDirty ($$("minInp"          ));
-    checkDirty ($$("secInp"          ));
-
-    return check;
-}
-
-
-const closePopupClick = function (elem){
-    const calendar = $$("editTablePopupCalendar");
-
-    if (isDirty()){
-  
-        modalBox().then(function(result){
-
-            if (result == 1){
-                Action.destructItem(calendar);
-            }
-
-            if (result == 2 && !calendar_submitClick(elem)){
-
-                Action.destructItem(calendar);
-
-            }
-        });
-    } else {
-        Action.destructItem(calendar);
-    }
-
-};
-
-
-function returnCalendar(){
-    const calendar = {
-        view        :"calendar",
-        id          :"editCalendarDate",
-        format      :"%d.%m.%y",
-        borderless  :true,
-        width       :300,
-        height      :250,
-        dirtyProp   :false,
-        on          :{
-            onChange:function(){
-                this.config.dirtyProp = true;
-                Action.enableItem($$("editPropCalendarSubmitBtn"));
-            }
-        }
-    } ;
-
-    return calendar;
-}
-
-
-function returnInput(idEl){
-    const calendar = $$("editPropCalendarSubmitBtn");
-    return {
-        view        : "text",
-        name        : idEl,
-        id          : idEl,
-        placeholder : "00",
-        attributes  : { maxlength :2 },
-        dirtyProp   : false,
-        on          : {
-            onKeyPress:function(){
-                $$("timeForm").markInvalid(idEl, false);
-                Action.enableItem(calendar);
-            },
-
-            onChange:function(){
-                this.config.dirtyProp = true;
-                Action.enableItem(calendar);
-            }
-        }
-    };
-}
-
-function returnTimeSpacer (idEl){
-    return {   
-        template   : ":",
-        id         : idEl,
-        borderless : true,
-        width      : 9,
-        height     : 5,
-        css        : "popup_time-spacer"
-    };
-}
-
-function returnTimePrompt(){
- 
-    const prompt = {   
-        template:"<div style='font-size:13px!important'>"+
-        "Введите время в формате xx : xx : xx</div>",
-        borderless:true,
-        css:"popup_time-timeFormHead",
-    };
-
-    return prompt;
-}
-
-function returnTimeForm(){
-    const timeForm = {
-        view    : "form", 
-        id      : "timeForm",
-        height  : 85,
-        type    : "space",
-        elements: [
-            returnTimePrompt(),
-            { cols:[
-                returnInput("hourInp"),
-                returnTimeSpacer (1),
-                returnInput("minInp"),
-                returnTimeSpacer (2),
-                returnInput("secInp")
-            ]}
-        ]
-    };
-
-    return timeForm;
-}
-
-function returnDateEditor(){
-    const dateEditor = {
-        rows:[
-            returnCalendar(), 
-            {height:10}, 
-            returnTimeForm(),
-            {height:10}, 
-        ]
-    };
-
-    return dateEditor;
-}
-
-function returnSubmitBtn(elem){
-    const btn = new Button({
-
-        config   : {
-            id       : "editPropCalendarSubmitBtn",
-            hotkey   : "Ctrl+Space",
-            value    : "Добавить значение", 
-            click    : function(){
-                calendar_submitClick(elem);
-            },
-        },
-        titleAttribute : "Добавить значение в запись таблицы"
-    
-       
-    }).maxView("primary");
-
-    return btn;
-
-}
-function popupEdit(elem){
-
-    const headline = "Редактор поля  «" + elem.label + "»";
-
-    const popup = new Popup({
-        headline : headline,
-        config   : {
-            id        : "editTablePopupCalendar",
-            width     : 400,
-            minHeight : 300,
-        },
-        closeClick : closePopupClick,
-        elements : {
-            rows : [
-                returnDateEditor(),
-                {height:15},
-                returnSubmitBtn(elem),
-            ]
-          
-        }
-    });
-    
-    popup.createView ();
-    popup.showPopup  ();
-
-    setPropValues(elem);
-
-}
-
-function propBtnClick(elem){
-    property = $$("editTableFormProperty");
-    popupEdit(elem);
-}
-
-
-function createDateBtn(elem){
-
-    const btn = new Button({
-
-        config   : {
-            width    : 30,
-            height   : 29,
-            icon     : "icon-calendar", 
-            click    : function(){
-                propBtnClick (elem);
-            },
-        },
-        titleAttribute : "Открыть календарь"
-    
-       
-    }).minView();
-
-
-    try{
-        $$("propertyRefbtnsContainer").addView(btn);
-    } catch (err){
-        errors_setFunctionError(err, calendar_logNameFile, "createDateBtn");
-    }
-}
-
-function createDatePopup(el){
-    createDateBtn(el);
-    Action.showItem($$("tablePropBtnsSpace"));
-}
-
-
-;// CONCATENATED MODULE: ./src/js/components/table/editForm/propBtns/textarea.js
-
-
-
-
-
-
-
-const textarea_logNameFile = "tableEditForm => propBtns => textarea";
-
-let textarea_property;
-let elem;
-
-function setPropValue(value){
-    textarea_property.setValues({ 
-        [elem.id]:[value] 
-    }, true);
-}
-
-function textarea_submitClick (){
-    try{
-        const value = $$("editPropTextarea").getValue();
-        setPropValue(value);
-
-    } catch (err){
-        errors_setFunctionError(
-            err, 
-            textarea_logNameFile, 
-            "submitClick"
-        );
-    }
-    Action.destructItem($$("editTablePopupText"));
-}
-
-function setTextareaVal(){
-    try{
-        const area = $$("editPropTextarea");
-        const val  = elem.value;
-        if (val){
-            area.setValue(val);
-        }
-    } catch (err){
-        errors_setFunctionError(
-            err,
-            textarea_logNameFile,
-            "setTextareaVal"
-        );
-    }
-}
-
-function createModalBox(area){
-   
-    const value = area.getValue();
-    const popup = $$("editTablePopupText");
-
-    if (area.dirtyValue){
-        modalBox().then(function(result){
-
-            if (result == 1 || result == 2){
-                if (result == 2){
-                    setPropValue(value);
-                }
-                Action.destructItem(popup);
-            }
-        });
-    } else {
-        Action.destructItem(popup);
-    } 
-}
-
-
-const textarea_closePopupClick = function (){
-    const area  = $$("editPropTextarea");
-
-    if (area){
-        createModalBox(area);
-    }
-   
-};
-
-function returnTextArea(){
-    const textarea = { 
-        view        : "textarea",
-        id          : "editPropTextarea", 
-        height      : 150, 
-        dirtyValue  : false,
-        placeholder : "Введите текст",
-        on          : {
-            onKeyPress:function(){
-                Action.enableItem($$("editPropSubmitBtn"));
-
-                $$("editPropTextarea").dirtyValue = true;
-            }
-        }
-    };
-
-    return textarea;
-}
-
-function textarea_returnSubmitBtn(){
-    const btn = new Button({
-
-        config   : {
-            id       : "editPropSubmitBtn",
-            disabled : true,
-            hotkey   : "Ctrl+Space",
-            value    : "Добавить значение", 
-            click    : function(){
-                textarea_submitClick();
-            },
-        },
-        titleAttribute : "Добавить значение в запись таблицы"
-    
-       
-    }).maxView("primary");
-
-    return btn;
-}
-function textarea_popupEdit(){
-    const headline = "Редактор поля  «" + elem.label + "»";
-
-    const popup = new Popup({
-        headline : headline,
-        config   : {
-            id        : "editTablePopupText",
-            width     : 400,
-            minHeight : 300,
-    
-        },
-
-        closeClick :  textarea_closePopupClick,
-    
-        elements   : {
-            padding:{
-                left  : 9,
-                right : 9
-            },
-            rows   : [
-                returnTextArea(),
-                {height : 15},
-                textarea_returnSubmitBtn(),
-            ]
-          
-        }
-    });
-    
-    popup.createView ();
-    popup.showPopup  ();
-
-    setTextareaVal();
-
-}
-
-function btnClick (){
-    textarea_popupEdit();
-}
-
-
-function createBtnTextEditor(){
-    const btn = new Button({
-
-        config   : {
-            width    : 30,
-            height   : 29,
-            icon     : "icon-window-restore", 
-            click    : function(){
-                btnClick ();
-            },
-        },
-        titleAttribute : "Открыть большой редактор текста"
-    
-       
-    }).minView();
-    
-    try{
-        $$("propertyRefbtnsContainer").addView(btn);
-    } catch (err){
-        errors_setFunctionError(err,textarea_logNameFile,"createBtnTextEditor");
-    }
-}
-
-
-
-function createPopupOpenBtn(el){
-    textarea_property = $$("editTableFormProperty");
-    elem     = el;
-
-    createBtnTextEditor();
-    Action.showItem($$("tablePropBtnsSpace"));
-}
-
-
-;// CONCATENATED MODULE: ./src/js/components/table/editForm/property.js
-
-
-const property_logNameFile = "tableEditForm => property";
-
-function setDirtyProperty (type=false){
-    try{
-        const property = $$("editTableFormProperty");
-        if(property){
-            property.config.dirty = type;
-            property.refresh();
-        }
-    } catch (err){
-        errors_setFunctionError(err,property_logNameFile,"setDirtyProperty");
-    } 
-}
-
-
-function editingEnd (editor,value){
-    try{
-        const property = $$("editTableFormProperty");
-        const item     = property.getItem(editor);
-        item.value     = value;
-
-        property.updateItem(editor);
-        setDirtyProperty (true);
-
-    } catch (err){
-        errors_setFunctionError(err,property_logNameFile,"editingEnd");
-    }
-}
-
-function propTooltipAction (obj){
-    const label      = obj.label;
-    const labelText  = "Название: "+label+" <br>";
-    const formatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
-    let value;
-    let typeElem;
-    
-    if        ( obj.type       == "date" ){
-        typeElem = "Выберите дату";
-
-    } else if ( obj.type       == "combo" ){
-        typeElem = "Выберите значение";
-
-    } else if ( obj.customType == "integer" ){
-        typeElem = "Введите число";
-
-    } else {
-        typeElem = "Введите текст";
-    } 
-    
-    if (obj.type == "date"){
-        value = formatData(obj.value);
-        
-    } else{
-        value = obj.value;
-    }
-
-    if (obj.value){
-        return labelText + "Значение: " + value;
-    } else {
-        return labelText + typeElem;
-    }
-}
-
-
-function createTemplate (){
-    document.getElementById('custom-date-editor').addEventListener('input', function (e) {
-
-        const x = e.target.value.replace(/\D/g, '')
-        .match(/(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})/);
-
-        function setNum(index){
-            return (x[index] ? x[index] : ' __ ');
-        }
-
-        if (e.inputType !== "deleteContentBackward"){
-            e.target.value = setNum(1) + '.' + setNum(2) + '.' + setNum(3) + '  '+ 
-            setNum(4) + ':' + setNum(5) + ':' + setNum(6);
-        }
-     
-    });
-}
-
-
-const propertyEditForm = {   
-    view     : "property",  
-    id       : "editTableFormProperty", 
-    css      : "webix_edit-table-form-property",
-    dirty    : false,
-    editable : true,
-    tooltip  : propTooltipAction,
-    hidden   : true,
-    elements : [],
-    on       : {
-        onEditorChange:function(id, value){
-        
-            function setStateSaveBtn(){
-                const saveBtn =$$("table-saveBtn"); 
-                if (saveBtn              && 
-                    saveBtn.isVisible()  &&
-                  !(saveBtn.isEnabled()) ){ 
-                    saveBtn.enable();
-                }
-            }
-
-            editingEnd (id,value);
-            setStateSaveBtn();
-
-            const inputEditor = document.getElementById('custom-date-editor');
-
-            if (inputEditor){
-                createTemplate ();
-            }
-       
-        },
-        onBeforeRender:function (){
-
-            const size = this.config.elements.length*28;
-            
-            if (size && this.$height !== size){
-                this.define("height", size);
-                this.resize();
-            }
-    
-          
-        },
-
-        onAfterEditStop:function(state, editor){
-            if (state.value !== state.old ){
-                editingEnd (editor.id, state.value);
-            }
-        },
-
-        onItemClick:function(id){
-            const property = $$("editTableFormProperty");
-            const item     =  property.getItem(id);
-            item.css       = "";
-            property.refresh();
-        }
-
-    }
-};
-
-const propertyRefBtns = {  
-    cols:[
-        {   id:"propertyRefbtns",  
-            rows:[]
-        },
-        {width:5}
-    ] 
- 
-};
-
-
-const propertyLayout = {   
-    scroll:"y", 
-    cols:[
-        propertyRefBtns,
-        {width:4},
-        propertyEditForm,
-        {width:4}
-    ]
-};
-
-
-;// CONCATENATED MODULE: ./src/js/components/table/editForm/validation.js
-
-
-
-const validation_logNameFile = "tableEditForm => validation";
-
-function validateProfForm (){
-
-    const errors = {};
-    const messageErrors = [];
-    const property      = $$("editTableFormProperty");
-    
-    function checkConditions (){ 
-       
-        const propVals = Object.keys(property.getValues());
-
-        propVals.forEach(function(el,i){
-
-            const propElement = property.getItem(el);
-            const values      = property.getValues();
-            
-            errors[el] = {};
-
-            function numberField(){
-                
-                function containsText(str) {
-                    return /\D/.test(str);
-                }
-
-                if (propElement.customType              &&
-                    propElement.customType == "integer" ){
-
-                    const check =  containsText(values[el]) ;
-
-                    if ( check ){
-                        errors[el].isNum = "Данное поле должно содержать только числа";
-                    } else {
-                        errors[el].isNum = null;
-                    }
-                       
-                }
-            }
-
-            function dateField(){
-         
-                if (propElement.type              &&
-                    propElement.type == "customDate" ){
-                     
-                    let check      = false;
-                    let countEmpty = 0;
-      
-                    const x = values[el].replace(/\D/g, '')
-                    .match(/(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})/);
-
-                    for (let i = 1; i < 7; i++) {
-
-                        if (x[i].length == 0){
-                            countEmpty++;
-                        }
-
-                        if (x[i].length !== 2){
-                         
-                            if (!check){
-                                check = true;
-                            }
-                        }
-                    }
-
-
-                    if ( countEmpty == 6 ){
-                        errors[el].date = null;
-
-                    } else {
-
-                        if( (x[1] > 31 || x[1] < 1) ||
-                            (x[2] > 12 || x[2] < 1) ||
-
-                            x[4] > 23 ||
-                            x[5] > 59 ||
-                            x[6] > 59 ){
-                                check = true;
-                            }
-      
-                        if ( check ) {
-                            errors[el].date = "Неверный формат даты. Введите дату в формате xx.xx.xx xx:xx:xx";
-    
-                        } else {
-                            errors[el].date = null;
-                        }
-                    }
-                       
-                }
-       
-            }
-
-            function valLength(){ 
-                try{
-               
-                    if(values[el]){
-                        
-                        if (values[el].length > propElement.length && propElement.length !== 0){
-                            errors[el].length = "Длина строки не должна превышать " + propElement.length + " симв.";
-                        } else {
-                            errors[el].length = null;
-                        }
-                    }
-                } catch (err){
-                    errors_setFunctionError(err,validation_logNameFile,"valLength");
-                }
-            }
-
-            function valNotNull (){
-                try{
-                    if ( propElement.notnull == true && values[el].length == 0 ){
-                        errors[el].notnull = "Поле не может быть пустым";
-                    } else {
-                        errors[el].notnull = null;
-                    }
-                } catch (err){
-                    errors_setFunctionError(err,validation_logNameFile,"valNotNull");
-                }
-            }
-
-            function valUnique (){
-                try{
-                    errors[el].unique = null;
-                                            
-                    if (propElement.unique == true){
-
-                        const tableRows   = Object.values($$("table").data.pull);
-                        const tableSelect = $$("editTableFormProperty").getValues().id;
-      
-
-                        tableRows.forEach(function(row,i){
-
-                            function numToString(element){
-                                if (element && typeof element === "number"){
-                                    return element.toString();
-                                } else {
-                                    return element;
-                                }
-                            }
-                        
-                          
-                             row[el]    = numToString(row[el]);
-                             values[el] = numToString(values[el]);
-                   
-                            if (row[el] && typeof row[el] == "number"){
-                                row[el] = row[el].toString();
-                            }
-
-                            if (values[el] && row[el]){
-                                if (values[el].localeCompare(row[el]) == 0 || row.id == tableSelect.toString()){
-                                    errors[el].unique = "Поле должно быть уникальным";
-                                } 
-                              
-                            }
-                        });
-                    }
-                } catch (err){
-                    errors_setFunctionError(err,validation_logNameFile,"valUnique");
-                }
-            }
-           
-            dateField   ();
-            numberField ();
-            valLength   ();
-            valNotNull  ();
-            valUnique   ();
-        });
-    }
-
-    function createErrorMessage (){
-     
-        function findErrors (){
-            Object.values(errors).forEach(function(col,i){
-
-                function createMessage (){
-                    Object.values(col).forEach(function(error,e){
-                        if (error !== null){
-                            let nameCol = Object.keys(errors)[i];
-                            let textError = error;
-                            let typeError = Object.keys(col)[e];
-                            messageErrors.push({nameCol,typeError,textError})
-                        }
-                        
-                    });
-                    return messageErrors;
-                }
-
-                createMessage ();
-        
-            });
-        }
-
-        findErrors ();
-        
-    }
-    try{
-        checkConditions ();
-        createErrorMessage ();
-    } catch (err){
-        errors_setFunctionError(err, validation_logNameFile, "validateProfForm");
-    }
-
-  
-    if (messageErrors.length){
-     
-        messageErrors.forEach(function(prop){
-            const item =  property.getItem(prop.nameCol);
-            item.css = "propery-error";
-            property.refresh();
-
-        });
-
-       
-    }
-    return messageErrors;
-}
-
-function setLogError (){
-    try{
-        const table = $$("table");
-        validateProfForm ().forEach(function(el){
-
-            let nameEl;
-
-            table.getColumns(true).forEach(function(col){
-             
-                if (col.id == el.nameCol){
-                    nameEl = col.label;
-                }
-            });
-
-            setLogValue("error", el.textError + " (Поле: " + nameEl + ")");
-        });
-
-    } catch (err){
-        errors_setFunctionError(err, validation_logNameFile, "setLogError");
-    }
-}
-
-
-function uniqueData (itemData){
-    const validateData = {};
-    try{
-        const table = $$("table");
-
-        Object.values(itemData).forEach(function(el, i){
-
-            const oldValues    = table.getItem(itemData.id);
-            const oldValueKeys = Object.keys(oldValues);
-
-            function compareVals (){
-                const newValKey = Object.keys(itemData)[i];
-                
-                oldValueKeys.forEach(function(oldValKey){
-                    
-                    if (oldValKey == newValKey){
-                        
-                        if (oldValues   [oldValKey] !== Object.values(itemData)[i]){
-                            validateData[newValKey]  =  Object.values(itemData)[i];
-                        } 
-                        
-                    }
-                }); 
-            }
-            compareVals ();
-        });
-    } catch (err){
-        errors_setFunctionError(err, validation_logNameFile, "uniqueData");
-    }
-
-    return validateData;
-}
-
-
-
-
-;// CONCATENATED MODULE: ./src/js/viewTemplates/emptyTemplate.js
-
-function createEmptyTemplate(text, id){
-    const formEmptyTemplate = {   
-        css         : "webix_empty-template",
-        template    : text,
-        borderless  : true,
-        height      : 47
-    };
-
-    if (id){
-        formEmptyTemplate.id = id;
-    }
-
-    return formEmptyTemplate;
-     
-}
-
-
-;// CONCATENATED MODULE: ./src/js/components/table/editForm/buttons.js
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-const buttons_logNameFile = "tableEditForm => buttons";
-
-function updateWorkspace (itemData){
-    try{
-        const table   = $$( "table" );
-        table.updateItem(itemData.id, itemData);
-        table.clearSelection();
-      
-        defaultStateForm();
-    } catch (err){
-        errors_setFunctionError(err,buttons_logNameFile,"saveItem => updateWorkspace");
-    }  
-    
-}
-
-
-function setDirtyProp (property){
-                     
-    try{
-        property.config.dirty = false;
-        property.refresh();
-    } catch (err){
-        errors_setFunctionError(err,buttons_logNameFile,"saveItem => setDirtyProp");
-    } 
-}
-
-
-function addNewStateSpace(){
-    const table   = $$( "table" );
-    const delBtn  = $$("table-delBtnId");
-    const saveBtn = $$("table-saveBtn");
-    const saveNew = $$("table-saveNewBtn");
-    try{
-        table.filter(false);
-        createProperty("table-editForm");
-        delBtn.disable(); 
-        saveBtn.hide();
-        saveNew.show();
-    } catch (err){
-        errors_setFunctionError(err,buttons_logNameFile,"saveItem => addNewStateSpace");
-    }
-}
-
-
-function buttons_dateFormatting(arr){
-    const vals          = Object.values(arr);
-    const keys          = Object.keys(arr);
-    const formattingArr = arr;
-
-    keys.forEach(function(el,i){
-        const prop       = $$("editTableFormProperty");
-        const item       = prop.getItem(el);
-        const formatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
-
-        if ( item.type == "customDate" ){
-            formattingArr[el] = formatData(vals[i]);
-        }
-    });
-    return formattingArr;
-}
-
-
-function buttons_formattingBoolVals(arr){
-    const table = $$( "table" );
-    const cols  = table.getColumns();
-    cols.forEach(function(el,i){
-
-        if ( arr[el.id] && el.type == "boolean" ){
-            if (arr[el.id] == 2){
-                arr[el.id] = false;
-            } else {
-                arr[el.id] = true;
-            }
-        }
-    });
-
-    return arr;
-
-}   
-
-
-function saveItem(addBtnClick = false, refBtnClick = false){    
-  
-    try{    
-        
-        const itemData = $$("editTableFormProperty").getValues();   
-        const currId   = getItemId ();
-       
-        if (!(validateProfForm().length)){
-
-            if( itemData.id ) {
-                const link       = "/init/default/api/" + currId+"/" + itemData.id;
-                
-                const editForm       = $$("table-editForm");
-                const property       = $$("editTableFormProperty");
-                const addBtn         = $$("table-newAddBtnId");
-                const emptyTempl     = $$("EditEmptyTempalte");
-                const container      = $$("tableContainer");
-                const uniqueVals     = uniqueData (itemData);
-                const dateFormatVals = buttons_dateFormatting(uniqueVals)
-                const sentObj        = buttons_formattingBoolVals(dateFormatVals);
- 
-                const putData    = webix.ajax().put(link, sentObj);
-
-                putData.then(function(data){
-                    data = data.json();
-
-                    if (data.err_type == "i"){
-
-                        if (!refBtnClick){
-                            updateWorkspace (itemData);
-                            Action.hideItem(editForm);
-                        }
-
-                        if (!addBtnClick ){
-                            addBtn.enable();
-                            setDirtyProp(property);
-                           
-                        } else {
-                            Action.showItem(property);
-                            addNewStateSpace();
-                            Action.hideItem(emptyTempl);
-                        }
-                        Action.showItem(container);
-
-                        if(window.innerWidth < 850){
-                            editForm.hide();
-                        }
- 
-                        setLogValue("success", "Данные сохранены", currId);
-
-                    } else {
-                        setLogValue("error", buttons_logNameFile + " function saveItem: " + data.err);
-                    }
-                });
-                putData.fail(function(err){
-                    setAjaxError(err, buttons_logNameFile,"saveItem");
-                });
-            }    
-
-        } else {
-            validateProfForm ().forEach(function(el,i){
-                setLogError ();
-            });
-        }
-    } catch (err){
-        errors_setFunctionError(err,buttons_logNameFile,"saveItem");
-    }
-
-}
-
-function addItem () {
-    const emptyTemplate = $$("EditEmptyTempalte");
-    const property      = $$("editTableFormProperty");
-    const table         = $$("table");
-
-    function setWorkspaceState (){
-        function tableState(){
-            table.filter(false);
-            table.clearSelection();
-        }
-
-        function buttonsState(){
-            $$("table-delBtnId")   .disable();
-            $$("table-saveBtn")    .hide();
-            $$("table-saveNewBtn") .show();
-            $$("table-newAddBtnId").disable();
-        }
-
-        try{
-            tableState();
-            buttonsState();
-            createProperty("table-editForm");
-            Action.hideItem(emptyTemplate);
-        } catch (err){
-            errors_setFunctionError(err,buttons_logNameFile,"addItem => setWorkspaceState");
-        }
-    
-    }
-
-    function setDirtyProp (){
-        try{
-            property.config.dirty = false;
-            property.refresh();
-        } catch (err){
-            errors_setFunctionError(err,buttons_logNameFile,"addItem => setDirtyProp");
-        }
-    }
-    
-    function modalBoxAddItem(){
-        modalBox().then(function(result){
-            if (result == 1){
-                setWorkspaceState ();
-                setDirtyProp ();
-            
-            } else if (result == 2){
-                saveItem(true);
-                setDirtyProp ();
-                Action.hideItem(emptyTemplate);
-            }
-        });
-    }
-
-   
-
-    function initPropertyForm(){
-        Action.showItem(property);
-        property.clear();
-    }
-
-
-    try {
-  
-        if ( property.config.dirty == true ){
-            modalBoxAddItem();
-        } else {
-            initPropertyForm();
-            setWorkspaceState ();
-            table.hideOverlay("Ничего не найдено");
-        }
-
-    }catch (err){
-        errors_setFunctionError(err,buttons_logNameFile,"addItem");
-    }
-
-
-}
-
-function removeNullFields(arr){
-    const vals    = Object.values(arr);
-    const keys    = Object.keys(arr);
-    const sentObj = {};
-
-    vals.forEach(function(el,i){
-        if (el){
-            sentObj[keys[i]]= el;
-        }
-        buttons_dateFormatting(arr);
-    });
-
-    return sentObj;
-}
-
-function buttons_setCounterVal (){
-    try{
-        const counter = $$("table-findElements");
-        
-        const oldVal  = counter.getValues();
-        const newVal  = +oldVal + 1;
-
-        counter.setValues(newVal.toString());
-    } catch (err){
-        errors_setFunctionError(err,buttons_logNameFile,"setCounterVal");
-    }
-}
-
-function saveNewItem (){
-    const currId = getItemId ();
- 
-    if (!(validateProfForm().length)){
-
-        const editForm       = $$("table-editForm");
-        const property       = $$("editTableFormProperty");
-        const newValues      = property.getValues();
-        const notNullVals    = removeNullFields  (newValues);
-        const dateFormatVals = buttons_dateFormatting    (notNullVals);
-        const sentVals       = buttons_formattingBoolVals(dateFormatVals);
-
-
-        const postData  = webix.ajax().post("/init/default/api/"+currId, sentVals);
-      
-        postData.then(function(data){
-            data = data.json();
-
-            function setDirtyProp(){
-                try{
-                    property.config.dirty = false;
-                    property.refresh();
-                } catch (err){
-                    errors_setFunctionError(err,buttons_logNameFile,"saveNewItem => setDirtyProp");
-                }
-            }
-
-            function tableUpdate(){
-                newValues.id = data.content.id;
-
-                if (newValues.id <= $$("table").config.offsetAttr ){
-                    $$("table").add(newValues); 
-                }
-
-                buttons_setCounterVal ();
-
-            }
-
-            if (data.content.id !== null){
-
-                if (data.err_type == "i"){
-                    try{
-                        tableUpdate();
-                        defaultStateForm ();
-                        setDirtyProp();
-                        $$("table-newAddBtnId").enable();
-                        Action.hideItem(editForm);
-                        Action.showItem($$("tableContainer"));
-
-                        if(window.innerWidth < 850){
-                            editForm.hide();
-                        }
-
-              
-                    } catch (err){
-                        errors_setFunctionError(err,buttons_logNameFile,"saveNewItem");
-                    }
-                    setLogValue("success","Данные успешно добавлены",currId);
-                } else {
-                    console.log(data);
-                    setLogValue("error",buttons_logNameFile+" function saveNewItem: "+data.err);
-                }
-            } else {
-
-                let errs = data.content.errors;
-                let msg = "";
-                Object.values(errs).forEach(function(err,i){
-                    msg +=err+" (Поле: "+Object.keys(errs)[i] +"); ";
-                });
-
-                setLogValue("error","editTableForm function saveNewItem: "+msg);
-            }
-        });
-        postData.fail(function(err){
-            setAjaxError(err, "tableEditForm => btns","saveNewItem");
-        });
-    
-
-    } else {
-        setLogError ();
-    }
- 
-}
-
-function removeItem() {
- 
-    try{
-        const currId = getItemId ();
-
-        popupExec("Запись будет удалена").then(
-            function(){
-
-                const formValues  = $$("editTableFormProperty").getValues();
-                const table       = $$( "table" );
-                const tableSelect = table.getSelectedId().id;
-                
-                function removeRow(){
-                    if(table){
-                        table.remove(tableSelect);
-                    }
-                }
-
-                removeRow();
-                const link ="/init/default/api/"+currId+"/"+formValues.id+".json";
-                const removeData = webix.ajax().del(link, formValues);
-
-                removeData.then(function(data){
-                    data = data.json();
-
-                    if (data.err_type == "i"){
-                        
-                        defaultStateForm();
-                        setDirtyProperty();
-                        Action.showItem($$("tableContainer"));
-
-                        if(window.innerWidth < 850){
-                            $$("table-editForm").hide();
-                        }
-
-                        setLogValue("success","Данные успешно удалены");
-                    } else {
-                        setLogValue("error","editTableForm function removeItem: "+data.err);
-                    }
-                });
-                removeData.fail(function(err){
-                    setAjaxError(err, buttons_logNameFile,"removeItem");
-                });
-     
-        });
-    } catch (err){
-        errors_setFunctionError(err,buttons_logNameFile,"removeItem");
-    }
-    
-}
-
-
-function backTableBtnClick() {
-    const form           = $$("table-editForm");
-    const tableContainer = $$("tableContainer");
-    const property       = $$("editTableFormProperty");
-    const table          = $$("table");
-
-    function defaultState(){
-        Action.hideItem(form);
-        Action.showItem(tableContainer);
-        if (table){
-            table.clearSelection();
-        }
-    }
-
-    function createModalBox(){
-
-        modalBox().then(function(result){
-                        
-            if (result == 1 || result == 2){
-                if (result == 1){
-                    defaultState();
-                } else if (result == 2){
-                    if (property.getValues().id){
-                        saveItem();
-                        defaultState();
-                    } else {
-                        saveNewItem(); 
-                    }
-                }
-
-                setDirtyProperty ();
-            }
-        });
-    }
-
-    if (property.config.dirty){
-        createModalBox ();
-    
-    } else {
-        defaultState();
-    }
-  
-
-}
-
-
-const newAddBtn = new Button({
-    
-    config   : {
-        id          : "table-newAddBtnId",
-        hotkey      : "Alt+A",
-        disabled    : true,
-        value       : "Новая запись", 
-        click       : addItem,
-    },
-    titleAttribute : "Добавить новую запись",
-    adaptValue     : "+",
-
-   
-}).maxView();
-
-const delBtn = new Button({
-    
-    config   : {
-        id       : "table-delBtnId",
-        hotkey   : "Ctrl+Enter",
-        disabled : true,
-        icon     : "icon-trash", 
-        click    : removeItem,
-    },
-    titleAttribute : "Удалить запись из таблицы"
-
-   
-}).minView("delete");
-
-
-const saveBtn = new Button({
-    
-    config   : {
-        id       : "table-saveBtn",
-        hotkey   : "Shift+Space",
-        hidden   : true, 
-        value    : "Сохранить", 
-        click    : function(){
-            saveItem();
-        },
-    },
-    titleAttribute : "Сохранить запись в таблицу"
-
-   
-}).maxView("primary");
-
-
-const saveNewBtn = new Button({
-    
-    config   : {
-        id       : "table-saveNewBtn",
-        hotkey   : "Ctrl+Shift+Space",
-        hidden   : true, 
-        value    : "Сохранить", 
-        click    : function(){
-            saveNewItem();
-        },
-    },
-    titleAttribute : "Сохранить новую запись в таблицу"
-
-   
-}).maxView("primary");
-
-
-const backTableBtn = new Button({
-    
-    config   : {
-        id       : "table-backTableBtn",
-        hotkey   : "Shift+Q",
-        hidden   : true,  
-        icon     : "icon-arrow-left", 
-        click    : backTableBtnClick,
-    },
-    titleAttribute : "Вернуться к таблице"
-
-   
-}).minView();
-
-
-
-
-const editFormBtns = {
-    minHeight : 48,
-    css       : "webix_form-adaptive", 
-    margin    : 5, 
-    rows:[
-        {cols:[
-            {   id      : "tablePropBtnsSpace",
-                width   : 35, 
-                hidden  : true
-            },
-            {rows:[
-                {
-                    margin : 5,
-                    rows   : [
-                        {
-                            margin : 2,
-                            cols   : [
-                                backTableBtn,
-                                newAddBtn,  
-                                delBtn,
-                            ]
-                        },
-                
-                    ]
-                },
-        
-                {   margin : 10, 
-                    rows   : [ 
-                        saveBtn,
-                        saveNewBtn,
-                        {   id        : "EditEmptyTempalte",
-                            rows      : [
-                                {height:20},
-                                createEmptyTemplate("Добавьте новую запись или выберите существующую из таблицы")
-                            ],
-                        }
-                    
-                    ]
-                },
-             
-            ]}
-        ]}
-   
-     
-
-    ]
-};
-
-
-
-;// CONCATENATED MODULE: ./src/js/components/table/editForm/propBtns/reference.js
-
-
-
-
-
-
-
-
-
-
-
-
-
-const reference_logNameFile = "tableEditForm => propBtns => reference";
-
-
-let reference_property;
-let selectBtn;
-
-async function toRefTable (refTable){ 
-    await LoadServerData.content("fields");
-    const keys   = GetFields.keys;
-
-    if (keys){
-        if (refTable){
-            Backbone.history.navigate("tree/" + refTable, { trigger : true});
-            window.location.reload();
-        }
-
-    }
-}
-
-
-function setRefTable (srcTable){
-    const table = $$("table");
-    const cols  = table.getColumns();
-    const tree  = $$("tree");
-
-    
-    try {
-        cols.forEach(function(col){
-
-            if ( col.id == srcTable ){
-            
-                const refTable =  col.type.slice(10);
-
-                if ( tree.getItem(refTable) ){
-                    tree.select(refTable);
-
-                } else if (refTable) {
-                    toRefTable (refTable);
-                    
-                }
-            
-            }
-
-        });
-    } catch (err){
-        errors_setFunctionError(err, reference_logNameFile, "setRefTable");
-
-        Action.hideItem($$("EditEmptyTempalte"));
-    }
-}
-
-
-function reference_createModalBox (srcTable){
-   
-    modalBox().then(function(result){
-
-        if (result == 1 || result == 2){
-            const idExists = reference_property.getValues().id;
-            if (result == 2){
-                if (idExists){
-                    saveItem(false,true);
-                } else {
-                    saveNewItem(); 
-                }
-                
-            }
-
-            setDirtyProperty ();
-            setRefTable (srcTable);
-        
-        }
-    });
-        
-    
-}
-
-
-function reference_btnClick (idBtn){
-    const srcTable = $$(idBtn).config.srcTable;
-
-    if ( reference_property.config.dirty){
-        reference_createModalBox ();
-    } else {
-        setRefTable (srcTable);
-    }
-}
-
-function btnLayout(){
-
-    const btn = new Button({
-
-        config   : {
-            width    : 30,
-            height   : 29,
-            icon     : "icon-share-square-o", 
-            srcTable : selectBtn,
-            click    : function(id){
-                reference_btnClick (id);
-            },
-        },
-        titleAttribute : "Перейти в родительскую таблицу"
-    
-       
-    }).minView();
-
-    try{
-        $$("propertyRefbtnsContainer").addView(btn);
-    } catch (err){
-        errors_setFunctionError(err, reference_logNameFile, "btnLayout");
-    }
-}
-
-function createRefBtn(btn){
-    reference_property  = $$("editTableFormProperty");
-    selectBtn = btn;
-    btnLayout();
-    Action.showItem($$("tablePropBtnsSpace"));
-}
-
-
-
-;// CONCATENATED MODULE: ./src/js/components/table/editForm/createProperty.js
-
-
-
-
-
-
-
-
-
-
-
-const createProperty_logNameFile = "tableEditForm => createProperty";
-
-function createDateEditor(){
-    webix.editors.$popup = {
-        date:{
-           view : "popup",
-           body : {
-            view        :"calendar",
-            weekHeader  :true,
-            events      :webix.Date.isHoliday,
-            timepicker  : true,
-            icons       : true,
-           }
-        }
-     };
-}
-
-
-
-function createEmptySpace(){
-    $$("propertyRefbtnsContainer").addView({
-        height : 29,
-        width  : 1
-    });
-}
-
-
-function createBtnsContainer(refBtns){
-    try{
-        refBtns.addView({
-            id   : "propertyRefbtnsContainer",
-            rows : []
-        });
-    } catch (err){
-        errors_setFunctionError(
-            err, 
-            createProperty_logNameFile, 
-            "createBtnsContainer"
-        );
-    }
-}
-
-function setToolBtns(){
-    const property      = $$("editTableFormProperty");
-    const refBtns       = $$("propertyRefbtns");
-    const propertyElems = property.config.elements;
-
-
-    if (!(refBtns._cells.length)){
-
-        if (!$$("propertyRefbtnsContainer")){
-            createBtnsContainer(refBtns);
-        }
-
-        propertyElems.forEach(function(el,i){
-            if (el.type == "combo"){
-                createRefBtn(el.id);
-
-            } else if (el.customType == "popup"){
-                createPopupOpenBtn(el);
-                
-            } else if (el.type == "customDate") {
-                createDatePopup(el);
-
-            } else {    
-                createEmptySpace();
-
-            }
-        });
-    }
-}
-
-function addEditInputs(arr){
-    const property = $$("editTableFormProperty");
-    property.define("elements", arr);
-    property.refresh();
-}
-
-function returnTemplate(el){
-    const template = {
-        id      : el.id,
-        label   : el.label, 
-        unique  : el.unique,
-        notnull : el.notnull,
-        length  : el.length,
-        value   : returnDefaultValue (el)
-        
-    };
-
-    return template;
-}
-
-
-
-function createDateTimeInput(el){
-    const template =  returnTemplate(el);
-    template.type = "customDate";
-
-    return template;
-
-}
-
-
- function createReferenceInput(el){
-    const template =  returnTemplate(el);    
-    
-    let findTableId   = el.type.slice(10);
-    
-    template.type     = "combo";
-    template.css      = el.id + "_container";
-    template.options  = getComboOptions(findTableId);
-    template.template = function(obj, common, val, config){
-        const value = obj.value;
-        const item = config.collection.getItem(value);
-        return item ? item.value : "";
-    };
-
-    return template;
-}
-
-
-function createBooleanInput(el){
-    const template =  returnTemplate(el);  
-
-    template.type = "select";
-    template.options = [
-        {id:1, value: "Да"},
-        {id:2, value: "Нет"}
-    ];
-    return template;
-}
-
-
-function createProperty_createTextInput(el){
-    const template =  returnTemplate(el);
-
-    if (el.length == 0 || el.length > 512){
-        template.customType="popup";
-
-    } 
-
-    template.type = "text";
-    return template;
-}
-
-function addIntegerType(el){
-    const template =  createProperty_createTextInput(el);
-    template.customType = "integer";
-    return template;
-}
-
-function returnPropElem(el){
-    let propElem;
-
-    if (el.type == "datetime"){
-        propElem = createDateTimeInput(el);
-
-    } else if (el.type.includes("reference")) {
-        propElem = createReferenceInput(el);
-
-    } else if (el.type.includes("boolean")) {
-        propElem = createBooleanInput(el);
-
-    } else if (el.type.includes("integer")) {
-        propElem = addIntegerType(el);
-
-    } else {
-        propElem = createProperty_createTextInput(el);
-    }
-
-    return propElem;
-}
-function createProperty (parentElement) {
-
-    const property         = $$(parentElement);
-    const columnsData      = $$("table").getColumns(true);
-    const elems            = property.elements;
-    const propertyLength   = Object.keys(elems).length;
-
-    try {
-        
-        if ( !propertyLength ){
-            const propElems = [];
-
-            columnsData.forEach((el) => {
-
-                const propElem = returnPropElem(el);
-                propElems.push(propElem);
-
-            });
-
-        
-            createDateEditor();
-            addEditInputs   (propElems);
-            setToolBtns     ();
-    
-
-        } else {
-            property.clear();
-            property.clearValidation();
-
-            if(parentElement == "table-editForm"){
-                $$("table-delBtnId").enable();
-            }
-        }
-    } catch (err){
-        errors_setFunctionError(err, createProperty_logNameFile, "createEditFields");
-    }
-}
-
-
-;// CONCATENATED MODULE: ./src/js/components/table/common.js
- 
-
-
-
-
-
-
-const common_logNameFile = "table => common";
-
-
-function common_setDirtyProperty (){
-    const prop        = $$("editTableFormProperty");
-    prop.config.dirty = false;
-    prop.refresh();
-}
-
-function toEditForm (nextItem) {
-    const valuesTable = $$("table").getItem(nextItem); 
-
-    function setViewDate(){
-        const parseDate = webix.Date.dateToStr("%d.%m.%y %H:%i:%s");
-        try{
-            Object.values(valuesTable).forEach(function(el,i){
-        
-                if(el instanceof Date){
-                    const key        = Object.keys(valuesTable)[i];
-                    const value      = parseDate(el);
-                    valuesTable[key] = value;
-                }
-            
-            });
-        } catch (err){ 
-            errors_setFunctionError(err,common_logNameFile,"setViewDate")
-        }
-    }
-
-    function setPropState(){
-        try{
-            const prop      = $$("editTableFormProperty");
-            const form      = $$("table-editForm"); 
-            const newAddBtn = $$("table-newAddBtnId");
-
-            if (prop && !(prop.isVisible())){
-                prop.show();
-
-                if (window.innerWidth > 850){
-                    form.config.width = 350;   
-                    form.resize();
-                }
-            }
-
-            if (!(newAddBtn.isEnabled())){
-                newAddBtn.enable();
-            }
-
-            common_setDirtyProperty();
-            setViewDate     ();
-
-            prop.setValues(valuesTable);
-        
-            $$("table-saveNewBtn").hide();
-            $$("table-saveBtn")   .show();
-            $$("table-delBtnId")  .enable();
-
-        } catch (err){   
-            errors_setFunctionError(
-                err,
-                common_logNameFile,
-                "toEditForm => setPropState"
-            );
-        }
-    }
-
-    setPropState();
-
-}
-
-
-function validateError (){
-    validateProfForm ().forEach(function(el,i){
-
-        let nameEl;
-        try{
-            $$("table").getColumns().forEach(function(col,i){
-                if (col.id == el.nameCol){
-                    nameEl = col.label;
-                }
-            });
-        } catch (err){ 
-            errors_setFunctionError(err,common_logNameFile,"validateError")
-        }
-        setLogValue("error",el.textError + " (Поле: " + nameEl + ")");
-    });
-}
-
-function common_uniqueData (itemData){
-    let validateData = {};
-
-    try{
-        Object.values(itemData).forEach(function(el,i){
-            const oldValues    = $$("table").getItem(itemData.id)
-            const oldValueKeys = Object.keys(oldValues);
-
-            function compareVals (){
-                let newValKey = Object.keys(itemData)[i];
-                
-                oldValueKeys.forEach(function(oldValKey){
-                    
-                    if (oldValKey == newValKey){
-                        
-                        if  (oldValues[oldValKey] !== Object.values(itemData)[i] ){
-                            validateData[Object.keys(itemData)[i]] = Object.values(itemData)[i];
-                        } 
-                        
-                    }
-                }); 
-            }
-            compareVals ();
-        });
-    } catch (err){ 
-        errors_setFunctionError(err,common_logNameFile,"uniqueData")
-    }
-    return validateData;
-}
-
-function putData (nextItem, valuesProp, currId, editInForm=false){
-   
-    if (!(validateProfForm().length)){
-
-        if (valuesProp.id){
-
-            let sentValues;
-            if (editInForm){
-                sentValues = common_uniqueData (valuesProp);
-            } else {
-                sentValues = valuesProp;
-            }
-
-            const table   =  $$("table");
-            const url     = "/init/default/api/"+currId+"/"+valuesProp.id;
-            const putData =  webix.ajax().put(url, sentValues);
-            
-            putData.then(function(data){
-                data = data.json();
-                if (data.err_type == "i"){
-
-                    setLogValue("success","Данные сохранены");
-                    table.updateItem(valuesProp.id, valuesProp);
-                    Action.removeItem($$("propertyRefbtnsContainer"));
-
-                    if (editInForm){
-                        toEditForm(nextItem);
-                        table.select(nextItem);
-                    }
-                } if (data.err_type == "e"){
-                    setLogValue("error",data.error);
-                }
-            });
-
-            putData.fail(function(err){
-                setAjaxError(err, common_logNameFile,"putData");
-            });
-        
-        }
-
-    } else {
-        validateError ();
-    }
-}
-
-
-;// CONCATENATED MODULE: ./src/js/components/table/onFuncs.js
- 
-
-
-
-
-
-
-
-
-
-
-
-const onFuncs_logNameFile = "table => onFuncs";
-
-const onFuncTable = {
-
-    onBeforeLoad:function(){
-        this.showOverlay("Загрузка...");
-    },
-
-    onBeforeEditStop:function(state, editor){
-        const table      = $$("table");
-        const valuesProp = table.getSelectedItem();
-        const currId     = getItemId ();
-        const tableItem  = table.getSelectedItem();
-        try {
-            if(state.value != state.old){
-
-                const idRow = editor.row;
-                const col   = editor.column;
-                const val   = state.value;
-              
-                table.updateItem(idRow, {[col]:val});
-                $$("editTableFormProperty").setValues(tableItem);
-                putData ("", valuesProp, currId);
-
-            }
-        } catch (err){
-            errors_setFunctionError(err,onFuncs_logNameFile,"onBeforeEditStop");
-        }
-    },
-
-    onAfterSelect(id){
-
-        function filterTableHide (){
-            try{
-                const filterContainer = $$("filterTableBarContainer");
-                const filterForm      = $$("filterTableForm");
-                const btnClass        = document.querySelector(".webix_btn-filter");
-
-                Action.hideItem(filterContainer);
-                Action.hideItem(filterForm);
-      
-                btnClass.classList.add   ("webix-transparent-btn");
-                btnClass.classList.remove("webix-transparent-btn--primary");
-
-            } catch (err){
-                errors_setFunctionError(err,onFuncs_logNameFile,"onAfterSelect => filterTableHide");
-            }
-        }
-
-
-        function statePutEditForm (){
-            
-            try{
-                const newAddBtn = $$("table-newAddBtnId");
-                const editForm  = $$("table-editForm");
-                Action.showItem($$("editTableBarContainer"));
-
-                if (newAddBtn){
-                    newAddBtn.enable();
-                }
-                Action.hideItem($$("EditEmptyTempalte"));
-
-
-                if( !(editForm.isVisible()) ){
-                    editForm.show();
-                    filterTableHide ();
-                }
-
-            } catch (err){
-                errors_setFunctionError(err,onFuncs_logNameFile,"onAfterSelect => statePutEditForm")
-            }
-        }
-
-
-
-        function adaptiveEditForm (){
-            try {
-                const form      = $$("table-editForm");
-                const container = $$("container");
-
-                if (container.$width < 850){
-                    Action.hideItem($$("tree"));
-       
-
-                    if (container.$width< 850){
-                        Action.hideItem($$("tableContainer"));
-    
-                        form.config.width = window.innerWidth;
-                        form.resize();
-                        Action.showItem($$("table-backTableBtn"));
-                    }
-                    Action.showItem(form);
-                    Action.hideItem($$("EditEmptyTempalte"));
-           
-                }
-            } catch (err){
-                errors_setFunctionError(err,onFuncs_logNameFile,"onAfterSelect => adaptiveEditForm");
-            }
-        }
-
-        statePutEditForm ();
-        adaptiveEditForm ();
-
-    },
-    
-    onBeforeSelect:function(selection, preserve){
-        const table     = $$("table");
-        const property  = $$("editTableFormProperty");
-    
-
-        const valuesProp = property.getValues();
-        const currId = getItemId ();
-        const nextItem = selection.id;
-
-
-        function postNewData (nextItem,currId,valuesProp){
-            if (!(validateProfForm().length)){
-                const url      = "/init/default/api/"+currId;
-                
-                const postData = webix.ajax().post(url, valuesProp);
-                
-                postData.then(function(data){
-                 
-                    data = data.json();
-
-                    function tableUpdate (){
-                        valuesProp.id = data.content.id;
-                        table.add(valuesProp);
-                    }
-                
-                    if (data.content.id !== null){
-                        tableUpdate ();
-                        toEditForm(nextItem);
-                        Action.removeItem($$("propertyRefbtnsContainer"));
-                        table.select(nextItem);
-                        setLogValue("success","Данные успешно добавлены");
-                    } else {
-
-                        const errs = data.content.errors;
-                        let msg = "";
-                        Object.values(errs).forEach(function(err,i){
-                            msg +=err+" (Поле: "+Object.keys(errs)[i] +"); ";
-                        });
-
-                        setLogValue("error",msg);
-                    }
-                    
-                });
-
-                postData.fail(function(err){
-                    setAjaxError(err, onFuncs_logNameFile,"onBeforeSelect => postNewData");
-                });
- 
-            } else {
-                validateError ();
-            }
-        }
- 
- 
-        function modalBoxTable (){
-
-            try{
-                if (property.config.dirty){
-
-                    modalBox().then(function(result){
-                        const saveBtn  = $$("table-saveBtn");
-
-                        if (result == 1){
-                            toEditForm(nextItem);
-                            table.select(selection.id);
-                            Action.removeItem($$("propertyRefbtnsContainer"));
-                        } 
-
-                        else if (result == 2){
-                        
-                            if (saveBtn.isVisible()){
-                                putData (nextItem,valuesProp,currId, true);
-                            } else {
-                                postNewData (nextItem,currId,valuesProp);
-                            }
-                        }
-
-                    });
-
-                    return false;
-                } else {
-                    createProperty("table-editForm");
-                    toEditForm(nextItem);
-                }
-            } catch (err){ 
-                errors_setFunctionError(err,onFuncs_logNameFile,"onBeforeSelect => modalBoxTable")
-            }
-        }
- 
-        modalBoxTable ();
-
-        if (property.config.dirty){
-            return false;
-        }
-    },
-
-    onAfterLoad:function(){
-        try {
-            this.hideOverlay();
-
-            defaultStateForm ();
-        } catch (err){
-            errors_setFunctionError(err,onFuncs_logNameFile,"onAfterLoad")
-        }
-    },  
-
-    onAfterDelete: function() {
-        function overlay (){
-
-            function returnTableView(){
-                if ($$("table").isVisible()){
-                    return "table";
-                } else if ($$("table-view").isVisible()){
-                    return "table-view";
-                }
-              
-            }
-
-            function setOverlayState(){
-                const tableId   = returnTableView();
-                const tableView = $$(tableId);
-    
-    
-                if ( !tableView.count() ){
-                    tableView.showOverlay("Ничего не найдено");
-                }
-                if ( tableView.count() ){
-                    tableView.hideOverlay();
-                }
-            }
-
-            setOverlayState();
-      
-        }
-      
-        overlay ();
-    },
-
-    onAfterAdd: function() {
-        this.hideOverlay();
-    },
-
-};
-
-
-
-;// CONCATENATED MODULE: ./src/js/components/table/lazyLoad.js
-
-
-const lazyLoad_limitLoad   = 80;
-
-
-function refreshTable(table){
-    const tableId           = table.config.idTable;
-    const oldOffset         = table.config.offsetAttr;
-
-    const newOffset         = oldOffset + lazyLoad_limitLoad;
-
-    table.config.offsetAttr = newOffset;
-    table.refresh();
-
-    createTableRows ("table", tableId, oldOffset);
-}
-
-
-function sortTable(table){
-    table.attachEvent("onAfterSort", function(id, sortType){
-        
-        const sortInfo = {
-            idCol : id,
-            type  : sortType
-        };
-
-        table.config.sort       = sortInfo;
-        table.config.offsetAttr = 0;
-
-        table.clearAll();
-        refreshTable(table);
-        
-    });
-}
-
-
-function scrollTableLoad(table){
-    table.attachEvent("onScrollY", function(){
-        const table        = this;
-        const scrollState  = table.getScrollState();
-        const maxHeight    = table._dtable_height;
-        const offsetHeight = table._dtable_offset_height;
- 
-        if (maxHeight - scrollState.y == offsetHeight){ 
-            refreshTable(table);
-        }
-      
-
-    });
-}
-
-
-
-;// CONCATENATED MODULE: ./src/js/components/table/onResize.js
-function onResizeTable(table){
-    table.attachEvent("onResize", function(width){
-        const cols = table.getColumns();
-        width -= 17;
-        let sum = 0;
-        cols.forEach(function(col,i){
-            sum += col.width;
-        });
-
-        if (sum < width){
-            const different = width - sum;
- 
-            const lastCol = cols.length - 1;
-            cols.forEach(function(col,i){
-                if (i == lastCol){
-                    const newWidth = col.width + different;
-                    table.setColumnWidth(col.id, newWidth);
-                }
-        
-            });
-
-        } 
-
-    });
-}
-
-
-;// CONCATENATED MODULE: ./src/js/components/table/onColumnResize.js
-function columnResize(table){
- 
-
-    table.attachEvent("onColumnResize", function(id, newWidth, oldWidth, userAction){
-        const cols   = table.getColumns();
-        const length = cols.length;
-        function returnCol(index){
-          
-            const currIndex = length - index;
-            return cols[currIndex];
-        }
-    
-        if (userAction){
-
-            const prevIndex = length - 2;
-
-            const prevCol   = returnCol(2);
-            const lastCol   = returnCol(1);
-
-
-            if ( prevIndex > -1 ){
-           
-            
-                if (prevCol.id == id){
-
-                    const width = table.$width - 17;
-                    let sum = 0;
-
-                    cols.forEach(function(col,i){
-                        sum += col.width;
-                    });
-
-                    if (sum < width){
-                        const different = width - sum;
-                        const newWidth = lastCol.width + different;
-                  
-                        table.setColumnWidth(lastCol.id, newWidth);
-              
-                    }
-                }
-               
-            }
-        }
-
-    });
-}
-
-
 ;// CONCATENATED MODULE: ./src/js/components/table/columnsSettings/common.js
 
 
@@ -12301,27 +9825,22 @@ async function postPrefsValues(values, visCol = false){
 
 
 
-;// CONCATENATED MODULE: ./src/js/components/table/columnsSettings/columnsWidth.js
+;// CONCATENATED MODULE: ./src/js/viewTemplates/emptyTemplate.js
 
+function createEmptyTemplate(text, id){
+    const formEmptyTemplate = {   
+        css         : "webix_empty-template",
+        template    : text,
+        borderless  : true,
+        height      : 47
+    };
 
-function setColsWidthStorage(table){
-    table.attachEvent("onColumnResize",function(id,newWidth, oldWidth, action){
-        if (action){
-           
-            const cols   = table.getColumns();
-            const values = [];
+    if (id){
+        formEmptyTemplate.id = id;
+    }
 
-            cols.forEach(function(el,i){
-
-                values.push({
-                    column  : el.id, 
-                    position: table.getColumnIndex(el.id),
-                    width   : el.width.toFixed(2)
-                });
-            });
-            postPrefsValues(values);
-        }
-    });     
+    return formEmptyTemplate;
+     
 }
 
 
@@ -13088,7 +10607,7 @@ function toolbarVisibleColsBtn(idTable){
 const visibleInputs = {};
 const PREFS_STORAGE = {};
 
-const filterForm_common_logNameFile = "tableFilter => common";
+const common_logNameFile = "tableFilter => common";
 
 function getUserprefsData (){
 
@@ -13097,7 +10616,7 @@ function getUserprefsData (){
         PREFS_STORAGE.userprefs = data.json();
         return PREFS_STORAGE.userprefs;
     }).fail(err => {
-        setAjaxError(err, filterForm_common_logNameFile, "getUserprefsData");
+        setAjaxError(err, common_logNameFile, "getUserprefsData");
     }
 );
 }
@@ -13177,7 +10696,7 @@ function visibleField (condition, elementClass = null, el = null){
             });
 
         } catch(err){
-            errors_setFunctionError(err,filterForm_common_logNameFile,"function visibleField => showHtmlEl");
+            errors_setFunctionError(err,common_logNameFile,"function visibleField => showHtmlEl");
         }
     }
 
@@ -13219,7 +10738,7 @@ function visibleField (condition, elementClass = null, el = null){
             });
 
         } catch(err){
-            errors_setFunctionError(err,filterForm_common_logNameFile,"function visibleField => hideHtmlEl");
+            errors_setFunctionError(err,common_logNameFile,"function visibleField => hideHtmlEl");
         }
     }
   
@@ -13244,7 +10763,7 @@ function visibleField (condition, elementClass = null, el = null){
             });
 
         } catch(err){
-            errors_setFunctionError(err,filterForm_common_logNameFile,"function visibleField => removeChids");
+            errors_setFunctionError(err,common_logNameFile,"function visibleField => removeChids");
         }
     }
 
@@ -13278,7 +10797,7 @@ function visibleField (condition, elementClass = null, el = null){
                 hideInputContainers ();
 
             } catch(err){
-                errors_setFunctionError(err,filterForm_common_logNameFile,"function visibleField => hideElements");
+                errors_setFunctionError(err,common_logNameFile,"function visibleField => hideElements");
             }
         }
     } else {
@@ -14698,6 +12217,2234 @@ function tableToolbar (idTable, visible=false) {
 }
 
 
+;// CONCATENATED MODULE: ./src/js/components/table/formTools/viewProperty.js
+function propertyTemplate (idProp){
+    return {
+        view:"property",  
+        id:idProp, 
+        tooltip:"Имя: #label#<br> Значение: #value#",
+        width:348,
+        nameWidth:150,
+        editable:true,
+        scroll:true,
+        hidden:true,
+    };
+}
+
+
+;// CONCATENATED MODULE: ./src/js/components/table/formTools/viewTools.js
+function backFilterBtnClick (){
+    const tools       = $$("formsTools");    
+    const сontainer   = $$("formsContainer");
+    const formResizer = $$("formsTools-resizer");
+
+    function setBtnFilterState(){
+        const btnClass          = document.querySelector(".webix_btn-filter");
+        const primaryBtnClass   = "webix-transparent-btn--primary";
+        const secondaryBtnClass = "webix-transparent-btn";
+
+        if (btnClass.classList.contains(primaryBtnClass  )){
+            btnClass.classList.add     (secondaryBtnClass);
+            btnClass.classList.remove  (primaryBtnClass  );
+        }
+    }
+    function defaultState(){
+        if ( tools && tools.isVisible() ){
+            tools.hide();
+            formResizer.hide();
+        }
+    
+        if ( сontainer && !(сontainer.isVisible()) ){
+            сontainer.show();
+        }
+    }
+
+
+    defaultState();
+    setBtnFilterState();
+}
+
+const filterBackTableBtn = { 
+    view    : "button", 
+    id      : "table-backFormsBtnFilter",
+    type    : "icon",
+    icon    : "icon-arrow-right",
+    value   : "Вернуться к таблице",
+ //   hidden:true,  
+    height  : 28,
+    minWidth: 50,
+    width   : 55,
+   
+    click   : function(){
+        backFilterBtnClick();
+    },
+
+    on: {
+        onAfterRender: function () {
+            this.getInputNode().setAttribute("title","Вернуться к таблице");
+        }
+    } 
+};
+
+const viewTools = {
+    id:"viewTools",
+    padding:10,
+    rows:[
+       {cols:[
+
+            {  
+                template:"Действия",
+                height:30, 
+                css:"popup_headline",
+                borderless:true,
+            },
+            {},
+            filterBackTableBtn
+        ]},
+   
+        {id:"viewToolsContainer",rows:[{}]}
+    ]
+};
+
+
+;// CONCATENATED MODULE: ./src/js/components/table/editForm/property.js
+
+
+const property_logNameFile = "tableEditForm => property";
+
+function setDirtyProperty (type=false){
+    try{
+        const property = $$("editTableFormProperty");
+        if(property){
+            property.config.dirty = type;
+            property.refresh();
+        }
+    } catch (err){
+        errors_setFunctionError(err,property_logNameFile,"setDirtyProperty");
+    } 
+}
+
+
+function editingEnd (editor,value){
+    try{
+        const property = $$("editTableFormProperty");
+        const item     = property.getItem(editor);
+        item.value     = value;
+
+        property.updateItem(editor);
+        setDirtyProperty (true);
+
+    } catch (err){
+        errors_setFunctionError(err,property_logNameFile,"editingEnd");
+    }
+}
+
+function propTooltipAction (obj){
+    const label      = obj.label;
+    const labelText  = "Название: "+label+" <br>";
+    const formatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
+    let value;
+    let typeElem;
+    
+    if        ( obj.type       == "date" ){
+        typeElem = "Выберите дату";
+
+    } else if ( obj.type       == "combo" ){
+        typeElem = "Выберите значение";
+
+    } else if ( obj.customType == "integer" ){
+        typeElem = "Введите число";
+
+    } else {
+        typeElem = "Введите текст";
+    } 
+    
+    if (obj.type == "date"){
+        value = formatData(obj.value);
+        
+    } else{
+        value = obj.value;
+    }
+
+    if (obj.value){
+        return labelText + "Значение: " + value;
+    } else {
+        return labelText + typeElem;
+    }
+}
+
+
+function property_createTemplate (){
+    document.getElementById('custom-date-editor').addEventListener('input', function (e) {
+
+        const x = e.target.value.replace(/\D/g, '')
+        .match(/(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})/);
+
+        function setNum(index){
+            return (x[index] ? x[index] : ' __ ');
+        }
+
+        if (e.inputType !== "deleteContentBackward"){
+            e.target.value = setNum(1) + '.' + setNum(2) + '.' + setNum(3) + '  '+ 
+            setNum(4) + ':' + setNum(5) + ':' + setNum(6);
+        }
+     
+    });
+}
+
+
+const propertyEditForm = {   
+    view     : "property",  
+    id       : "editTableFormProperty", 
+    css      : "webix_edit-table-form-property",
+    dirty    : false,
+    editable : true,
+    tooltip  : propTooltipAction,
+    hidden   : true,
+    elements : [],
+    on       : {
+        onEditorChange:function(id, value){
+        
+            function setStateSaveBtn(){
+                const saveBtn =$$("table-saveBtn"); 
+                if (saveBtn              && 
+                    saveBtn.isVisible()  &&
+                  !(saveBtn.isEnabled()) ){ 
+                    saveBtn.enable();
+                }
+            }
+
+            editingEnd (id,value);
+            setStateSaveBtn();
+
+            const inputEditor = document.getElementById('custom-date-editor');
+
+            if (inputEditor){
+                property_createTemplate ();
+            }
+       
+        },
+        onBeforeRender:function (){
+
+            const size = this.config.elements.length*28;
+            
+            if (size && this.$height !== size){
+                this.define("height", size);
+                this.resize();
+            }
+    
+          
+        },
+
+        onAfterEditStop:function(state, editor){
+            if (state.value !== state.old ){
+                editingEnd (editor.id, state.value);
+            }
+        },
+
+        onItemClick:function(id){
+            const property = $$("editTableFormProperty");
+            const item     =  property.getItem(id);
+            item.css       = "";
+            property.refresh();
+        }
+
+    }
+};
+
+const propertyRefBtns = {  
+    cols:[
+        {   id:"propertyRefbtns",  
+            rows:[]
+        },
+        {width:5}
+    ] 
+ 
+};
+
+
+const propertyLayout = {   
+    scroll:"y", 
+    cols:[
+        propertyRefBtns,
+        {width:4},
+        propertyEditForm,
+        {width:4}
+    ]
+};
+
+
+;// CONCATENATED MODULE: ./src/js/components/table/editForm/validation.js
+
+
+
+const validation_logNameFile = "tableEditForm => validation";
+
+function validateProfForm (){
+
+    const errors = {};
+    const messageErrors = [];
+    const property      = $$("editTableFormProperty");
+    
+    function checkConditions (){ 
+       
+        const propVals = Object.keys(property.getValues());
+
+        propVals.forEach(function(el,i){
+
+            const propElement = property.getItem(el);
+            const values      = property.getValues();
+            
+            errors[el] = {};
+
+            function numberField(){
+                
+                function containsText(str) {
+                    return /\D/.test(str);
+                }
+
+                if (propElement.customType              &&
+                    propElement.customType == "integer" ){
+
+                    const check =  containsText(values[el]) ;
+
+                    if ( check ){
+                        errors[el].isNum = "Данное поле должно содержать только числа";
+                    } else {
+                        errors[el].isNum = null;
+                    }
+                       
+                }
+            }
+
+            function dateField(){
+         
+                if (propElement.type              &&
+                    propElement.type == "customDate" ){
+                     
+                    let check      = false;
+                    let countEmpty = 0;
+      
+                    const x = values[el].replace(/\D/g, '')
+                    .match(/(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})/);
+
+                    for (let i = 1; i < 7; i++) {
+
+                        if (x[i].length == 0){
+                            countEmpty++;
+                        }
+
+                        if (x[i].length !== 2){
+                         
+                            if (!check){
+                                check = true;
+                            }
+                        }
+                    }
+
+
+                    if ( countEmpty == 6 ){
+                        errors[el].date = null;
+
+                    } else {
+
+                        if( (x[1] > 31 || x[1] < 1) ||
+                            (x[2] > 12 || x[2] < 1) ||
+
+                            x[4] > 23 ||
+                            x[5] > 59 ||
+                            x[6] > 59 ){
+                                check = true;
+                            }
+      
+                        if ( check ) {
+                            errors[el].date = "Неверный формат даты. Введите дату в формате xx.xx.xx xx:xx:xx";
+    
+                        } else {
+                            errors[el].date = null;
+                        }
+                    }
+                       
+                }
+       
+            }
+
+            function valLength(){ 
+                try{
+               
+                    if(values[el]){
+                        
+                        if (values[el].length > propElement.length && propElement.length !== 0){
+                            errors[el].length = "Длина строки не должна превышать " + propElement.length + " симв.";
+                        } else {
+                            errors[el].length = null;
+                        }
+                    }
+                } catch (err){
+                    errors_setFunctionError(err,validation_logNameFile,"valLength");
+                }
+            }
+
+            function valNotNull (){
+                try{
+                    if ( propElement.notnull == true && values[el].length == 0 ){
+                        errors[el].notnull = "Поле не может быть пустым";
+                    } else {
+                        errors[el].notnull = null;
+                    }
+                } catch (err){
+                    errors_setFunctionError(err,validation_logNameFile,"valNotNull");
+                }
+            }
+
+            function valUnique (){
+                try{
+                    errors[el].unique = null;
+                                            
+                    if (propElement.unique == true){
+
+                        const tableRows   = Object.values($$("table").data.pull);
+                        const tableSelect = $$("editTableFormProperty").getValues().id;
+      
+
+                        tableRows.forEach(function(row,i){
+
+                            function numToString(element){
+                                if (element && typeof element === "number"){
+                                    return element.toString();
+                                } else {
+                                    return element;
+                                }
+                            }
+                        
+                          
+                             row[el]    = numToString(row[el]);
+                             values[el] = numToString(values[el]);
+                   
+                            if (row[el] && typeof row[el] == "number"){
+                                row[el] = row[el].toString();
+                            }
+
+                            if (values[el] && row[el]){
+                                if (values[el].localeCompare(row[el]) == 0 || row.id == tableSelect.toString()){
+                                    errors[el].unique = "Поле должно быть уникальным";
+                                } 
+                              
+                            }
+                        });
+                    }
+                } catch (err){
+                    errors_setFunctionError(err,validation_logNameFile,"valUnique");
+                }
+            }
+           
+            dateField   ();
+            numberField ();
+            valLength   ();
+            valNotNull  ();
+            valUnique   ();
+        });
+    }
+
+    function createErrorMessage (){
+     
+        function findErrors (){
+            Object.values(errors).forEach(function(col,i){
+
+                function createMessage (){
+                    Object.values(col).forEach(function(error,e){
+                        if (error !== null){
+                            let nameCol = Object.keys(errors)[i];
+                            let textError = error;
+                            let typeError = Object.keys(col)[e];
+                            messageErrors.push({nameCol,typeError,textError})
+                        }
+                        
+                    });
+                    return messageErrors;
+                }
+
+                createMessage ();
+        
+            });
+        }
+
+        findErrors ();
+        
+    }
+    try{
+        checkConditions ();
+        createErrorMessage ();
+    } catch (err){
+        errors_setFunctionError(err, validation_logNameFile, "validateProfForm");
+    }
+
+  
+    if (messageErrors.length){
+     
+        messageErrors.forEach(function(prop){
+            const item =  property.getItem(prop.nameCol);
+            item.css = "propery-error";
+            property.refresh();
+
+        });
+
+       
+    }
+    return messageErrors;
+}
+
+function setLogError (){
+    try{
+        const table = $$("table");
+        validateProfForm ().forEach(function(el){
+
+            let nameEl;
+
+            table.getColumns(true).forEach(function(col){
+             
+                if (col.id == el.nameCol){
+                    nameEl = col.label;
+                }
+            });
+
+            setLogValue("error", el.textError + " (Поле: " + nameEl + ")");
+        });
+
+    } catch (err){
+        errors_setFunctionError(err, validation_logNameFile, "setLogError");
+    }
+}
+
+
+function uniqueData (itemData){
+    const validateData = {};
+    try{
+        const table = $$("table");
+
+        Object.values(itemData).forEach(function(el, i){
+
+            const oldValues    = table.getItem(itemData.id);
+            const oldValueKeys = Object.keys(oldValues);
+
+            function compareVals (){
+                const newValKey = Object.keys(itemData)[i];
+                
+                oldValueKeys.forEach(function(oldValKey){
+                    
+                    if (oldValKey == newValKey){
+                        
+                        if (oldValues   [oldValKey] !== Object.values(itemData)[i]){
+                            validateData[newValKey]  =  Object.values(itemData)[i];
+                        } 
+                        
+                    }
+                }); 
+            }
+            compareVals ();
+        });
+    } catch (err){
+        errors_setFunctionError(err, validation_logNameFile, "uniqueData");
+    }
+
+    return validateData;
+}
+
+
+
+
+;// CONCATENATED MODULE: ./src/js/components/table/editForm/states.js
+
+
+
+const states_logNameFile = "tableEditForm => states";
+
+
+function defaultStateForm () {
+
+    const property = $$("editTableFormProperty");
+    
+    function btnsState(){
+        
+        const saveBtn    = $$("table-saveBtn");
+        const saveNewBtn = $$("table-saveNewBtn");
+        const delBtn     = $$("table-delBtnId");
+
+        if (saveNewBtn.isVisible()) {
+            saveNewBtn.hide();
+
+        } else if (saveBtn.isVisible()){
+            saveBtn.hide();
+
+        }
+
+        delBtn.disable();
+    }
+
+    function formPropertyState(){
+ 
+        if (property){
+            property.clear();
+            property.hide();
+        }
+    }
+
+
+    function removeRefBtns(){
+        const refBtns = $$("propertyRefbtnsContainer");
+        const parent  = $$("propertyRefbtns");
+        if ( refBtns ){
+            parent.removeView( refBtns );
+        }
+    }
+
+    try{
+        btnsState();
+        formPropertyState();
+        Action.showItem($$("EditEmptyTempalte"));
+        removeRefBtns();
+
+    } catch (err){
+        errors_setFunctionError(err, states_logNameFile, "defaultStateForm");
+    }
+
+}
+
+
+;// CONCATENATED MODULE: ./src/js/components/table/editForm/propBtns/calendar.js
+
+
+
+
+
+
+
+let property;
+
+const calendar_logNameFile = "tableEditForm => propBtns => calendar";
+
+
+function unsetDirtyProp(elem){
+    elem.config.dirtyProp = false;
+}
+
+function formatDate(format){
+    return webix.Date.dateToStr("%" + format);
+}
+
+const formatHour = formatDate("H");
+const formatMin  = formatDate("i");
+const formatSec  = formatDate("s");
+
+
+function setTimeInputsValue(value){
+    $$("hourInp").setValue (formatHour(value));
+    $$("minInp") .setValue (formatMin (value));
+    $$("secInp") .setValue (formatSec (value));
+}
+
+function unsetDirtyPropInputs(calendar){
+    unsetDirtyProp( calendar     );
+    unsetDirtyProp( $$("hourInp"));
+    unsetDirtyProp( $$("minInp" ) );
+    unsetDirtyProp( $$("secInp" ) );
+}
+
+function setPropValues(elem){
+ 
+    const val       = property.getValues()[elem.id];
+    const valFormat = formatHour(val);
+
+    const calendar  = $$("editCalendarDate");
+    const btn       = $$("editPropCalendarSubmitBtn");
+
+    try{
+
+        if ( val && !isNaN(valFormat) ){
+            calendar.setValue (val);
+            setTimeInputsValue(val);
+
+        } else {
+            calendar.setValue( new Date() );
+            Action.disableItem(btn);
+        }
+
+        unsetDirtyPropInputs(calendar);
+
+    } catch (err){
+        errors_setFunctionError(err, calendar_logNameFile, "setValuesDate");
+    }
+    
+}
+
+function returnTimeValue(h, m, s){
+    return h + ":" + m+":" + s;;
+}
+
+function returnSentValue(date, time){
+    return date + " " + time;
+}
+
+const errors = [];
+
+function validTime(item, count, idEl){
+
+    function markInvalid (){
+        try{
+            $$("timeForm").markInvalid(idEl);
+        } catch (err){
+            errors_setFunctionError(
+                err, 
+                calendar_logNameFile, 
+                "validTime element: " + idEl
+            );
+        }
+        errors.push(idEl);
+    }
+    
+    if (item > count){
+        markInvalid ();
+    }
+
+    if ( !( /^\d+$/.test(item) ) ){
+        markInvalid ();
+    }
+
+    if (item.length < 2){
+        markInvalid ();
+    }
+
+    return errors;
+}
+
+function setValToProperty(sentVal, elem){
+    const propId  = property.getValues().id;
+    try{
+        if ( !(errors, errors.length) ){
+            property.setValues({ [elem.id] : sentVal}, true);
+
+            if(propId){
+                property.setValues({ id : propId}, true);
+
+            }
+
+            Action.destructItem($$("editTablePopupCalendar"));
+        }
+    } catch (err){
+        errors_setFunctionError(err, calendar_logNameFile, "setValToProperty");
+    }
+}
+
+function inputItterate(name, count){
+    const val = $$(name).getValue();
+    validTime(val, count, name);
+    return val;
+}
+
+function calendar_submitClick (elem){
+    errors.length = 0;
+
+    const calendar=  $$("editCalendarDate");
+
+    const hour = inputItterate("hourInp", 23);
+    const min  = inputItterate("minInp",  59);
+    const sec  = inputItterate("secInp",  59);
+  
+    const calendarVal    = calendar.getValue();
+    const fullFormatDate = formatDate("d.%m.%y");
+    const dateVal        = fullFormatDate(calendarVal);
+
+    const timeVal        = returnTimeValue(hour, min, sec);
+
+    const sentVal = returnSentValue(dateVal, timeVal);
+    setValToProperty(sentVal, elem);
+
+    
+    return errors.length;
+}
+
+function isDirty(){
+    let check      = false;
+    function checkDirty(elem){
+        if ( elem.config.dirtyProp && !check ){
+            check = true;
+        }
+    }
+
+    checkDirty ($$("editCalendarDate"));
+    checkDirty ($$("hourInp"         ));
+    checkDirty ($$("minInp"          ));
+    checkDirty ($$("secInp"          ));
+
+    return check;
+}
+
+
+const closePopupClick = function (elem){
+    const calendar = $$("editTablePopupCalendar");
+
+    if (isDirty()){
+  
+        modalBox().then(function(result){
+
+            if (result == 1){
+                Action.destructItem(calendar);
+            }
+
+            if (result == 2 && !calendar_submitClick(elem)){
+
+                Action.destructItem(calendar);
+
+            }
+        });
+    } else {
+        Action.destructItem(calendar);
+    }
+
+};
+
+
+function returnCalendar(){
+    const calendar = {
+        view        :"calendar",
+        id          :"editCalendarDate",
+        format      :"%d.%m.%y",
+        borderless  :true,
+        width       :300,
+        height      :250,
+        dirtyProp   :false,
+        on          :{
+            onChange:function(){
+                this.config.dirtyProp = true;
+                Action.enableItem($$("editPropCalendarSubmitBtn"));
+            }
+        }
+    } ;
+
+    return calendar;
+}
+
+
+function returnInput(idEl){
+    const calendar = $$("editPropCalendarSubmitBtn");
+    return {
+        view        : "text",
+        name        : idEl,
+        id          : idEl,
+        placeholder : "00",
+        attributes  : { maxlength :2 },
+        dirtyProp   : false,
+        on          : {
+            onKeyPress:function(){
+                $$("timeForm").markInvalid(idEl, false);
+                Action.enableItem(calendar);
+            },
+
+            onChange:function(){
+                this.config.dirtyProp = true;
+                Action.enableItem(calendar);
+            }
+        }
+    };
+}
+
+function returnTimeSpacer (idEl){
+    return {   
+        template   : ":",
+        id         : idEl,
+        borderless : true,
+        width      : 9,
+        height     : 5,
+        css        : "popup_time-spacer"
+    };
+}
+
+function returnTimePrompt(){
+ 
+    const prompt = {   
+        template:"<div style='font-size:13px!important'>"+
+        "Введите время в формате xx : xx : xx</div>",
+        borderless:true,
+        css:"popup_time-timeFormHead",
+    };
+
+    return prompt;
+}
+
+function returnTimeForm(){
+    const timeForm = {
+        view    : "form", 
+        id      : "timeForm",
+        height  : 85,
+        type    : "space",
+        elements: [
+            returnTimePrompt(),
+            { cols:[
+                returnInput("hourInp"),
+                returnTimeSpacer (1),
+                returnInput("minInp"),
+                returnTimeSpacer (2),
+                returnInput("secInp")
+            ]}
+        ]
+    };
+
+    return timeForm;
+}
+
+function returnDateEditor(){
+    const dateEditor = {
+        rows:[
+            returnCalendar(), 
+            {height:10}, 
+            returnTimeForm(),
+            {height:10}, 
+        ]
+    };
+
+    return dateEditor;
+}
+
+function returnSubmitBtn(elem){
+    const btn = new Button({
+
+        config   : {
+            id       : "editPropCalendarSubmitBtn",
+            hotkey   : "Ctrl+Space",
+            value    : "Добавить значение", 
+            click    : function(){
+                calendar_submitClick(elem);
+            },
+        },
+        titleAttribute : "Добавить значение в запись таблицы"
+    
+       
+    }).maxView("primary");
+
+    return btn;
+
+}
+function popupEdit(elem){
+
+    const headline = "Редактор поля  «" + elem.label + "»";
+
+    const popup = new Popup({
+        headline : headline,
+        config   : {
+            id        : "editTablePopupCalendar",
+            width     : 400,
+            minHeight : 300,
+        },
+        closeClick : closePopupClick,
+        elements : {
+            rows : [
+                returnDateEditor(),
+                {height:15},
+                returnSubmitBtn(elem),
+            ]
+          
+        }
+    });
+    
+    popup.createView ();
+    popup.showPopup  ();
+
+    setPropValues(elem);
+
+}
+
+function propBtnClick(elem){
+    property = $$("editTableFormProperty");
+    popupEdit(elem);
+}
+
+
+function createDateBtn(elem){
+
+    const btn = new Button({
+
+        config   : {
+            width    : 30,
+            height   : 29,
+            icon     : "icon-calendar", 
+            click    : function(){
+                propBtnClick (elem);
+            },
+        },
+        titleAttribute : "Открыть календарь"
+    
+       
+    }).minView();
+
+
+    try{
+        $$("propertyRefbtnsContainer").addView(btn);
+    } catch (err){
+        errors_setFunctionError(err, calendar_logNameFile, "createDateBtn");
+    }
+}
+
+function createDatePopup(el){
+    createDateBtn(el);
+    Action.showItem($$("tablePropBtnsSpace"));
+}
+
+
+;// CONCATENATED MODULE: ./src/js/components/table/editForm/propBtns/textarea.js
+
+
+
+
+
+
+
+const textarea_logNameFile = "tableEditForm => propBtns => textarea";
+
+let textarea_property;
+let elem;
+
+function setPropValue(value){
+    textarea_property.setValues({ 
+        [elem.id]:[value] 
+    }, true);
+}
+
+function textarea_submitClick (){
+    try{
+        const value = $$("editPropTextarea").getValue();
+        setPropValue(value);
+
+    } catch (err){
+        errors_setFunctionError(
+            err, 
+            textarea_logNameFile, 
+            "submitClick"
+        );
+    }
+    Action.destructItem($$("editTablePopupText"));
+}
+
+function setTextareaVal(){
+    try{
+        const area = $$("editPropTextarea");
+        const val  = elem.value;
+        if (val){
+            area.setValue(val);
+        }
+    } catch (err){
+        errors_setFunctionError(
+            err,
+            textarea_logNameFile,
+            "setTextareaVal"
+        );
+    }
+}
+
+function createModalBox(area){
+   
+    const value = area.getValue();
+    const popup = $$("editTablePopupText");
+
+    if (area.dirtyValue){
+        modalBox().then(function(result){
+
+            if (result == 1 || result == 2){
+                if (result == 2){
+                    setPropValue(value);
+                }
+                Action.destructItem(popup);
+            }
+        });
+    } else {
+        Action.destructItem(popup);
+    } 
+}
+
+
+const textarea_closePopupClick = function (){
+    const area  = $$("editPropTextarea");
+
+    if (area){
+        createModalBox(area);
+    }
+   
+};
+
+function returnTextArea(){
+    const textarea = { 
+        view        : "textarea",
+        id          : "editPropTextarea", 
+        height      : 150, 
+        dirtyValue  : false,
+        placeholder : "Введите текст",
+        on          : {
+            onKeyPress:function(){
+                Action.enableItem($$("editPropSubmitBtn"));
+
+                $$("editPropTextarea").dirtyValue = true;
+            }
+        }
+    };
+
+    return textarea;
+}
+
+function textarea_returnSubmitBtn(){
+    const btn = new Button({
+
+        config   : {
+            id       : "editPropSubmitBtn",
+            disabled : true,
+            hotkey   : "Ctrl+Space",
+            value    : "Добавить значение", 
+            click    : function(){
+                textarea_submitClick();
+            },
+        },
+        titleAttribute : "Добавить значение в запись таблицы"
+    
+       
+    }).maxView("primary");
+
+    return btn;
+}
+function textarea_popupEdit(){
+    const headline = "Редактор поля  «" + elem.label + "»";
+
+    const popup = new Popup({
+        headline : headline,
+        config   : {
+            id        : "editTablePopupText",
+            width     : 400,
+            minHeight : 300,
+    
+        },
+
+        closeClick :  textarea_closePopupClick,
+    
+        elements   : {
+            padding:{
+                left  : 9,
+                right : 9
+            },
+            rows   : [
+                returnTextArea(),
+                {height : 15},
+                textarea_returnSubmitBtn(),
+            ]
+          
+        }
+    });
+    
+    popup.createView ();
+    popup.showPopup  ();
+
+    setTextareaVal();
+
+}
+
+function btnClick (){
+    textarea_popupEdit();
+}
+
+
+function createBtnTextEditor(){
+    const btn = new Button({
+
+        config   : {
+            width    : 30,
+            height   : 29,
+            icon     : "icon-window-restore", 
+            click    : function(){
+                btnClick ();
+            },
+        },
+        titleAttribute : "Открыть большой редактор текста"
+    
+       
+    }).minView();
+    
+    try{
+        $$("propertyRefbtnsContainer").addView(btn);
+    } catch (err){
+        errors_setFunctionError(err,textarea_logNameFile,"createBtnTextEditor");
+    }
+}
+
+
+
+function createPopupOpenBtn(el){
+    textarea_property = $$("editTableFormProperty");
+    elem     = el;
+
+    createBtnTextEditor();
+    Action.showItem($$("tablePropBtnsSpace"));
+}
+
+
+;// CONCATENATED MODULE: ./src/js/components/table/editForm/propBtns/reference.js
+
+
+
+
+
+
+
+
+
+
+
+
+
+const reference_logNameFile = "tableEditForm => propBtns => reference";
+
+
+let reference_property;
+let selectBtn;
+
+async function toRefTable (refTable){ 
+    await LoadServerData.content("fields");
+    const keys   = GetFields.keys;
+
+    if (keys){
+        if (refTable){
+            Backbone.history.navigate("tree/" + refTable, { trigger : true});
+            window.location.reload();
+        }
+
+    }
+}
+
+
+function setRefTable (srcTable){
+    const table = $$("table");
+    const cols  = table.getColumns();
+    const tree  = $$("tree");
+
+    
+    try {
+        cols.forEach(function(col){
+
+            if ( col.id == srcTable ){
+            
+                const refTable =  col.type.slice(10);
+
+                if ( tree.getItem(refTable) ){
+                    tree.select(refTable);
+
+                } else if (refTable) {
+                    toRefTable (refTable);
+                    
+                }
+            
+            }
+
+        });
+    } catch (err){
+        errors_setFunctionError(err, reference_logNameFile, "setRefTable");
+
+        Action.hideItem($$("EditEmptyTempalte"));
+    }
+}
+
+
+function reference_createModalBox (srcTable){
+   
+    modalBox().then(function(result){
+
+        if (result == 1 || result == 2){
+            const idExists = reference_property.getValues().id;
+            if (result == 2){
+                if (idExists){
+                    saveItem(false,true);
+                } else {
+                    saveNewItem(); 
+                }
+                
+            }
+
+            setDirtyProperty ();
+            setRefTable (srcTable);
+        
+        }
+    });
+        
+    
+}
+
+
+function reference_btnClick (idBtn){
+    const srcTable = $$(idBtn).config.srcTable;
+
+    if ( reference_property.config.dirty){
+        reference_createModalBox ();
+    } else {
+        setRefTable (srcTable);
+    }
+}
+
+function btnLayout(){
+
+    const btn = new Button({
+
+        config   : {
+            width    : 30,
+            height   : 29,
+            icon     : "icon-share-square-o", 
+            srcTable : selectBtn,
+            click    : function(id){
+                reference_btnClick (id);
+            },
+        },
+        titleAttribute : "Перейти в родительскую таблицу"
+    
+       
+    }).minView();
+
+    try{
+        $$("propertyRefbtnsContainer").addView(btn);
+    } catch (err){
+        errors_setFunctionError(err, reference_logNameFile, "btnLayout");
+    }
+}
+
+function createRefBtn(btn){
+    reference_property  = $$("editTableFormProperty");
+    selectBtn = btn;
+    btnLayout();
+    Action.showItem($$("tablePropBtnsSpace"));
+}
+
+
+
+;// CONCATENATED MODULE: ./src/js/components/table/editForm/createProperty.js
+
+
+
+
+
+
+
+
+
+
+
+const createProperty_logNameFile = "tableEditForm => createProperty";
+
+function createDateEditor(){
+    webix.editors.$popup = {
+        date:{
+           view : "popup",
+           body : {
+            view        :"calendar",
+            weekHeader  :true,
+            events      :webix.Date.isHoliday,
+            timepicker  : true,
+            icons       : true,
+           }
+        }
+     };
+}
+
+
+
+function createEmptySpace(){
+    $$("propertyRefbtnsContainer").addView({
+        height : 29,
+        width  : 1
+    });
+}
+
+
+function createBtnsContainer(refBtns){
+    try{
+        refBtns.addView({
+            id   : "propertyRefbtnsContainer",
+            rows : []
+        });
+    } catch (err){
+        errors_setFunctionError(
+            err, 
+            createProperty_logNameFile, 
+            "createBtnsContainer"
+        );
+    }
+}
+
+function setToolBtns(){
+    const property      = $$("editTableFormProperty");
+    const refBtns       = $$("propertyRefbtns");
+    const propertyElems = property.config.elements;
+
+
+    if (!(refBtns._cells.length)){
+
+        if (!$$("propertyRefbtnsContainer")){
+            createBtnsContainer(refBtns);
+        }
+
+        propertyElems.forEach(function(el,i){
+            if (el.type == "combo"){
+                createRefBtn(el.id);
+
+            } else if (el.customType == "popup"){
+                createPopupOpenBtn(el);
+                
+            } else if (el.type == "customDate") {
+                createDatePopup(el);
+
+            } else {    
+                createEmptySpace();
+
+            }
+        });
+    }
+}
+
+function addEditInputs(arr){
+    const property = $$("editTableFormProperty");
+    property.define("elements", arr);
+    property.refresh();
+}
+
+function returnTemplate(el){
+    const template = {
+        id      : el.id,
+        label   : el.label, 
+        unique  : el.unique,
+        notnull : el.notnull,
+        length  : el.length,
+        value   : returnDefaultValue (el)
+        
+    };
+
+    return template;
+}
+
+
+
+function createDateTimeInput(el){
+    const template =  returnTemplate(el);
+    template.type = "customDate";
+
+    return template;
+
+}
+
+
+ function createReferenceInput(el){
+    const template =  returnTemplate(el);    
+    
+    let findTableId   = el.type.slice(10);
+    
+    template.type     = "combo";
+    template.css      = el.id + "_container";
+    template.options  = getComboOptions(findTableId);
+    template.template = function(obj, common, val, config){
+        const value = obj.value;
+        const item = config.collection.getItem(value);
+        return item ? item.value : "";
+    };
+
+    return template;
+}
+
+
+function createBooleanInput(el){
+    const template =  returnTemplate(el);  
+
+    template.type = "select";
+    template.options = [
+        {id:1, value: "Да"},
+        {id:2, value: "Нет"}
+    ];
+    return template;
+}
+
+
+function createProperty_createTextInput(el){
+    const template =  returnTemplate(el);
+
+    if (el.length == 0 || el.length > 512){
+        template.customType="popup";
+
+    } 
+
+    template.type = "text";
+    return template;
+}
+
+function addIntegerType(el){
+    const template =  createProperty_createTextInput(el);
+    template.customType = "integer";
+    return template;
+}
+
+function returnPropElem(el){
+    let propElem;
+
+    if (el.type == "datetime"){
+        propElem = createDateTimeInput(el);
+
+    } else if (el.type.includes("reference")) {
+        propElem = createReferenceInput(el);
+
+    } else if (el.type.includes("boolean")) {
+        propElem = createBooleanInput(el);
+
+    } else if (el.type.includes("integer")) {
+        propElem = addIntegerType(el);
+
+    } else {
+        propElem = createProperty_createTextInput(el);
+    }
+
+    return propElem;
+}
+function createProperty (parentElement) {
+
+    const property         = $$(parentElement);
+    const columnsData      = $$("table").getColumns(true);
+    const elems            = property.elements;
+    const propertyLength   = Object.keys(elems).length;
+
+    try {
+        
+        if ( !propertyLength ){
+            const propElems = [];
+
+            columnsData.forEach((el) => {
+
+                const propElem = returnPropElem(el);
+                propElems.push(propElem);
+
+            });
+
+        
+            createDateEditor();
+            addEditInputs   (propElems);
+            setToolBtns     ();
+    
+
+        } else {
+            property.clear();
+            property.clearValidation();
+
+            if(parentElement == "table-editForm"){
+                $$("table-delBtnId").enable();
+            }
+        }
+    } catch (err){
+        errors_setFunctionError(err, createProperty_logNameFile, "createEditFields");
+    }
+}
+
+
+;// CONCATENATED MODULE: ./src/js/components/table/editForm/setState.js
+
+
+
+
+
+
+
+const setState_logNameFile = "table => editForm => setState";
+
+// create new entry
+
+function initPropertyForm(){
+    const property = $$("editTableFormProperty");
+    Action.showItem(property);
+    property.clear();
+    property.config.dirty = false;
+}
+
+function setWorkspaceState (table){
+    const emptyTemplate = $$("EditEmptyTempalte");
+    function tableState(){
+        table.filter(false);
+        table.clearSelection();
+    }
+
+    function buttonsState(){
+        $$("table-delBtnId")   .disable();
+        $$("table-saveBtn")    .hide();
+        $$("table-saveNewBtn") .show();
+        $$("table-newAddBtnId").disable();
+    }
+
+    try{
+        tableState();
+        buttonsState();
+        createProperty("table-editForm");
+        Action.hideItem(emptyTemplate);
+    } catch (err){
+        errors_setFunctionError(
+            err,
+            setState_logNameFile,
+            "setWorkspaceState"
+        );
+    }
+
+}
+
+function editTablePostState(){
+    const table         = $$("table");
+    initPropertyForm();
+    setWorkspaceState (table);
+    table.hideOverlay("Ничего не найдено");
+  
+}
+
+//select exists entry
+function setPropertyWidth(prop){
+    const form = $$("table-editForm");
+
+    if (prop && !(prop.isVisible())){
+        prop.show();
+
+        if (window.innerWidth > 850){
+            form.config.width = 350;   
+            form.resize();
+        }
+    }
+
+}
+
+function adaptiveView (editForm){
+    try {
+        const container = $$("container");
+
+        if (container.$width < 850){
+            Action.hideItem($$("tree"));
+
+            if (container.$width < 850){
+                Action.hideItem($$("tableContainer"));
+                editForm.config.width = window.innerWidth;
+                editForm.resize();
+                Action.showItem($$("table-backTableBtn"));
+            }
+        }
+    } catch (err){
+        errors_setFunctionError(
+            err,
+            setState_logNameFile,
+            "adaptiveView"
+        );
+    }
+}
+
+function editTablePutState(){
+    try{
+        const prop      = $$("editTableFormProperty");
+        const editForm  = $$("table-editForm");
+        setPropertyWidth(prop);
+
+        prop.config.dirty = false;
+        Action.showItem  ($$("table-saveBtn"    ));
+
+        Action.hideItem  ($$("table-saveNewBtn" ));
+        Action.hideItem  ($$("EditEmptyTempalte"));
+
+        Action.enableItem($$("table-delBtnId"   ));
+        Action.enableItem($$("table-newAddBtnId"));
+   
+        if( !(editForm.isVisible()) ){
+            mediator.tables.defaultState("filter");
+            Button.transparentDefaultState();
+            adaptiveView (editForm);
+            editForm.show();
+        }
+ 
+    } catch (err){   
+        errors_setFunctionError(
+            err,
+            setState_logNameFile,
+            "editTablePutState"
+        );
+    }
+    
+}
+
+//default
+function disableVisibleBtn(){
+    const viewBtn =  $$("table-view-visibleCols");
+    const btn     =  $$("table-visibleCols");
+ 
+    if ( viewBtn.isVisible() ){
+        Action.disableItem(viewBtn);
+    } else if ( btn.isVisible() ){
+        Action.disableItem(btn);
+    }
+  
+}
+
+function editTableDefState(){
+    Action.hideItem  ($$("table-editForm"));
+    Action.hideItem  ($$("tablePropBtnsSpace"));
+    Action.removeItem($$("propertyRefbtnsContainer"));
+    Action.hideItem  ($$("editTableFormProperty"));
+    disableVisibleBtn();
+}
+
+class EditForm {
+    static defaultState (){
+        editTableDefState();
+    }
+
+    static putState     (){
+       editTablePutState();
+    }
+
+    static postState    (){
+        editTablePostState();
+    }
+
+}
+
+;// CONCATENATED MODULE: ./src/js/components/table/editForm/buttons.js
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const buttons_logNameFile = "tableEditForm => buttons";
+
+function updateWorkspace (itemData){
+    try{
+        const table   = $$( "table" );
+        table.updateItem(itemData.id, itemData);
+        table.clearSelection();
+      
+        defaultStateForm();
+    } catch (err){
+        errors_setFunctionError(err,buttons_logNameFile,"saveItem => updateWorkspace");
+    }  
+    
+}
+
+
+function setDirtyProp (property){
+                     
+    try{
+        property.config.dirty = false;
+        property.refresh();
+    } catch (err){
+        errors_setFunctionError(err, buttons_logNameFile, "saveItem => setDirtyProp");
+    } 
+}
+
+
+function addNewStateSpace(){
+    const table   = $$( "table" );
+    const delBtn  = $$("table-delBtnId");
+    const saveBtn = $$("table-saveBtn");
+    const saveNew = $$("table-saveNewBtn");
+    try{
+        table.filter(false);
+        createProperty("table-editForm");
+        delBtn.disable(); 
+        saveBtn.hide();
+        saveNew.show();
+    } catch (err){
+        errors_setFunctionError(err,buttons_logNameFile,"saveItem => addNewStateSpace");
+    }
+}
+
+
+function buttons_dateFormatting(arr){
+    const vals          = Object.values(arr);
+    const keys          = Object.keys(arr);
+    const formattingArr = arr;
+
+    keys.forEach(function(el,i){
+        const prop       = $$("editTableFormProperty");
+        const item       = prop.getItem(el);
+        const formatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
+
+        if ( item.type == "customDate" ){
+            formattingArr[el] = formatData(vals[i]);
+        }
+    });
+    return formattingArr;
+}
+
+
+function buttons_formattingBoolVals(arr){
+    const table = $$( "table" );
+    const cols  = table.getColumns();
+    cols.forEach(function(el,i){
+
+        if ( arr[el.id] && el.type == "boolean" ){
+            if (arr[el.id] == 2){
+                arr[el.id] = false;
+            } else {
+                arr[el.id] = true;
+            }
+        }
+    });
+
+    return arr;
+
+}   
+
+
+function saveItem(addBtnClick = false, refBtnClick = false){    
+  
+    try{    
+        
+        const itemData = $$("editTableFormProperty").getValues();   
+        const currId   = getItemId ();
+       
+        if (!(validateProfForm().length)){
+
+            if( itemData.id ) {
+                const link       = "/init/default/api/" + currId+"/" + itemData.id;
+                
+                const editForm       = $$("table-editForm");
+                const property       = $$("editTableFormProperty");
+                const addBtn         = $$("table-newAddBtnId");
+                const emptyTempl     = $$("EditEmptyTempalte");
+                const container      = $$("tableContainer");
+                const uniqueVals     = uniqueData (itemData);
+                const dateFormatVals = buttons_dateFormatting(uniqueVals)
+                const sentObj        = buttons_formattingBoolVals(dateFormatVals);
+ 
+                const putData    = webix.ajax().put(link, sentObj);
+
+                putData.then(function(data){
+                    data = data.json();
+
+                    if (data.err_type == "i"){
+
+                        if (!refBtnClick){
+                            updateWorkspace (itemData);
+                         
+                        }
+                     
+                        if (!addBtnClick ){
+                            addBtn.enable();
+                            setDirtyProp(property);
+                            Action.hideItem(editForm);
+                           
+                        } else {
+                            Action.showItem(property);
+                            addNewStateSpace();
+                            Action.hideItem(emptyTempl);
+            
+                        }
+                        Action.showItem(container);
+
+                        if(window.innerWidth < 850){
+                            editForm.hide();
+                        }
+ 
+                        setLogValue("success", "Данные сохранены", currId);
+
+                    } else {
+                        setLogValue("error", buttons_logNameFile + " function saveItem: " + data.err);
+                    }
+                });
+                putData.fail(function(err){
+                    setAjaxError(err, buttons_logNameFile,"saveItem");
+                });
+            }    
+
+        } else {
+            validateProfForm ().forEach(function(el,i){
+                setLogError ();
+            });
+        }
+    } catch (err){
+        errors_setFunctionError(err,buttons_logNameFile,"saveItem");
+    }
+
+}
+
+function addItem () {
+    const emptyTemplate = $$("EditEmptyTempalte");
+    const property      = $$("editTableFormProperty");
+    const table         = $$("table");
+    
+    function modalBoxAddItem(){
+        modalBox().then(function(result){
+            if (result == 1){
+                EditForm.postState();
+            
+            } else if (result == 2){
+                saveItem(true);
+                EditForm.postState();
+                Action.hideItem(emptyTemplate);
+            }
+        });
+    }
+
+    try {
+  
+        if ( property.config.dirty == true ){
+            modalBoxAddItem();
+        } else {
+            EditForm.postState();
+            table.hideOverlay("Ничего не найдено");
+        }
+
+    } catch (err){
+        errors_setFunctionError(err, buttons_logNameFile, "addItem");
+    }
+
+}
+
+function removeNullFields(arr){
+    const vals    = Object.values(arr);
+    const keys    = Object.keys(arr);
+    const sentObj = {};
+
+    vals.forEach(function(el,i){
+        if (el){
+            sentObj[keys[i]]= el;
+        }
+        buttons_dateFormatting(arr);
+    });
+
+    return sentObj;
+}
+
+function buttons_setCounterVal (){
+    try{
+        const counter = $$("table-findElements");
+        
+        const oldVal  = counter.getValues();
+        const newVal  = +oldVal + 1;
+
+        counter.setValues(newVal.toString());
+    } catch (err){
+        errors_setFunctionError(err,buttons_logNameFile,"setCounterVal");
+    }
+}
+
+function saveNewItem (){
+    const currId = getItemId ();
+ 
+    if (!(validateProfForm().length)){
+
+        const editForm       = $$("table-editForm");
+        const property       = $$("editTableFormProperty");
+        const newValues      = property.getValues();
+        const notNullVals    = removeNullFields  (newValues);
+        const dateFormatVals = buttons_dateFormatting    (notNullVals);
+        const sentVals       = buttons_formattingBoolVals(dateFormatVals);
+
+
+        const postData  = webix.ajax().post("/init/default/api/"+currId, sentVals);
+      
+        postData.then(function(data){
+            data = data.json();
+
+            function setDirtyProp(){
+                try{
+                    property.config.dirty = false;
+                    property.refresh();
+                } catch (err){
+                    errors_setFunctionError(err,buttons_logNameFile,"saveNewItem => setDirtyProp");
+                }
+            }
+
+            function tableUpdate(){
+                newValues.id = data.content.id;
+
+                if (newValues.id <= $$("table").config.offsetAttr ){
+                    $$("table").add(newValues); 
+                }
+
+                buttons_setCounterVal ();
+
+            }
+
+            if (data.content.id !== null){
+
+                if (data.err_type == "i"){
+                    try{
+                        tableUpdate();
+                        defaultStateForm ();
+                        setDirtyProp();
+                        $$("table-newAddBtnId").enable();
+                        Action.hideItem(editForm);
+                        Action.showItem($$("tableContainer"));
+
+                        if(window.innerWidth < 850){
+                            editForm.hide();
+                        }
+
+              
+                    } catch (err){
+                        errors_setFunctionError(err,buttons_logNameFile,"saveNewItem");
+                    }
+                    setLogValue("success","Данные успешно добавлены",currId);
+                } else {
+                    console.log(data);
+                    setLogValue("error",buttons_logNameFile+" function saveNewItem: "+data.err);
+                }
+            } else {
+
+                let errs = data.content.errors;
+                let msg = "";
+                Object.values(errs).forEach(function(err,i){
+                    msg +=err+" (Поле: "+Object.keys(errs)[i] +"); ";
+                });
+
+                setLogValue("error","editTableForm function saveNewItem: "+msg);
+            }
+        });
+        postData.fail(function(err){
+            setAjaxError(err, "tableEditForm => btns","saveNewItem");
+        });
+    
+
+    } else {
+        setLogError ();
+    }
+ 
+}
+
+function removeItem() {
+ 
+    try{
+        const currId = getItemId ();
+
+        popupExec("Запись будет удалена").then(
+            function(){
+
+                const formValues  = $$("editTableFormProperty").getValues();
+                const table       = $$( "table" );
+                const tableSelect = table.getSelectedId().id;
+                
+                function removeRow(){
+                    if(table){
+                        table.remove(tableSelect);
+                    }
+                }
+
+                removeRow();
+                const link ="/init/default/api/"+currId+"/"+formValues.id+".json";
+                const removeData = webix.ajax().del(link, formValues);
+
+                removeData.then(function(data){
+                    data = data.json();
+
+                    if (data.err_type == "i"){
+                        
+                        defaultStateForm();
+                        setDirtyProperty();
+                        Action.showItem($$("tableContainer"));
+
+                        if(window.innerWidth < 850){
+                            $$("table-editForm").hide();
+                        }
+
+                        setLogValue("success","Данные успешно удалены");
+                    } else {
+                        setLogValue("error","editTableForm function removeItem: "+data.err);
+                    }
+                });
+                removeData.fail(function(err){
+                    setAjaxError(err, buttons_logNameFile,"removeItem");
+                });
+     
+        });
+    } catch (err){
+        errors_setFunctionError(err,buttons_logNameFile,"removeItem");
+    }
+    
+}
+
+function backTableBtnClick() {
+    const form           = $$("table-editForm");
+    const tableContainer = $$("tableContainer");
+    const property       = $$("editTableFormProperty");
+    const table          = $$("table");
+
+    function defaultState(){
+        Action.hideItem(form);
+        Action.showItem(tableContainer);
+        if (table){
+            table.clearSelection();
+        }
+    }
+
+    function createModalBox(){
+
+        modalBox().then(function(result){
+                        
+            if (result == 1 || result == 2){
+                if (result == 1){
+                    defaultState();
+                } else if (result == 2){
+                    if (property.getValues().id){
+                        saveItem();
+                        defaultState();
+                    } else {
+                        saveNewItem(); 
+                    }
+                }
+
+                setDirtyProperty ();
+            }
+        });
+    }
+
+    if (property.config.dirty){
+        createModalBox ();
+    
+    } else {
+        defaultState();
+    }
+  
+
+}
+
+
+const newAddBtn = new Button({
+    
+    config   : {
+        id          : "table-newAddBtnId",
+        hotkey      : "Alt+A",
+        disabled    : true,
+        value       : "Новая запись", 
+        click       : addItem,
+    },
+    titleAttribute : "Добавить новую запись",
+    adaptValue     : "+",
+
+   
+}).maxView();
+
+const delBtn = new Button({
+    
+    config   : {
+        id       : "table-delBtnId",
+        hotkey   : "Ctrl+Enter",
+        disabled : true,
+        icon     : "icon-trash", 
+        click    : removeItem,
+    },
+    titleAttribute : "Удалить запись из таблицы"
+
+   
+}).minView("delete");
+
+
+const saveBtn = new Button({
+    
+    config   : {
+        id       : "table-saveBtn",
+        hotkey   : "Shift+Space",
+        hidden   : true, 
+        value    : "Сохранить", 
+        click    : function(){
+            saveItem();
+        },
+    },
+    titleAttribute : "Сохранить запись в таблицу"
+
+   
+}).maxView("primary");
+
+
+const saveNewBtn = new Button({
+    
+    config   : {
+        id       : "table-saveNewBtn",
+        hotkey   : "Ctrl+Shift+Space",
+        hidden   : true, 
+        value    : "Сохранить", 
+        click    : function(){
+            saveNewItem();
+        },
+    },
+    titleAttribute : "Сохранить новую запись в таблицу"
+
+   
+}).maxView("primary");
+
+
+const backTableBtn = new Button({
+    
+    config   : {
+        id       : "table-backTableBtn",
+        hotkey   : "Shift+Q",
+        hidden   : true,  
+        icon     : "icon-arrow-left", 
+        click    : backTableBtnClick,
+    },
+    titleAttribute : "Вернуться к таблице"
+
+   
+}).minView();
+
+
+
+
+const editFormBtns = {
+    minHeight : 48,
+    css       : "webix_form-adaptive", 
+    margin    : 5, 
+    rows:[
+        {cols:[
+            {   id      : "tablePropBtnsSpace",
+                width   : 35, 
+                hidden  : true
+            },
+            {rows:[
+                {
+                    margin : 5,
+                    rows   : [
+                        {
+                            margin : 2,
+                            cols   : [
+                                backTableBtn,
+                                newAddBtn,  
+                                delBtn,
+                            ]
+                        },
+                
+                    ]
+                },
+        
+                {   margin : 10, 
+                    rows   : [ 
+                        saveBtn,
+                        saveNewBtn,
+                        {   id        : "EditEmptyTempalte",
+                            rows      : [
+                                {height:20},
+                                createEmptyTemplate("Добавьте новую запись или выберите существующую из таблицы")
+                            ],
+                        }
+                    
+                    ]
+                },
+             
+            ]}
+        ]}
+   
+     
+
+    ]
+};
+
+
+
 ;// CONCATENATED MODULE: ./src/js/components/table/editForm/_layout.js
 
 
@@ -14734,21 +14481,6 @@ function editTableBar (){
     return editForm;
 }
 
-
-
-;// CONCATENATED MODULE: ./src/js/components/table/viewProperty.js
-function propertyTemplate (idProp){
-    return {
-        view:"property",  
-        id:idProp, 
-        tooltip:"Имя: #label#<br> Значение: #value#",
-        width:348,
-        nameWidth:150,
-        editable:true,
-        scroll:true,
-        hidden:true,
-    };
-}
 
 
 ;// CONCATENATED MODULE: ./src/js/components/table/filterForm/buttons/libSaveBtn.js
@@ -16795,79 +16527,784 @@ function filterForm (){
 
 
 
-;// CONCATENATED MODULE: ./src/js/components/table/viewTools.js
-function backFilterBtnClick (){
-    const tools       = $$("formsTools");    
-    const сontainer   = $$("formsContainer");
-    const formResizer = $$("formsTools-resizer");
-
-    function setBtnFilterState(){
-        const btnClass          = document.querySelector(".webix_btn-filter");
-        const primaryBtnClass   = "webix-transparent-btn--primary";
-        const secondaryBtnClass = "webix-transparent-btn";
-
-        if (btnClass.classList.contains(primaryBtnClass  )){
-            btnClass.classList.add     (secondaryBtnClass);
-            btnClass.classList.remove  (primaryBtnClass  );
-        }
-    }
-    function defaultState(){
-        if ( tools && tools.isVisible() ){
-            tools.hide();
-            formResizer.hide();
-        }
-    
-        if ( сontainer && !(сontainer.isVisible()) ){
-            сontainer.show();
-        }
-    }
+;// CONCATENATED MODULE: ./src/js/components/table/common.js
+ 
 
 
-    defaultState();
-    setBtnFilterState();
+
+
+
+
+const table_common_logNameFile = "table => common";
+
+
+function common_setDirtyProperty (){
+    const prop        = $$("editTableFormProperty");
+    prop.config.dirty = false;
+    prop.refresh();
 }
 
-const filterBackTableBtn = { 
-    view    : "button", 
-    id      : "table-backFormsBtnFilter",
-    type    : "icon",
-    icon    : "icon-arrow-right",
-    value   : "Вернуться к таблице",
- //   hidden:true,  
-    height  : 28,
-    minWidth: 50,
-    width   : 55,
+function toEditForm (nextItem) {
+    const valuesTable = $$("table").getItem(nextItem); 
+
+    function setViewDate(){
+        const parseDate = webix.Date.dateToStr("%d.%m.%y %H:%i:%s");
+        try{
+            Object.values(valuesTable).forEach(function(el,i){
+        
+                if(el instanceof Date){
+                    const key        = Object.keys(valuesTable)[i];
+                    const value      = parseDate(el);
+                    valuesTable[key] = value;
+                }
+            
+            });
+        } catch (err){ 
+            errors_setFunctionError(err,table_common_logNameFile,"setViewDate")
+        }
+    }
+
+    function setPropState(){
+        try{
+            const prop      = $$("editTableFormProperty");
+            const form      = $$("table-editForm"); 
+            const newAddBtn = $$("table-newAddBtnId");
+
+            if (prop && !(prop.isVisible())){
+                prop.show();
+
+                if (window.innerWidth > 850){
+                    form.config.width = 350;   
+                    form.resize();
+                }
+            }
+
+            if (!(newAddBtn.isEnabled())){
+                newAddBtn.enable();
+            }
+
+            common_setDirtyProperty();
+            setViewDate     ();
+
+            prop.setValues(valuesTable);
+        
+            $$("table-saveNewBtn").hide();
+            $$("table-saveBtn")   .show();
+            $$("table-delBtnId")  .enable();
+
+        } catch (err){   
+            errors_setFunctionError(
+                err,
+                table_common_logNameFile,
+                "toEditForm => setPropState"
+            );
+        }
+    }
+
+    setPropState();
+
+}
+
+
+function validateError (){
+    validateProfForm ().forEach(function(el,i){
+
+        let nameEl;
+        try{
+            $$("table").getColumns().forEach(function(col,i){
+                if (col.id == el.nameCol){
+                    nameEl = col.label;
+                }
+            });
+        } catch (err){ 
+            errors_setFunctionError(err,table_common_logNameFile,"validateError")
+        }
+        setLogValue("error",el.textError + " (Поле: " + nameEl + ")");
+    });
+}
+
+function common_uniqueData (itemData){
+    let validateData = {};
+
+    try{
+        Object.values(itemData).forEach(function(el,i){
+            const oldValues    = $$("table").getItem(itemData.id)
+            const oldValueKeys = Object.keys(oldValues);
+
+            function compareVals (){
+                let newValKey = Object.keys(itemData)[i];
+                
+                oldValueKeys.forEach(function(oldValKey){
+                    
+                    if (oldValKey == newValKey){
+                        
+                        if  (oldValues[oldValKey] !== Object.values(itemData)[i] ){
+                            validateData[Object.keys(itemData)[i]] = Object.values(itemData)[i];
+                        } 
+                        
+                    }
+                }); 
+            }
+            compareVals ();
+        });
+    } catch (err){ 
+        errors_setFunctionError(err,table_common_logNameFile,"uniqueData")
+    }
+    return validateData;
+}
+
+function putData (nextItem, valuesProp, currId, editInForm=false){
    
-    click   : function(){
-        backFilterBtnClick();
+    if (!(validateProfForm().length)){
+
+        if (valuesProp.id){
+
+            let sentValues;
+            if (editInForm){
+                sentValues = common_uniqueData (valuesProp);
+            } else {
+                sentValues = valuesProp;
+            }
+
+            const table   =  $$("table");
+            const url     = "/init/default/api/"+currId+"/"+valuesProp.id;
+            const putData =  webix.ajax().put(url, sentValues);
+            
+            putData.then(function(data){
+                data = data.json();
+                if (data.err_type == "i"){
+
+                    setLogValue("success","Данные сохранены");
+                    table.updateItem(valuesProp.id, valuesProp);
+                    Action.removeItem($$("propertyRefbtnsContainer"));
+
+                    if (editInForm){
+                        toEditForm(nextItem);
+                        table.select(nextItem);
+                    }
+                } if (data.err_type == "e"){
+                    setLogValue("error",data.error);
+                }
+            });
+
+            putData.fail(function(err){
+                setAjaxError(err, table_common_logNameFile,"putData");
+            });
+        
+        }
+
+    } else {
+        validateError ();
+    }
+}
+
+
+
+;// CONCATENATED MODULE: ./src/js/components/table/onFuncs.js
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const onFuncs_logNameFile = "table => onFuncs";
+
+function setUnDirtyProperty(){
+    const property = $$('editTableFormProperty');
+    property.config.dirty = true;
+}
+
+function onFuncs_toEditForm (nextItem) {
+    const valuesTable = $$("table").getItem(nextItem); 
+
+    function setViewDate(){
+        const parseDate = webix.Date.dateToStr("%d.%m.%y %H:%i:%s");
+        try{
+            Object.values(valuesTable).forEach(function(el,i){
+        
+                if(el instanceof Date){
+                    const key        = Object.keys(valuesTable)[i];
+                    const value      = parseDate(el);
+                    valuesTable[key] = value;
+                }
+            
+            });
+        } catch (err){ 
+            errors_setFunctionError(err, onFuncs_logNameFile, "setViewDate");
+        }
+    }
+
+    
+    EditForm.putState();
+    const prop = $$("editTableFormProperty");
+    prop.setValues(valuesTable);
+    setViewDate();
+
+}
+
+
+const onFuncTable = {
+
+    onBeforeLoad:function(){
+        this.showOverlay("Загрузка...");
     },
 
-    on: {
-        onAfterRender: function () {
-            this.getInputNode().setAttribute("title","Вернуться к таблице");
+    onBeforeEditStop:function(state, editor){
+        const table      = $$("table");
+        const valuesProp = table.getSelectedItem();
+        const currId     = getItemId ();
+        const tableItem  = table.getSelectedItem();
+        try {
+            if(state.value != state.old){
+
+                const idRow = editor.row;
+                const col   = editor.column;
+                const val   = state.value;
+              
+                table.updateItem(idRow, {[col] : val});
+                $$("editTableFormProperty").setValues(tableItem);
+                putData ("", valuesProp, currId);
+
+            }
+        } catch (err){
+            errors_setFunctionError(
+                err, 
+                onFuncs_logNameFile, 
+                "onBeforeEditStop"
+            );
         }
-    } 
+    },
+
+    onAfterSelect(){
+        EditForm.putState();
+    },
+    
+    onBeforeSelect:function(selection){
+        const table     = $$("table");
+        const property  = $$("editTableFormProperty");
+    
+
+        const valuesProp = property.getValues();
+        const currId     = getItemId ();
+        const nextItem   = selection.id;
+
+        function tableUpdate (id){
+            valuesProp.id = id;
+            table.add(valuesProp);
+        }
+
+        function successState(id){
+            tableUpdate (id);
+            
+            onFuncs_toEditForm  (nextItem);
+            
+            Action.removeItem($$("propertyRefbtnsContainer"));
+            
+            table.select(nextItem);
+            
+            setLogValue(
+                "success", 
+                "Данные успешно добавлены"
+            );  
+        }
+
+        function errorState(data){
+            const errs = data.errors;
+            let msg = "";
+            Object.values(errs).forEach(function(err,i){
+                msg += err + " (Поле: " + Object.keys(errs)[i] +"); ";
+            });
+
+            setLogValue("error",msg);
+        }
+
+        function postNewData (nextItem, currId, valuesProp){
+            if (!(validateProfForm().length)){
+                const url      = "/init/default/api/" + currId;
+                
+                const postData = webix.ajax().post(url, valuesProp);
+                
+                postData.then(function(data){
+                 
+                    data = data.json().content;
+
+                    if (data.id !== null){
+                        successState(data.id);
+                    } else {
+                        errorState(data)
+                    }
+                    
+                });
+
+                postData.fail(function(err){
+                    setAjaxError(
+                        err, 
+                        onFuncs_logNameFile,
+                        "onBeforeSelect => postNewData"
+                    );
+                });
+ 
+            } else {
+                validateError ();
+            }
+        }
+ 
+ 
+        function modalBoxTable (){
+
+            try{
+        
+                modalBox().then(function(result){
+                    const saveBtn  = $$("table-saveBtn");
+
+                    if (result == 1){
+                        onFuncs_toEditForm(nextItem);
+                        table.select(selection.id);
+                    
+                        Action.removeItem($$("propertyRefbtnsContainer"));
+                    } 
+
+                    else if (result == 2){
+                    
+                        if (saveBtn.isVisible()){
+                            putData     (nextItem, valuesProp, currId, true);
+                        } else {
+                            postNewData (nextItem, currId, valuesProp);
+                        }
+                        setUnDirtyProperty();
+                    }
+
+                });
+
+                return false;
+          
+            } catch (err){ 
+                errors_setFunctionError(
+                    err,
+                    onFuncs_logNameFile,
+                    "onBeforeSelect => modalBoxTable"
+                );
+            }
+        }
+      
+
+        if (property.config.dirty){
+            modalBoxTable ();
+            return false;
+        } else {
+            createProperty("table-editForm");
+            onFuncs_toEditForm(nextItem);
+        }
+    },
+
+    onAfterLoad:function(){
+        try {
+            this.hideOverlay();
+
+            defaultStateForm ();
+        } catch (err){
+            errors_setFunctionError(
+                err,
+                onFuncs_logNameFile,
+                "onAfterLoad"
+            );
+        }
+    },  
+
+    onAfterDelete: function() {
+    
+        function setOverlayState(){
+            const id   = getTable().config.id;
+            const table = $$(id);
+
+
+            if ( !table.count() ){
+                table.showOverlay("Ничего не найдено");
+            } else {
+                table.hideOverlay();
+            }
+        }
+
+        setOverlayState();
+      
+    },
+
+    onAfterAdd: function() {
+        this.hideOverlay();
+    },
+
 };
 
-const viewTools = {
-    id:"viewTools",
-    padding:10,
-    rows:[
-       {cols:[
 
-            {  
-                template:"Действия",
-                height:30, 
-                css:"popup_headline",
-                borderless:true,
+
+;// CONCATENATED MODULE: ./src/js/components/table/_layout.js
+
+
+
+
+
+
+
+
+const limitLoad   = 80;
+
+
+function _layout_table (idTable, onFunc, editableParam = false) {
+    return {
+        view        : "datatable",
+        id          : idTable,
+        css         : "webix_table-style webix_header_border webix_data_border ",
+        autoConfig  : true,
+        editable    : editableParam,
+        editaction  :"dblclick",
+        minHeight   : 350,
+       // height:200,
+        footer      : true,
+        select      : true,
+        resizeColumn: true,
+        sort        : [],
+        offsetAttr  : limitLoad,
+        on          : onFunc,
+        onClick     :{
+            "wxi-trash":function(event,config,html){
+                trashBtn(config,idTable);
             },
-            {},
-            filterBackTableBtn
-        ]},
-   
-        {id:"viewToolsContainer",rows:[{}]}
+
+            "wxi-angle-down":function(event, cell, target){
+                showPropBtn (cell);
+            },
+            
+        },
+        ready:function(){ 
+            const firstCol = this.getColumns()[0];
+            this.markSorting(firstCol.id, "asc");
+        },
+    };
+}
+
+const tableContainer = {   
+    id  : "tableContainer",
+    rows: [
+        tableToolbar ("table"),
+        {   view  : "resizer",
+            class : "webix_resizers"
+        },
+        _layout_table ("table", onFuncTable, true)
     ]
 };
+
+function returnLayoutTables(id){
+
+    const layout = {   
+        id      : id, 
+        hidden  : true, 
+        view    : "scrollview", 
+        body    : { 
+            view  : "flexlayout",
+            id    : "flexlayoutTable", 
+            cols  : [
+                                        
+                tableContainer,
+
+                {   view  : "resizer",
+                    class : "webix_resizers", 
+                    id    : "tableBarResizer" 
+                },
+          
+                editTableBar(),
+                filterForm(),
+                
+            ]
+        }
+    
+    };
+    return layout;
+}
+
+
+
+const tableLayout =  {   
+    view:"scrollview", 
+    body: {
+        view:"flexlayout",
+        cols:[
+            _layout_table ("table-view"),
+    
+        ]
+    }
+};
+
+const hiddenResizer = {   
+    view   : "resizer",
+    id     : "formsTools-resizer",
+    hidden : true,
+    class  : "webix_resizers",
+};
+
+const formsContainer = {   
+    id:"formsContainer",
+    rows:[
+        tableToolbar("table-view", true ),
+        {   view : "resizer", 
+            class: "webix_resizers"
+        },
+        tableLayout, 
+    ]
+};
+
+const _layout_tools = {   
+    id       : "formsTools",
+    hidden   : true,  
+    minWidth : 190, 
+    rows     : [
+        viewTools,
+    ]
+};
+
+function returnLayoutForms(id){  
+   
+    const layout =  {   
+        view   : "layout",
+        id     : id, 
+        css    : "webix_tableView",
+        hidden : true,                       
+        rows   : [
+            {cols : [
+                formsContainer, 
+                hiddenResizer,
+                propertyTemplate("propTableView"),
+                _layout_tools,
+            ]},
+
+        
+        ],
+
+
+    };
+
+    return layout;
+}
+
+
+
+;// CONCATENATED MODULE: ./src/js/components/table/lazyLoad.js
+
+
+const lazyLoad_limitLoad   = 80;
+
+
+function refreshTable(table){
+    const tableId           = table.config.idTable;
+    const oldOffset         = table.config.offsetAttr;
+
+    const newOffset         = oldOffset + lazyLoad_limitLoad;
+
+    table.config.offsetAttr = newOffset;
+    table.refresh();
+
+    createTableRows ("table", tableId, oldOffset);
+}
+
+
+function sortTable(table){
+    table.attachEvent("onAfterSort", function(id, sortType){
+        
+        const sortInfo = {
+            idCol : id,
+            type  : sortType
+        };
+
+        table.config.sort       = sortInfo;
+        table.config.offsetAttr = 0;
+
+        table.clearAll();
+        refreshTable(table);
+        
+    });
+}
+
+
+function scrollTableLoad(table){
+    table.attachEvent("onScrollY", function(){
+        const table        = this;
+        const scrollState  = table.getScrollState();
+        const maxHeight    = table._dtable_height;
+        const offsetHeight = table._dtable_offset_height;
+ 
+        if (maxHeight - scrollState.y == offsetHeight){ 
+            refreshTable(table);
+        }
+      
+
+    });
+}
+
+
+
+;// CONCATENATED MODULE: ./src/js/components/table/onResize.js
+function onResizeTable(table){
+    table.attachEvent("onResize", function(width){
+        const cols = table.getColumns();
+        width -= 17;
+        let sum = 0;
+        cols.forEach(function(col,i){
+            sum += col.width;
+        });
+
+        if (sum < width){
+            const different = width - sum;
+ 
+            const lastCol = cols.length - 1;
+            cols.forEach(function(col,i){
+                if (i == lastCol){
+                    const newWidth = col.width + different;
+                    table.setColumnWidth(col.id, newWidth);
+                }
+        
+            });
+
+        } 
+
+    });
+}
+
+
+;// CONCATENATED MODULE: ./src/js/components/table/onColumnResize.js
+
+let cols;
+let lengthCols;
+
+function returnCol(index){
+    const currIndex = lengthCols - index;
+    return cols[currIndex];
+}
+
+function returnSumWidthCols(){
+    let sum = 0;
+    cols.forEach(function(col){
+        sum += col.width;
+    });
+    return sum;
+}
+
+function setNewWidth(table){
+    const lastCol      = returnCol(1);
+    const scrollWidth  = 17;
+    const widthTable   = table.$width - scrollWidth
+    ;
+    const sumWidthCols = returnSumWidthCols();
+    if (sumWidthCols < widthTable){
+        const different = widthTable - sumWidthCols;
+        const newWidth  = lastCol.width + different;
+        
+        table.setColumnWidth(lastCol.id, newWidth);
+
+    }
+}
+
+
+function columnResize(table){
+
+    table.attachEvent("onColumnResize", function(id, newWidth, oldWidth, userAction){
+  
+        cols       = table.getColumns();
+        lengthCols = cols.length;
+  
+        if (userAction){
+            const lastResizer = 2;
+            const isExists    = lengthCols - lastResizer;
+            const prevCol     = returnCol(lastResizer);
+            
+            if ( isExists > -1 && prevCol.id == id){ // это последняя колонка
+                setNewWidth(table);
+               
+            }
+        }
+
+    });
+}
+
+
+;// CONCATENATED MODULE: ./src/js/components/table/columnsSettings/columnsWidth.js
+
+
+function setColsWidthStorage(table){
+    table.attachEvent("onColumnResize",function(id,newWidth, oldWidth, action){
+        if (action){
+           
+            const cols   = table.getColumns();
+            const values = [];
+
+            cols.forEach(function(el,i){
+
+                values.push({
+                    column  : el.id, 
+                    position: table.getColumnIndex(el.id),
+                    width   : el.width.toFixed(2)
+                });
+            });
+            postPrefsValues(values);
+        }
+    });     
+}
+
+
+;// CONCATENATED MODULE: ./src/js/components/table/filterForm/setDefaultState.js
+
+
+
+const setDefaultState_logNameFile = "table => filterForm => setDefaultState";
+
+
+function filterFormDefState(){
+    const filterContainer = $$("filterTableBarContainer");
+    const inputs          = $$("inputsFilter");
+
+    try{
+        if (filterContainer && filterContainer.isVisible()){
+            Action.hideItem  (filterContainer);
+        }
+
+       Action.disableItem($$("btnFilterSubmit"));
+       Action.disableItem($$("filterLibrarySaveBtn"));
+       Action.disableItem($$("resetFilterBtn"));
+
+        Action.removeItem(inputs);
+
+        Action.showItem($$("filterEmptyTempalte"));
+    } catch (err){
+        errors_setFunctionError(
+            err, 
+            setDefaultState_logNameFile, 
+            "setFilterDefaultState"
+        );
+    }
+}
+
+
+;// CONCATENATED MODULE: ./src/js/components/table/formTools/setDefaultState.js
+
+
+function toolsDefState(){
+    const formsTools     = $$("formsTools");
+    const formsContainer = $$("formsContainer");
+
+    Action.hideItem(formsTools);
+    Action.showItem(formsContainer);
+
+}
+
+
 
 
 ;// CONCATENATED MODULE: ./src/js/components/table/_tableMediator.js
@@ -16886,17 +17323,9 @@ const viewTools = {
 
 
 
-
-// other blocks
-
-
-
-
-
-
-
-
 const _tableMediator_logNameFile = "table => _tableMediator";
+
+
 
 
 class Tables {
@@ -16909,34 +17338,7 @@ class Tables {
             if (!$$(this.name)){
 
                 $$("container").addView(
-                    {   id:this.name, 
-                        hidden:true, 
-                        view:"scrollview", 
-                        body: { 
-                            view:"flexlayout",
-                            id:"flexlayoutTable", 
-                            cols:[
-                                                        
-                                {   id:"tableContainer",
-                                    rows:[
-                                        tableToolbar ("table"),
-                                        { view:"resizer",class:"webix_resizers"},
-                                        _layout_table ("table", onFuncTable,true)
-                                    ]
-                                },
-                            
-                                
-                               {  view:"resizer",class:"webix_resizers", id:"tableBarResizer" },
-                          
-                                editTableBar(),
-                                filterForm(),
-                                
-                            ]
-                        }
-                    
-                    },
-
-                
+                    returnLayoutTables(this.name),
                 5);
 
                 const tableElem = $$("table");
@@ -16947,7 +17349,11 @@ class Tables {
                 columnResize       (tableElem);
             }
         } catch (err){
-            errors_setFunctionError(err,_tableMediator_logNameFile,"createTables");
+            errors_setFunctionError(
+                err, 
+                _tableMediator_logNameFile, 
+                "createTables"
+            );
         }
     }
 
@@ -16957,6 +17363,19 @@ class Tables {
 
     load(id){
         createTable("table", id);
+    }
+
+    defaultState(type){
+        if (type == "edit"){
+            EditForm["default"]();
+        } else if (type == "filter"){
+            filterFormDefState();
+        } else {
+            EditForm.defaultState();
+            filterFormDefState   ();
+        }
+  
+       
     }
 
 }
@@ -16971,39 +17390,7 @@ class Forms {
         try{
             if (!$$(this.name)){
                 $$("container").addView(
-                    {   view:"layout",
-                        id:this.name, 
-                        css:"webix_tableView",
-                        hidden:true,                       
-                        rows:[
-                            {cols:[
-                                {id:"formsContainer",rows:[
-                                    tableToolbar("table-view", true ),
-                                    { view:"resizer",class:"webix_resizers",},
-                                    
-                                    {   view:"scrollview", 
-                                        body: {
-                                            view:"flexlayout",
-                                            cols:[
-                                                _layout_table ("table-view"),
-                                        
-                                            ]
-                                        }
-                                    }, 
-                                ]}, 
-
-                                { view:"resizer",id:"formsTools-resizer",hidden:true,class:"webix_resizers",},
-                                propertyTemplate("propTableView"),
-                                {id:"formsTools",hidden:true,  minWidth:190, rows:[
-                                    viewTools,                                
-                                ]},
-                            ]},
-                        
-                         
-                        ],
-
-                        
-                    },
+                    returnLayoutForms(this.name),
                 6);
 
                 const tableElem = $$("table-view");
@@ -17015,7 +17402,11 @@ class Forms {
            
             }
         } catch (err){
-            errors_setFunctionError(err,_tableMediator_logNameFile,"createForms");
+            errors_setFunctionError(
+                err,
+                _tableMediator_logNameFile,
+                "createForms"
+            );
         }
     }
 
@@ -17026,6 +17417,12 @@ class Forms {
     load(id){
         createTable("table-view", id);
     }
+
+    defaultState(){
+        toolsDefState ();
+        Button.transparentDefaultState();
+    }
+
 
 }
 
@@ -17964,6 +18361,18 @@ class TreeEdit {
         getInfoEditTree();
     }
 
+
+    defaultState(id){
+        try{
+            const elem = $$("treeTempl");
+            if(!($$(id))){
+                Action.hideItem(elem);
+            }
+        } catch (err){
+            errors_setFunctionError(err, _treeEditMediator_logNameFile, "hideTreeTempl");
+        }
+    }
+
 }
 
 
@@ -17973,19 +18382,23 @@ class TreeEdit {
 
 
 
+let _layout_form;
+function returnPassData(){
+    const passData = _layout_form.getValues();
+
+    const objPass = {
+        op: passData.oldPass,
+        np: passData.newPass
+    };
+
+    return objPass;
+}
 function doAuthCp (){
     try{
-        const form = $$("cp-form");
-        if ( form && form.validate()){
+        _layout_form = $$("cp-form");
+        if ( _layout_form && _layout_form.validate()){
 
-            
-        
-            let passData = form.getValues();
-
-            const objPass = {
-                op: passData.oldPass,
-                np: passData.newPass
-            };
+            const objPass = returnPassData();
             
             const url      = "/init/default/api/cp";
             const postData = webix.ajax().post(url, objPass);
@@ -17994,17 +18407,26 @@ function doAuthCp (){
                 data = data.json();
                 
                 if (data.err_type == "i"){
-                    setLogValue("success",data.err);
+                    setLogValue("success", data.err);
                 } else {
-                    setLogValue("error","authSettings function doAuthCp: "+data.err,"cp");
+                    setLogValue(
+                        "error",
+                        "authSettings function doAuthCp: " + 
+                        data.err, 
+                        "cp"
+                    );
 
                 }
 
-                form.setDirty(false);
+                _layout_form.setDirty(false);
             });
             
             postData.fail(function(err){
-                setAjaxError(err, "authSettings","doAuthCp post");
+                setAjaxError(
+                    err, 
+                    "authSettings",
+                    "doAuthCp"
+                );
             });
 
         }
@@ -18032,8 +18454,9 @@ const userName = {
         const keys   = Object.keys(values);
 
         function returnDiv(text){
-            const defaultStyles = "display:inline-block; font-size:13px!important; font-weight:600;" ;
-            return "<div style='"+defaultStyles+"color:var(--primary);'>"+
+            const defaultStyles = "display:inline-block; font-size:13px!important; font-weight:600;";
+
+            return "<div style='" + defaultStyles + "color:var(--primary);'>"+
             "Имя пользователя:</div>"+
             "⠀"+
             "<div style=' " + defaultStyles + " '>"+
@@ -18884,1278 +19307,283 @@ class Settings {
 }
 
 
-;// CONCATENATED MODULE: ./src/js/blocks/_mediator.js
-
-
-
-
-
-
-
-const viewElements = (/* unused pure expression or super */ null && ([
-    "tables",
-    "forms",
-    "dashboards",
-    "settings",
-    "cp"
-]));
-
-
-const mediator = {
-    dashboards  : new Dashboards(),
-    tables      : new Tables    (),
-    forms       : new Forms     (),
-    settings    : new Settings  (),
-    user_auth   : new UserAuth  (),
-    treeEdit    : new TreeEdit  (),
-
-    getViews(){
-        const elems = Object.keys(this);
-
-        let arr     = [];
-        arr         = Object.assign(arr, elems);
-        arr.pop();
-        return arr;
-    }
-};
-
-
-
-;// CONCATENATED MODULE: ./src/js/components/routerConfig/common.js
-
-
-
-
-
-
-
-const routerConfig_common_logNameFile = "router => common";
-function createElements(specificElement){
-
-    function createDefaultWorkspace(){
-        if(!specificElement){
-            mediator.dashboards.create();
-            mediator.tables.create();
-            mediator.forms.create();
-        }
-    }
-
-    function createTreeTempl(){
-        try{
-            if (specificElement == "treeTempl"){
-                mediator.treeEdit.create();
-            }
-        } catch (err){
-            errors_setFunctionError(
-                err,
-                routerConfig_common_logNameFile,
-                "createTreeTempl"
-            );
-        }
-    }
-
-    function createCp(){
-        try{
-            if (specificElement == "cp"){
-                mediator.user_auth.create();
-            }
-        } catch (err){
-            errors_setFunctionError(
-                err,
-                routerConfig_common_logNameFile,
-                "createCp"
-            );
-        }
-    }
-
-    function createUserprefs(){
-        try{
-            if (specificElement == "settings"){
-                mediator.settings.create();
-            }
-        } catch (err){
-            errors_setFunctionError(
-                err,
-                routerConfig_common_logNameFile,
-                "createUserprefs"
-            );
-        }
-    }
-
-    function createSpecificWorkspace (){
-        createTreeTempl();
-        createCp();
-        createUserprefs();
-    }
-   
-
-    createDefaultWorkspace();
-    createSpecificWorkspace ();
-  
-}
-
-function removeElements(){
-
-    function removeElement(idElement){
-        try {
-            const elem   = $$(idElement);
-            const parent = $$("container");
-            if (elem){
-                parent.removeView(elem);
-            }
-        } catch (err){
-            setFunctionError(
-                err,
-                routerConfig_common_logNameFile,
-                "removeElement (element: " + idElement + ")"
-            );
-        }
-    }
-    removeElement ("tables");
-    removeElement ("dashboards");
-    removeElement ("forms");
-    removeElement ("user_auth");
-}
-
-
-function getWorkspace (){
-
-    function getMenuTree() {
-
-        function generateChildsTree  (el){
-            let childs = [];
-    
-            try {
-                el.childs.forEach(function(child,i){
-                    childs.push({
-                        id     : child.name, 
-                        value  : child.title,
-                        action : child.action
-                    });
-                });
-            } catch (err){
-                errors_setFunctionError(err,routerConfig_common_logNameFile,"generateChildsTree");
-            }
-            return childs;
-        }
-
-        function generateParentTree  (el){ 
-            let menuItem;
-            try {                  
-                menuItem = {
-                    id     : el.name, 
-                    value  : el.title,
-                    action : el.action,
-                };
-
-          
-                if ( !(el.title) ){
-                    menuItem.value="Без названия";
-                }
-
-                if ( el.mtype == 2 ) {
-
-                    if ( el.childs.length == 0 ){
-                        menuItem.webix_kids = true; 
-                    } else {
-                        menuItem.data = generateChildsTree (el);
-                    }         
-                } 
-            
-
-            } catch (err){
-                errors_setFunctionError(err,routerConfig_common_logNameFile,"generateParentTree");
-            }
-            return menuItem;
-        } 
-
-        function generateHeaderMenu  (el){
-
-            const items = [];
-
-            function pustItem(id, value, icon){
-                const item = {
-                    id    : id, 
-                    value : value, 
-                    icon  : icon
-                };
-
-                if (id == "logout"){
-                    item.css = "webix_logout";
-                }
-              
-                items.push(item);
-            
-                return items;
-            }
-            
-            pustItem ("favs",       "Избранное",     "icon-star"     );
-            pustItem ("settings",  "Настройки",      "icon-cog"      );
-            pustItem ("cp",         "Смена пароля",  "icon-lock"     );
-            pustItem ("logout",     "Выйти",         "icon-sign-out" );
-
-              
-           
-            return items;
-        }
-
-        function generateMenuTree (menu){ 
-
-
-            const menuTree   = [];
-            const delims     = [];
-            const tree       = $$("tree");
-            const btnContext = $$("button-context-menu");
-
-            let menuHeader = [];
-
-            menu.forEach(function(el,i){
-                if (el.mtype !== 3){
-                    menuTree.push  ( generateParentTree (el, menu, menuTree  ) );
-                    if (el.childs.length !==0){
-                        menuHeader = generateHeaderMenu (el, menu, menuHeader);
-                    }
-                } else {
-                    delims.push(el.name);
-                    menuTree.push({
-                        id       : el.name, 
-                        disabled : true,
-                        value    : ""
-                    });
-                }
-            
-            });
-
-            tree.clearAll();
-            tree.parse(menuTree);
-
-            if (btnContext.config.popup.data !== undefined){
-                btnContext.config.popup.data = menuHeader;
-                btnContext.enable();
-            }
-
-        
-            delims.forEach(function(el){
-                tree.addCss(el, "tree_delim-items");
-
-            });
-   
-
-        }
-
-        LoadServerData.content("mmenu")
-        
-        .then(function (){
-            const menu = GetMenu.content;
-            generateMenuTree (menu); 
-        });
+;// CONCATENATED MODULE: ./src/js/components/treeSidabar/modalBox.js
  
-    }
 
-    function createContent (){ 
+
+
+
+
+
+
+const modalBox_logNameFile = "treeSidebar => onItemClick";
+
  
-        function showMainContent(){
-            try {
-                $$("userAuth").hide();
-                $$("mainLayout").show();
-            } catch (err){
-                window.alert
-                ("showMainContent: " + err +  " (Подробности: ошибка в отрисовке контента)");
-                errors_setFunctionError(err,routerConfig_common_logNameFile,"showMainContent");
-            }
-        }
+let prop;
+let propBtns;
+let valuesProp;
+let currId;
+let id;
 
-        function setUserData(){
-            const userStorageData      = {};
-            userStorageData.id       = STORAGE.whoami.content.id;
-            userStorageData.name     = STORAGE.whoami.content.first_name;
-            userStorageData.username = STORAGE.whoami.content.username;
-            
-            setStorageData("user", JSON.stringify(userStorageData));
-        }
-
-        showMainContent();
-
-        setUserData();
-
-        createElements();
-
-        getMenuTree();
-    }
-
-    async function getAuth () {
-        if (!STORAGE.whoami){
-            await getData("whoami"); 
-        }
-
-        if (STORAGE.whoami){
-            createContent (); 
-        }
-
-    }
-
-    getAuth ();
-
-}
-
-
-function checkTreeOrder(){
-
+function modalBox_setDirtyProperty (){
     try{
-        if ($$("tree").data.order.length == 0){
-            getWorkspace ();
-        }
-    
+        prop.config.dirty = false;
+        prop.refresh();
     } catch (err){
         errors_setFunctionError(
             err,
-            routerConfig_common_logNameFile,
-            "checkTreeOrder"
+            modalBox_logNameFile,
+            "setDirtyProperty"
         );
     }
 }
 
-function closeTree(){
+function setDefaultStateProperty (){
+    try{
+        if (prop && prop.isVisible()){
+            prop.clear();
+            prop.hide();
+        }
+    } catch (err){
+        errors_setFunctionError(
+            err,
+            modalBox_logNameFile,
+            "setDirtyProperty"
+        );
+    }
+}
+
+function setDefaultStateBtns (){
+    try{
+        const saveNewBtn = $$("table-saveNewBtn");
+        const saveBtn    = $$("table-saveBtn");
+        const delBtn     = $$("table-delBtnId");
+ 
+      
+        if (saveNewBtn.isVisible()) {
+            saveNewBtn.hide();
+
+        } else if (saveBtn.isVisible()){
+            saveBtn.hide();
+        }
+        
+        Action.disableItem(delBtn);
+
+    } catch (err){
+        errors_setFunctionError(
+            err,
+            modalBox_logNameFile,
+            "setDefaultStateBtns"
+        );
+    }
+}
+
+
+function modalBox_validateError (){
+    try{
+        validateProfForm ().forEach(function(el,i){
+            let nameEl;
+
+            $$("table").getColumns().forEach(function(col){
+                if (col.id == el.nameCol){
+                    nameEl = col.label;
+                }
+            });
+
+            setLogValue("error", 
+            el.textError + " (Поле: " + nameEl + ")");
+        });
+    } catch (err){
+        errors_setFunctionError(
+            err,
+            modalBox_logNameFile,
+            "validateError"
+        );
+    }
+}
+
+
+function modalBox_uniqueData (itemData){
+    let validateData = {};
+
+    function compareVals (i){
+        try{
+            const oldValues       = $$("table").getItem(itemData.id);
+            const oldValueKeys    = Object.keys  (oldValues);
+
+            const newValKey       = Object.keys  (itemData)[i];
+            const newVal          = Object.values(itemData)[i];
+            
+            oldValueKeys.forEach(function(oldValKey){
+                
+                if (oldValKey == newValKey){
+
+                    if (oldValues[oldValKey]  !== newVal){
+                        validateData[newValKey] = newVal;
+                    } 
+                    
+                }
+            }); 
+        } catch (err){
+            errors_setFunctionError( err, modalBox_logNameFile, "compareVals");
+        }
+    }
+
+    Object.values(itemData).forEach(function(el, i){         
+        compareVals (i);
+    });
+
+    return validateData;
+}
+
+
+
+function selectTree(id){
     const tree = $$("tree");
-    try{
-        if(tree){
-            tree.closeAll();
-        }
-
-    } catch (err){
-        errors_setFunctionError(
-            err,
-            routerConfig_common_logNameFile,
-            "closeTree"
-        );
+    if (tree){
+        tree.select(id);
     }
-    
 }
 
-function hideAllElements (){
+function postNewData (){
 
-    try {
-        $$("container").getChildViews().forEach(function(el,i){
-           
-            if(el.config.view=="scrollview"|| el.config.view=="layout"){
-                const element = $$(el.config.id);
-                
-                if (element.isVisible()){
-                    element.hide();
-                }
+
+    if (!(validateProfForm().length)){
+        const url       = "/init/default/api/" + currId;
+        const postData  = webix.ajax().post(url, valuesProp);
+
+        postData.then(function(data){
+            data = data.json();
+            if (data.content.id !== null){
+                modalBox_setDirtyProperty ();
+                Action.removeItem(propBtns);
+                selectTree(id);
+                setLogValue(
+                    "success", 
+                    "Данные успешно добавлены", 
+                    currId
+                );
+
+            } else {
+
+                const errs   = data.content.errors;
+                const values = Object.values(errs);
+                let msg      = "";
+
+                values.forEach(function(err,i){
+                    const field = Object.keys(errs)[i];
+                    msg += err + " (Поле: " + field + "); ";
+                });
+
+                setLogValue("error", msg);
+            }
+
+            if(data.err_type !== "i"){
+                errors_setFunctionError(
+                    data.err,
+                    modalBox_logNameFile,
+                    "postNewData"
+                );
             }
         });
-    } catch (err){
-        errors_setFunctionError(err,routerConfig_common_logNameFile,"hideAllElements");
-    }
-  
-     
-}
 
-
-
-
-;// CONCATENATED MODULE: ./src/js/components/routerConfig/tree.js
-
-
-
-
-
-
-
-
-const tree_logNameFile = "router => tree";
-
-function treeRouter(id){
-     
-
-    function notFoundPopup(){
-
-        const popupHeadline = {   
-            template:"Что-то пошло не так...", 
-            width:250,
-            css:"popup-headline", 
-            borderless:true, 
-            height:20 
-        };
-        const btnClosePopup = {
-            view:"button",
-            id:"buttonClosePopup",
-            css:"popup_close-btn",
-            type:"icon",
-            width:35,
-            icon: 'wxi-close',
-            click:function(){
-                try{
-                    const popup = $$("popupNotFound");
-                    if (popup){
-                        popup.hide();
-                    }
-                } catch (err){
-                    errors_setFunctionError(err,tree_logNameFile,"btnClosePopup click");
-                }
-            
-            }
-        };
-    
-        const popupSubtitle = {   
-            template:"Страница не найдена",
-            css:"webix_template-not-found-descr", 
-            borderless:true, 
-            height:35 
-        };
-    
-        const mainBtnPopup = {
-            view:"button",
-            css:"webix_btn-not-found-back",
-            height:46,
-            value:"Вернуться на главную",
-            click:function(){
-                function destructPopup(){
-                    try{
-                        if ($$("popupNotFound")){
-                            $$("popupNotFound").destructor();
-                        }
-                    } catch (err){
-                        errors_setFunctionError(err,tree_logNameFile,"mainBtnPopup click destructPopup");
-                    }
-                }
-                function navigate(){
-                    try{
-                        Backbone.history.navigate("content", { trigger:true});
-                        window.location.reload();
-                    } catch (err){
-                        errors_setFunctionError(err,tree_logNameFile,"mainBtnPopup click navigate");
-                    }
-                }
-                destructPopup();
-                navigate();
-             
-           
-            }
-        };
-    
-        webix.ui({
-            view:"popup",
-            id:"popupNotFound",
-            css:"webix_popup-prev-href",
-            width:340,
-            height:125,
-            position:"center",
-            body:{
-                rows:[
-                {rows: [ 
-                    { cols:[
-                        popupHeadline,
-                        {},
-                        btnClosePopup,
-                    ]},
-                    popupSubtitle,
-                    mainBtnPopup,
-                    {height:20}
-                ]}]
-                
-            },
-    
-        }).show();
-    }
-
-    function showNotFoundPopup (){
-        try{
-            setTimeout( function (){
-                notFoundPopup();
-            }, 1500);
-        } catch (err){
-            errors_setFunctionError(err, tree_logNameFile, "showNotFoundPopup");
-        }
-    }
-    
-    function showTableData (){
-     
-        let checkFound = false;
-    
-        function showElem(idElem){
-            try{
-                const elem = $$(idElem);
-                if (elem){
-                    elem.show();
-                }
-            } catch (err){
-                errors_setFunctionError(err, tree_logNameFile, "showTableData (element: " + idElem + ")");
-            }
-        }
-    
-
-
-        function createElem(){
-     
-            try{
-                const keys   = GetFields.keys;
-                const values = GetFields.values;
-               
-                values.forEach(function(field, i){
-           
-                    if (keys[i] == id){
-                       
-                        checkFound = true;
-                   
-                        if (field.type == "dbtable" || 
-                            field.type == "tform"   || 
-                            field.type == "dashboard"){    
-                                Action.hideItem($$("webix__none-content"));
-    
-                            if (field.type == "dbtable"){
-                                mediator.tables.showView();
-                                mediator.tables.load(id);
-
-                                
-                            } else if (field.type == "tform"){
-                                mediator.forms.showView(id);
-                                mediator.forms.load(id);
-    
-                            } else if (field.type == "dashboard"){
-                                mediator.dashboards.showView();
-                                mediator.dashboards.load(id);
-                            }
-                            
-                        } 
-                    }
-                });
-            } catch (err){
-                errors_setFunctionError(err, tree_logNameFile, "createElem");
-            }
-        }
-        createElem();
-
-        if (!checkFound){
-            showNotFoundPopup ();
-        }
-    }
-    
-    function setTableName (){
-        const tempalte     = "table-templateHeadline";
-        const tempalteView = "table-view-templateHeadline";
-        const names        = GetFields.names;
-
-        function setName(element){
-            if (element){
-                const headline = element;
-                try{
-                    names.forEach(function(el, i){
-                        if (el.id == id){
-                            if(headline){
-                                headline.setValues(el.name);
-                            }
-                        }
-                        
-                    });
-                } catch (err){
-                    errors_setFunctionError(err, tree_logNameFile, "setTableName");
-                }
-            }
-        }
-        setName($$(tempalte));
-        setName($$(tempalteView));
- 
-    }
-    
-    function selectTreeItem(){
-        const tree = $$("tree");
-
-        const pull = tree.data.pull;
-        const values = Object.values(pull);
-   
-        let topParent;
-        values.forEach(function(el,i){
-       
-            if (el.webix_kids && !(tree.exists(id))){
-            
-                const obj = [el.id];
-             
-                tree.callEvent("onBeforeOpen", obj);
-
-                topParent = el.id;
-            }
-
+        postData.fail(function(err){
+            setAjaxError(err, modalBox_logNameFile, "postNewData");
         });
 
-
-        function setScroll(){
-            const scroll = tree.getScrollState();
-            tree.scrollTo(0, scroll.y); 
-        }
-
-        if (tree.exists(id)){
-            if (topParent){
-            
-                tree.open     (topParent, true);
-                tree.select   (id);
-                tree.showItem (id);
-
-                setScroll();
-            }
-
-        }
-
-   
-
-    }
-
-    async function getTableData (){
-
-        await LoadServerData.content("fields");
-        const keys = GetFields.keys;
-     
-        if (keys){
-            showTableData   ();
-            setTableName    ();
-            selectTreeItem  ();
-        }
-
-  
-    }
-    
-    async function createTableSpace (){
-        await getWorkspace ();
-        const isFieldsExists = GetFields.keys;
-        try{   
-            const tree = $$("tree");
-            tree.attachEvent("onAfterLoad", webix.once(function(id){
-                if (!isFieldsExists) {
-                    getTableData ();
-                } 
-            }));         
-           
-        } catch (err){
-            errors_setFunctionError(err, tree_logNameFile, "createTable");
-        }
-
-    }
-    
-    function checkTable(){
-        try {
-            const tree = $$("tree");
-            if (tree.data.order.length == 0){
-                createTableSpace ();
-                
-            }
-        } catch (err){
-            errors_setFunctionError(err, tree_logNameFile, "checkTable");
-    
-        }    
-      
-    }
-
-    checkTable();
-  
-}
-
-
-;// CONCATENATED MODULE: ./src/js/components/routerConfig/index.js
-
-
-const routerConfig_logNameFile = "router => index";
-
-function indexRouter(){
-
-    function goToContentPage(){
-    
-        try {
-            Backbone.history.navigate("content", { trigger:true});
-        } catch (err){
-            console.log(err + " " + routerConfig_logNameFile + " goToContentPage");
-        }
-    }
-
-    function showWorkspace(){
-        try{
-            const main  = $$("mainLayout");
-            const login = $$("userAuth");
-            
-            if(main){
-                (main).hide();
-            }
-
-            if(login){
-                login.show();
-            }
-            
-        } catch (err){
-            window.alert("getAuth: " + err + 
-            " (Подробности: ошибка в отрисовке контента, router:index function showWorkspace)");
-            console.log(err + " " + routerConfig_logNameFile + " function showWorkspace");
-        }
-    }
-
-    async function getAuth () {
-     
-        if (!STORAGE.whoami ){
-            await getData("whoami"); 
-        }
-
-
-        if (STORAGE.whoami){
-            goToContentPage();
-
-        } else {
-  
-            showWorkspace();
-        }
-    }
-    getAuth ();
-    
-}
-
-;// CONCATENATED MODULE: ./src/js/components/routerConfig/cp.js
-
-
-
-
-const cp_logNameFile = "router => cp";
-
-function showUserAuth(){
-    try{
-        const elem = $$("user_auth");
-        if (elem){
-            elem.show();
-        }
-    } catch (err){
-        errors_setFunctionError(err,cp_logNameFile,"showUserAuth");
-    }
-}
-   
-function setUserValues(){
-    const user     = webix.storage.local.get("user");
-    const authName =  $$("authName");
-    try{
-        if (user){
-            authName.setValues(user.name.toString());
-        }
-    } catch (err){
-        errors_setFunctionError(err,cp_logNameFile,"setUserValues");
-    }
-}
-
-function hideNoneContent(){
-    try{
-        const elem = $$("webix__none-content");
-        if(elem){
-            elem.hide();
-        }
-    } catch (err){
-        errors_setFunctionError(err,cp_logNameFile,"hideNoneContent");
-    }
-}
-
-function removeNullContent(){
-    try{
-        const elem = $$("webix__null-content");
-        if(elem){
-            const parent = elem.getParentView();
-            parent.removeView(elem);
-        }
-    } catch (err){
-        errors_setFunctionError(err,cp_logNameFile,"removeNoneContent");
-    }
-}
-
-
-
-
-
-
-
-function cpRouter(){
-    
- 
- 
-    checkTreeOrder();
-
-
-    hideAllElements ();
-  
-    if($$("user_auth")){
-        showUserAuth();
     } else {
-    
-        createElements("cp");
-        showUserAuth();
-   
-    }
-  
-    closeTree();
-    setUserValues();
-    hideNoneContent();
-
-    removeNullContent();
-}
-
-
-
-;// CONCATENATED MODULE: ./src/js/components/routerConfig/settings.js
-
-
-
-
-const settings_logNameFile = "router => settings";
-
-function showUserprefs(){
-    try{
-        $$("settings").show();
-    } catch (err){
-      
-        errors_setFunctionError(err, settings_logNameFile, "showUserprefs");
+        modalBox_validateError ();
     }
 }
 
-function setUserprefsNameValue (){
-    const user = webix.storage.local.get("user");
-    try{
-        if (user){
-            $$("settingsName").setValues(user.name.toString());
-        }
-    } catch (err){
-      
-        errors_setFunctionError(err, settings_logNameFile, "setUserprefsNameValue");
-    }
+function modalBox_putData (){
+    if (!(validateProfForm().length)){
 
-}
+        if (valuesProp.id){
+            const url = "/init/default/api/" + currId + "/" + valuesProp.id;
+            const putValue = modalBox_uniqueData (valuesProp);
+            const putData = webix.ajax().put(url, putValue);
 
-function settings_hideNoneContent(){
-    try{
-        const elem = $$("webix__none-content");
-        if(elem){
-            elem.hide();
-        }
-    } catch (err){
-        
-        errors_setFunctionError(err, settings_logNameFile, "hideNoneContent");
-    }
-}
-
-function getDataUserprefs(){
-    const userprefsData = webix.ajax().get("/init/default/api/userprefs/");
-
-    userprefsData.then(function(data){
-
-        data = data.json().content;
-    
-        function setTemplateValue(){
-            try{
-                data.forEach(function(el,i){
-        
-                    if (el.name.includes   ("userprefs")     && 
-                        el.name.lastIndexOf("userprefs") == 0){
-                        $$(el.name).setValues(JSON.parse(el.prefs));
-                    }
-                });
-            } catch (err){
-                errors_setFunctionError(err, settings_logNameFile, "getDataUserprefs");
-            }
-        }
-
-        setTemplateValue();
-        
-    });
-
-    userprefsData.fail(function(err){
-        setAjaxError(err, settings_logNameFile, "getDataUserprefs");
-    });
-}
-
-function settings_removeNullContent(){
-    try{
-        const elem = $$("webix__null-content");
-        if(elem){
-            const parent = elem.getParentView();
-            parent.removeView(elem);
-        }
-    } catch (err){
-        errors_setFunctionError(err, settings_logNameFile, "removeNullContent");
-    }
-}
-
-
-function settingsRouter(){
-
-    hideAllElements ();
-  
-    checkTreeOrder();
-
-    if ($$("settings")){
-        showUserprefs();
-    } else {
-        createElements("settings");
-        getDataUserprefs();
-        showUserprefs();
-      
-
-    }
-
-    setUserprefsNameValue   ();
-    closeTree               ();
-    settings_hideNoneContent         ();
-    settings_removeNullContent       ();
-  
-}
-
-
-;// CONCATENATED MODULE: ./src/js/components/routerConfig/experimental.js
-
-
-
-
-
-
-
-const experimental_logNameFile = "router => experimental";
-
-function experimental_removeNullContent(){
-    try{
-        const elem = $$("webix__null-content");
-        if(elem){
-            const parent = elem.getParentView();
-            parent.removeView(elem);
-        }
-    } catch (err){
-        errors_setFunctionError(err,experimental_logNameFile,"removeNullContent");
-    }
-}
-
-function experimentalRouter(){
-    experimental_removeNullContent();
-
-    hideAllElements ();
-    Action.hideItem($$("webix__none-content"));
-    
-    
-    checkTreeOrder();
-    
-    
-    if($$("treeTempl")){
-        mediator.treeEdit.showView();
-        mediator.treeEdit.load();
-    }else {
-        createElements("treeTempl");
-        mediator.treeEdit.load();
-        mediator.treeEdit.showView();
-    }
-    
-    closeTree();
-}
-
-
-
-;// CONCATENATED MODULE: ./src/js/components/routerConfig/logout.js
-
-
-const logout_logNameFile = "router => logout";
-
-function logoutRouter(){
-    const logoutData = webix.ajax().post("/init/default/logout/");
-
-    logoutData.then(function(){
-
-        function clearTree (){
-            try{
-                const tree = $$("tree");
-
-                if( tree){
-                    tree.clearAll();
+            putData.then(function(data){
+                data = data.json()
+            
+                if (data.err_type == "i"){
+                    modalBox_setDirtyProperty ();
+                    Action.removeItem(propBtns);
+                    selectTree(id);
+                    setLogValue(
+                        "success",
+                        "Данные успешно добавлены",
+                        currId
+                    );
+            
+                } else {
+                    errors_setFunctionError(
+                        data.err, 
+                        modalBox_logNameFile, 
+                        "putData"
+                    );
                 }
-            } catch (err){
-                errors_setFunctionError(err, logout_logNameFile, "clearTree");
-            }
+            });
+
+            putData.fail(function(err){
+                setAjaxError(err, modalBox_logNameFile ,"putData");
+            });
+
         }
 
-        function clearStorage(){
-            try{
-                webix.storage.local.clear();
-            } catch (err){
-                errors_setFunctionError(err, logout_logNameFile, "clearStorage");
-            }
-        }
-
-        function backPage(){
-            try{
-                history.back();
-            } catch (err){
-                errors_setFunctionError(err, logout_logNameFile, "backPage");
-            }
-        }
-
-        backPage        ();
-        clearTree       ();
-        clearStorage    ();
-    });
-
-    logoutData.fail(function(err){
-        setAjaxError(err, logout_logNameFile, "logoutData");
-    });  
-}
-
-
-;// CONCATENATED MODULE: ./src/js/components/routerConfig/_router.js
-
-
-lib ();
-
-
-
-
-
-
-
-
-
-
-function router (){
-    let routes = new (Backbone.Router.extend({
-    
-        routes:{
-            ""                : "index" ,
-            "content"         : "content", 
-            "settings"        : "settings",
-            "cp"              : "cp",
-            "logout"          : "logout",
-            "tree/:id"        : "tree",
-            "experimental/:id":"experimental"
-        },
-        
-        content:function(){
-            getWorkspace();
-        },
-    
-        index:function(){
-            indexRouter();
-
-        }, 
-
-        tree: function(id){
-            treeRouter(id);
-        },
-        
-        cp: function(){
-            cpRouter();
-    
-      
-        },
-    
-        settings: function(){
-            settingsRouter();
-            
-
-        },
-
-        experimental: function (){
-            experimentalRouter();
-        },
-    
-        logout: function (){
-            logoutRouter();
-        }
-    
-    }));
-
-    return routes;
-}
-
-
-;// CONCATENATED MODULE: ./src/js/components/login.js
-
-
-
-
-function login_createSentObj(){
-    const loginData = {};
-    const form      = $$("formAuth");
-    try{
-     
-        const userData  = form.getValues();
-
-        loginData.un    = userData.username;
-        loginData.np    = userData.password;
-        
-    } catch (err){
-        console.log(err + " login function createSentObj");
+    } else {
+        modalBox_validateError ();
     }
-
-    return loginData;
 }
 
 
-function postLoginData(){
-    const loginData = login_createSentObj();
-    const form      = $$("formAuth");
+function modalBoxTree (){
+    const saveBtn = $$("table-saveBtn");
 
-    const path      = "/init/default/login";
-    const postData  = webix.ajax().post(path, loginData);
+    modalBox().then(function(result){
+        if (result == 1){
 
-    postData.then(function(data){
+            setDefaultStateBtns ();
+            setDefaultStateProperty ();
+            modalBox_setDirtyProperty ();
 
-        if (data.json().err_type == "i"){
+            $$("tree").select(id);
 
-            data = data.json().content;
+        } else if (result == 2){
 
-            if (form){
-                form.clear();
+            if (saveBtn.isVisible()){
+                modalBox_putData ();
+          
+            } else {
+                postNewData ();  
             }
+            modalBox_setDirtyProperty ();
+        }
 
-            Backbone.history.navigate("content", { trigger:true});
-            window.location.reload();
- 
-        } else {
-
-            if (form && form.isDirty()){
-                form.markInvalid("username", "");
-                form.markInvalid("password", "Неверный логин или пароль");
-            }
+        if (result == 1 || result == 2){
+            Action.removeItem(propBtns);
         }
 
     });
-
-    postData.fail(function(err){
-        console.log(err + " login function postLoginData");
-    });
 }
 
-const invalidMsgText = "Поле должно быть заполнено";
+function modalBox_createModalBox(nextId){
 
-function returnLogin(){
-    const login =  {   
-        view            : "text", 
-        label           : "Логин", 
-        name            : "username",
-        invalidMessage  : invalidMsgText,
-        on              : {
-            onItemClick:function(){
-                $$('formAuth').clearValidation();
-            }
-        }  
-    };
-
-    return login;
-}
+    prop       = $$("editTableFormProperty");
+    propBtns   = $$("propertyRefbtnsContainer");
+    valuesProp = prop.getValues();
+    currId     = getItemId ();
+    id         = nextId;
 
 
-function clickPass(event, self){
-    const className = event.target.className;
-    const input     = self.getInputNode();
-
-    function removeCss(className){
-        webix.html.removeCss(event.target, className);
-    }
-
-    function updateInput(type, className){
-        webix.html.addCss(event.target, className);
-        input.type = type;
-    }
-
-    if (className.includes("password-icon")){
-   
-        removeCss("wxi-eye-slash");
-        removeCss("wxi-eye");
-
-        if(input.type == "text"){    
-            updateInput("password", "wxi-eye"); 
-        } else {
-            updateInput("text", "wxi-eye-slash"); 
-        }
-
+    if(prop.config.dirty){
+        modalBoxTree ();
+        return false;
     }
     
-    $$('formAuth').clearValidation();
+    setDefaultStateBtns ();
 }
-
-
-function returnPass(){
-    const pass =  {   
-        view            : "text", 
-        label           : "Пароль", 
-        name            : "password",
-        invalidMessage  : invalidMsgText,
-        type            : "password",
-        icon            : "password-icon wxi-eye",   
-        on              : {
-            onItemClick:function(id, event){
-                clickPass(event, this);
-     
-            },
-        } 
-    };
-
-    return pass;
-}
-
-function getLogin(){
-
-    const form = $$("formAuth");
-
-    form.validate();
-    postLoginData();
-
-}
-
-function returnBtnSubmit(){
-    const btnSubmit = {   
-        view    : "button", 
-        value   : "Войти", 
-        css     : "webix_primary",
-        hotkey  : "enter", 
-        align   : "center", 
-        click   :getLogin
-    };
-
-    return btnSubmit;
-}
-
-function login_returnForm(){
-    const form = {
-        view        : "form",
-        id          : "formAuth",
-        width       : 250,
-        borderless  : true,
-        elements    : [
-            returnLogin     (),
-            returnPass      (),
-            returnBtnSubmit (), 
-        ],
-
-        rules:{
-            
-            "username" : webix.rules.isNotEmpty,
-            "password" : webix.rules.isNotEmpty,
-    
-          },
-    
-    
-        elementsConfig:{
-            labelPosition:"top"
-        }
-    
-    };
-
-    return form;
-}
-
-
-function login () {
-    router();
-    return login_returnForm();
-}
-
-const auth = {
-    hidden  : true, 
-    id      : "userAuth", 
-    cols    : [
-        {
-            view    : "align", 
-            align   : "middle,center",
-            body    : login()
-        },
-
-    ]
-}; 
 
 
 ;// CONCATENATED MODULE: ./src/js/blocks/checkFonts.js
@@ -20283,6 +19711,585 @@ const collapseBtn = {
 
 
 
+;// CONCATENATED MODULE: ./src/js/components/treeSidabar/selectVisualElem.js
+
+
+
+
+
+
+
+const selectVisualElem_logNameFile = "treeSidebar => selectVisualElem";
+
+
+function createUndefinedView(){
+    const id = "webix__null-content";
+
+    const view = {
+        view  : "align", 
+        align : "middle,center",
+        id    : id,
+        body  : {  
+            borderless : true, 
+            template   : "Блок в процессе разработки", 
+            height     : 50, 
+            width      : 220,
+            css        : {
+                "color"     : "#858585",
+                "font-size" : "14px!important"
+            }
+        }
+        
+    };
+
+    if ( !($$(id)) ){
+        try{
+            $$("container").addView(view, 2);
+        } catch (err){ 
+            errors_setFunctionError(
+                err, 
+                selectVisualElem_logNameFile, 
+                "createUndefinedView"
+            );
+        }
+     
+    }
+   
+}
+
+function selectItemAction(type, id){
+    const visiualElements = mediator.getViews();
+    let selectElem;
+ 
+    if (type == "dbtable"){
+        selectElem = "tables";
+        mediator.tables.load(id);
+
+    } else if(type == "tform"){
+        selectElem = "forms";
+        mediator.forms.load(id);
+
+    } else if(type == "dashboard"){
+        selectElem = "dashboards";
+        mediator.dashboards.load(id);
+        Action.hideItem($$("propTableView"));
+
+    } 
+
+    const isBranch = $$("tree").isBranch(id);
+    if (!isBranch){
+
+    }
+
+    visiualElements.forEach(function(elem){
+        if (elem !== selectElem){
+            Action.hideItem($$(elem));
+        } 
+
+        if (elem == id){
+            Action.removeItem($$("webix__null-content"));
+            Action.showItem  ($$("webix__none-content"));
+        }
+    });
+
+    Action.showItem($$(selectElem));
+
+}
+
+function selectElem(id){
+   
+    const type = GetFields.attribute (id, "type");
+
+    Action.hideItem($$("webix__none-content"));
+
+    const isBranch = $$("tree").isBranch(id);
+    if (isBranch){
+        //return false;
+    }
+
+    if (!type && !isBranch){
+        createUndefinedView();
+    } else {
+        Action.removeItem($$("webix__null-content")); 
+    }
+ 
+    selectItemAction (type, id);
+}
+
+
+
+;// CONCATENATED MODULE: ./src/js/components/treeSidabar/preparationView.js
+
+
+
+
+async function getSingleTreeItem(data) {
+
+    await LoadServerData.content("fields");
+
+    const keys   = GetFields.keys;
+
+    if (keys){
+        selectElem(data);
+    }   
+}
+
+function preparationView(id){
+
+    mediator.header.defaultState();
+    mediator.treeEdit.defaultState(id);
+    mediator.dashboards.defaultState();
+    mediator.tables.defaultState();
+    mediator.forms.defaultState();
+    getSingleTreeItem  (id) ;
+ 
+    
+}
+
+
+;// CONCATENATED MODULE: ./src/js/components/treeSidabar/loadFields.js
+
+
+
+
+const loadFields_logNameFile = "treeSidebar => loadFields";
+
+
+let idLoadElement;
+let idNoneElement;
+
+
+let loadFields_tree;
+let loadFields_id;
+
+function loadFields_returnId(type, uid){
+    return "q-" + type + "_data-tree_" + uid;
+}
+
+function addDisableItem(idLoadElement, value, idParent = loadFields_id){
+    loadFields_tree.data.add({
+        id      :idLoadElement,
+        disabled:true,
+        value   :value
+    }, 0, idParent );  
+}
+
+function createLoadEl(uid){
+    const id = loadFields_returnId("none", uid);
+    addDisableItem (id, "Загрузка ...");
+    loadFields_tree.addCss    (id, "tree_load-items");
+}
+
+function createNoneEl(uid, idParent){
+    const id = loadFields_returnId("none", uid);
+    addDisableItem (id, "Раздел пуст", idParent);
+}
+
+
+function isUniqueItem (menu, data){
+    let check  = true;
+
+    try{
+        menu.forEach(function(el, i){
+            if (el.name == data){
+                check = false;
+                
+            }
+        });
+    } catch (err){
+        errors_setFunctionError(
+            err, 
+            loadFields_logNameFile, 
+            "isUniqueItem"
+        );
+    }
+    return check;
+}
+
+function isTrueType(values, typeChild){
+
+    return values.type == typeChild;
+}
+
+
+function removeTreeEls( noneEl = false, uid ){
+    const load = "q-load_data-tree_" + uid;
+    const none = "q-none_data-tree_" + uid;
+    try{
+        if( loadFields_tree.exists(load)){
+            loadFields_tree.remove(load);
+        }
+        
+        if( loadFields_tree.exists(none) && noneEl){
+            loadFields_tree.remove(none);
+        }
+    } catch (err){
+        errors_setFunctionError(
+            err, 
+            loadFields_logNameFile, 
+            "removeTreeEls"
+        );
+    }
+}
+
+
+async function generateMenuData (typeChild, idParent, uid){
+    await LoadServerData.content("fields");
+    await LoadServerData.content("mmenu");
+
+    const menu   = GetMenu.content;
+    const keys   = GetFields.keys;
+    const values = GetFields.values;
+
+    let itemsExists = false;
+
+    if (keys){
+        try{
+        
+            keys.forEach(function(data, i) {
+    
+                if (isTrueType(values[i], typeChild) && isUniqueItem(menu, data)){
+            
+                    loadFields_tree.data.add({
+                            id      : data, 
+                            value   : (values[i].plural) ? 
+                            values[i].plural : values[i].singular, 
+                            "type"  : values[i].type
+                    }, 0, idParent ); 
+
+                    if (!itemsExists){
+                        itemsExists = true;
+                    }
+                
+                    removeTreeEls(true, uid);
+            
+                } 
+
+            });
+
+            if (!itemsExists){
+                removeTreeEls(false, uid);
+                const noneEl =  "q-none_data-tree_" + uid;
+            
+                if( !(loadFields_tree.exists(noneEl)) ){
+                    createNoneEl(uid, idParent);
+                    loadFields_tree.addCss(noneEl, "tree_none-items");
+                }
+            }
+        } catch (err){
+            errors_setFunctionError(
+                err, 
+                loadFields_logNameFile, 
+                "generateMenuData"
+            );
+        }
+    }
+
+}
+
+
+async function getMenuChilds(uid) {
+
+    const selectedItem  = loadFields_tree.getItem(loadFields_id);
+    if (selectedItem.action.includes("all_")){
+        const index = selectedItem.action.indexOf("_");
+        const type  = selectedItem.action.slice  (index + 1);
+  
+        generateMenuData (type, loadFields_id, uid);
+    }
+   
+}
+
+
+
+function loadFields(selectId){
+    const uid = webix.uid();
+  
+    loadFields_tree = $$("tree");
+    loadFields_id   = selectId;
+
+    if (loadFields_tree.getItem(loadFields_id).$count === -1){
+        createLoadEl (uid);
+        getMenuChilds(uid);
+    }
+  
+}
+
+
+;// CONCATENATED MODULE: ./src/js/components/treeSidabar/navigate.js
+
+
+
+
+const navigate_logNameFile = "treeSidebar => navigate";
+
+function getFields (id){
+    const menu  = GetMenu.content;
+    
+    if (menu){
+        try{
+            Backbone.history.navigate("tree/" + id, { trigger : true });
+        } catch (err){
+            errors_setFunctionError(err, navigate_logNameFile, "getFields");
+        }
+    }
+}
+
+
+;// CONCATENATED MODULE: ./src/js/components/treeSidabar/adaptive.js
+
+
+
+
+const adaptive_logNameFile = "treeSidebar => adaptive";
+
+function setAdaptiveState(){
+    try{
+        if (window.innerWidth < 850 ){
+            $$("tree").hide();
+        }
+    } catch (err){
+        errors_setFunctionError(
+            err, 
+            adaptive_logNameFile, 
+            "setAdaptiveState"
+        );
+    }
+}
+
+
+;// CONCATENATED MODULE: ./src/js/components/treeSidabar/_layout.js
+ 
+
+ 
+
+ 
+
+
+
+
+
+
+function treeSidebar () {
+    const tree = {
+        view        : "edittree",
+        id          : "tree",
+        css         : "webix_tree-main",
+        minWidth    : 100,
+        width       : 300,
+        editable    : false,
+        select      : true,
+        editor      : "text",
+        editValue   : "value",
+        activeTitle : true,
+        clipboard   : true,
+        data        : [],
+        on          : {
+
+            onItemClick:function(id) {
+                return modalBox_createModalBox(id);
+            },
+
+            onBeforeSelect: function(data) {
+                preparationView(data);
+            },
+
+            onLoadError:function(xhr){
+                setAjaxError(xhr, "sidebar","onLoadError");
+            },
+
+            onBeforeOpen:function (id){
+                loadFields(id);
+            },
+
+            onAfterSelect:function(id){
+                getFields (id);
+                setAdaptiveState();
+            },
+
+        },
+
+    };
+
+    return tree;
+}
+
+
+;// CONCATENATED MODULE: ./src/js/components/treeSidabar/loadMenu.js
+
+
+const loadMenu_logNameFile = " treeSidebar => loadMenu";
+
+function generateChildsTree  (el){
+    let childs = [];
+
+    try {
+        el.childs.forEach(function(child,i){
+            childs.push({
+                id     : child.name, 
+                value  : child.title,
+                action : child.action
+            });
+        });
+    } catch (err){
+        errors_setFunctionError(
+            err,
+            loadMenu_logNameFile,
+            "generateChildsTree"
+        );
+    }
+    return childs;
+}
+
+function generateParentTree  (el){ 
+    let menuItem;
+    try {                  
+        menuItem = {
+            id     : el.name, 
+            value  : el.title,
+            action : el.action,
+        };
+
+  
+        if ( !(el.title) ){
+            menuItem.value="Без названия";
+        }
+
+        if ( el.mtype == 2 ) {
+
+            if ( el.childs.length == 0 ){
+                menuItem.webix_kids = true; 
+            } else {
+                menuItem.data = generateChildsTree (el);
+            }         
+        } 
+
+    
+
+    } catch (err){
+        errors_setFunctionError(
+            err,
+            loadMenu_logNameFile,
+            "generateParentTree"
+        );
+    }
+    return menuItem;
+} 
+
+
+function generateMenuTree (menu){ 
+
+    const menuTree   = [];
+    const delims     = [];
+    const tree       = $$("tree");
+    const btnContext = $$("button-context-menu");
+
+    let menuHeader = [];
+
+    // menu.push ({
+    //     "id": 77,
+    //     "name": "sales",
+    //     "title": "Sales",
+    //     "mtype": 1,
+    //     "ltype": 1,
+    //     "action": "dashboard",
+    //     "childs": []
+    // });
+
+    menu.forEach(function(el,i){
+        if (el.mtype !== 3){
+            menuTree.push  ( generateParentTree (el, menu, menuTree  ) );
+            if (el.childs.length !==0){
+                //menuHeader = generateHeaderMenu (el, menu, menuHeader);
+            }
+        } else {
+            delims.push(el.name);
+            menuTree.push({
+                id       : el.name, 
+                disabled : true,
+                value    : ""
+            });
+        }
+    
+    });
+
+
+    tree.clearAll();
+    tree.parse(menuTree);
+
+    if (btnContext.config.popup.data !== undefined){
+        btnContext.config.popup.data = menuHeader;
+        btnContext.enable();
+    }
+
+
+    delims.forEach(function(el){
+        tree.addCss(el, "tree_delim-items");
+
+    });
+
+
+}
+
+
+;// CONCATENATED MODULE: ./src/js/components/treeSidabar/_treeMediator.js
+
+
+
+
+
+
+const _treeMediator_logNameFile = "treeSidebar => treeMediator";
+
+class Tree {
+    constructor (){
+        this.name = "tree";
+    }
+
+    create(){
+        return treeSidebar();
+    }
+
+    showView(){
+        Action.showItem($$(this.name));   
+    }
+
+    load(data){
+        generateMenuTree(data);
+    }
+
+    selectItem(id){
+        return selectElem(id);
+    }
+
+    dataLength(){
+        return $$(this.name).data.order.length;
+    }
+
+    close(){
+        const tree = $$(this.name);
+        try{
+            if (tree){
+                tree.closeAll();
+            }
+        } catch (err){
+            errors_setFunctionError(
+                err,
+                _treeMediator_logNameFile,
+                "close"
+            );
+        }
+    }
+
+    // defaultState(){
+    //     editTableDefState ();
+    //     filterFormDefState();
+    // }
+
+}
+
+
+
 ;// CONCATENATED MODULE: ./src/js/components/header/logBtn.js
 
 
@@ -20364,8 +20371,60 @@ function setAdaptiveSize(popup){
             popup.config.width = size;
             popup.resize();
         } catch (err){
-            errors_setFunctionError(err,"favsLink","function setAdaptiveSize");
+            errors_setFunctionError(
+                err,
+                "favsLink",
+                "setAdaptiveSize"
+            );
         }
+    }
+ 
+}
+
+function findFavsInUserData(data, id){
+    const collection = [];
+    try{
+
+        data.forEach(function(el){
+            if (el.name.includes("fav-link") && id == el.owner){
+                collection.push(JSON.parse(el.prefs));
+            }
+        });
+
+    } catch (err){
+        errors_setFunctionError(err ,"favsLink", "findFavsisUserData");
+    }
+    
+    return collection;
+}
+
+
+function createOptions(data, user){
+    const favCollection = findFavsInUserData(data, user.id);
+    const radio         = $$("favCollectionLinks");
+    try{
+        if (favCollection.length){
+            favCollection.forEach(function(el){
+                radio.addOption(
+                    {   id      :el.id,
+                        value   :el.name,
+                        favLink : el.link
+                    }
+                );
+                radio.removeOption(
+                    "radioNoneContent"
+                );
+            });
+        }
+
+        $$("popupFavsLink").show();
+
+    } catch (err){
+        errors_setFunctionError(
+            err, 
+            "favsLink", 
+            "createOptions"
+        );
     }
  
 }
@@ -20379,60 +20438,23 @@ async function favsPopupCollectionClick (){
         user =  getUserDataStorage();
     }
 
- 
-    const getData = webix.ajax().get("/init/default/api/userprefs/");
+    const path    = "/init/default/api/userprefs/";
+    const getData = webix.ajax().get(path);
     
     getData.then(function(data){
         data = data.json().content;
-
-        const favCollection = [];
-
-        function getFavsCollection(){
-            try{
-                data.forEach(function(el){
-                    if (el.name.includes("fav-link") && user.id == el.owner){
-                        favCollection.push(JSON.parse(el.prefs));
-                    }
-                });
-            } catch (err){
-                errors_setFunctionError(err,"favsLink","favsPopupCollectionClick => getFavsCollection");
-            }
-        }
-
-        function createOptions(){
-            const radio = $$("favCollectionLinks");
-            try{
-                if (favCollection.length){
-                    favCollection.forEach(function(el){
-                        radio.addOption(
-                            {   id      :el.id,
-                                value   :el.name,
-                                favLink : el.link
-                            }
-                        );
-                        radio.removeOption(
-                            "radioNoneContent"
-                        );
-                    });
-                }
-                $$("popupFavsLink").show();
-            } catch (err){
-                errors_setFunctionError(err,"favsLink","favsPopupCollectionClick => createOptions");
-            }
-         
-        }
-
-
         if (user){
-            getFavsCollection();
-            createOptions();
+            createOptions(data, user);
         }
-   
-    
+
     });
 
     getData.fail(function(err){
-        setAjaxError(err, "favsLink","favsPopupCollectionClick getData");
+        setAjaxError(
+            err, 
+            "favsLink",
+            "favsPopupCollectionClick"
+        );
     });
 
     
@@ -20449,61 +20471,61 @@ function favsPopupSubmitClick(){
     }
 }
 
-function favsPopup(){
+function favorites_returnEmptyOption(){
+    return {   
+        id       : "radioNoneContent", 
+        disabled : true, 
+        value    : "Здесь будут сохранены Ваши ссылки"
+    };
+}
 
-
-    const radioLinks = {
-        view:"radio", 
-        id:"favCollectionLinks",
-        vertical:true,
-        options:[
-            {   id:"radioNoneContent", disabled:true, value:"Здесь будут сохранены Ваши ссылки"}
-        ],
-        on:{
-            onChange:function(newValue, oldValue){
-                try{
-                    const submitBtn = $$("favLinkSubmit");
-                    if (newValue !== oldValue){
-                        if (submitBtn && !(submitBtn.isEnabled())){
-                            submitBtn.enable();
-                        }
-                    }
-                } catch (err){
-                    errors_setFunctionError(err,"favsLink","favsPopup => radioLinks");
-                }
+const radioLinks = {
+    view:"radio", 
+    id:"favCollectionLinks",
+    vertical:true,
+    options:[
+        favorites_returnEmptyOption()
+    ],
+    on:{
+        onChange:function(newValue, oldValue){
+            if (newValue !== oldValue){
+                Action.enableItem($$("favLinkSubmit"));
             }
         }
-    };
+    }
+};
 
-    const container = {
-        view       : "scrollview",
-        scroll     : "y",
-        maxHeight  : 300,
-        borderless : true,
-        body       : {
-            rows: [
-                radioLinks
-            ]
-        }
-    };
+const container = {
+    view       : "scrollview",
+    scroll     : "y",
+    maxHeight  : 300,
+    borderless : true,
+    body       : {
+        rows: [
+            radioLinks
+        ]
+    }
+};
 
-    const btnSaveLink = new Button({
-    
-        config   : {
-            id       : "favLinkSubmit",
-            hotkey   : "Ctrl+Shift+Space",
-            value    : "Открыть ссылку", 
-            disabled : true,
-            click    : function(){
-                favsPopupSubmitClick();
-            },
+const favorites_btnSaveLink = new Button({
+
+    config   : {
+        id       : "favLinkSubmit",
+        hotkey   : "Ctrl+Shift+Space",
+        value    : "Открыть ссылку", 
+        disabled : true,
+        click    : function(){
+            favsPopupSubmitClick();
         },
-        titleAttribute : "Открыть ссылку"
-    
-       
-    }).maxView("primary");
- 
- 
+    },
+    titleAttribute : "Открыть ссылку"
+
+   
+}).maxView("primary");
+
+
+function favsPopup(){
+
     const popupFavsLink = new Popup({
         headline : "Избранное",
         config   : {
@@ -20521,7 +20543,7 @@ function favsPopup(){
             rows : [
                 container,
                 {height:15},
-                btnSaveLink,
+                favorites_btnSaveLink,
             ]
           
         }
@@ -20906,809 +20928,1052 @@ const header = {
 };
 
 
-;// CONCATENATED MODULE: ./src/js/components/treeSidabar/common.js
- 
+;// CONCATENATED MODULE: ./src/js/components/header/setDefaultState.js
+function headerDefState(){
+    const headerChilds = $$("header").getChildViews();
 
-function setStateFilterBtn(){
-    const primaryClass   = "webix-transparent-btn--primary";
-    const secondaryClass = "webix-transparent-btn";
-    try{
-        const btnClass = document.querySelector(".webix_btn-filter");
-        if (btnClass && btnClass.classList.contains (primaryClass)){
-           
-            btnClass.classList.add   (secondaryClass);
-            btnClass.classList.remove(primaryClass);
+    headerChilds.forEach(function(el){
+        if (el.config.id.includes("search")){
+            el.show();
         }
-    } catch (err){
-        errors_setFunctionError(err,"sidebar","setStateFilterBtn");
-    }
+    });
 }
 
 
-;// CONCATENATED MODULE: ./src/js/components/treeSidabar/onSelectChange.js
- 
 
+;// CONCATENATED MODULE: ./src/js/components/header/loadContextMenu.js
+function createItems (){
 
-const onSelectChange_logNameFile = "treeSidebar => onSelectChange";
+    const items = [];
 
-function onSelectChangeFunc(ids){
-    const tree          = $$("tree");
-    const treeItemId    = tree.getSelectedItem().id;
-    const getItemParent = tree.getParentId(treeItemId);
-    const treeArray     = tree.data.order;
-    let parentsArray    = [];
+    function pustItem(id, value, icon){
+        const item = {
+            id    : id, 
+            value : value, 
+            icon  : icon
+        };
 
-    function setWidthEditForm(){
-        try{
-            const editForm = $$("table-editForm");
+        if (id == "logout"){
+            item.css = "webix_logout";
+        }
       
-            if (editForm && editForm.config.width < 320){
-                editForm.config.width = 320;
-                editForm.refresh();
+        items.push(item);
+    
+        return items;
+    }
+    
+    pustItem ("favs",       "Избранное",     "icon-star"     );
+    pustItem ("settings",  "Настройки",      "icon-cog"      );
+    pustItem ("cp",         "Смена пароля",  "icon-lock"     );
+    pustItem ("logout",     "Выйти",         "icon-sign-out" );
+
+      
+   
+    return items;
+}
+
+function generateHeaderMenu (menu){
+
+    const btnContext = $$("button-context-menu");
+    let menuHeader;
+
+    menu.forEach(function(el,i){
+        if (el.mtype !== 3){
+            if (el.mtype !== 3 && el.childs.length !==0){
+                menuHeader = createItems (el, menu, menuHeader);
             }
-        } catch (err){
-            errors_setFunctionError(err, onSelectChange_logNameFile, "setWidthEditForm");
         }
+    
+    });
+
+    if (btnContext.config.popup.data !== undefined){
+        btnContext.config.popup.data = menuHeader;
+        btnContext.enable();
     }
 
-    function hideTreeTempl(){
- 
-        try{
-            let elem = $$("treeTempl");
-            if(!($$(ids))){
-                Action.hideItem(elem);
-            }
-        } catch (err){
-            errors_setFunctionError(err, onSelectChange_logNameFile, "hideTreeTempl");
-        }
-    }
-
-
-    function getTreeParents(){
-        let parents = [];
-        try{
-            treeArray.forEach(function(el){
-                if (tree.getParentId(el) == 0){
-                    parents.push(el);
-                }
-            });
-        } catch (err){
-            errors_setFunctionError(err,onSelectChange_logNameFile,"getTreeParents");
-        }
-        return parents;
-    }
-
-    function hideNoneContent(){
-        try{
-            if (ids[0] && getItemParent!==0){
-                Action.hideItem($$("webix__none-content"));
-            }
-        } catch (err){
-            errors_setFunctionError(err,onSelectChange_logNameFile,"hideNoneContent");
-        }
-    }
- 
-
-    function setSearchInputState(){
-        const headerChilds = $$("header").getChildViews();
-
-        headerChilds.forEach(function(el){
-            if (el.config.id.includes("search")){
-                el.show();
-            }
-        });
-    }
-    Action.removeItem($$("propertyRefbtnsContainer"));
-    Action.hideItem($$("tablePropBtnsSpace"));
-    Action.hideItem($$("editTableFormProperty"));
-    
-    setSearchInputState();
-    
-    Action.hideItem($$("filterTableBarContainer"));
-
-    Action.showItem($$("filterEmptyTempalte"));
-    Action.showItem($$("EditEmptyTempalte"));
-
-
-    Action.disableItem($$("btnFilterSubmit"));
-    Action.disableItem($$("filterLibrarySaveBtn"));
-    Action.disableItem($$("resetFilterBtn"));
-  
-    
-    setWidthEditForm  ();
-    
-    setStateFilterBtn ();
-    
-   hideTreeTempl     ();
 
 }
 
 
-;// CONCATENATED MODULE: ./src/js/components/treeSidabar/onItemClick.js
- 
+;// CONCATENATED MODULE: ./src/js/components/header/_headerMediator.js
 
 
 
 
 
-
-
-const onItemClick_logNameFile = "treeSidebar => onItemClick";
-
-function onItemClickFunc(id){
-    function getItemId (){
-        let idTable;
-     
-        if ($$("tables").isVisible()){
-            idTable = $$("table").config.idTable;
-
-        } else if ($$("forms").isVisible()){
-
-            idTable = $$("table-view").config.idTable;
-        }
-        return idTable;
-    }
-    const prop       = $$("editTableFormProperty");
-    const valuesProp = prop.getValues();
-    const currId     = getItemId ();
-
-
-    function setDirtyProperty (){
-        try{
-            prop.config.dirty = false;
-            prop.refresh();
-        } catch (err){
-            errors_setFunctionError(err,onItemClick_logNameFile,"setDirtyProperty");
-        }
+class Header {
+    constructor (){
+        this.name = "tree";
     }
 
-    function setDefaultStateProperty (){
-        try{
-            if (prop && prop.isVisible()){
-                prop.clear();
-                prop.hide();
-            }
-        } catch (err){
-            errors_setFunctionError(err,onItemClick_logNameFile,"setDirtyProperty");
-        }
+    create(){
+        return header;
     }
 
-    function setDefaultStateBtns (){
-        try{
-            const saveNewBtn = $$("table-saveNewBtn");
-            const saveBtn    = $$("table-saveBtn");
-            const delBtn     = $$("table-delBtnId");
-     
-            if (saveNewBtn.isVisible()) {
-                saveNewBtn.hide();
-
-            } else if (saveBtn.isVisible()){
-                saveBtn.hide();
-            }
-
-            delBtn.disable();
-
-        } catch (err){
-            errors_setFunctionError(err,onItemClick_logNameFile,"setDefaultStateBtns");
-        }
+    showView(){
+        Action.showItem($$(this.name));   
     }
 
-    function validateError (){
-        try{
-            validateProfForm ().forEach(function(el,i){
-                let nameEl;
-
-                $$("table").getColumns().forEach(function(col,i){
-                    if (col.id == el.nameCol){
-                        nameEl = col.label;
-                    }
-                });
-
-                setLogValue("error",el.textError+" (Поле: "+nameEl+")");
-            });
-        } catch (err){
-            errors_setFunctionError(err,onItemClick_logNameFile,"validateError");
-        }
+    load(data){
+        generateHeaderMenu(data);
     }
 
-    function uniqueData (itemData){
-        let validateData = {};
-
-        function compareVals (i){
-            try{
-                let oldValues       = $$("table").getItem(itemData.id);
-                let oldValueKeys    = Object.keys  (oldValues);
-
-                let newValKey       = Object.keys  (itemData)[i];
-                let newVal          = Object.values(itemData)[i];
-                
-                oldValueKeys.forEach(function(oldValKey){
-                    
-                    if (oldValKey == newValKey){
-
-                        if (oldValues[oldValKey]  !== newVal){
-                            validateData[newValKey] = newVal;
-                        } 
-                        
-                    }
-                }); 
-            } catch (err){
-                errors_setFunctionError(err,onItemClick_logNameFile,"compareVals");
-            }
-        }
-
-        Object.values(itemData).forEach(function(el,i){         
-            compareVals (i);
-        });
-
-        return validateData;
+    defaultState(){
+        headerDefState ();
     }
 
-    function selectTree(id){
-        const tree = $$("tree");
-        if (tree){
-            tree.select(id);
-        }
-    }
-
-    function postNewData (){
-        if (!(validateProfForm().length)){
-            const url       = "/init/default/api/"+currId;
-            const postData  = webix.ajax().post(url, valuesProp);
-
-            postData.then(function(data){
-                data = data.json();
-                if (data.content.id !== null){
-                    setDirtyProperty ();
-                    Action.removeItem($$("propertyRefbtnsContainer"));
-                    selectTree(id);
-                    setLogValue("success","Данные успешно добавлены",currId);
-                } else {
-
-                    const errs   = data.content.errors;
-                    let msg      = "";
-                    Object.values(errs).forEach(function(err,i){
-                        msg +=err+" (Поле: "+Object.keys(errs)[i] +"); ";
-                    });
-
-                    setLogValue("error",msg);
-                }
-
-                if(data.err_type !== "i"){
-                    errors_setFunctionError(data.err,"sidebar","onItemClick => postNewData");
-                }
-            });
-
-            postData.fail(function(err){
-                setAjaxError(err, "sidebar","onItemClick => postNewData");
-            });
-
-        } else {
-            validateError ();
-        }
-    }
-
-    function putData (){
-        if (!(validateProfForm().length)){
-
-            if (valuesProp.id){
-                const url= "/init/default/api/"+currId+"/"+valuesProp.id;
-                const putValue = uniqueData (valuesProp);
-                const putData = webix.ajax().put(url, putValue);
-
-                putData.then(function(data){
-                    data = data.json()
-                
-                    if (data.err_type == "i"){
-                        setDirtyProperty ();
-                        Action.removeItem($$("propertyRefbtnsContainer"));
-                        selectTree(id);
-                        setLogValue("success","Данные успешно добавлены",currId);
-                
-                    } else {
-                        errors_setFunctionError(data.err,"sidebar","onItemClick => putData")
-                    }
-                });
-
-                putData.fail(function(err){
-                    setAjaxError(err, "sidebar","onItemClick => putData");
-                });
-
-            }
-
-        } else {
-            validateError ();
-        }
-    }
-
-
-    function modalBoxTree (){
-        const saveBtn    = $$("table-saveBtn");
-        modalBox().then(function(result){
-            if (result == 1){
-
-                setDefaultStateBtns ();
-                setDefaultStateProperty ();
-                setDirtyProperty ();
-
-                $$("tree").select(id);
-            } else if (result == 2){
-
-                if (saveBtn.isVisible()){
-                    putData ();
-              
-                } else {
-                    postNewData ();  
-                }
-                setDirtyProperty ();
-            }
-
-            if (result == 1 || result == 2){
-                Action.removeItem($$("propertyRefbtnsContainer"));
-            }
-
-        });
-    }
-    if(prop.config.dirty){
-        modalBoxTree ();
-        return false;
-    }
-    
-    setDefaultStateBtns ();
 }
 
 
-;// CONCATENATED MODULE: ./src/js/components/treeSidabar/selectVisualElem.js
+;// CONCATENATED MODULE: ./src/js/blocks/_mediator.js
 
 
 
 
 
 
-const selectVisualElem_logNameFile = "treeSidebar => selectVisualElem";
 
 
 
-function createUndefinedView(){
-    const id = "webix__null-content";
+const elems = [
+    "dashboards",
+    "tables",
+    "forms",
+    "settings",
+    "user_auth",
+];
 
-    const view = {
-        view  : "align", 
-        align : "middle,center",
-        id    : id,
-        body  : {  
-            borderless : true, 
-            template   : "Блок в процессе разработки", 
-            height     : 50, 
-            width      : 220,
-            css        : {
-                "color"     : "#858585",
-                "font-size" : "14px!important"
-            }
+const mediator = {
+    dashboards  : new Dashboards(),
+    tables      : new Tables    (),
+    forms       : new Forms     (),
+    settings    : new Settings  (),
+    user_auth   : new UserAuth  (),
+    treeEdit    : new TreeEdit  (),
+    sidebar     : new Tree      (),
+    header      : new Header    (),
+
+    getViews(){
+        return elems;
+    }
+};
+
+
+
+;// CONCATENATED MODULE: ./src/js/components/routerConfig/common.js
+
+
+
+
+
+
+
+
+const routerConfig_common_logNameFile = "router => common";
+function createElements(specificElement){
+
+    function createDefaultWorkspace(){
+        if(!specificElement){
+            mediator.dashboards.create();
+            mediator.tables.create();
+            mediator.forms.create();
         }
-        
-    };
+    }
 
-    if ( !($$(id)) ){
+    function createTreeTempl(){
         try{
-            $$("container").addView(view, 2);
-        } catch (err){ 
+            if (specificElement == "treeTempl"){
+                mediator.treeEdit.create();
+            }
+        } catch (err){
             errors_setFunctionError(
-                err, 
-                selectVisualElem_logNameFile, 
-                "createUndefinedView"
+                err,
+                routerConfig_common_logNameFile,
+                "createTreeTempl"
             );
         }
-     
+    }
+
+    function createCp(){
+        try{
+            if (specificElement == "cp"){
+                mediator.user_auth.create();
+            }
+        } catch (err){
+            errors_setFunctionError(
+                err,
+                routerConfig_common_logNameFile,
+                "createCp"
+            );
+        }
+    }
+
+    function createUserprefs(){
+        try{
+            if (specificElement == "settings"){
+                mediator.settings.create();
+            }
+        } catch (err){
+            errors_setFunctionError(
+                err,
+                routerConfig_common_logNameFile,
+                "createUserprefs"
+            );
+        }
+    }
+
+    function createSpecificWorkspace (){
+        createTreeTempl();
+        createCp();
+        createUserprefs();
     }
    
+
+    createDefaultWorkspace();
+    createSpecificWorkspace ();
+  
+}
+
+function removeElements(){
+
+    function removeElement(idElement){
+        try {
+            const elem   = $$(idElement);
+            const parent = $$("container");
+            if (elem){
+                parent.removeView(elem);
+            }
+        } catch (err){
+            setFunctionError(
+                err,
+                routerConfig_common_logNameFile,
+                "removeElement (element: " + idElement + ")"
+            );
+        }
+    }
+    removeElement ("tables");
+    removeElement ("dashboards");
+    removeElement ("forms");
+    removeElement ("user_auth");
 }
 
 
-function selectElem(id){
-    const visiualElements = mediator.getViews();
-    const type = GetFields.attribute (id, "type");
+function getWorkspace (){
 
-    Action.hideItem($$("webix__none-content"));
+    function getMenuTree() {
 
-    const idBranch = $$("tree").isBranch(id);
 
-    if (!type && !idBranch){
-        createUndefinedView();
-    } else {
-        Action.removeItem($$("webix__null-content")); 
+        LoadServerData.content("mmenu")
+        
+        .then(function (){
+            const menu = GetMenu.content;
+            mediator.sidebar.load(menu);
+            mediator.header.load(menu);
+        });
+ 
     }
 
+    function createContent (){ 
  
-    function selectItemAction(){
-   
-        let selectElem;
-     
-        if (type == "dbtable"){
-            selectElem = "tables";
-            mediator.tables.load(id);
+        function showMainContent(){
+            try {
+                $$("userAuth").hide();
+                $$("mainLayout").show();
+            } catch (err){
+                window.alert
+                ("showMainContent: " + err +  " (Подробности: ошибка в отрисовке контента)");
+                errors_setFunctionError(err,routerConfig_common_logNameFile,"showMainContent");
+            }
+        }
 
-        } else if(type == "tform"){
-            selectElem = "forms";
-            mediator.forms.load(id);
+        function setUserData(){
+            const userStorageData      = {};
+            userStorageData.id       = STORAGE.whoami.content.id;
+            userStorageData.name     = STORAGE.whoami.content.first_name;
+            userStorageData.username = STORAGE.whoami.content.username;
+            
+            setStorageData("user", JSON.stringify(userStorageData));
+        }
 
-        } else if(type == "dashboard"){
-            selectElem = "dashboards";
-            mediator.dashboards.load(id);
-            Action.hideItem($$("propTableView"));
+        showMainContent();
 
-        } 
+        setUserData();
 
-     
+        createElements();
 
-        visiualElements.forEach(function(elem){
-            if (elem !== selectElem){
-                Action.hideItem($$(elem));
-            } 
+        getMenuTree();
+    }
 
-            if (elem == id){
-                Action.showItem($$("webix__none-content"));
+    async function getAuth () {
+        if (!STORAGE.whoami){
+            await getData("whoami"); 
+        }
+
+        if (STORAGE.whoami){
+            createContent (); 
+        }
+
+    }
+
+    getAuth ();
+
+}
+
+
+function checkTreeOrder(){
+
+    try{
+        if (mediator.sidebar.dataLength() == 0){
+            getWorkspace ();
+        }
+    
+    } catch (err){
+        errors_setFunctionError(
+            err,
+            routerConfig_common_logNameFile,
+            "checkTreeOrder"
+        );
+    }
+}
+
+function hideAllElements (){
+
+    try {
+        $$("container").getChildViews().forEach(function(el,i){
+            const view = el.config.view;
+            if(view == "scrollview"|| view == "layout"){
+                Action.hideItem($$(el.config.id));
             }
         });
-
-        Action.showItem($$(selectElem));
+    } catch (err){
+        errors_setFunctionError(
+            err,
+            routerConfig_common_logNameFile,
+            "hideAllElements"
+        );
     }
-
-    selectItemAction     ();
+  
+     
 }
 
 
 
-;// CONCATENATED MODULE: ./src/js/components/treeSidabar/onBeforeSelect.js
+
+;// CONCATENATED MODULE: ./src/js/components/routerConfig/tree.js
 
 
 
 
 
 
-const onBeforeSelect_logNameFile = "treeSidebar => onBeforeSelect";
+const tree_logNameFile = "router => tree";
 
-function onBeforeSelectFunc(data){
-
-
-    const tree          = $$("tree");
-    const selectItem    = tree.getItem(data);
-    const filterForm    = $$("filterTableForm");
-    const inputs        = $$("inputsFilter");
-
-    if (data.includes("q-none_data-tree_") || 
-        data.includes("q-load_data-tree_") ||
-        selectItem.webix_kids              ){
-        return false;
-    }
-    
-    function setFilterDefaultState(){
-        try{
-            if (filterForm && filterForm.isVisible()){
-
-                filterForm.hide();
-                setStateFilterBtn();
-                Action.showItem($$("table-editForm"));
-            
-            }
-
-            if (inputs){
-                Action.removeItem(inputs);
-            }
-        } catch (err){
-            errors_setFunctionError(err,onBeforeSelect_logNameFile,"setFilterDefaultState");
-        }
-    }
-
-    function setBtnCssState(){
-        const btnClass          = document.querySelector(".webix_btn-filter");
-        const primaryBtnClass   = "webix-transparent-btn--primary";
-        const secondaryBtnClass = "webix-transparent-btn";
-
-        if ( btnClass && btnClass.classList.contains(primaryBtnClass) ){
-
-            btnClass.classList.add   (secondaryBtnClass);
-            btnClass.classList.remove(primaryBtnClass);
-        }
-      
-    }
-    function setFormToolsDefaultState(){
-        const formsTools     = $$("formsTools");
-        const formsContainer = $$("formsContainer");
-  
-        Action.hideItem(formsTools);
-        Action.showItem(formsContainer);
+let tree_id;
 
 
-    }
+function selectTreeItem(){
+    const tree   = $$("tree");
 
-    function adaptiveViewEditTable(){
+    const pull   = tree.data.pull;
+    const values = Object.values(pull);
 
-        const container = $$("tableContainer");
-        const tables    = $$("tables");
-        Action.hideItem($$("editTableBarContainer"));
-        Action.hideItem($$("table-backTableBtn"));
-        Action.hideItem($$("table-editForm"));
-        Action.showItem($$("tableContainer"));
-
-        if(tables.$width - container.$width > 9){
-            $$("tableContainer").resize();
-        }
-
-    }
-
-    function adaptiveViewDashFilter(){
-        const dashTool      = $$("dashboardTool");
-        const dashContainer = $$("dashboardInfoContainer");
-
-        Action.hideItem(dashTool);
-        Action.showItem(dashContainer);
-    }
-
-    function disableVisibleBtn(){
-        const viewBtn =  $$("table-view-visibleCols");
-        const btn     =  $$("table-visibleCols");
+    let topParent;
+    values.forEach(function(el,i){
+   
+        if ( el.webix_kids && !(tree.exists (tree_id)) ){
         
-        function disableBtn(el){
-            if (el){
-                el.disable();
-            }
+            const obj = [el.id];
+         
+            tree.callEvent("onBeforeOpen", obj);
+
+            topParent = el.id;
         }
 
-        if ( viewBtn.isVisible() ){
-            disableBtn(viewBtn);
-        } else if ( btn.isVisible() ){
-            disableBtn(btn);
-        }
-      
+    });
+
+
+    function setScroll(){
+        const scroll = tree.getScrollState();
+        tree.scrollTo(0, scroll.y); 
     }
 
-    setBtnCssState();
-    setFilterDefaultState();
-    Action.hideItem($$("editTableFormProperty"));
+    if (tree.exists(tree_id)){
+        if (topParent){
+        
+            tree.open     (topParent, true);
+            tree.select   (tree_id);
+            tree.showItem (tree_id);
+
+            setScroll();
+        }
+
+    }
+}
+
+async function tree_getTableData (){
+
+    await LoadServerData.content("fields");
+    const keys = GetFields.keys;
  
-    setFormToolsDefaultState();
-
-    adaptiveViewDashFilter();
-
-    adaptiveViewEditTable();
-
-    disableVisibleBtn();
-
-    async function getSingleTreeItem() {
-
-        await LoadServerData.content("fields");
-
-        const keys   = GetFields.keys;
-    
-        if (keys){
-            selectElem(data);
-        }   
+    if (keys){
+        mediator.sidebar.selectItem(tree_id);
+        selectTreeItem  ();
     }
-    getSingleTreeItem() ;
 
-    
+
 }
 
 
-;// CONCATENATED MODULE: ./src/js/components/treeSidabar/onBeforeOpen.js
+async function createTableSpace (){
+    await getWorkspace ();
 
-
-
-
-const onBeforeOpen_logNameFile = "treeSidebar => onBeforeOpen";
-
-function onBeforeOpenFunc(id){
-  
-    const tree          = $$("tree");
-    const selectedItem  = tree.getItem(id);
-    const idLoadElement = "q-load_data-tree_" + webix.uid();
-    const idNoneElement = "q-none_data-tree_" + webix.uid();
-
-    function createLoadEl(){
-        tree.data.add({
-            id      :idLoadElement,
-            disabled:true,
-            value   :"Загрузка ..."
-        }, 0, id );  
-        
-        tree.addCss(idLoadElement, "tree_load-items");
-    }
-
-    function createNoneEl(){
-        tree.data.add({
-            id      :idNoneElement,
-            disabled:true,
-            value   :"Раздел пуст"
-        }, 0, id );  
-    }
-
-    async function getMenuChilds() {
-
-        function isUniqueItem (menu, data){
-            let check  = true;
-
-            try{
-                menu.forEach(function(el, i){
-                    if (el.name == data){
-                        check = false;
-                        
-                    }
-                });
-            } catch (err){
-                errors_setFunctionError(err, onBeforeOpen_logNameFile, "isUniqueItem");
-            }
-            return check;
-        }
-
-        function removeTreeEls( noneEl = false ){
-            try{
-                if( tree.exists(idLoadElement)){
-                    tree.remove(idLoadElement);
-                }
-                
-                if( tree.exists(idNoneElement) && noneEl){
-                    tree.remove(idNoneElement);
-                }
-            } catch (err){
-                errors_setFunctionError(err, onBeforeOpen_logNameFile, "removeTreeEls");
-            }
-        }
-
-        async function generateMenuData (typeChild){
-            await LoadServerData.content("fields");
-            await LoadServerData.content("mmenu");
-
-            const menu   = GetMenu.content;
-            const keys   = GetFields.keys;
-            const values = GetFields.values;
- 
-            let itemsExists = false;
-
-            try{
-            
-                keys.forEach(function(data, i) {
-                
-                    
-                    if (values[i].type == typeChild && isUniqueItem(menu, data)){ 
-                
-                        tree.data.add({
-                                id      : data, 
-                                value   : (values[i].plural) ? 
-                                values[i].plural : values[i].singular, 
-                                "type"  : values[i].type
-                        }, 0, id ); 
-
-                        if (!itemsExists){
-                            itemsExists = true;
-                        }
-                       
-                        removeTreeEls(true);
-                
-                    } 
- 
-                });
-
-                if (!itemsExists){
-                    removeTreeEls();
-                    if( !(tree.exists(idNoneElement)) ){
-                        createNoneEl();
-                        tree.addCss(idNoneElement, "tree_none-items");
-                    }
-                }
-            } catch (err){
-                errors_setFunctionError(err, onBeforeOpen_logNameFile, "generateMenuData");
-            }
-    
-        }
-
-        if (selectedItem.action.includes("all_")){
-            const index = selectedItem.action.indexOf("_");
-            const type  = selectedItem.action.slice  (index + 1);
-            generateMenuData (type);
-        }
+    const isFieldsExists = GetFields.keys;
+    try{   
+        const tree = $$("tree");
+        tree.attachEvent("onAfterLoad", 
+        webix.once(function (){
+            if (!isFieldsExists) {
+                tree_getTableData ();
+            } 
+        }));         
        
+    } catch (err){
+        errors_setFunctionError(
+            err, 
+            tree_logNameFile, 
+            "createTableSpace"
+        );
     }
 
-    if (tree.getItem(id).$count === -1){
-        createLoadEl();
-        getMenuChilds();
+}
+
+
+
+function checkTable(){
+    try {
+        if (mediator.sidebar.dataLength() == 0){
+            createTableSpace ();
+            
+        }
+    } catch (err){
+        errors_setFunctionError(err, tree_logNameFile, "checkTable");
+
+    }    
+  
+}
+function treeRouter(selectId){
+    tree_id = selectId;
+    checkTable();
+
+}
+
+
+;// CONCATENATED MODULE: ./src/js/components/routerConfig/index.js
+
+
+const routerConfig_logNameFile = "router => index";
+
+function indexRouter(){
+
+    function goToContentPage(){
+    
+        try {
+            Backbone.history.navigate("content", { trigger:true});
+        } catch (err){
+            console.log(err + " " + routerConfig_logNameFile + " goToContentPage");
+        }
     }
 
+    function showWorkspace(){
+        try{
+            const main  = $$("mainLayout");
+            const login = $$("userAuth");
+            
+            if(main){
+                (main).hide();
+            }
 
+            if(login){
+                login.show();
+            }
+            
+        } catch (err){
+            window.alert("getAuth: " + err + 
+            " (Подробности: ошибка в отрисовке контента, router:index function showWorkspace)");
+            console.log(err + " " + routerConfig_logNameFile + " function showWorkspace");
+        }
+    }
+
+    async function getAuth () {
+     
+        if (!STORAGE.whoami ){
+            await getData("whoami"); 
+        }
+
+
+        if (STORAGE.whoami){
+            goToContentPage();
+
+        } else {
+  
+            showWorkspace();
+        }
+    }
+    getAuth ();
+    
+}
+
+;// CONCATENATED MODULE: ./src/js/components/routerConfig/cp.js
+
+
+
+
+
+const cp_logNameFile = "router => cp";
+
+function showUserAuth(){
+    try{
+        const elem = $$("user_auth");
+        if (elem){
+            elem.show();
+        }
+    } catch (err){
+        errors_setFunctionError(err,cp_logNameFile,"showUserAuth");
+    }
+}
+   
+function setUserValues(){
+    const user     = webix.storage.local.get("user");
+    const authName =  $$("authName");
+    try{
+        if (user){
+            authName.setValues(user.name.toString());
+        }
+    } catch (err){
+        errors_setFunctionError(err,cp_logNameFile,"setUserValues");
+    }
+}
+
+function hideNoneContent(){
+    try{
+        const elem = $$("webix__none-content");
+        if(elem){
+            elem.hide();
+        }
+    } catch (err){
+        errors_setFunctionError(err,cp_logNameFile,"hideNoneContent");
+    }
+}
+
+function removeNullContent(){
+    try{
+        const elem = $$("webix__null-content");
+        if(elem){
+            const parent = elem.getParentView();
+            parent.removeView(elem);
+        }
+    } catch (err){
+        errors_setFunctionError(err,cp_logNameFile,"removeNoneContent");
+    }
+}
+
+
+
+
+
+
+
+function cpRouter(){
+    
+ 
+ 
+    checkTreeOrder();
+
+
+    hideAllElements ();
+  
+    if($$("user_auth")){
+        showUserAuth();
+    } else {
+    
+        createElements("cp");
+        showUserAuth();
+   
+    }
+  
+    mediator.sidebar.close();
+    setUserValues();
+    hideNoneContent();
+
+    removeNullContent();
+}
+
+
+
+;// CONCATENATED MODULE: ./src/js/components/routerConfig/settings.js
+
+
+
+
+const settings_logNameFile = "router => settings";
+
+function showUserprefs(){
+    try{
+        $$("settings").show();
+    } catch (err){
+      
+        errors_setFunctionError(err, settings_logNameFile, "showUserprefs");
+    }
+}
+
+function setUserprefsNameValue (){
+    const user = webix.storage.local.get("user");
+    try{
+        if (user){
+            $$("settingsName").setValues(user.name.toString());
+        }
+    } catch (err){
+      
+        errors_setFunctionError(err, settings_logNameFile, "setUserprefsNameValue");
+    }
+
+}
+
+function settings_hideNoneContent(){
+    try{
+        const elem = $$("webix__none-content");
+        if(elem){
+            elem.hide();
+        }
+    } catch (err){
+        
+        errors_setFunctionError(err, settings_logNameFile, "hideNoneContent");
+    }
+}
+
+function getDataUserprefs(){
+    const userprefsData = webix.ajax().get("/init/default/api/userprefs/");
+
+    userprefsData.then(function(data){
+
+        data = data.json().content;
+    
+        function setTemplateValue(){
+            try{
+                data.forEach(function(el,i){
+        
+                    if (el.name.includes   ("userprefs")     && 
+                        el.name.lastIndexOf("userprefs") == 0){
+                        $$(el.name).setValues(JSON.parse(el.prefs));
+                    }
+                });
+            } catch (err){
+                errors_setFunctionError(err, settings_logNameFile, "getDataUserprefs");
+            }
+        }
+
+        setTemplateValue();
+        
+    });
+
+    userprefsData.fail(function(err){
+        setAjaxError(err, settings_logNameFile, "getDataUserprefs");
+    });
+}
+
+function settings_removeNullContent(){
+    try{
+        const elem = $$("webix__null-content");
+        if(elem){
+            const parent = elem.getParentView();
+            parent.removeView(elem);
+        }
+    } catch (err){
+        errors_setFunctionError(err, settings_logNameFile, "removeNullContent");
+    }
+}
+
+
+function settingsRouter(){
+
+    hideAllElements ();
+  
+    checkTreeOrder();
+
+    if ($$("settings")){
+        showUserprefs();
+    } else {
+        createElements("settings");
+        getDataUserprefs();
+        showUserprefs();
+      
+
+    }
+
+    setUserprefsNameValue   ();
+    mediator.sidebar.close  ();
+    settings_hideNoneContent         ();
+    settings_removeNullContent       ();
   
 }
 
 
-;// CONCATENATED MODULE: ./src/js/components/treeSidabar/onAfterSelect.js
+;// CONCATENATED MODULE: ./src/js/components/routerConfig/experimental.js
 
 
 
 
-function onAfterSelectFunc(id){
+
+
+
+const experimental_logNameFile = "router => experimental";
+
+function experimental_removeNullContent(){
+    try{
+        const elem = $$("webix__null-content");
+        if(elem){
+            const parent = elem.getParentView();
+            parent.removeView(elem);
+        }
+    } catch (err){
+        errors_setFunctionError(err,experimental_logNameFile,"removeNullContent");
+    }
+}
+
+function experimentalRouter(){
+    experimental_removeNullContent();
+
+    hideAllElements ();
+    Action.hideItem($$("webix__none-content"));
     
-    async function getFields (){
-        const menu  = GetMenu.content;
-
-        if (menu){
-            try{
-                Backbone.history.navigate("tree/" + id, { trigger : true });
-            } catch (err){
-                errors_setFunctionError(err,"treeSidebar => onAfterSelect","getFields");
-            }
-        }
+    
+    checkTreeOrder();
+    
+    
+    if($$("treeTempl")){
+        mediator.treeEdit.showView();
+        mediator.treeEdit.load();
+    }else {
+        createElements("treeTempl");
+        mediator.treeEdit.load();
+        mediator.treeEdit.showView();
     }
-    function setAdaptiveState(){
-        try{
-            if (window.innerWidth < 850 ){
-                $$("tree").hide();
-            }
-        } catch (err){
-            errors_setFunctionError(err,"treeSidebar => onAfterSelect","setAdaptiveState");
-        }
-    }
-
-    getFields ();
-    setAdaptiveState();
+    
+    mediator.sidebar.close();
 }
 
 
-;// CONCATENATED MODULE: ./src/js/components/treeSidabar/_layout.js
- 
 
- 
- 
- 
- 
- 
+;// CONCATENATED MODULE: ./src/js/components/routerConfig/logout.js
 
 
-function treeSidebar () {
-    const tree = {
-        view        : "edittree",
-        id          : "tree",
-        css         : "webix_tree-main",
-        minWidth    : 100,
-        width       : 300,
-        editable    : false,
-        select      : true,
-        editor      : "text",
-        editValue   : "value",
-        activeTitle : true,
-        clipboard   : true,
-        data        : [],
-        on          : {
+const logout_logNameFile = "router => logout";
+
+function logoutRouter(){
+    const logoutData = webix.ajax().post("/init/default/logout/");
+
+    logoutData.then(function(){
+
+        function clearTree (){
+            try{
+                const tree = $$("tree");
+
+                if( tree){
+                    tree.clearAll();
+                }
+            } catch (err){
+                errors_setFunctionError(err, logout_logNameFile, "clearTree");
+            }
+        }
+
+        function clearStorage(){
+            try{
+                webix.storage.local.clear();
+            } catch (err){
+                errors_setFunctionError(err, logout_logNameFile, "clearStorage");
+            }
+        }
+
+        function backPage(){
+            try{
+                history.back();
+            } catch (err){
+                errors_setFunctionError(err, logout_logNameFile, "backPage");
+            }
+        }
+
+        backPage        ();
+        clearTree       ();
+        clearStorage    ();
+    });
+
+    logoutData.fail(function(err){
+        setAjaxError(err, logout_logNameFile, "logoutData");
+    });  
+}
+
+
+;// CONCATENATED MODULE: ./src/js/components/routerConfig/_router.js
+
+
+lib ();
+
+
+
+
+
+
+
+
+
+
+function router (){
+    let routes = new (Backbone.Router.extend({
+    
+        routes:{
+            ""                : "index" ,
+            "content"         : "content", 
+            "settings"        : "settings",
+            "cp"              : "cp",
+            "logout"          : "logout",
+            "tree/:id"        : "tree",
+            "experimental/:id":"experimental"
+        },
+        
+        content:function(){
+            getWorkspace();
+        },
+    
+        index:function(){
+            indexRouter();
+
+        }, 
+
+        tree: function(id){
+            treeRouter(id);
+        },
+        
+        cp: function(){
+            cpRouter();
+    
+      
+        },
+    
+        settings: function(){
+            settingsRouter();
             
-            onSelectChange:function (ids) {
-                onSelectChangeFunc(ids);
-            },
-
-            onItemClick:function(id) {
-                return onItemClickFunc(id);
-            },
-
-            onBeforeSelect: function(data) {
-                onBeforeSelectFunc(data);
-            },
-
-            onLoadError:function(xhr){
-                setAjaxError(xhr, "sidebar","onLoadError");
-            },
-
-            onBeforeOpen:function (id){
-                onBeforeOpenFunc(id);
-            },
-
-            onAfterSelect:function(id){
-                onAfterSelectFunc(id);
-            },
 
         },
 
+        experimental: function (){
+            experimentalRouter();
+        },
+    
+        logout: function (){
+            logoutRouter();
+        }
+    
+    }));
+
+    return routes;
+}
+
+
+;// CONCATENATED MODULE: ./src/js/components/login.js
+
+
+
+
+function login_createSentObj(){
+    const loginData = {};
+    const form      = $$("formAuth");
+    try{
+     
+        const userData  = form.getValues();
+
+        loginData.un    = userData.username;
+        loginData.np    = userData.password;
+        
+    } catch (err){
+        console.log(err + " login function createSentObj");
+    }
+
+    return loginData;
+}
+
+
+function postLoginData(){
+    const loginData = login_createSentObj();
+    const form      = $$("formAuth");
+
+    const path      = "/init/default/login";
+    const postData  = webix.ajax().post(path, loginData);
+
+    postData.then(function(data){
+
+        if (data.json().err_type == "i"){
+
+            data = data.json().content;
+
+            if (form){
+                form.clear();
+            }
+
+            Backbone.history.navigate("content", { trigger:true});
+            window.location.reload();
+ 
+        } else {
+
+            if (form && form.isDirty()){
+                form.markInvalid("username", "");
+                form.markInvalid("password", "Неверный логин или пароль");
+            }
+        }
+
+    });
+
+    postData.fail(function(err){
+        console.log(err + " login function postLoginData");
+    });
+}
+
+const invalidMsgText = "Поле должно быть заполнено";
+
+function returnLogin(){
+    const login =  {   
+        view            : "text", 
+        label           : "Логин", 
+        name            : "username",
+        invalidMessage  : invalidMsgText,
+        on              : {
+            onItemClick:function(){
+                $$('formAuth').clearValidation();
+            }
+        }  
     };
 
-    return tree;
+    return login;
 }
+
+
+function clickPass(event, self){
+    const className = event.target.className;
+    const input     = self.getInputNode();
+
+    function removeCss(className){
+        webix.html.removeCss(event.target, className);
+    }
+
+    function updateInput(type, className){
+        webix.html.addCss(event.target, className);
+        input.type = type;
+    }
+
+    if (className.includes("password-icon")){
+   
+        removeCss("wxi-eye-slash");
+        removeCss("wxi-eye");
+
+        if(input.type == "text"){    
+            updateInput("password", "wxi-eye"); 
+        } else {
+            updateInput("text", "wxi-eye-slash"); 
+        }
+
+    }
+    
+    $$('formAuth').clearValidation();
+}
+
+
+function returnPass(){
+    const pass =  {   
+        view            : "text", 
+        label           : "Пароль", 
+        name            : "password",
+        invalidMessage  : invalidMsgText,
+        type            : "password",
+        icon            : "password-icon wxi-eye",   
+        on              : {
+            onItemClick:function(id, event){
+                clickPass(event, this);
+     
+            },
+        } 
+    };
+
+    return pass;
+}
+
+function getLogin(){
+
+    const form = $$("formAuth");
+
+    form.validate();
+    postLoginData();
+
+}
+
+function returnBtnSubmit(){
+    const btnSubmit = {   
+        view    : "button", 
+        value   : "Войти", 
+        css     : "webix_primary",
+        hotkey  : "enter", 
+        align   : "center", 
+        click   :getLogin
+    };
+
+    return btnSubmit;
+}
+
+function login_returnForm(){
+    const form = {
+        view        : "form",
+        id          : "formAuth",
+        width       : 250,
+        borderless  : true,
+        elements    : [
+            returnLogin     (),
+            returnPass      (),
+            returnBtnSubmit (), 
+        ],
+
+        rules:{
+            
+            "username" : webix.rules.isNotEmpty,
+            "password" : webix.rules.isNotEmpty,
+    
+          },
+    
+    
+        elementsConfig:{
+            labelPosition:"top"
+        }
+    
+    };
+
+    return form;
+}
+
+
+function login () {
+    router();
+    return login_returnForm();
+}
+
+const auth = {
+    hidden  : true, 
+    id      : "userAuth", 
+    cols    : [
+        {
+            view    : "align", 
+            align   : "middle,center",
+            body    : login()
+        },
+
+    ]
+}; 
 
 
 ;// CONCATENATED MODULE: ./src/js/components/logout/autoLogout.js
@@ -22133,7 +22398,7 @@ function setRouterStart(){
 
 
 ;// CONCATENATED MODULE: ./src/js/app.js
-console.log("expa 1.0.56"); 
+console.log("expa 1.0.57"); 
 
 
 
@@ -22141,6 +22406,7 @@ console.log("expa 1.0.56");
 
 
 
+ 
 
 
 
@@ -22171,7 +22437,7 @@ const emptySpace = {
 
 };
 
-const container = {   
+const app_container = {   
     id  : "container",
     cols: [
         emptySpace,
@@ -22204,13 +22470,13 @@ const mainLayout = {
                                             
             cols: [
                 { rows  : [
-                    header,
+                    mediator.header.create(),
                     adaptive,
                 
                     {cols : [
-                        treeSidebar(), 
+                        mediator.sidebar.create(),
                         sideMenuResizer,
-                        container,
+                        app_container,
                     ]}
                 ]}, 
 

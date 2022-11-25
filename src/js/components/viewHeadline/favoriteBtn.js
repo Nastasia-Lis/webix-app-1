@@ -3,226 +3,252 @@ import { LoadServerData, GetFields }        from "../../blocks/globalStorage.js"
 import { setLogValue }                      from "../logBlock.js";
 import { setAjaxError, setFunctionError }   from "../../blocks/errors.js";
 import { getItemId, pushUserDataStorage, 
-        getUserDataStorage }                from "../../blocks/commonFunctions.js";
+        getUserDataStorage, 
+        Action}                from "../../blocks/commonFunctions.js";
 
 import { Popup }                            from "../../viewTemplates/popup.js";
 import { Button }                           from "../../viewTemplates/buttons.js";
-function saveFavsClick(){
 
 
-    async function getLinkName(){
-        
-        await LoadServerData.content("fields");
-        const names = GetFields.names;
+const logNameFile = "viewHeadline => favoriteBtn";
 
-        function findName (id){
-    
-            try{
-                const nameTemplate = $$("favNameLink");
-                names.forEach(function(el){
-                    if (el.id == id){
-                        if(nameTemplate){
-                            nameTemplate.setValues(el.name);
-                        }
-                    }
-                    
-                });
-            } catch (err){
-                setFunctionError(err, "favsLink", "findName");
-            }
-        }
+function findName (id, names){
 
-
-        if (names){
-            const id = getItemId();
-            findName (id);
-        }
-      
-    }
-
-    function getLink(){
-        try{
-            const link = window.location.href;
-            const favTemplate = $$("favLink");
-            if (favTemplate){
-                favTemplate.setValues(link);
-            }
-        } catch (err){
-            setFunctionError(err,"favsLink","getLink");
-        }
-    }
-
-    function destructPopupSave(){
-        const popup = $$("popupFavsLinkSave");
-        try{
-            if (popup){
-                popup.destructor();
-            }
-        } catch (err){
-            setFunctionError(err,"favsLink","destrucPopupSave");
-        }
-    }
-
-    function createDivTemplate(name, text){
-        return "<div style='font-weight:600'>" + 
-                name + ": </div>" + text;
-    }
-     
-    function createTemplate(id, name, nonName){
-        return {   
-            id          : id,
-            css         : "popup_subtitle", 
-            borderless  : true, 
-            height      : 20 ,
-            template    : function(){
-                const value = $$(id).getValues();
-                const keys = Object.keys(value);
-
-                if (keys.length !== 0){
-                    return createDivTemplate(name, value);
-
-                } else {
-                    return createDivTemplate(name, nonName);
-
+    try{
+        const nameTemplate = $$("favNameLink");
+        names.forEach(function(el){
+            if (el.id == id){
+                if(nameTemplate){
+                    nameTemplate.setValues(el.name);
                 }
-          
+            }
+            
+        });
+    } catch (err){
+        setFunctionError(err, logNameFile, "findName");
+    }
+}
+
+async function getLinkName(){
+        
+    await LoadServerData.content("fields");
+    const names = GetFields.names;
+
+    if (names){
+        const id = getItemId();
+        findName (id, names);
+    }
+  
+}
+
+function getLink(){
+    try{
+        const link = window.location.href;
+        const favTemplate = $$("favLink");
+        if (favTemplate){
+            favTemplate.setValues(link);
+        }
+    } catch (err){
+        setFunctionError(
+            err, 
+            logNameFile, 
+            "getLink"
+        );
+    }
+}
+
+
+function createDivTemplate(name, text){
+    return "<div style='font-weight:600'>" + 
+            name + ": </div>" + text;
+}
+ 
+function createTemplate(id, name, nonName){
+    return {   
+        id          : id,
+        css         : "popup_subtitle", 
+        borderless  : true, 
+        height      : 20 ,
+        template    : function(){
+            const value = $$(id).getValues();
+            const keys  = Object.keys(value);
+
+            if (keys.length !== 0){
+                return createDivTemplate(name, value);
+
+            } else {
+                return createDivTemplate(name, nonName);
+
+            }
+      
+        }
+    };
+}
+
+function getValue(elem){
+    return  $$(elem).getValues();   
+}
+
+
+
+async function postContent(namePref){
+    const favNameLinkVal = getValue("favNameLink");
+    const favLinkVal     = getValue("favLink");
+
+    let user = getUserDataStorage();
+
+    if (!user){
+        await pushUserDataStorage();
+        user = getUserDataStorage();
+    }
+
+
+    if (user){
+
+        const postObj = {
+            name : "fav-link_" + namePref,
+            owner: user.id,
+            prefs:{
+                name: favNameLinkVal,
+                link: favLinkVal,
+                id  : namePref,
             }
         };
-    }
 
-    function btnSaveLinkClick(){
-   
-        let favNameLinkVal;
-        let favLinkVal;
-        const namePref = getItemId();
-        function getData(){
-            try{
-                favNameLinkVal = $$("favNameLink").getValues();
-                favLinkVal     = $$("favLink")    .getValues();
-            } catch (err){
-                setFunctionError(err, "favsLink", "btnSaveLinkClick => getData");
-            }
-        }
+        const path     = "/init/default/api/userprefs/";
+        const postData = webix.ajax().post(path, postObj);
 
-
-        async function postContent(){
-            let user = getUserDataStorage();
-            if (!user){
-                await pushUserDataStorage();
-                user = getUserDataStorage();
-            }
-
-
-            if (user){
-
-                const postObj = {
-                    name : "fav-link_" + namePref,
-                    owner: user.id,
-                    prefs:{
-                        name: favNameLinkVal,
-                        link: favLinkVal,
-                        id  : namePref,
-                    }
-                };
-                const postData = webix.ajax().post("/init/default/api/userprefs/", postObj);
-
-                postData.then(function(data){
-                    data = data.json();
-            
-                    if (data.err_type == "i"){
-                        setLogValue("success", "Ссылка" + " «" + favNameLinkVal + "» " + " сохранёна в избранное");
-                    } else {
-                        setFunctionError(data.err, "favsLink", "btnSaveLinkClick => postContent msg" );
-                    }
-
-                    destructPopupSave();
-                });
-
-                postData.fail(function(err){
-                    setAjaxError(err, "favsLink", "btnSaveLinkClick => postContent");
-                });
-            }
-        }
-
-
-        function getUserprefs(){
-            const getData = webix.ajax().get("/init/default/api/userprefs/");
-            getData.then(function(data){
-                data = data.json().content;
-                const favPrefs = [];
-
-                function getFavPrefs(){
-                    try{
-                        data.forEach(function(pref){
-            
-                            if (pref.name.includes("fav-link")){
-                                favPrefs.push(pref.name);
-                            }
-                    
-                        });
-                    } catch (err){
-                        setFunctionError(err,"favsLink","getUserprefs => getFavPrefs");
-                    }
-                }
-
-                function getNotUniquePrefs (){
-                    try{
-                        let unique = true;
-                        if (favPrefs.length){
-                            favPrefs.forEach(function(el){
-                             
-                                if (el.includes(namePref)){
-                                    
-                                    const index = el.indexOf("_")+1;
-                                    const id = el.slice(index);
-                            
-                                    if (id == namePref && unique){
-                                        unique = false;
-                                        setLogValue("success", "Такая ссылка уже есть в избранном");
-                                    } 
-                                } 
-                            });
-                        } 
-                        
-                     
-                        if (!(favPrefs.length) || unique) {
-                            postContent();
-                        } else if (!unique){
-                            destructPopupSave();
-                        }
-                    } catch (err){
-                        setFunctionError(err,"favsLink","getUserprefs => getNotUniquePrefs");
-                    }
-                }
-      
-                getFavPrefs();
-                getNotUniquePrefs ();
-           
-            });
-            getData.fail(function(err){
-                setAjaxError(err, "favsLink","getUserprefs getData");
-            });
-            }
-
-
-       
-        getData();
-        getUserprefs();
-    }
-   
-    const btnSaveLink = new Button({
+        postData.then(function(data){
+            data = data.json();
     
-        config   : {
-            value    : "Сохранить ссылку", 
-            click    : function(){
-                btnSaveLinkClick();
-            },
+            if (data.err_type == "i"){
+                setLogValue(
+                    "success", 
+                    "Ссылка" + " «" + favNameLinkVal + "» " + 
+                    " сохранёна в избранное");
+            } else {
+                setFunctionError(
+                    data.err, 
+                    logNameFile, 
+                    "postContent msg" 
+                );
+            }
+
+            Action.destructItem($$("popupFavsLinkSave"));
+        });
+
+        postData.fail(function(err){
+            setAjaxError(err, logNameFile, "postContent");
+        });
+    }
+}
+
+function getFavPrefs(data){
+    const prefs = [];
+    try{
+        data.forEach(function(pref){
+
+            if (pref.name.includes("fav-link")){
+                prefs.push(pref.name);
+            }
+    
+        });
+    } catch (err){
+        setFunctionError(
+            err,
+            logNameFile,
+            "getFavPrefs"
+        );
+    }
+    return prefs;
+}
+
+function returnId(el){
+    const index = el.indexOf("_") + 1;
+    return el.slice(index);
+}
+
+function getNotUniquePref(favPrefs, namePref){
+    let unique = true;
+    favPrefs.forEach(function(el){
+                
+        if (el.includes(namePref)){
+            const id = returnId(el);
+
+            if (id == namePref && unique){
+                unique = false;
+                setLogValue(
+                    "success", 
+                    "Такая ссылка уже есть в избранном"
+                );
+            } 
+        } 
+    });
+
+    return unique;
+}
+
+
+function getNotUniquePrefs (data, namePref){
+    const favPrefs = getFavPrefs(data);
+    let unique = true;
+    try{
+        if (favPrefs.length){
+            unique = 
+            getNotUniquePref(favPrefs, namePref);
+            console.log(unique)
+        } 
+        
+        
+        if (!(favPrefs.length) || unique) {
+            postContent(namePref);
+        } else if (!unique){
+            Action.destructItem($$("popupFavsLinkSave"));
+        }
+    } catch (err){
+        setFunctionError(
+            err,
+            logNameFile,
+            "getNotUniquePrefs"
+        );
+    }
+}
+
+function btnSaveLinkClick(){
+  
+    const namePref = getItemId();
+    const path     = "/init/default/api/userprefs/";
+    const getData  = webix.ajax().get(path);
+    getData.then(function(data){
+        data = data.json().content;
+        getNotUniquePrefs (data, namePref);
+    
+    });
+    getData.fail(function(err){
+        setAjaxError(
+            err, 
+            logNameFile,
+            "btnSaveLinkClick"
+        );
+    });
+
+}
+
+const btnSaveLink = new Button({
+
+    config   : {
+        value    : "Сохранить ссылку", 
+        click    : function(){
+            btnSaveLinkClick();
         },
-        titleAttribute : "Сохранить ссылку в избранное"
-    
-       
-    }).maxView("primary");
-    
+    },
+    titleAttribute : "Сохранить ссылку в избранное"
+
+   
+}).maxView("primary");
+
+
+function saveFavsClick(){
 
     const popup = new Popup({
         headline : "Сохранить ссылку",

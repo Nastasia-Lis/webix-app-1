@@ -76,12 +76,37 @@ function setUserUpdateMsg(){
     } 
 }
 
+function addLoadElem(){
+    if (!($$("dashLoad"))){
+        const view = {
+            view  : "align", 
+            align : "middle, center",
+            id    : "dashLoad",
+            borderless : true, 
+            body  : {  
+                borderless : true, 
+                template   : "Загрузка ...", 
+                height     : 50, 
+                css        : {
+                    "color"     : "#858585",
+                    "font-size" : "14px!important"
+                }
+            }
+            
+        };
+    
+        $$("dashboardInfoContainer").addView(view, 2);
+    }   
+}
+
 function getChartsLayout(){
+    addLoadElem()
     const getData = webix.ajax().get(url);
-
+  
     getData.then(function(data){
+        Action.removeItem($$("dashLoad"));
         const dataCharts    = data.json().charts;
-
+  
         Action.removeItem($$("dashBodyScroll"));
  
         if ( !action ){ //не с помощью кнопки фильтра

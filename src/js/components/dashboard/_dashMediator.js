@@ -29,6 +29,11 @@ class Dashboards {
         createDashboard(id);
     }
 
+    defaultState(){
+        Action.hideItem($$("dashboardTool"));
+        Action.showItem($$("dashboardInfoContainer"));
+    }
+
 }
 
 export {

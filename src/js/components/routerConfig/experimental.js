@@ -2,7 +2,7 @@ import { setFunctionError }                 from "../../blocks/errors.js";
 import { Action }                           from "../../blocks/commonFunctions.js";
 
 import { hideAllElements, checkTreeOrder, 
-        closeTree, createElements }         from "./common.js";
+        createElements }         from "./common.js";
 
 import { mediator }                         from "../../blocks/_mediator.js";
 
@@ -39,7 +39,7 @@ function experimentalRouter(){
         mediator.treeEdit.showView();
     }
     
-    closeTree();
+    mediator.sidebar.close();
 }
 
 
