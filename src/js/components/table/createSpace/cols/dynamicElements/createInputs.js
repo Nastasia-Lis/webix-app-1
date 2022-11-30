@@ -61,6 +61,8 @@ function getOptionData      (){
                 const dataOptions = [];
                 let optionElement;
 
+   
+
                 function dataTemplate(i,valueElem){
                 const template = { 
                         id    : i + 1, 
@@ -70,8 +72,9 @@ function getOptionData      (){
                 }
 
                 function createOptions(){
+              
                     try{
-                        if ( dataSrc[0].name !== undefined ){
+                        if (dataSrc[0] && dataSrc[0].name !== undefined){
                             
                             dataSrc.forEach(function(data, i) {
                                 optionElement = dataTemplate(i,data.name);

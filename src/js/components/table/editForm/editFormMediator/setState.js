@@ -1,9 +1,8 @@
-import { Action }            from "../../../blocks/commonFunctions.js";
-import { setFunctionError }  from "../../../blocks/errors.js";
-import { mediator }          from "../../../blocks/_mediator.js";
-import { Button }            from "../../../viewTemplates/buttons.js";
-
-import { createProperty }    from "./createProperty.js";
+import { Action }            from "../../../../blocks/commonFunctions.js";
+import { setFunctionError }  from "../../../../blocks/errors.js";
+import { mediator }          from "../../../../blocks/_mediator.js";
+import { Button }            from "../../../../viewTemplates/buttons.js";
+import { createProperty }    from "../createProperty.js";
 
 const logNameFile = "table => editForm => setState";
 
@@ -13,7 +12,7 @@ function initPropertyForm(){
     const property = $$("editTableFormProperty");
     Action.showItem(property);
     property.clear();
-    property.config.dirty = false;
+    $$("table-editForm").setDirty(false);
 }
 
 function setWorkspaceState (table){
@@ -46,11 +45,10 @@ function setWorkspaceState (table){
 }
 
 function editTablePostState(){
-    const table         = $$("table");
+    const table = $$("table");
     initPropertyForm();
     setWorkspaceState (table);
     table.hideOverlay("Ничего не найдено");
-  
 }
 
 //select exists entry
@@ -93,11 +91,9 @@ function adaptiveView (editForm){
 
 function editTablePutState(){
     try{
-        const prop      = $$("editTableFormProperty");
         const editForm  = $$("table-editForm");
-        setPropertyWidth(prop);
-
-        prop.config.dirty = false;
+        setPropertyWidth($$("editTableFormProperty"));
+        editForm.setDirty(false);
         Action.showItem  ($$("table-saveBtn"    ));
 
         Action.hideItem  ($$("table-saveNewBtn" ));
@@ -123,41 +119,40 @@ function editTablePutState(){
     
 }
 
-//default
-function disableVisibleBtn(){
-    const viewBtn =  $$("table-view-visibleCols");
-    const btn     =  $$("table-visibleCols");
- 
-    if ( viewBtn.isVisible() ){
-        Action.disableItem(viewBtn);
-    } else if ( btn.isVisible() ){
-        Action.disableItem(btn);
+function defPropertyState(){
+    const property = $$("editTableFormProperty");
+
+    if (property){
+        property.clear();
+        property.hide();
     }
-  
+}
+
+function unsetDirtyProp(){
+    $$("table-editForm").setDirty(false);
 }
 
 function editTableDefState(){
-    Action.hideItem  ($$("table-editForm"));
-    Action.hideItem  ($$("tablePropBtnsSpace"));
-    Action.removeItem($$("propertyRefbtnsContainer"));
-    Action.hideItem  ($$("editTableFormProperty"));
-    disableVisibleBtn();
-}
+    unsetDirtyProp();
+    
+    Action.hideItem   ($$("table-editForm"    ));
+    Action.hideItem   ($$("tablePropBtnsSpace"));
+    Action.hideItem   ($$("table-saveNewBtn"  ));
+    Action.hideItem   ($$("table-saveBtn"     ));
 
-class EditForm {
-    static defaultState (){
-        editTableDefState();
-    }
+    Action.showItem   ($$("tableContainer"    ));
+    Action.showItem   ($$("EditEmptyTempalte" ));
 
-    static putState     (){
-       editTablePutState();
-    }
+    Action.enableItem ($$("table-newAddBtnId" ));
 
-    static postState    (){
-        editTablePostState();
-    }
+    Action.removeItem ($$("propertyRefbtnsContainer"));
+
+    defPropertyState();
 
 }
+
 export {
-    EditForm
+   editTableDefState,
+   editTablePutState,
+   editTablePostState
 };

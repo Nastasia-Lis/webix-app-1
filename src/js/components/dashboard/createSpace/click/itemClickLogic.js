@@ -3,12 +3,15 @@
 import { LoadServerData, GetFields }      from "../../../../blocks/globalStorage.js";
 import { setAjaxError, setFunctionError } from "../../../../blocks/errors.js";
 import { setLogValue }                    from "../../../logBlock.js";
+import { createContextProperty }          from "../contextWindow.js";
 
 const logNameFile = "table => createSpace => click => itemClickLogic";
 const uid         = webix.uid();
 
+
 const action = {
-    navigate: "true - переход на другую страницу, false - обновление таблицы в данном дашборде",
+    navigate: "true - переход на другую страницу, false - обновление в данном дашборде",
+    context : "true - открыть окно с записью таблицы, false - обновить таблицу",
     field   : "название из fields (id таблицы должен быть идентичным, если navigate = false)",
     params  :{
         // sorts
@@ -19,14 +22,13 @@ const action = {
 // const action = {
 //     navigate: false,
 //     field   : "auth_group",
+//     context : true,
 //     params  :{
 //         filter : "auth_group.id > 3" 
 //     // filter : "auth_group.id != '1' or auth_group.id != '3' and auth_group.role contains 'р' or auth_group.role = 'а'" 
 //     }
     
 //  };
-
-
 function createSentObj(prefs){
     const sentObj = {
         name    : "dashboards_context-prefs_" + uid,
@@ -101,7 +103,7 @@ function setCursorPointer(areas, fullElems, idElem){
 }
 
 function createQuery(filter, sorts){
-
+ 
     const query = [ 
         "query=" + filter , 
         "sorts=" + sorts  , 
@@ -119,7 +121,7 @@ function scrollToTable(tableElem){
 
 function setDataToTable(table, data){
     const tableElem = $$(table);
-
+    tableElem.clearAll();
     if (tableElem){
         tableElem.parse(data);
 
@@ -135,35 +137,51 @@ function setDataToTable(table, data){
     scrollToTable(tableElem);
 }
 
-function getTableData(tableId, query){
+function getTableData(tableId, query, onlySelect){
+
     const fullQuery = query.join("&");
     const path      = "/init/default/api/smarts?";
-    const queryData = webix.ajax(path + fullQuery );
+    const queryData = webix.ajax(path + fullQuery);
 
-    
     queryData.then(function(data){
         data             = data.json();
         const notifyType = data.err_type;
         const notifyMsg  = data.err;
+        const content = data.content;
 
-        setDataToTable(tableId, data.content)
+        if (!onlySelect){
+            setDataToTable     (tableId, content);
+        } else if (content[0]){
+            createContextProperty(content[0], tableId);
+        }
+       
 
         if (notifyType !== "i"){
             setLogValue("error", notifyMsg);
         }  
     });
     queryData.fail(function(err){
-        setAjaxError(err, logNameFile, "queryData");
+        setAjaxError(
+            err, 
+            logNameFile, 
+            "getTableData"
+        );
     });
 }
 
-function updateTable(chartAction){
-    const tableId   = chartAction.field;
-    const filter    = chartAction.params.filter;
+function updateSpace(chartAction){
+    const tableId     = chartAction.field;
+
+    const filter      = chartAction.params.filter;
+    const filterParam = filter || tableId + ".id > 0" ;
+
     const sorts     = chartAction.params.sorts;
     const sortParam = sorts || tableId + ".id" ;
-    const query     = createQuery(filter, sortParam);
-    getTableData(tableId, query);
+    const query     = createQuery(filterParam, sortParam);
+
+    const onlySelect= chartAction.context;
+
+    getTableData(tableId, query, onlySelect);
     
 }
 
@@ -177,9 +195,10 @@ function cursorPointer(self, elem){
         if (elem.action){
             setCursorPointer(areas, true);
         } else if (elem.data){
-            elem.data.forEach(function(el,i){
+            elem.data.forEach(function(el, i){
+
                 // if (i == 1 || i == 4 ){
-                //     el.action = action; 
+                //     el.action = action1; 
                 // }
             
                 if (el.action){
@@ -206,8 +225,8 @@ async function findField(chartAction){
             if (chartAction.navigate){
                 postPrefs(chartAction);
             } else {
-                updateTable(chartAction);
-            }
+                updateSpace(chartAction);
+            } 
         
         }
     });
@@ -218,7 +237,7 @@ function findInnerChartField(elem, idEl){
         
     let selectElement;
 
-    collection.forEach( function (el,i){
+    collection.forEach( function (el){
         if (el.id == idEl){
             selectElement = el;
         }
@@ -232,53 +251,51 @@ function findInnerChartField(elem, idEl){
     } 
 }
 
-function setAttributes(elem){
-  //  elem.action = action 
-  
-   // if (elem.view == "chart"){
-        elem.borderless  = true;
-        elem.minWidth    = 250;
-        elem.on          = {
-            onAfterRender:function(){
-                cursorPointer(this, elem);
-            },
+function setAttributes(elem, topAction){
+    if (topAction){
+        elem.action = topAction;
+    }
 
-            onItemClick:function(idEl){
-                console.log("пример: ", action);
-        
-                if (elem.action){
-                    findField(elem.action);
-                    
-                } else {
-                    findInnerChartField(elem, idEl);
-                }
-                
-            },
+    elem.borderless  = true;
+    elem.minWidth    = 250;
+    elem.on          = {
+        onAfterRender:function(){
+            cursorPointer(this, elem);
+        },
 
-
-        };
-     
-   // else if (elem.view =="datatable"){
-  
+        onItemClick:function(idEl){
+            console.log("пример: ", action);
     
-   // }
+            if (elem.action){ // action всего элемента
+                findField(elem.action);
+                
+            } else { // action в data
+                findInnerChartField(elem, idEl);
+            }
+            
+        },
+
+
+    };
+     
+
     return elem;
  
 }
 
 
-function iterateArr(container){
+function iterateArr(container, topAction){
     let res;
     const elements = [];
 
     function loop(container){
-        container.forEach(function(el, i){
+        container.forEach(function(el){
          
             const nextContainer = el.rows || el.cols;
      
             if (!el.rows && !el.cols){
                 if (el.view && el.view == "chart"){
-                    el = setAttributes(el);
+                    el = setAttributes(el, topAction);
                 }
                 
                 elements.push(el);
@@ -299,14 +316,14 @@ function iterateArr(container){
 
 
 
-function returnEl(element){
+function returnEl(element, topAction){
     const container = element.rows || element.cols;
    
     let resultElem;
     
-    container.forEach(function(el,i){
+    container.forEach(function(el){
         const nextContainer = el.rows || el.cols;
-        resultElem    = iterateArr(nextContainer);
+        resultElem = iterateArr(nextContainer, topAction);
 
     });
 

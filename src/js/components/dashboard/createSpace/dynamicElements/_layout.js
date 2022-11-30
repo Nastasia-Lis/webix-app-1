@@ -29,7 +29,11 @@ function setLogHeight(height){
         log.config.height = height;
         log.resize();
     } catch (err){  
-        setFunctionError(err, logNameFile, "setScrollHeight");
+        setFunctionError(
+            err, 
+            logNameFile, 
+            "setScrollHeight"
+        );
     }
 }
 
@@ -99,24 +103,42 @@ function addLoadElem(){
     }   
 }
 
+
+function removeLoadView(){
+    Action.removeItem($$("dash-load-charts"));
+}
+
 function getChartsLayout(){
-    addLoadElem()
+    addLoadElem();
     const getData = webix.ajax().get(url);
   
     getData.then(function(data){
-        Action.removeItem($$("dashLoad"));
-        const dataCharts    = data.json().charts;
-  
-        Action.removeItem($$("dashBodyScroll"));
- 
-        if ( !action ){ //не с помощью кнопки фильтра
-            removeFilter();
+   
+        const err = data.json();
+        if (err.err_type == "i"){
+
+            Action.removeItem($$("dashLoad"));
+            const dataCharts    = data.json().charts;
+    
+            Action.removeItem($$("dashBodyScroll"));
+    
+            if ( !action ){ //не с помощью кнопки фильтра
+                removeFilter();
+            }
+            
+            removeCharts    ();
+            setUpdate       (dataCharts);
+            setUserUpdateMsg();
+            removeLoadView  ();
+            setScrollHeight ();
+         
+        } else {
+            setFunctionError(
+                err.err, 
+                logNameFile, 
+                "getChartsLayout"
+            );
         }
-        
-        removeCharts    ();
-        setUpdate       (dataCharts);
-        setUserUpdateMsg();
-        setScrollHeight ();
     });
    
     getData.fail(function(err){

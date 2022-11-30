@@ -104,14 +104,14 @@ async function createLogMessage(srcTable) {
     let name;
 
     if (srcTable == "version"){
-        name = 'Expa v1.0.57';
+        name = 'Expa v1.0.58';
 
     } else if (srcTable == "cp"){
         name = 'Смена пароля';
     
     } else {
         await LoadServerData.content("fields");
-        const keys   = GetFields.keys;
+        const keys = GetFields.keys;
         if (keys){
             name = returnName(srcTable);
         }

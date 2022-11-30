@@ -8,7 +8,7 @@ import {  formattingBoolVals,
 
 import { setDefaultValues }                 from './setDefaultValues.js';
 
-          
+import { selectContextId }                  from '../createContextSpace.js';
 
 const logNameFile = "table => createSpace => loadData";
 
@@ -280,7 +280,7 @@ async function loadTableData(table, id, idsParam, offset){
           
                 setTableState(table);
                 parseRowData (data);
-       
+                selectContextId();
 
             });
             

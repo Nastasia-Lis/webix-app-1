@@ -29,33 +29,36 @@ function editBtnClick() {
     function maxView () {
         const editContainer   = $$("editTableBarContainer");
         const filterContainer = $$("filterTableBarContainer");
-        const filterForm      = $$("filterTableForm");
-        Action.hideItem(filterContainer);
-        Action.hideItem(filterForm);
 
-        
-        setSecondaryState();
+        const filterForm      = $$("filterTableForm");
+        Action.hideItem   (filterContainer);
+        Action.hideItem   (filterForm);
+        Action.disableItem($$("table-delBtnId"));
+    
+   
+
+        setSecondaryState ();
 
         if (editForm && editForm.isVisible()){
-            Action.hideItem(editForm);
-            Action.hideItem(editContainer);
-          
+            Action.hideItem (editForm);
+            Action.hideItem (editContainer);
 
         }else if (editForm && !(editForm.isVisible())) {
-            Action.showItem(editForm);
-            Action.showItem(editContainer);
-            Action.hideItem($$("tablePropBtnsSpace"));
+            Action.showItem (editForm);
+            Action.showItem (editContainer);
+            Action.hideItem ($$("tablePropBtnsSpace"));
         }
 
     }
 
     function minView () {
         const tableContainer = $$("tableContainer");
-        Action.hideItem(tableContainer);
-        Action.hideItem(tree);
-        Action.showItem(backBtn);
+        Action.hideItem (tableContainer);
+        Action.hideItem (tree);
+        Action.showItem (backBtn);
         
-        editForm.config.width = window.innerWidth - 45;
+        const padding = 45;
+        editForm.config.width = window.innerWidth - padding;
         editForm.resize();
     }
 

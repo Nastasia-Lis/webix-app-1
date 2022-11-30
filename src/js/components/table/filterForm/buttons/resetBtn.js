@@ -12,6 +12,15 @@ import { Button }                            from "../../../../viewTemplates/but
 
 const logNameFile   = "tableFilter => buttons => resetBtn";
 
+function clearVisibleStorage(){
+    const keys = Object.keys(visibleInputs);
+    if (keys){
+        keys.forEach(function(key){
+            delete visibleInputs[key];
+        });
+    }
+  
+}
 
 function removeValues(collection){
     if (collection){
@@ -131,6 +140,7 @@ function resetTable(){
                 Action.disableItem($$("resetFilterBtn"      ));
                 Action.showItem   ($$("filterEmptyTempalte" ));
 
+                clearVisibleStorage();
             } catch (err){
                 setFunctionError(
                     err,
@@ -155,7 +165,7 @@ function resetTable(){
 }
 
 
-function resetFilterBtn (){
+function resetFilterBtnClick (){
     const table = getTable();
     try {
         resetTable();
@@ -166,10 +176,11 @@ function resetFilterBtn (){
         setFunctionError(
             err,
             "Ошибка при очищении фильтров; tableFilter => buttons",
-            "function resetFilterBtn"
+            "function resetFilterBtnClick"
         );
     }
 }
+
 
 
 const resetBtn = new Button({
@@ -179,9 +190,17 @@ const resetBtn = new Button({
         hotkey   : "Shift+Esc",
         disabled : true,
         icon     : "icon-trash", 
-        click    : resetFilterBtn
+        click    : function(){
+            this.callEvent("resetFilter");
+        }
     },
-    titleAttribute : "Сбросить фильтры"
+    titleAttribute : "Сбросить фильтры",
+    onFunc: {
+        resetFilter:function(){
+            resetFilterBtnClick();
+        
+        }
+    }
 
    
 }).minView("delete");

@@ -1,13 +1,14 @@
-import {setAjaxError}       from "../../blocks/errors.js"; 
-
-import {createModalBox}     from "./modalBox.js"; 
-
+import { setAjaxError }     from "../../blocks/errors.js"; 
 import { preparationView }  from "./preparationView.js"; 
+import { mediator }         from "../../blocks/_mediator.js"; 
 
 import { loadFields }       from "./loadFields.js";
 import { getFields }        from "./navigate.js";
 import { setAdaptiveState } from "./adaptive.js";
 
+function isBranch(id){
+    return $$("tree").isBranch(id);
+}
 
 function treeSidebar () {
     const tree = {
@@ -25,16 +26,37 @@ function treeSidebar () {
         data        : [],
         on          : {
 
-            onItemClick:function(id) {
-                return createModalBox(id);
+            onItemClick: function(id) {
+   
+                if (!isBranch(id)){
+                    mediator.getGlobalModalBox()
+                    .then(function(result){
+                        if (result){
+                            $$("tree").select(id);
+                        }
+                    
+                    });
+                    return false;
+                }
+                
             },
 
-            onBeforeSelect: function(data) {
-                preparationView(data);
+            onBeforeSelect: function(id) {
+           
+                const item     = this.getItem(id);
+
+                if (!isBranch(id) || item.webix_kids){
+                    this.open(id);
+                }
+                preparationView(id);
             },
 
             onLoadError:function(xhr){
-                setAjaxError(xhr, "sidebar","onLoadError");
+                setAjaxError(
+                    xhr, 
+                    "sidebar",
+                    "onLoadError"
+                );
             },
 
             onBeforeOpen:function (id){

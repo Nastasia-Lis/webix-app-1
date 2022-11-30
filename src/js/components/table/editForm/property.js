@@ -2,36 +2,23 @@ import { setFunctionError } from "../../../blocks/errors.js";
 
 const logNameFile = "tableEditForm => property";
 
-function setDirtyProperty (type=false){
-    try{
-        const property = $$("editTableFormProperty");
-        if(property){
-            property.config.dirty = type;
-            property.refresh();
-        }
-    } catch (err){
-        setFunctionError(err,logNameFile,"setDirtyProperty");
-    } 
-}
-
-
-function editingEnd (editor,value){
+function editingEnd (editor, value){
     try{
         const property = $$("editTableFormProperty");
         const item     = property.getItem(editor);
         item.value     = value;
 
         property.updateItem(editor);
-        setDirtyProperty (true);
 
     } catch (err){
-        setFunctionError(err,logNameFile,"editingEnd");
+        setFunctionError(err, logNameFile, "editingEnd");
     }
 }
 
 function propTooltipAction (obj){
+   
     const label      = obj.label;
-    const labelText  = "Название: "+label+" <br>";
+    const labelText  = "Название: " + label + " <br>";
     const formatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
     let value;
     let typeElem;
@@ -41,6 +28,14 @@ function propTooltipAction (obj){
 
     } else if ( obj.type       == "combo" ){
         typeElem = "Выберите значение";
+        const node     = $$("editTableFormProperty").getItemNode(obj.id);
+
+        if (node){
+            const valueCss = "webix_property_value";
+            const valueDiv = node.getElementsByClassName(valueCss)[0];
+            const text     = valueDiv.innerHTML;
+            obj.value      = text ? text : obj.value;
+        }
 
     } else if ( obj.customType == "integer" ){
         typeElem = "Введите число";
@@ -50,9 +45,8 @@ function propTooltipAction (obj){
     } 
     
     if (obj.type == "date"){
-        value = formatData(obj.value);
-        
-    } else{
+        value = formatData(obj.value);  
+    } else {
         value = obj.value;
     }
 
@@ -65,7 +59,8 @@ function propTooltipAction (obj){
 
 
 function createTemplate (){
-    document.getElementById('custom-date-editor').addEventListener('input', function (e) {
+    document.getElementById('custom-date-editor')
+    .addEventListener('input', function (e) {
 
         const x = e.target.value.replace(/\D/g, '')
         .match(/(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})/);
@@ -75,13 +70,21 @@ function createTemplate (){
         }
 
         if (e.inputType !== "deleteContentBackward"){
-            e.target.value = setNum(1) + '.' + setNum(2) + '.' + setNum(3) + '  '+ 
+            e.target.value = setNum(1) + '.' + setNum(2) + '.' + setNum(3) 
+            + '  '+ 
             setNum(4) + ':' + setNum(5) + ':' + setNum(6);
         }
      
     });
 }
 
+function setFormDirty(){
+    const form = $$("table-editForm");
+    if ( form && !(form.isDirty()) ){
+        form.setDirty(true);
+    }
+  
+}
 
 const propertyEditForm = {   
     view     : "property",  
@@ -93,10 +96,9 @@ const propertyEditForm = {
     hidden   : true,
     elements : [],
     on       : {
-        onEditorChange:function(id, value){
-        
+        onBeforeEditStop:function(state, editor){
             function setStateSaveBtn(){
-                const saveBtn =$$("table-saveBtn"); 
+                const saveBtn = $$("table-saveBtn"); 
                 if (saveBtn              && 
                     saveBtn.isVisible()  &&
                   !(saveBtn.isEnabled()) ){ 
@@ -104,7 +106,6 @@ const propertyEditForm = {
                 }
             }
 
-            editingEnd (id,value);
             setStateSaveBtn();
 
             const inputEditor = document.getElementById('custom-date-editor');
@@ -112,11 +113,20 @@ const propertyEditForm = {
             if (inputEditor){
                 createTemplate ();
             }
-       
+
+            const type = editor.config.type;
+            if (type == "combo"){
+                setFormDirty();
+            }
+
+        },
+        onEditorChange:function(editor, value){
+            editingEnd (editor, value);
+            setFormDirty();
         },
         onBeforeRender:function (){
 
-            const size = this.config.elements.length*28;
+            const size = this.config.elements.length * 28;
             
             if (size && this.$height !== size){
                 this.define("height", size);
@@ -126,19 +136,12 @@ const propertyEditForm = {
           
         },
 
-        onAfterEditStop:function(state, editor){
-            if (state.value !== state.old ){
-                editingEnd (editor.id, state.value);
-            }
-        },
-
         onItemClick:function(id){
             const property = $$("editTableFormProperty");
             const item     =  property.getItem(id);
             item.css       = "";
             property.refresh();
-        }
-
+        },
     }
 };
 
@@ -164,6 +167,5 @@ const propertyLayout = {
 };
 
 export {
-    setDirtyProperty,
     propertyLayout
 };

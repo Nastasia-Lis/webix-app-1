@@ -103,9 +103,10 @@ function createFiltersByTemplate(data) {
     const radioValue = lib.getOption(libValue);
 
     try{
-        data.forEach(function(el, i){
+        data.forEach(function(el){
+            const name = currId + "_filter-template_" + radioValue.value;
 
-            if (el.name == currId + "_filter-template_" + radioValue.value){
+            if (el.name == name){
                 const prefs = JSON.parse(el.prefs);
                 createWorkspace(prefs);
             }
@@ -118,7 +119,11 @@ function createFiltersByTemplate(data) {
 
         });
     } catch(err){
-        setFunctionError(err, logNameFile, "createFiltersByTemplate");
+        setFunctionError(
+            err, 
+            logNameFile, 
+            "createFiltersByTemplate"
+        );
     }
 }
 
@@ -136,16 +141,22 @@ function getLibraryData(){
 
     const userprefsData = webix.ajax("/init/default/api/userprefs/");
 
-
     userprefsData.then(function(data){
         createFiltersByTemplate(data);
         showHtmlContainers     ();
-        setLogValue("success", "Рабочая область фильтра обновлена");
+        setLogValue(
+            "success", 
+            "Рабочая область фильтра обновлена"
+        );
 
     });
 
     userprefsData.fail(function(err){
-        setAjaxError(err, logNameFile, "getLibraryData");
+        setAjaxError(
+            err, 
+            logNameFile, 
+            "getLibraryData"
+        );
     });
 
   

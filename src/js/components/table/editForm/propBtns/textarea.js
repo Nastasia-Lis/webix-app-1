@@ -20,7 +20,7 @@ function submitClick (){
     try{
         const value = $$("editPropTextarea").getValue();
         setPropValue(value);
-
+        $$("table-editForm").setDirty(true);
     } catch (err){
         setFunctionError(
             err, 

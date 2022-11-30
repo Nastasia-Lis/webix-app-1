@@ -73,10 +73,10 @@ function createChart(dataCharts){
         // };
      
         // dataCharts.push(table)
-        dataCharts.forEach(function(el,i){
-    
+        dataCharts.forEach(function(el){
+          
             if (el.cols || el.rows){
-                returnEl(el);
+                returnEl(el, el.action);
             } else {
                 el = setAttributes(el);
             }

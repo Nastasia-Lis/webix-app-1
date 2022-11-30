@@ -8,7 +8,7 @@ import { columnResize }               from "./onColumnResize.js";
 import { setColsWidthStorage }        from "./columnsSettings/columnsWidth.js"
 import { setFunctionError }           from "../../blocks/errors.js";
 
-import { EditForm }                   from "./editForm/setState.js";
+import { EditForm }                   from "./editForm/editFormMediator/editFormClass.js";
 import { filterFormDefState }         from "./filterForm/setDefaultState.js";
 import { toolsDefState }              from "./formTools/setDefaultState.js";
 
@@ -16,12 +16,13 @@ import { Button }                     from "../../viewTemplates/buttons.js";
 
 const logNameFile = "table => _tableMediator";
 
-
-
-
 class Tables {
     constructor (){
         this.name = "tables";
+
+        this.components = {
+            editForm : new EditForm()
+        };
     }
 
     create(){
@@ -56,6 +57,10 @@ class Tables {
         createTable("table", id);
     }
 
+    get editForm (){
+        return EditForm;
+    }
+  
     defaultState(type){
         if (type == "edit"){
             EditForm.default();
@@ -86,7 +91,6 @@ class Forms {
 
                 const tableElem = $$("table-view");
 
-                sortTable          (tableElem);
                 onResizeTable      (tableElem);
                 setColsWidthStorage(tableElem);
                 columnResize       (tableElem);

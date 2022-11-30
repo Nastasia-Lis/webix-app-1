@@ -1,6 +1,7 @@
 
 import { propertyLayout }   from "./property.js";
 import { editFormBtns }     from "./buttons.js";
+import { mediator }         from "../../../blocks/_mediator.js";
 
 const editForm = {
     view        : "form", 
@@ -15,7 +16,11 @@ const editForm = {
         editFormBtns,
         propertyLayout,  
     ],
-
+    on:{
+        onViewShow: webix.once(function(){
+            mediator.setForm(this);
+        }),
+    },
    
     rules       : {
         $all:webix.rules.isNotEmpty

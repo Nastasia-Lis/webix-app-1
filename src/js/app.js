@@ -1,9 +1,8 @@
-console.log("expa 1.0.57"); 
+console.log("expa 1.0.58"); 
 
 import { textInputClean }                     from "./blocks/commonFunctions.js";
 import { auth }                               from "./components/login.js";
 import { setUserPrefs }                       from "./blocks/storageSetting.js";
-import { header }                             from "./components/header/_layout.js";
 
 import { mediator }                           from "./blocks/_mediator.js";
  

@@ -1,11 +1,16 @@
-const dashboardTool = {
-    id      : "dashboardTool",
-    css     : "webix_dashTool", 
-    minWidth: 200,
-    width   : 350,
-    hidden  : true,
-    rows    : []
-};
+function returnTemplate(id){
+    return {
+        id      : "dashboard" + id,
+        css     : "webix_dashTool", 
+        minWidth: 200,
+        width   : 350,
+        hidden  : true,
+        rows    : []
+    };
+}
+
+const dashboardTool    = returnTemplate("Tool");
+const dashboardContext = returnTemplate("Context");
 
 function dashboardLayout () {
         return [
@@ -23,6 +28,7 @@ function dashboardLayout () {
                             },
                             {view: "resizer"},
                             dashboardTool,
+                            dashboardContext
                           
                         
                         ]

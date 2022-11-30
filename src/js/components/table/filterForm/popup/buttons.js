@@ -98,7 +98,7 @@ function visibleCounter(){
         setFunctionError(
             err,
             logNameFile,
-            "function getCheckboxData => visibleCounter"
+            "visibleCounter"
         );
     }
 
@@ -121,6 +121,7 @@ function resetLibSelectOption(){
 }
 
 
+
 function popupSubmitBtn (){
 
     function getCheckboxData(){
@@ -138,13 +139,17 @@ function popupSubmitBtn (){
 
         hideFilterPopup     ();
         resetLibSelectOption();
-        setLogValue("success","Рабочая область фильтра обновлена");
+        setLogValue(
+            "success",
+            "Рабочая область фильтра обновлена"
+        );
     }
 
     try {                                             
         const tabbarValue = $$("filterPopupTabbar").getValue();
 
         if (tabbarValue == "editFormPopupLib" ){
+            $$("resetFilterBtn").callEvent("resetFilter");
             getLibraryData();
 
         } else if (tabbarValue == "editFormScroll" ){
@@ -201,13 +206,20 @@ function deleteElement(el, id, value, lib){
             setLogValue("success","Шаблон « " + value + " » удален");
             removeOptionState ();
         } else {
-            setLogValue("error", 
-            logNameFile + "function userprefsData: " + data.err);
+            setFunctionError(
+                data.err, 
+                logNameFile, 
+                "userprefsData"
+            );
         }
 
     });
     deleteTemplate.fail(function(err){
-        setAjaxError(err, logNameFile,"getLibraryData");
+        setAjaxError(
+            err, 
+            logNameFile,
+            "getLibraryData"
+        );
     });
 }
 
@@ -229,9 +241,11 @@ async function userprefsData (){
 
         const templateName = currId + "_filter-template_" + value;
 
-        data.forEach(function(el,i){
+        data.forEach(function(el){
             if (el.name == templateName){
                 deleteElement(el, id, value, lib);
+                resetLibSelectOption();
+                Action.disableItem($$("editFormPopupLibRemoveBtn"));
             }
         });
 

@@ -1,8 +1,6 @@
-import { setLogValue }          from '../../../logBlock.js';
 import { setFunctionError }     from "../../../../blocks/errors.js";
 import { Button }               from '../../../../viewTemplates/buttons.js';
-
-import { createDynamicElems }   from '../dynamicElements/_layout.js';
+import { clickBtn }             from './submitBtnClick.js';
 
 const logNameFile = "dashboard => createSpace => filter";
  
@@ -19,6 +17,26 @@ function setAdaptiveWidth(elem){
     inp.style.width   = elem.$width - 5 + "px";
 }
 
+function resetInvalidView(self){
+    const node   = self.getNode();
+    const input  = node.getElementsByTagName("input")[0];
+    const css    = "dash-filter-invalid";
+    if (input){
+        const isInvalid = input.classList.contains(css);
+        if (isInvalid){
+            webix.html.removeCss(input, css);
+        }   
+    } 
+}
+
+function setNullTimeValue(self){
+    const value = self.getText();
+    if (!value){
+        this.setValue("00:00:00");
+    }
+}
+
+
 function createDate(type, input){
     const dateTemplate = {
         view        : "datepicker",
@@ -28,22 +46,30 @@ function createDate(type, input){
         placeholder : input.label,
         height      : 42,
         on          : {
+            onItemClick:function(){
+                resetInvalidView(this);
+            },
             onAfterRender : function () {
-                this.getInputNode().setAttribute("title",input.comment);
+                this.getInputNode().setAttribute(
+                    "title",
+                    input.comment
+                );
 
                setAdaptiveWidth(this);
             },
         }
     };
 
-    if (type == "first"){
+    function setId(id){
         const dateFirst = dateTemplate;
-        dateFirst.id    = "dashDatepicker_"+"sdt";
+        dateFirst.id    = "dashDatepicker_" + id;
         return dateFirst;
+    }
+
+    if (type == "first"){
+        return setId("sdt");
     } else if (type == "last"){
-        const dateLast  = dateTemplate;
-        dateLast.id     = "dashDatepicker_"+"edt";
-        return dateLast;
+        return setId("edt");
     }
 
 }
@@ -69,11 +95,22 @@ function createTime (type){
                 value   : "00:00:00",
                 twelve  : false,
                 height  : 110, 
-            }
+            },
         },
         on: {
+            onItemClick:function(){
+                resetInvalidView(this);
+            },
+
+            onTimedKeyPress:function(){
+                setNullTimeValue(this);
+            },
             onAfterRender: function () {
-                this.getInputNode().setAttribute("title","Часы, минуты, секунды");
+                this.getInputNode()
+                .setAttribute(
+                    "title",
+                    "Часы, минуты, секунды"
+                );
                 setAdaptiveWidth(this);
             }
            
@@ -92,171 +129,6 @@ function createTime (type){
     }
 }
 
-function clickBtn(i){
-    const dateArray     = [];
-    const compareDates  = [];
-
-    let sdtDate         = "";
-    let edtDate         = "";
-    let validateEmpty   = true;
-
-    function enumerationElements(el){
-   
-        const childs         = $$(el.id).getChildViews();
-        const postformatTime = webix.Date.dateToStr("%H:%i:%s");
-
-        childs.forEach(function(elem,i){
-
-            function createTime(type){
-                const value = $$(elem.config.id).getValue();
-          
-                try{
-                    if (value !== null ){
-
-                        if (type == "sdt"){
-                            sdtDate = sdtDate.concat( " " + postformatTime(value) );
-                        } else if (type == "edt"){
-                            edtDate = edtDate.concat( " " + postformatTime(value) );
-                        }
-                
-                    } else {
-                        validateEmpty = false;
-                    }
-                } catch (err){  
-                    setFunctionError(err,logNameFile,"createTime");
-                }
-            }
-
-            function createDate(type){
-                try{
-                    if ( $$(elem.config.id).getValue() !== null ){
-
-                        const value          = $$(elem.config.id).getValue();
-                        const postFormatData = webix.Date.dateToStr("%d.%m.%y");
-
-                        if (type == "sdt"){
-                            sdtDate = postFormatData(value); 
-                        } else if ( type ==  "edt"){
-                            edtDate = postFormatData(value);
-                        }
-                    
-                    } else {
-                        validateEmpty=false;
-                    }
-                } catch (err){  
-                    setFunctionError(err,logNameFile,"createDate");
-                }
-            }
-            
-            if (elem.config.id.includes("sdt")){
-
-                if (elem.config.id.includes("time")){
-                    createTime("sdt");
-                } else {
-                    createDate("sdt");
-                }
-            } else if (elem.config.id.includes("edt")){
-            
-                if (elem.config.id.includes("time")){
-                    createTime("edt");
-                } else {
-                    createDate("edt");
-                }
-            
-                
-            }
-        });
-   
-    }
-
-    function setInputs(){
-        try{
-            inputsArray.forEach(function(el,i){
-                if ( el.id.includes("container") ){
-                    enumerationElements(el);
-                }
-            });
-        } catch (err){  
-            setFunctionError(err,logNameFile,"setInputs");
-        }
-    }
-
-    function createQuery(){
-        dateArray.push( "sdt" + "=" + sdtDate );
-        dateArray.push( "edt" + "=" + edtDate );
-     
-        compareDates.push( sdtDate ); 
-        compareDates.push( edtDate );
-    }
-
-    function getDataInputs(){
-        setInputs   ();
-        createQuery ();
-    }
-
-    function sentQuery (){
-
-        function removeCharts(){
-            try{
-                const charts = $$("dashboard-charts");
-                const body   = $$("dashboardBody");
-      
-                if (charts){
-                    body.removeView(charts);
-                }
-            } catch (err){  
-                setFunctionError(err,logNameFile,"removeCharts");
-            }
-        }
-
-        function setStateBtn(){
-            try{
-                const btn = $$("dashBtn" + i);
-                btn.disable();
-         
-                setTimeout (function () {
-                    const node = btn.getNode();
-                    if (node){
-                        btn.enable();
-                    }
-                  
-                }, 1000);
-            } catch (err){  
-                setFunctionError(err, logNameFile, "setStateBtn");
-            }
-        }
-
-        if (validateEmpty){
-
-            const compareFormatData = webix.Date.dateToStr ("%Y/%m/%d %H:%i:%s");
-            const start             = compareFormatData    (compareDates[0]);
-            const end               = compareFormatData    (compareDates[1]);
-
-            const compareValue      = webix.filters.date.greater(start,end);
-            
-            if ( !(compareValue) || compareDates[0] == compareDates[1] ){
-
-                const getUrl = findAction.url + "?" + dateArray.join("&");
-                removeCharts();
-                createDynamicElems(
-                    getUrl, 
-                    inputsArray,
-                    idsParam, 
-                    true)
-                    ;
-                setStateBtn(i);
-
-            } else {
-                setLogValue("error", "Начало периода больше, чем конец");
-            }
-        } else {
-            setLogValue("error", "Не все поля заполнены");
-        }
-    }
-
-    getDataInputs();
-    sentQuery ();
-}
 
 function createBtn (input, i){
 
@@ -267,7 +139,12 @@ function createBtn (input, i){
             hotkey   : "Ctrl+Shift+Space",
             value    : input.label,
             click    : function(){
-                clickBtn(i);
+                clickBtn(
+                    i, 
+                    inputsArray, 
+                    idsParam, 
+                    findAction
+                );
             },
         },
         titleAttribute : input.comment,
@@ -361,5 +238,6 @@ function createFilter (inputs, el, ids){
 }
 
 export {
-    createFilter
+    createFilter,
+    setAdaptiveWidth
 };

@@ -1,11 +1,12 @@
 import { settingsLayout }  from "./_layout.js";
+import { saveSettings }    from "./tabbar/buttons.js";
 
 class Settings {
     constructor (){
         this.name = "dashboards";
     }
 
-    create(){
+    create (){
         $$("container").addView(
             {   view    :"layout",
                 id      : "settings", 
@@ -16,6 +17,10 @@ class Settings {
                 ],
             }, 
         8);
+    }
+
+    async put (){
+       return await saveSettings();
     }
 
 }

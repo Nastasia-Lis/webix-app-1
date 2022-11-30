@@ -21,8 +21,9 @@ function refreshCols(columnsData){
 function createReferenceCol (){
     try{
         
-        const findTableId           = field.type.slice(10);
+        const findTableId= field.type.slice(10);
         field.editor     = "combo";
+        field.sort       = "int";
         field.collection = getComboOptions (findTableId);
         field.template   = function(obj, common, val, config){
             const itemId = obj[config.id];
@@ -30,27 +31,40 @@ function createReferenceCol (){
             return item ? item.value : "";
         };
     }catch (err){
-        setFunctionError(err, logNameFile, "createReferenceCol");
+        setFunctionError(
+            err, 
+            logNameFile, 
+            "createReferenceCol"
+        );
     }
 }
 
 function createDatetimeCol  (){
     try{
-        field.format = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
+        field.format = 
+        webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
         field.editor = "date";
+        field.sort   = "date";
         field.css    = {"text-align":"right"};
     }catch (err){
-        setFunctionError(err, logNameFile, "createTableCols => createDatetimeCol")
+        setFunctionError(
+            err, 
+            logNameFile, 
+            "createDatetimeCol"
+        );
     }
 }
 
 function createTextCol      (){
     try{
-
         field.editor = "text";
         field.sort   = "string";
     }catch (err){
-        setFunctionError(err,logNameFile,"createTableCols => createTextCol")
+        setFunctionError(
+            err,
+            logNameFile,
+            "createTextCol"
+        );
     }
 }
 
@@ -62,7 +76,11 @@ function createIntegerCol   (){
         field.css            = {"text-align":"right"};
         
     }catch (err){
-        setFunctionError(err,logNameFile,"createTableCols => createIntegerCol");
+        setFunctionError(
+            err,
+            logNameFile,
+            "createIntegerCol"
+        );
     }
 }
 function createBoolCol      (){
@@ -74,7 +92,11 @@ function createBoolCol      (){
             {id : 2, value : "Нет"}
         ];
     }catch (err){
-        setFunctionError(err,logNameFile,"createTableCols => createBoolCol");
+        setFunctionError(
+            err,
+            logNameFile,
+            "createBoolCol"
+        );
     }
 }
 
@@ -86,7 +108,8 @@ function setFillCol     (dataFields){
     const values      = Object.values(dataFields);
     const length      = values.length;
     const scrollWidth = 17;
-    const tableWidth  = $$("tableContainer").$width - scrollWidth;
+    const containerWidth = $$("tableContainer").$width;
+    const tableWidth  = containerWidth - scrollWidth;
     const colWidth    = tableWidth / length;
 
     field.width  = colWidth;
@@ -94,11 +117,12 @@ function setFillCol     (dataFields){
 
 
 function setHeaderCol   (){
-    field.header     = field["label"];
+    field.header = field["label"];
 }
 
 function userPrefsId    (){
-    const setting = webix.storage.local.get("userprefsOtherForm");
+    const setting = 
+    webix.storage.local.get("userprefsOtherForm");
 
     if( setting && setting.visibleIdOpt == "2" ){
         field.hidden = true;
@@ -107,6 +131,7 @@ function userPrefsId    (){
 
 
 function createField(type){
+
     if (type.includes("reference")){
         createReferenceCol();
 
@@ -160,7 +185,11 @@ function createTableCols (idsParam, idCurrTable){
 
 
     } catch (err){
-        setFunctionError(err, logNameFile, "createTableCols");
+        setFunctionError(
+            err, 
+            logNameFile, 
+            "createTableCols"
+        );
     }
 
 

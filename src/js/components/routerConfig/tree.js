@@ -101,8 +101,8 @@ function checkTable(){
 }
 function treeRouter(selectId){
     id = selectId;
+    
     checkTable();
-
 }
 
 export {

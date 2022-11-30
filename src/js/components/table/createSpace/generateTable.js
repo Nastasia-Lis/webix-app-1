@@ -39,7 +39,6 @@ function setTableName(idCurrTable, idsParam) {
 
 function getValsTable (){
     titem     = $$("tree").getItem(idsParam);
-  //  filterBar = $$(idCurrTable + "-filterId").getParentView();
 
     if (!titem){
         titem = idsParam;
@@ -88,6 +87,7 @@ async function generateTable (){
        
         setTableName        (idCurrTable, idsParam);
     }
+   
 } 
 
 
@@ -104,6 +104,8 @@ function createTable (id, ids) {
         preparationTable ();
         generateTable ();
     } 
+
+ 
 
 }
 

@@ -13,11 +13,13 @@ function validateProfForm (){
        
         const propVals = Object.keys(property.getValues());
 
-        propVals.forEach(function(el,i){
+        propVals.forEach(function(el){
+
 
             const propElement = property.getItem(el);
             const values      = property.getValues();
-            
+
+            let propValue  = values[el];
             errors[el] = {};
 
             function numberField(){
@@ -29,7 +31,7 @@ function validateProfForm (){
                 if (propElement.customType              &&
                     propElement.customType == "integer" ){
 
-                    const check =  containsText(values[el]) ;
+                    const check =  containsText(propValue) ;
 
                     if ( check ){
                         errors[el].isNum = "Данное поле должно содержать только числа";
@@ -41,16 +43,67 @@ function validateProfForm (){
             }
 
             function dateField(){
-         
-                if (propElement.type              &&
-                    propElement.type == "customDate" ){
-                     
-                    let check      = false;
-                    let countEmpty = 0;
-      
-                    const x = values[el].replace(/\D/g, '')
-                    .match(/(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})/);
 
+                function getAllIndexes(arr, val) {
+                    let indexes = [], i;
+                    for(i = 0; i < arr.length; i++){
+                        if (arr[i] === val){
+                            indexes.push(i);
+                        }
+                    }
+                         
+                    return indexes;
+                }
+
+                function isTrueLength(arr){
+                    if (arr.length === 2){
+                        return true;
+                    }
+                }
+
+                function isTrueIndexes(arr, first, second){
+                    if (arr[0] == first && arr[1] == second){
+                        return true;
+                    }
+                }
+
+                function checkArr(arr, firstIndex, secondIndex){
+                    if (isTrueLength(arr) && 
+                        isTrueIndexes(arr, firstIndex, secondIndex )){
+                            return true;
+                    }
+                }
+ 
+                function findDividers(arr){
+                    if (arr.length === 17) {
+                        const dateDividers = getAllIndexes(arr, ".");
+                        const timeDividers = getAllIndexes(arr, ":");
+
+                        const dateResult = checkArr(dateDividers, 2,  5 );
+                        const timeResult = checkArr(timeDividers, 11, 14);
+
+                        if (dateResult && timeResult){
+                            return false;
+                        } else {
+                            return true;
+                        }
+                    } else {
+                        return true;
+                    }
+                }
+         
+                if (propElement.type                 &&
+                    propElement.type == "customDate" &&
+                    propValue                        ){
+                 
+                    const dateArray = propValue.split('');
+                    
+                    let check      = findDividers(dateArray);
+                    let countEmpty = 0;
+                         
+                    const x = propValue.replace(/\D/g, '')
+                    .match(/(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})/);
+        
                     for (let i = 1; i < 7; i++) {
 
                         if (x[i].length == 0){
@@ -81,7 +134,8 @@ function validateProfForm (){
                             }
       
                         if ( check ) {
-                            errors[el].date = "Неверный формат даты. Введите дату в формате xx.xx.xx xx:xx:xx";
+                            errors[el].date = 
+                            "Неверный формат даты. Введите дату в формате xx.xx.xx xx:xx:xx";
     
                         } else {
                             errors[el].date = null;
@@ -95,9 +149,9 @@ function validateProfForm (){
             function valLength(){ 
                 try{
                
-                    if(values[el]){
+                    if(propValue){
                         
-                        if (values[el].length > propElement.length && propElement.length !== 0){
+                        if (propValue.length > propElement.length && propElement.length !== 0){
                             errors[el].length = "Длина строки не должна превышать " + propElement.length + " симв.";
                         } else {
                             errors[el].length = null;
@@ -110,7 +164,7 @@ function validateProfForm (){
 
             function valNotNull (){
                 try{
-                    if ( propElement.notnull == true && values[el].length == 0 ){
+                    if ( propElement.notnull == true && propValue.length == 0 ){
                         errors[el].notnull = "Поле не может быть пустым";
                     } else {
                         errors[el].notnull = null;
@@ -123,14 +177,13 @@ function validateProfForm (){
             function valUnique (){
                 try{
                     errors[el].unique = null;
-                                            
+                                  
                     if (propElement.unique == true){
 
                         const tableRows   = Object.values($$("table").data.pull);
-                        const tableSelect = $$("editTableFormProperty").getValues().id;
-      
 
-                        tableRows.forEach(function(row,i){
+                        tableRows.forEach(function(row){
+                            let tableValue = row[el];
 
                             function numToString(element){
                                 if (element && typeof element === "number"){
@@ -139,25 +192,29 @@ function validateProfForm (){
                                     return element;
                                 }
                             }
-                        
-                          
-                             row[el]    = numToString(row[el]);
-                             values[el] = numToString(values[el]);
+
+                            tableValue = numToString(tableValue);
+                            propValue  = numToString(propValue);
                    
-                            if (row[el] && typeof row[el] == "number"){
-                                row[el] = row[el].toString();
+                            if (tableValue && typeof tableValue == "number"){
+                                tableValue = tableValue.toString();
                             }
 
-                            if (values[el] && row[el]){
-                                if (values[el].localeCompare(row[el]) == 0 || row.id == tableSelect.toString()){
+                            if (propValue && tableValue){
+                                const isIdenticValues = propValue.localeCompare(tableValue) == 0;
+                                const tableElemId     = row.id;
+                                const propElemId      = values.id;
+
+                                if (isIdenticValues && propElemId !== tableElemId){
                                     errors[el].unique = "Поле должно быть уникальным";
+    
                                 } 
                               
                             }
                         });
                     }
                 } catch (err){
-                    setFunctionError(err,logNameFile,"valUnique");
+                    setFunctionError(err, logNameFile, "valUnique");
                 }
             }
            
@@ -172,7 +229,7 @@ function validateProfForm (){
     function createErrorMessage (){
      
         function findErrors (){
-            Object.values(errors).forEach(function(col,i){
+            Object.values(errors).forEach(function(col, i){
 
                 function createMessage (){
                     Object.values(col).forEach(function(error,e){
@@ -243,18 +300,18 @@ function setLogError (){
 function uniqueData (itemData){
     const validateData = {};
     try{
-        const table = $$("table");
+        const table      = $$("table");
+        const dataValues = Object.values(itemData);
 
-        Object.values(itemData).forEach(function(el, i){
+        dataValues.forEach(function(el, i){
 
             const oldValues    = table.getItem(itemData.id);
             const oldValueKeys = Object.keys(oldValues);
 
             function compareVals (){
                 const newValKey = Object.keys(itemData)[i];
-                
+
                 oldValueKeys.forEach(function(oldValKey){
-                    
                     if (oldValKey == newValKey){
                         
                         if (oldValues   [oldValKey] !== Object.values(itemData)[i]){

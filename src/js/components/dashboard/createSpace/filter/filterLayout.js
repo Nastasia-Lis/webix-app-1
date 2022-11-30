@@ -83,6 +83,8 @@ function filterBtnClick (){
     }
 
     function filterMaxAdaptive(){
+        Action.removeItem($$("dashContextLayout"));
+        Action.hideItem  ($$("dashboardContext" ));
         if (dashTool.isVisible()){
             Action.hideItem (tools);
 

@@ -1141,4 +1141,10 @@ label, button{
     display: none!important;
 }
 
+//dashboard invalid input
+.dash-filter-invalid{
+    background  : var(--danger-light) !important;
+    border-color: var(--danger)!important;
+}
+
 

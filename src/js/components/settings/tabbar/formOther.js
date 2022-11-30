@@ -1,5 +1,5 @@
 import { setFunctionError  }  from "../../../blocks/errors.js";
-
+import { mediator  }          from "../../../blocks/_mediator.js";
 const logNameFile   = "settings => tabbar => otherForm";
 
 const autorefRadio   = {
@@ -12,8 +12,9 @@ const autorefRadio   = {
         {"id" : 1, "value" : "Включено"},
         {"id" : 2, "value" : "Выключено"}
     ],
-    on:{
+    on              : {
         onChange:function(newValue){
+          //  $$("userprefsOtherForm").setDirty();
             try{
 
                 const counter = $$("userprefsAutorefCounter");
@@ -47,7 +48,7 @@ const autorefCounter = {
     min             : 15000, 
     max             : 900000,
     on              : {
-        onChange:function(newValue, oldValue, config){
+        onChange:function(newValue){
             function createMsg (textMsg){
                 return webix.message({
                     type   : "debug",
@@ -74,8 +75,6 @@ const autorefCounter = {
                     "onChange"
                 );
             }
-
-
 
         }
     }
@@ -106,6 +105,10 @@ const otherForm =  {
         {}
     ],
     on:{
+        onViewShow: webix.once(function(){
+            mediator.setForm(this);
+        }),
+
         onChange:function(){
             const saveBtn  = $$("userprefsSaveBtn");
             const resetBtn = $$("userprefsResetBtn");

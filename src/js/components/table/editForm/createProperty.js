@@ -94,8 +94,8 @@ function returnTemplate(el){
         unique  : el.unique,
         notnull : el.notnull,
         length  : el.length,
-        value   : returnDefaultValue (el)
-        
+        value   : returnDefaultValue (el),
+
     };
 
     return template;
@@ -105,7 +105,7 @@ function returnTemplate(el){
 
 function createDateTimeInput(el){
     const template =  returnTemplate(el);
-    template.type = "customDate";
+    template.type  = "customDate";
 
     return template;
 
@@ -113,6 +113,7 @@ function createDateTimeInput(el){
 
 
  function createReferenceInput(el){
+   
     const template =  returnTemplate(el);    
     
     let findTableId   = el.type.slice(10);
@@ -122,7 +123,7 @@ function createDateTimeInput(el){
     template.options  = getComboOptions(findTableId);
     template.template = function(obj, common, val, config){
         const value = obj.value;
-        const item = config.collection.getItem(value);
+        const item  = config.collection.getItem(value);
         return item ? item.value : "";
     };
 
@@ -149,7 +150,6 @@ function createTextInput(el){
         template.customType="popup";
 
     } 
-
     template.type = "text";
     return template;
 }
@@ -215,7 +215,11 @@ function createProperty (parentElement) {
             }
         }
     } catch (err){
-        setFunctionError(err, logNameFile, "createEditFields");
+        setFunctionError(
+            err, 
+            logNameFile, 
+            "createEditFields"
+        );
     }
 }
 

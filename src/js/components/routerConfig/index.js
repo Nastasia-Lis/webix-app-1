@@ -21,7 +21,7 @@ function indexRouter(){
             if(main){
                 (main).hide();
             }
-
+          
             if(login){
                 login.show();
             }

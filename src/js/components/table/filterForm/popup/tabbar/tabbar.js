@@ -30,7 +30,7 @@ function visibleRemoveBtn (param){
 
 function setSelectedOption(){
     const radio = $$("filterEditLib");
-    if (SELECT_TEMPLATE){
+    if (SELECT_TEMPLATE && SELECT_TEMPLATE.id){
         radio.setValue(SELECT_TEMPLATE.id);
         Action.enableItem($$("editFormPopupLibRemoveBtn"));
         btnSubmitState   ("disable");

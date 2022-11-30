@@ -46,11 +46,6 @@ class Tree {
         }
     }
 
-    // defaultState(){
-    //     editTableDefState ();
-    //     filterFormDefState();
-    // }
-
 }
 
 

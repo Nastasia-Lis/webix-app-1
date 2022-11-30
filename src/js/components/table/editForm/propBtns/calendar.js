@@ -145,7 +145,8 @@ function submitClick (elem){
     const sentVal = returnSentValue(dateVal, timeVal);
     setValToProperty(sentVal, elem);
 
-    
+    $$("table-editForm").setDirty(true);
+
     return errors.length;
 }
 

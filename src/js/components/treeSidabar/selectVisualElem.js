@@ -1,9 +1,7 @@
 import { Action }           from "../../blocks/commonFunctions.js";
 import { GetFields }        from "../../blocks/globalStorage.js";
 import { setFunctionError } from "../../blocks/errors.js";
-
 import { mediator }         from "../../blocks/_mediator.js";
-import { collapseBtn } from "../header/collapseBtn.js";
 
 const logNameFile = "treeSidebar => selectVisualElem";
 
@@ -82,17 +80,22 @@ function selectItemAction(type, id){
 
 }
 
+function removeTreeEdit(){
+    Action.removeItem($$("treeTempl")); 
+    Action.destructItem($$("contextMenuEditTree")); 
+    
+}
+
 function selectElem(id){
    
     const type = GetFields.attribute (id, "type");
 
     Action.hideItem($$("webix__none-content"));
 
-    const isBranch = $$("tree").isBranch(id);
-    if (isBranch){
-        //return false;
-    }
+    removeTreeEdit();
 
+    const isBranch = $$("tree").isBranch(id);
+    
     if (!type && !isBranch){
         createUndefinedView();
     } else {

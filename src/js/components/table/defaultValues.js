@@ -24,8 +24,6 @@ function returnDefaultValue (el){
 
     const type     = el.type ;
 
-
-
     if (def === "now" && type == "datetime"){
         defVal = formatData(new Date());
  
@@ -49,9 +47,6 @@ function returnDefaultValue (el){
 
     else if (def !== "None" && def !== "null"){
         defVal = def;
-
-    } else if (def  == "None"){
-        defVal = "";
 
     } else if (def  == "null") {
         defVal = null;

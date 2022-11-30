@@ -6,144 +6,152 @@ import { Button }                           from "../../../viewTemplates/buttons
 
 import { defaultValue }                     from "./commonTab.js";
 
+import { pushUserDataStorage, 
+         getUserDataStorage }               from "../../../blocks/commonFunctions.js";
+
 const logNameFile   = "settings => tabbar => buttons";
 
-function saveSettings (){
-    const tabbar    = $$("userprefsTabbar");
-    const value     = tabbar.getValue();
-    const tabbarVal = value + "Form" ;
-    const form      = $$(tabbarVal);
-    
-    function getUserprefsData(){
-        const url     = "/init/default/api/userprefs/";
-        const getData =  webix.ajax().get(url);
-     
-        getData.then(function(data){
-            data = data.json().content;
+let tabbar;
+let value;
+let tabbarVal;
+let form;
 
-            let settingExists = false;
+async function getUserprefsData(){
+    let ownerId = getUserDataStorage();
 
-            const values = form.getValues();
-
-            const sentObj = {
-                name :tabbarVal,
-                prefs:values,
-            };
-
-            function putPrefs(el){
-                const url     = "/init/default/api/userprefs/" + el.id;
-                const putData = webix.ajax().put(url, sentObj);
-
-                putData.then(function(data){
-                    data = data.json();
-                    if (data.err_type == "i"){
-                        const formVals = JSON.stringify(form.getValues());
-                        setStorageData (tabbarVal, formVals);
-                        setLogValue("success", "Настройки сохранены");
-
-                    } if (data.err_type !== "i"){
-                        setLogValue("error", data.error);
-                    }
-
-                    const name         = tabbar.getValue();
-                    defaultValue[name] = values;
-
-                    form.setDirty(false);
-                });
-
-                putData.fail(function(err){
-                    setAjaxError(err, logNameFile, "putPrefs");
-                });
-            }
-     
-            function findExistsData(){
-                try{
-                    data.forEach(function(el,i){
-                       
-                        if (el.name == tabbarVal){
-                            settingExists = true;
-                            putPrefs(el);
-                        } 
-                    });
-                } catch (err){
-                    setFunctionError(err, logNameFile, "findExistsData");
-                }
-            }
-
-            findExistsData();
-
-
-            function getOwnerData(){
-                const getData = webix.ajax("/init/default/api/whoami");
-                getData.then(function(data){
-                    data = data.json().content;
-                    sentObj.owner = data.id;
-
-                    const userData = {};
-
-                    userData.id       = data.id;
-                    userData.name     = data.first_name;
-                    userData.username = data.username;
-                    
-                    setStorageData("user", JSON.stringify(userData));
-                });
-
-                getData.fail(function(err){  
-                    setAjaxError(err, logNameFile, "getOwnerData");
-                });
-            }
-
-            function postPrefs(){
-       
-                const url      = "/init/default/api/userprefs/";
-  
-                const postData = webix.ajax().post(url,sentObj);
- 
-                postData.then(function(data){
-                    data = data.json();
-
-                    if (data.err_type == "i"){
-                        setLogValue("success", "Настройки сохранены");
-
-                    } else {
-                        setLogValue("error", data.error);
-                    }
-
-                    const tabbarVal         = tabbar.getValue();
-                    defaultValue[tabbarVal] = values;
-
-                    form.setDirty(false);
-                });
-
-                postData.fail(function(err){
-                    setAjaxError(err, logNameFile, "postPrefs");
-                });
-            }
-
-          
-            if (!settingExists){
-                
-                const ownerId = webix.storage.local.get("user").id;
-     
-                if (ownerId){
-                    sentObj.owner = ownerId;
-                } else {
-                    getOwnerData();
-                }
-       
-                postPrefs();
-            }
-
-        });
-        getData.fail(function(err){
-            setAjaxError(err, logNameFile, "getUserprefsData");
-        });
+    if (!ownerId){
+        await pushUserDataStorage();
+        ownerId = getUserDataStorage();
     }
 
-    if ( form.isDirty() ){
-        getUserprefsData();
+    const url     = "/init/default/api/userprefs/";
+    const getData =  webix.ajax().get(url);
+ 
+    return getData.then(function(data){
+        data = data.json().content;
+
+        let settingExists = false;
+
+        const values = form.getValues();
+
+        const sentObj = {
+            name  : tabbarVal,
+            owner : ownerId.id,
+            prefs : values,
+        };
+
+        function putPrefs(el){
+            const path    = "/init/default/api/userprefs/" + el.id;
+            const putData = webix.ajax().put(path, sentObj);
+
+            return putData.then(function(data){
+                data = data.json();
+                if (data.err_type == "i"){
+                    const formVals = JSON.stringify(values);
+                    setStorageData (tabbarVal, formVals);
+        
+                    const name         = tabbar.getValue();
+                    defaultValue[name] = values;
+    
+                    form.setDirty(false);
+
+                    setLogValue("success", "Настройки сохранены");
+                    return true;
+                } else {
+                    setLogValue("error", data.error);
+                    return false;
+                }
+
+            }).fail(function(err){
+                setAjaxError(err, logNameFile, "putPrefs");
+                return false;
+            });
+        }
+ 
+        function findExistsData(){
+            let findElem;
+            try{
+                data.forEach(function(el){
+                   
+                    if (el.name == tabbarVal){
+                        settingExists = true;
+                        findElem = el;
+                       // putPrefs(el);
+                    } 
+                });
+            } catch (err){
+                setFunctionError(
+                    err, 
+                    logNameFile, 
+                    "findExistsData"
+                );
+            }
+            return findElem;
+        }
+
+
+        function postPrefs(){
+   
+            const path = "/init/default/api/userprefs/";
+
+            const postData = webix.ajax().post(path, sentObj);
+
+            return postData.then(function(data){
+                data = data.json();
+
+                if (data.err_type == "i"){
+                    const tabbarVal         = tabbar.getValue();
+                    defaultValue[tabbarVal] = values;
+    
+                    form.setDirty(false);
+
+                    setLogValue(
+                        "success", 
+                        "Настройки сохранены"
+                    );
+
+                    return true;
+                } else {
+                    setLogValue("error", data.error);
+                    return false;
+                }
+       
+            }).fail(function(err){
+                setAjaxError(err, logNameFile, "postPrefs");
+                return false;
+            });
+        }
+
+        const findElem = findExistsData();
+
+        if (!settingExists){
+            return postPrefs();
+        } else {
+            return putPrefs(findElem);
+        }
+
+    }).fail(function(err){
+        setAjaxError(
+            err, 
+            logNameFile, 
+            "getUserprefsData"
+        );
+    });
+}
+
+
+async function saveSettings (){
+    tabbar    = $$("userprefsTabbar");
+    value     = tabbar.getValue();
+    tabbarVal = value + "Form" ;
+    form      = $$(tabbarVal);
+
+    if (form.isDirty()){
+        return getUserprefsData();   
+   
     } else {
         setLogValue("debug","Сохранять нечего");
+        return true;
     }
 }
 

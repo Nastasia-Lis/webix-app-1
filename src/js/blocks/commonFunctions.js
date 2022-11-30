@@ -129,7 +129,7 @@ function textInputClean(){
 }
 
 function getComboOptions (refTable){
-    const url       = "/init/default/api/"+refTable;
+    const url       = "/init/default/api/" + refTable;
 
     return new webix.DataCollection({url:{
         $proxy:true,
@@ -171,13 +171,17 @@ function getComboOptions (refTable){
 
                                 dataArray.push({ "id":el.id, "value":el[keyArray]});
                             } catch (err){  
-                                setFunctionError(err,"commonFunctions","getComboOptions => numOption");
+                                setFunctionError(
+                                    err,
+                                    "commonFunctions",
+                                    "getComboOptions => numOption"
+                                );
                             }
                         }
 
                         function createComboValues(){
                             try{
-                                data.forEach((el,i) =>{
+                                data.forEach((el) =>{
                                     let l = 0;
                                     stringOption (l,el);
                                     numOption    (l,el);
@@ -192,7 +196,6 @@ function getComboOptions (refTable){
                             }
                         }
                         createComboValues();
-  
                         return dataArray;
                     
                     }).catch(err => {

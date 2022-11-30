@@ -1,4 +1,6 @@
+ 
 import { setFunctionError }   from "../../../blocks/errors.js";
+import { mediator } from "../../../blocks/_mediator.js";
 
 const logNameFile   = "settings => tabbar => workspaceForm";
 
@@ -81,6 +83,10 @@ const workspaceForm =  {
     ],
 
     on        :{
+        onViewShow: webix.once(function(){
+           mediator.setForm(this);
+        }),
+
         onChange:function(){
             const form     = $$("userprefsWorkspaceForm");
             const saveBtn  = $$("userprefsSaveBtn");
@@ -121,7 +127,9 @@ const workspaceForm =  {
             setSaveBtnState ();
             setResetBtnState();
         }
-    }
+    },
+
+    
 };
 
 const workspaceLayout = {
