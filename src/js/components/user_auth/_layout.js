@@ -17,7 +17,7 @@ function returnPassData(){
     return objPass;
 }
 
-function doAuthCp (){
+async function doAuthCp (){
 
     form = $$("cp-form");
 
@@ -28,11 +28,12 @@ function doAuthCp (){
         const path = "/init/default/api/cp";
         const postData = webix.ajax().post(path, objPass);
         
-        return postData.then(function(data){
+        return await postData.then(function(data){
             data = data.json();
             
             if (data.err_type == "i"){
                 setLogValue("success", data.err);
+                form.clear();
                 form.setDirty(false);
                 return true;
             } else {
@@ -180,7 +181,7 @@ const authCpLayout = {
     cols: [
         authCp,
         {}
-    ]
+    ],
 };
 
 export {

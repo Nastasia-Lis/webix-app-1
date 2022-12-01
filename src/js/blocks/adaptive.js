@@ -12,7 +12,11 @@ function resizeSidebar(){
                 tree.resize();
             }
         } catch (err){
-            setFunctionError(err, "adaptive", "resizeSidebar => resizeTree");
+            setFunctionError(
+                err, 
+                "adaptive", 
+                "resizeSidebar => resizeTree"
+            );
         }
     } 
 
@@ -32,97 +36,76 @@ function resizeSidebar(){
     
 }
 
+function setMinView(element, container, backBtn){
+    if (element.isVisible()){
+        element.config.width = window.innerWidth - 45;
+        element.resize();
+        Action.hideItem($$("tree"));
+        Action.hideItem(container);
+        Action.showItem(backBtn);
+    }
+}
+
+function setMaxWidth(tools, сontainer, backBtn){
+    if (tools.isVisible()          && 
+        tools.config.width !== 350 ){
+        tools.config.width  = 350;
+        tools.resize();
+        Action.showItem(сontainer);
+        Action.hideItem(backBtn);
+    }
+}
+
+
 function resizeForms(){
 
     const tools       = $$("formsTools");    
     const сontainer   = $$("formsContainer");
     const formResizer = $$("formsTools-resizer");
     const backBtn     = $$("table-backFormsBtnFilter");
-  
-    function createFormAdaptive(){
-        
-        if (tools.isVisible()){
-            tools.config.width = window.innerWidth - 45;
-            tools.resize();
 
-            Action.hideItem(сontainer);
-            Action.hideItem(formResizer);
-            Action.hideItem($$("tree"));
-            Action.showItem(backBtn);
-          
-        }
-    }
-
-    function createFormMain(){
-        if (tools.isVisible()          && 
-            tools.config.width !== 350 ){
-            tools.config.width  = 350;
-            tools.resize();
-            Action.showItem(formResizer);
-            Action.showItem(сontainer);
-            Action.hideItem(backBtn);
-        }
-    }
- 
     if (window.innerWidth < 850){
-        createFormAdaptive();
+        setMinView(tools,сontainer, backBtn);
+        Action.hideItem(formResizer);
     }
 
 
     if (window.innerWidth > 850){
-        createFormMain();
+        setMaxWidth(tools, сontainer, backBtn);
+        Action.showItem(formResizer);
     }
 
   
 }
 
 
-
-function resizeDashboards(){
-    const dashTool      = $$("dashboardTool");
+function resizeContext(){
     const dashContainer = $$("dashboardInfoContainer");
-    const tree          = $$("tree");
-    const backBtn       = $$("dash-backDashBtn");
-   
-    function createDashAdaptive(){
-        
-        if (dashTool.isVisible()){
-            dashTool.config.width = window.innerWidth-45;
-            dashTool.resize();
-
-            Action.hideItem(dashContainer);
-            Action.showItem(tree);
-            Action.showItem(backBtn);
-        }
-    }
-
-
-    function createDashMain(){
-        if (dashTool.isVisible()          && 
-            dashTool.config.width !== 350 ){
-
-            dashTool.config.width = 350;
-            dashTool.resize();
-
-            const tools = $$("dashboardTool");
-
-            tools.config.width = 350;
-            tools.resize();
-
-            Action.showItem(dashContainer);
-            Action.hideItem(backBtn);
-        }
-     
-    }
+    const contextWindow = $$("dashboardContext");
     
     if (window.innerWidth < 850){
-        createDashAdaptive();
+        setMinView(contextWindow, dashContainer);
     }
 
 
     if (window.innerWidth > 850){
-   
-        createDashMain();
+        setMaxWidth(contextWindow, dashContainer);
+    }
+}
+
+function resizeTools(){
+    const dashTool      = $$("dashboardTool");
+    const dashContainer = $$("dashboardInfoContainer");
+    const backBtn       = $$("dash-backDashBtn");
+
+    
+    if (window.innerWidth < 850){
+        setMinView(dashTool, dashContainer, backBtn);
+    }
+
+
+    if (window.innerWidth > 850){
+        setMaxWidth(dashTool, dashContainer, backBtn);
     }
             
 }
@@ -135,32 +118,6 @@ function resizeTableEditForm(){
     const backBtn   = $$("table-backTableBtn");
     const tree      = $$("tree");
 
-    function tableAdaptiveView(){
-
-        if (editForm.isVisible()){
-            editForm.config.width = window.innerWidth-45;
-            editForm.resize();
-
-            Action.hideItem(container);
-            Action.hideItem(tree);
-            Action.showItem(backBtn);
-        }
-    }
-
-    function tableMainView(){
-
-        if (editForm.isVisible()          && 
-            editForm.config.width !== 350 ){
-
-            editForm.config.width = 350;
-            editForm.resize();
-
-            Action.showItem(container);
-            Action.hideItem(backBtn);
-        }
-
-    }
-
     
     if ($$("container").$width < 850 && editForm.isVisible()){
         Action.hideItem(tree);
@@ -168,11 +125,11 @@ function resizeTableEditForm(){
 
 
     if (window.innerWidth < 850){
-        tableAdaptiveView();
+        setMinView(editForm, container, backBtn);
     }
 
     if (window.innerWidth > 850){
-        tableMainView();
+        setMaxWidth(editForm, container, backBtn);
     }
 
 }
@@ -184,33 +141,9 @@ function resizeTableFilterForm (){
     const container  = $$("tableContainer");
     const backBtn    = $$("table-backTableBtnFilter");
     const tree       = $$("tree");
-
-    function filterAdaptive(){
-        if (filterForm.isVisible()){
-            filterForm.config.width = window.innerWidth-45;
-            filterForm.resize();
-
-            Action.hideItem(container);
-            Action.hideItem(tree);
-            Action.showItem(backBtn);
-
-        }
-    }
-
-    function filterMain(){
-        if (filterForm.isVisible()          && 
-            filterForm.config.width !== 350 ){
-
-        filterForm.config.width = 350;
-        filterForm.resize();
-
-        Action.showItem(container);
-        Action.hideItem(backBtn);
-    }
-    }
-   
+ 
     if (window.innerWidth < 850){
-        filterAdaptive();
+        setMinView(filterForm, container, backBtn);
     }
 
     if ($$("container").$width < 850 && filterForm.isVisible()){
@@ -219,7 +152,7 @@ function resizeTableFilterForm (){
 
 
     if (window.innerWidth > 850){
-        filterMain();
+        setMaxWidth(filterForm, container, backBtn);
     }
 
 }
@@ -237,7 +170,7 @@ function setSearchInputState(){
 
 function resizeAdaptive (){
 
-    window.addEventListener('resize', function(event) {
+    window.addEventListener('resize', function() {
   
         async function getActiveView (){  
 
@@ -246,8 +179,8 @@ function resizeAdaptive (){
                     resizeForms();
 
                 } else if (visibleEl == "dashboards"){
-                    resizeDashboards();
-
+                    resizeTools();  
+                    resizeContext();
                 } else if (visibleEl == "tables"){
                     resizeTableEditForm();
                     resizeTableFilterForm ();

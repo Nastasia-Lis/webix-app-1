@@ -138,7 +138,11 @@ async function postContent(namePref){
         });
 
         postData.fail(function(err){
-            setAjaxError(err, logNameFile, "postContent");
+            setAjaxError(
+                err, 
+                logNameFile, 
+                "postContent"
+            );
         });
     }
 }
@@ -196,7 +200,6 @@ function getNotUniquePrefs (data, namePref){
         if (favPrefs.length){
             unique = 
             getNotUniquePref(favPrefs, namePref);
-            console.log(unique)
         } 
         
         

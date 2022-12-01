@@ -1,4 +1,5 @@
 import { setFunctionError } from "../../../blocks/errors.js";
+import { getItemId }        from "../../../blocks/commonFunctions.js";
 
 const logNameFile = "tableEditForm => property";
 
@@ -70,7 +71,7 @@ function createTemplate (){
         }
 
         if (e.inputType !== "deleteContentBackward"){
-            e.target.value = setNum(1) + '.' + setNum(2) + '.' + setNum(3) 
+            e.target.value =  setNum(1) + '.' +  setNum(2) + '.' + setNum(3) 
             + '  '+ 
             setNum(4) + ':' + setNum(5) + ':' + setNum(6);
         }
@@ -94,7 +95,9 @@ const propertyEditForm = {
     editable : true,
     tooltip  : propTooltipAction,
     hidden   : true,
+    tempData :false,
     elements : [],
+    keyPressTimeout:800,
     on       : {
         onBeforeEditStop:function(state, editor){
             function setStateSaveBtn(){
@@ -120,10 +123,12 @@ const propertyEditForm = {
             }
 
         },
+
         onEditorChange:function(editor, value){
             editingEnd (editor, value);
             setFormDirty();
         },
+
         onBeforeRender:function (){
 
             const size = this.config.elements.length * 28;
@@ -138,10 +143,32 @@ const propertyEditForm = {
 
         onItemClick:function(id){
             const property = $$("editTableFormProperty");
-            const item     =  property.getItem(id);
+            const item     = property.getItem(id);
             item.css       = "";
             property.refresh();
         },
+
+        onTimedKeyPress:function(){
+            if (!this.config.tempData){
+                this.config.tempData = true;
+            }
+
+            const id      = getItemId();
+            const status  = this.config.tableStatus;
+            const values  = this.getValues();
+
+            const sentVals= {
+                table : id,
+                status: status,
+                values: values
+            };
+
+            webix.storage.local.put(
+                "editFormTempData", 
+                sentVals
+            );
+ 
+        }
     }
 };
 

@@ -27,7 +27,7 @@ function treeSidebar () {
         on          : {
 
             onItemClick: function(id) {
-   
+             
                 if (!isBranch(id)){
                     mediator.getGlobalModalBox()
                     .then(function(result){
@@ -42,8 +42,8 @@ function treeSidebar () {
             },
 
             onBeforeSelect: function(id) {
-           
-                const item     = this.getItem(id);
+
+                const item = this.getItem(id);
 
                 if (!isBranch(id) || item.webix_kids){
                     this.open(id);
@@ -59,8 +59,8 @@ function treeSidebar () {
                 );
             },
 
-            onBeforeOpen:function (id){
-                loadFields(id);
+            onBeforeOpen:function (id, selectItem){
+                loadFields(id, selectItem);
             },
 
             onAfterSelect:function(id){

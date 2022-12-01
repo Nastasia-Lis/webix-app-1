@@ -19,16 +19,16 @@ const action = {
     }
    
 };
-// const action = {
-//     navigate: false,
-//     field   : "auth_group",
-//     context : true,
-//     params  :{
-//         filter : "auth_group.id > 3" 
-//     // filter : "auth_group.id != '1' or auth_group.id != '3' and auth_group.role contains 'р' or auth_group.role = 'а'" 
-//     }
+const action2 = {
+    navigate: false,
+    field   : "auth_group",
+    context : true,
+    params  :{
+        filter : "auth_group.id = 3" 
+    // filter : "auth_group.id != '1' or auth_group.id != '3' and auth_group.role contains 'р' or auth_group.role = 'а'" 
+    }
     
-//  };
+ };
 function createSentObj(prefs){
     const sentObj = {
         name    : "dashboards_context-prefs_" + uid,
@@ -197,9 +197,9 @@ function cursorPointer(self, elem){
         } else if (elem.data){
             elem.data.forEach(function(el, i){
 
-                // if (i == 1 || i == 4 ){
-                //     el.action = action1; 
-                // }
+                if (i == 1 || i == 4 ){
+                    el.action = action2; 
+                }
             
                 if (el.action){
                     setCursorPointer(areas, false, el.id);

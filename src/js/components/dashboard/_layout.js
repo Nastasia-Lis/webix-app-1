@@ -5,7 +5,15 @@ function returnTemplate(id){
         minWidth: 200,
         width   : 350,
         hidden  : true,
-        rows    : []
+        rows    : [],
+        on:{
+            onViewShow:function(){
+                if (window.innerWidth > 850){
+                    this.config.width = 350;
+                    this.resize();
+                }
+            }
+        }
     };
 }
 

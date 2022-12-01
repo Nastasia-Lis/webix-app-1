@@ -6,7 +6,6 @@ import { createProperty }    from "../createProperty.js";
 
 const logNameFile = "table => editForm => setState";
 
-// create new entry
 
 function initPropertyForm(){
     const property = $$("editTableFormProperty");
@@ -90,6 +89,7 @@ function adaptiveView (editForm){
 }
 
 function editTablePutState(){
+  
     try{
         const editForm  = $$("table-editForm");
         setPropertyWidth($$("editTableFormProperty"));
@@ -120,6 +120,7 @@ function editTablePutState(){
 }
 
 function defPropertyState(){
+    mediator.tables.editForm.clearTempStorage();
     const property = $$("editTableFormProperty");
 
     if (property){

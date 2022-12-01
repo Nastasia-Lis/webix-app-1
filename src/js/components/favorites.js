@@ -49,8 +49,8 @@ function createOptions(data, user){
         if (favCollection.length){
             favCollection.forEach(function(el){
                 radio.addOption(
-                    {   id      :el.id,
-                        value   :el.name,
+                    {   id      : el.id,
+                        value   : el.name,
                         favLink : el.link
                     }
                 );

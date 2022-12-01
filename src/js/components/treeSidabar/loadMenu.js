@@ -99,8 +99,9 @@ function generateMenuTree (menu){
     tree.clearAll();
     tree.parse(menuTree);
 
-    if (btnContext.config.popup.data !== undefined){
-        btnContext.config.popup.data = menuHeader;
+    let popupData = btnContext.config.popup.data;
+    if (popupData !== undefined){
+        popupData = menuHeader;
         btnContext.enable();
     }
 

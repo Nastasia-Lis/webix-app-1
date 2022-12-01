@@ -16,7 +16,7 @@ function selectTreeItem(){
     const values = Object.values(pull);
 
     let topParent;
-    values.forEach(function(el,i){
+    values.forEach(function(el){
    
         if ( el.webix_kids && !(tree.exists (id)) ){
         

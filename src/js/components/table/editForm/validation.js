@@ -28,6 +28,7 @@ function validateProfForm (){
                     return /\D/.test(str);
                 }
 
+       
                 if (propElement.customType              &&
                     propElement.customType == "integer" ){
 

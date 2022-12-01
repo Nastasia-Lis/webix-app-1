@@ -13,6 +13,7 @@ function unsetDirty(){
         forms.forEach(function(form){
 
             if (form && form.isDirty()){
+                form.clear();
                 form.setDirty(false);
             }
         });

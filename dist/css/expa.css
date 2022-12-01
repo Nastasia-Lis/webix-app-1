@@ -1,4 +1,5 @@
 @charset "UTF-8";
+
 :root {
   --white: #fff;
   --gray: rgb(209, 209, 209);
@@ -6,11 +7,11 @@
   --bg: #f7f7f7;
   --gray-light: rgb(228, 228, 228);
   --primary: rgb(108, 160, 228);
-  --primary-light:rgb(151, 190, 241);
-  --primary-dark:rgb(91, 140, 204);
-  --secondary-light:rgb(231, 239, 255);
-  --secondary:rgb(210, 224, 255);
-  --secondary-dark:rgb(199, 219, 255);
+  --primary-light: rgb(151, 190, 241);
+  --primary-dark: rgb(91, 140, 204);
+  --secondary-light: rgb(231, 239, 255);
+  --secondary: rgb(210, 224, 255);
+  --secondary-dark: rgb(199, 219, 255);
   --success: rgb(215, 255, 231);
   --error: rgb(255, 226, 215);
   --notify: rgb(254, 255, 215);
@@ -26,140 +27,191 @@
   margin-top: 2px !important;
   margin-left: -5px !important;
 }
-.webix_close-btn .webix_button.webix_img_btn, .webix_close-btn .webix_button.webix_img_btn:hover, .webix_close-btn .webix_button.webix_img_btn:active {
+
+.webix_close-btn .webix_button.webix_img_btn,
+.webix_close-btn .webix_button.webix_img_btn:hover,
+.webix_close-btn .webix_button.webix_img_btn:active {
   background-color: transparent !important;
 }
+
 .webix_filterBtns {
   vertical-align: bottom !important;
   height: 38px !important;
 }
+
 .webix_button .webix_button {
   font-weight: 400 !important;
 }
+
 .webix_tree_item {
   cursor: pointer !important;
   padding: 5px 10px !important;
   border-radius: 4px !important;
 }
+
 .webix_tree_item:hover {
   background-color: var(--gray-light) !important;
 }
+
 .webix_tree_folder_open {
   color: var(--primary-light) !important;
 }
+
 .webix_tree_item.webix_selected > .webix_tree_file {
   color: var(--primary-light) !important;
 }
+
 .webix_tree .webix_tree_item.webix_selected {
   background-color: var(--gray-light) !important;
   font-weight: 500;
 }
+
 .webix_webix_selected .webix_tree_file {
   color: var(--primary-light) !important;
 }
-.webix_tree_item:hover .webix_tree_folder, .webix_tree_item:hover .webix_tree_folder_open, .webix_tree_item:hover .webix_tree_file {
+
+.webix_tree_item:hover .webix_tree_folder,
+.webix_tree_item:hover .webix_tree_folder_open,
+.webix_tree_item:hover .webix_tree_file {
   color: var(--primary-light);
 }
+
 .webix_primary .webix_button {
   background: var(--primary) !important;
+  -webkit-transition: 0.2s;
+  -o-transition: 0.2s;
   transition: 0.2s;
   border-radius: 4px !important;
   font-size: 13px !important;
   font-weight: 600 !important;
 }
+
 .webix_primary .webix_button:hover {
   background: var(--primary-light) !important;
 }
+
 .webix_primary .webix_button:active {
   background: var(--primary-dark) !important;
 }
+
 .webix_secondary .webix_button {
   background: var(--secondary) !important;
   color: var(--primary) !important;
+  -webkit-transition: 0.2s;
+  -o-transition: 0.2s;
   transition: 0.2s;
   border-radius: 4px !important;
   font-size: 13px !important;
   font-weight: 600 !important;
 }
+
 .webix_secondary .webix_button .webix_icon_btn {
   color: var(--primary) !important;
 }
+
 .webix_secondary .webix_button:hover {
   background: var(--primary) !important;
   color: var(--white) !important;
 }
+
 .webix_secondary .webix_button:hover .webix_icon_btn {
   color: var(--white) !important;
 }
+
 .webix_secondary .webix_button:active {
   background: var(--primary-dark) !important;
 }
+
 .webix_view.webix_control .webix_disabled_box .webix_button {
   color: #7c7c7c !important;
   background: var(--gray) !important;
 }
+
 .webix_disabled_box .webix_img_btn {
   color: #7c7c7c !important;
 }
+
 .webix_danger .webix_button .webix_icon_btn {
   color: var(--danger) !important;
 }
+
 .webix_danger .webix_button {
   background: var(--danger-light) !important;
+  -webkit-transition: 0.2s;
+  -o-transition: 0.2s;
   transition: 0.2s;
   border-radius: 4px !important;
 }
+
 .webix_danger:hover .webix_button {
   background: var(--danger) !important;
 }
+
 .webix_danger .webix_button:hover .webix_icon_btn {
   color: var(--white) !important;
 }
+
 .webix_danger:active .webix_button {
   background: var(--danger-dark) !important;
 }
+
 .webix_add-btn > .webix_el_box > .webix_button {
   background: var(--add) !important;
+  -webkit-transition: 0.2s;
+  -o-transition: 0.2s;
   transition: 0.2s;
 }
+
 .webix_add-btn > .webix_el_box > .webix_button > .webix_icon_btn {
   color: var(--white) !important;
 }
+
 .webix_add-btn:hover > .webix_el_box > .webix_button {
   background: var(--add-light) !important;
 }
+
 .webix_add-btn:active > .webix_el_sbox > .webix_button {
   background: var(--add-dark) !important;
 }
+
 .webix_pager_item_selected {
   cursor: pointer;
   border-radius: 4px !important;
   background: var(--primary) !important;
+  -webkit-transition: 0.2s;
+  -o-transition: 0.2s;
   transition: 0.2s;
   border-radius: 4px !important;
   font-size: 13px !important;
   font-weight: 600 !important;
 }
+
 .webix_pager_item_selected:hover {
   cursor: pointer;
   background: var(--primary-light) !important;
 }
+
 .webix_pager_item_selected:active {
   background: var(--primary-dark) !important;
 }
+
 .webix_view .webix_pager_item {
   border-radius: 4px !important;
   background: var(--secondary) !important;
   color: var(--primary) !important;
+  -webkit-transition: 0.2s;
+  -o-transition: 0.2s;
   transition: 0.2s;
   border-radius: 4px !important;
   font-size: 13px !important;
   font-weight: 600 !important;
 }
+
 .webix_view .webix_pager_item:hover {
   background: var(--primary) !important;
   color: var(--white) !important;
 }
+
 .webix_view .webix_pager_item:active {
   background: var(--primary-dark) !important;
 }
@@ -213,6 +265,8 @@
 .webix_segment_0 {
   background: var(--secondary) !important;
   color: var(--primary) !important;
+  -webkit-transition: 0.2s;
+  -o-transition: 0.2s;
   transition: 0.2s;
   border-radius: 4px !important;
   font-size: 13px !important;
@@ -254,7 +308,9 @@
   font-style: normal;
   font-display: block;
 }
-[class^=icon-], [class*=" icon-"] {
+
+[class^=icon-],
+[class*=" icon-"] {
   /* use !important to prevent issues with browser extensions that change fonts */
   font-family: "icomoon" !important;
   speak: never;
@@ -368,11 +424,13 @@
   content: "\e901";
 }
 
-html, body {
+html,
+body {
   scrollbar-width: 9px !important;
 }
 
 /* полоса прокрутки (скроллбар) */
+
 ::-webkit-scrollbar {
   width: auto !important;
   /* ширина для вертикального скролла */
@@ -381,6 +439,7 @@ html, body {
 }
 
 /* ползунок скроллбара */
+
 ::-webkit-scrollbar-thumb {
   background-color: #b3b3b3 !important;
   border-radius: 0px !important;
@@ -445,6 +504,8 @@ html, body {
 }
 
 .webix_view.webix_layout_line {
+  -webkit-transition: none !important;
+  -o-transition: none !important;
   transition: none !important;
 }
 
@@ -465,7 +526,8 @@ html, body {
 }
 
 .webix_alert .webix_popup_title {
-  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+          box-shadow: none !important;
 }
 
 .webix_modal-custom-save.webix_alert .webix_popup_text {
@@ -475,6 +537,8 @@ html, body {
 .webix_modal-custom-save .webix_popup_controls div:nth-child(2) {
   background: var(--secondary) !important;
   color: var(--primary) !important;
+  -webkit-transition: 0.2s;
+  -o-transition: 0.2s;
   transition: 0.2s;
   border-radius: 4px !important;
   font-size: 13px !important;
@@ -492,6 +556,8 @@ html, body {
 
 .webix_modal-custom-save .webix_popup_controls div:nth-child(3) {
   background: var(--primary) !important;
+  -webkit-transition: 0.2s;
+  -o-transition: 0.2s;
   transition: 0.2s;
   border-radius: 4px !important;
   font-size: 13px !important;
@@ -524,7 +590,8 @@ html, body {
   background-color: var(--danger) !important;
 }
 
-.webix_progress_top .webix_progress_state, .webix_progress_bottom .webix_progress_state {
+.webix_progress_top .webix_progress_state,
+.webix_progress_bottom .webix_progress_state {
   background: var(--primary-light) !important;
   background-image: none !important;
 }
@@ -579,7 +646,12 @@ html, body {
   background-color: var(--bg) !important;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   color: var(--dark) !important;
 }
 
@@ -618,6 +690,22 @@ select:focus {
   border: 1px solid var(--primary) !important;
 }
 
+::-webkit-input-placeholder {
+  color: #858585 !important;
+}
+
+::-moz-placeholder {
+  color: #858585 !important;
+}
+
+:-ms-input-placeholder {
+  color: #858585 !important;
+}
+
+::-ms-input-placeholder {
+  color: #858585 !important;
+}
+
 ::placeholder {
   color: #858585 !important;
 }
@@ -634,7 +722,8 @@ textarea:focus {
   border: 1px solid var(--primary) !important;
 }
 
-label, button {
+label,
+button {
   font-weight: 500 !important;
 }
 
@@ -666,164 +755,224 @@ label, button {
 .webix_view {
   border-color: var(--gray-light) !important;
 }
+
 .webix_popup {
   border-radius: 6px !important;
 }
+
 .webix_popup-prev-href {
   padding: 20px !important;
 }
+
 .webix_win_body > .webix_view {
   border-radius: 6px !important;
 }
+
 .webix_dashboard-h2 .webix_template {
   padding: 0px !important;
 }
+
 .webix_tree.webix_tree-main {
   background-color: var(--bg) !important;
   border-width: 0px !important;
 }
+
 .webix_header-style {
   background-color: var(--bg) !important;
 }
+
 .webix_side-container {
   background-color: var(--bg) !important;
 }
+
 .webix_accordion-container > .webix_accordionitem.collapsed .webix_accordionitem_header {
   color: var(--dark) !important;
   background-color: var(--bg) !important;
 }
+
 .webix_accordion-container > .webix_accordionitem .webix_accordionitem_header {
   font-weight: 400 !important;
   font-size: 15px !important;
   background-color: var(--gray-light) !important;
 }
+
 .webix_accordion-container > .webix_accordionitem.collapsed .webix_accordionitem_header .webix_accordionitem_button {
   color: var(--dark) !important;
 }
+
 .webix_accordion-container > .webix_accordionitem .webix_accordionitem_header .webix_accordionitem_button {
   color: var(--primary) !important;
 }
+
 .webix_timeline_node {
   stroke: var(--primary) !important;
 }
+
 .webix_form-template > .webix_template {
   padding: 0px !important;
 }
-.webix_hcolumn, .webix_pager_item_selected {
+
+.webix_hcolumn,
+.webix_pager_item_selected {
   font-weight: 500 !important;
   font-size: 14px !important;
 }
-.webix_table-style .webix_hcell, .webix_style-template-count {
+
+.webix_table-style .webix_hcell,
+.webix_style-template-count {
   background: var(--bg) !important;
 }
-.webix_dtable .webix_ss_header .webix_hcolumn div.webix_last_row, .webix_dtable div.webix_ss_vscroll_header, .webix_dtable div.webix_ss_vscroll_footer {
+
+.webix_dtable .webix_ss_header .webix_hcolumn div.webix_last_row,
+.webix_dtable div.webix_ss_vscroll_header,
+.webix_dtable div.webix_ss_vscroll_footer {
   border-bottom-color: #dadee0 !important;
   border-top-color: #dadee0 !important;
 }
+
 .webix_dtable .webix_select_mark > div.webix_row_select {
-  box-shadow: inset 2px 0 var(--primary) !important;
+  -webkit-box-shadow: inset 2px 0 var(--primary) !important;
+          box-shadow: inset 2px 0 var(--primary) !important;
 }
+
 .webix_cell {
   cursor: pointer;
 }
-.webix_dtable .webix_ss_footer .webix_hcolumn > div:first-child, .webix .webix_dtable .webix_ss_footer .webix_hcell[row="0"] {
+
+.webix_dtable .webix_ss_footer .webix_hcolumn > div:first-child,
+.webix .webix_dtable .webix_ss_footer .webix_hcell[row="0"] {
   border-top-color: #dadee0 !important;
 }
+
 .webix_success {
   border-radius: 4px !important;
   font-weight: 500 !important;
 }
+
 .webix_success div {
   background-color: var(--success);
 }
+
 .webix_error {
   border-radius: 4px !important;
   font-weight: 500 !important;
 }
+
 .webix_error div {
   background-color: var(--error);
 }
+
 .webix_debug {
   border-radius: 4px !important;
   font-weight: 500 !important;
 }
+
 .webix_debug div {
   background-color: var(--notify);
 }
+
 .webix_confirm .webix_popup_title {
-  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+          box-shadow: none !important;
 }
+
 .webix_popup_button.confirm {
   background: var(--primary) !important;
+  -webkit-transition: 0.2s;
+  -o-transition: 0.2s;
   transition: 0.2s;
   border-radius: 4px !important;
   font-size: 13px !important;
   font-weight: 600 !important;
 }
+
 .webix_popup_button.confirm:hover {
   background: var(--primary-light) !important;
 }
+
 .webix_popup_button.confirm:active {
   background: var(--primary-dark) !important;
 }
+
 .webix_popup_button {
   padding: 5px 10px !important;
 }
+
 .webix_popup_controls > :first-child {
   background: var(--secondary) !important;
   color: var(--primary) !important;
+  -webkit-transition: 0.2s;
+  -o-transition: 0.2s;
   transition: 0.2s;
   border-radius: 4px !important;
   font-size: 13px !important;
   font-weight: 600 !important;
 }
+
 .webix_popup_controls > :first-child:hover {
   background: var(--primary) !important;
   color: var(--white) !important;
 }
+
 .webix_popup_controls > :first-child:active {
   background: var(--primary-dark) !important;
 }
+
 .webix_modal_box {
   border-radius: 4px !important;
   padding: 15px 30px !important;
 }
+
 .webix_img-user > .webix_el_box {
   line-height: 0px !important;
 }
+
 .webix_cal_body .webix_cal_today .webix_cal_day_inner {
-  box-shadow: inset 0 0 0 1px var(--primary) !important;
+  -webkit-box-shadow: inset 0 0 0 1px var(--primary) !important;
+          box-shadow: inset 0 0 0 1px var(--primary) !important;
 }
+
 .webix_cal_body .webix_cal_event {
   color: var(--primary) !important;
 }
+
 .webix_cal_body .webix_cal_block.webix_selected span:hover {
   background-color: var(--primary-light) !important;
 }
+
 .webix_cal_body .webix_cal_block.webix_selected span {
   background-color: var(--primary) !important;
 }
+
 .webix_cal_body .webix_cal_block.webix_selected span:active {
   background-color: var(--primary-dark) !important;
 }
+
 .webix_cal_body .webix_cal_block span:hover {
   background-color: var(--secondary) !important;
 }
+
 .webix_cal_prev_button:hover {
   color: var(--primary-light) !important;
 }
+
 .webix_cal_next_button:hover {
   color: var(--primary-light) !important;
 }
+
 .webix_cal_next_button:focus {
   color: var(--primary) !important;
 }
+
 .webix_cal_prev_button:focus {
   color: var(--primary) !important;
 }
+
 .webix_cal_done {
   background: var(--secondary) !important;
   color: var(--primary) !important;
+  -webkit-transition: 0.2s;
+  -o-transition: 0.2s;
   transition: 0.2s;
   border-radius: 4px !important;
   font-size: 13px !important;
@@ -831,26 +980,33 @@ label, button {
   height: 35px !important;
   cursor: pointer;
 }
+
 .webix_cal_done:hover {
   background: var(--primary) !important;
   color: var(--white) !important;
   border: none !important;
 }
+
 .webix_cal_done:active {
   background: var(--primary-dark) !important;
   border: none !important;
 }
+
 .webix_win_body > .webix_view {
   border-radius: 4px;
 }
+
 .webix_list_item.webix_selected {
-  box-shadow: inset 2px 0 var(--primary) !important;
+  -webkit-box-shadow: inset 2px 0 var(--primary) !important;
+          box-shadow: inset 2px 0 var(--primary) !important;
 }
+
 .webix_block-title {
   font-weight: 600 !important;
   font-size: 16px !important;
   height: auto !important;
 }
+
 .webix_dash-title > .webix_template {
   padding: 8px 12px !important;
   text-align: center;
@@ -875,8 +1031,12 @@ label, button {
   background: var(--secondary) !important;
 }
 
-.webix_cal_icon:hover, .webix_cal_time:hover, .webix_cal_month_name:hover,
-.webix_cal_icon:focus, .webix_cal_time:focus, .webix_cal_month_name:focus {
+.webix_cal_icon:hover,
+.webix_cal_time:hover,
+.webix_cal_month_name:hover,
+.webix_cal_icon:focus,
+.webix_cal_time:focus,
+.webix_cal_month_name:focus {
   color: var(--primary) !important;
 }
 
@@ -905,6 +1065,8 @@ label, button {
 }
 
 .webix_multivew-cell {
+  -webkit-transition: none !important;
+  -o-transition: none !important;
   transition: none !important;
 }
 
@@ -932,11 +1094,13 @@ label, button {
 }
 
 .webix_filter-popup-tabbar .webix_item_tab.webix_selected {
-  box-shadow: inset 0 -2px var(--primary) !important;
+  -webkit-box-shadow: inset 0 -2px var(--primary) !important;
+          box-shadow: inset 0 -2px var(--primary) !important;
 }
 
 .webix_filter-popup-tabbar .webix_item_tab {
-  box-shadow: inset 0 -2px var(--gray) !important;
+  -webkit-box-shadow: inset 0 -2px var(--gray) !important;
+          box-shadow: inset 0 -2px var(--gray) !important;
 }
 
 .webix_all_tabs .webix_item_tab {
@@ -953,7 +1117,8 @@ label, button {
 }
 
 .webix_prompt-filter-lib .webix_popup_title {
-  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+          box-shadow: none !important;
   font-size: 17px !important;
   padding-bottom: 10px !important;
 }
@@ -978,6 +1143,8 @@ label, button {
 .webix_prompt-filter-lib > .webix_popup_controls div:nth-child(2) {
   background: var(--secondary) !important;
   color: var(--primary) !important;
+  -webkit-transition: 0.2s;
+  -o-transition: 0.2s;
   transition: 0.2s;
   border-radius: 4px !important;
   font-size: 13px !important;
@@ -1082,8 +1249,12 @@ label, button {
 }
 
 .webix_filter-headline-wrapper {
+  display: -webkit-box !important;
+  display: -ms-flexbox !important;
   display: flex !important;
-  justify-content: space-between !important;
+  -webkit-box-pack: justify !important;
+      -ms-flex-pack: justify !important;
+          justify-content: space-between !important;
 }
 
 .webix_cal_day_inner {
@@ -1205,7 +1376,9 @@ label, button {
   color: transparent !important;
 }
 
-.tree_load-items, .tree_none-items, .tree_disabled-item {
+.tree_load-items,
+.tree_none-items,
+.tree_disabled-item {
   pointer-events: none;
 }
 
@@ -1289,7 +1462,8 @@ label, button {
 }
 
 .no-wrap-headline {
-  text-overflow: ellipsis !important;
+  -o-text-overflow: ellipsis !important;
+     text-overflow: ellipsis !important;
   white-space: nowrap;
   overflow: hidden;
   font-size: 15px !important;
@@ -1317,6 +1491,8 @@ label, button {
 .password-icon {
   padding: 7px 6px 0px 0px !important;
   font-size: 18px !important;
+  -webkit-transition: 0.2s;
+  -o-transition: 0.2s;
   transition: 0.2s;
   cursor: pointer;
 }

@@ -4,13 +4,9 @@ import { setFunctionError }                     from "../../blocks/errors.js";
 
 const logNameFile = "treeSidebar => loadFields";
 
-
-let idLoadElement;
-let idNoneElement;
-
-
 let tree;
 let id;
+let selectItem;
 
 function returnId(type, uid){
     return "q-" + type + "_data-tree_" + uid;
@@ -82,6 +78,38 @@ function removeTreeEls( noneEl = false, uid ){
     }
 }
 
+// function openFullBranch(value){
+
+//     const parent = tree.getParentId(value);
+//     if (parent && tree.getParentId(parent)){
+//         tree.open     (parent);
+//         openFullBranch(parent);
+     
+//     } else {
+      
+//         tree.open(value);
+//         tree.open(parent);
+//         tree.select(value);
+//         const item = tree.getItemNode(value);
+   
+//         // webix.html.addCss( item, "webix_selected");
+//         // item.setAttribute("tabindex", "0");
+//         // item.setAttribute("aria-selected", "true");
+        
+//         console.log(tree.exists(value), value, tree.getItem(value))
+//     }     
+
+// }
+
+
+// function selectTreeItem(){
+//     const isExists = tree.exists(selectItem);
+ 
+//     if (isExists && selectItem){
+//         openFullBranch(selectItem); 
+//     }
+// }
+
 
 async function generateMenuData (typeChild, idParent, uid){
     await LoadServerData.content("fields");
@@ -152,13 +180,16 @@ async function getMenuChilds(uid) {
 
 
 
-function loadFields(selectId){
+function loadFields(selectId, treeItem){
     const uid = webix.uid();
   
     tree = $$("tree");
     id   = selectId;
+    selectItem = treeItem;
 
-    if (tree.getItem(id).$count === -1){
+    const item = tree.getItem(id);
+
+    if (tree.getItem(id) && item.$count === -1){
         createLoadEl (uid);
         getMenuChilds(uid);
     }

@@ -105,14 +105,7 @@ function filterBtnClick (){
         }
 
     } else {
-        Action.hideItem(backBtn);
-        const tool = $$("dashboardTool");
-        if (tool.config.width !== 350){
-            tool.config.width  = 350;
-            tool.resize();
-        }
-
-        
+        Action.hideItem(backBtn);      
     }
 
 

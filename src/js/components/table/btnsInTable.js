@@ -12,9 +12,9 @@ function trashBtn(config,idTable){
         const table      = $$(idTable);
         const formValues = table.getItem(config.row);
         const itemTreeId = getItemId ();
-        const url        = "/init/default/api/"+itemTreeId+"/"+formValues.name+".json" ;
+        const url        = "/init/default/api/" + itemTreeId + "/" + formValues.name + ".json" ;
  
-        const delData    =  webix.ajax().del(url, formValues);
+        const delData    = webix.ajax().del(url, formValues);
 
         delData.then(function(data){
             data = data.json();
@@ -23,16 +23,24 @@ function trashBtn(config,idTable){
                     const selectEl = table.getSelectedId();
                     table.remove(selectEl);
                 } catch (err){
-                    setFunctionError(err,logNameFile,"wxi-trash => delData");
+                    setFunctionError(
+                        err,
+                        logNameFile,
+                        "wxi-trash => delData"
+                    );
                 }
-                setLogValue("success","Данные успешно удалены");
+                setLogValue("success", "Данные успешно удалены");
             } else {
-                setLogValue("error",data.err);
+                setLogValue("error", data.err);
             }
         });
 
         delData.fail(function(err){
-            setAjaxError(err, logNameFile,"wxi-trash => delElem");
+            setAjaxError(
+                err, 
+                logNameFile,
+                "wxi-trash => delElem"
+            );
         });
     }
 

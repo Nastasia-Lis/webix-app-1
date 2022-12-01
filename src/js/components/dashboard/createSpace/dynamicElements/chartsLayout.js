@@ -12,11 +12,11 @@ function returnHeadline (titleTemplate){
         borderless  : true,
         height      : 35,
         css         : {  
-            "font-weight" : "400!important", 
+            "font-weight" : "400 !important", 
             "font-size"   : "17px!important"
         }, 
     };
-
+ 
     return headline;
 }
 
@@ -98,7 +98,11 @@ function createChart(dataCharts){
 
    
     } catch (err){  
-        setFunctionError(err, logNameFile, "createChart");
+        setFunctionError(
+            err, 
+            logNameFile, 
+            "createChart"
+        );
     }
 
     return layout;
@@ -113,7 +117,7 @@ async function setDashName(idsParam) {
 
         if (names){
 
-            names.forEach(function(el,i){
+            names.forEach(function(el){
                 if (el.id == itemTreeId){
                     const template  = $$("dash-template");
                     const value     = el.name.toString();
@@ -124,7 +128,11 @@ async function setDashName(idsParam) {
      
         
     } catch (err){  
-        setFunctionError(err, logNameFile, "setDashName");
+        setFunctionError(
+            err, 
+            logNameFile, 
+            "setDashName"
+        );
     }
 }
 
@@ -137,7 +145,7 @@ function setIdAttribute(idsParam){
 
 
 function createDashLayout(dataCharts){
-    const layout       = createChart(dataCharts);
+    const layout = createChart(dataCharts);
 
     const dashLayout = [
         {   type : "wide",
@@ -189,7 +197,11 @@ function createDashboardCharts(idsParam, dataCharts){
     try{
         container.addView(inner);
     } catch (err){  
-        setFunctionError(err, logNameFile, "createFilterLayout");
+        setFunctionError(
+            err, 
+            logNameFile, 
+            "createFilterLayout"
+        );
     } 
 
     setDashName( idsParam );

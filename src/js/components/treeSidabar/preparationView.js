@@ -7,15 +7,11 @@ async function getSingleTreeItem(data) {
     await LoadServerData.content("fields");
 
     const keys   = GetFields.keys;
-
+  
     if (keys){
         selectElem(data);
     }   
 }
-
-// function checkDirtyForm(){
-//     const 
-// }
 
 function preparationView(id){
    

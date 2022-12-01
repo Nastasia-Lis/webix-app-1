@@ -9,7 +9,7 @@ import {  formattingBoolVals,
 import { setDefaultValues }                 from './setDefaultValues.js';
 
 import { selectContextId }                  from '../createContextSpace.js';
-
+import { returnLostData }                   from '../returnLostData.js';
 const logNameFile = "table => createSpace => loadData";
 
 
@@ -277,10 +277,14 @@ async function loadTableData(table, id, idsParam, offset){
                 //     }
                 // ]
               
-          
+   
                 setTableState(table);
                 parseRowData (data);
-                selectContextId();
+                if (!offsetParam){
+                    selectContextId();  
+                    returnLostData();
+                }
+            
 
             });
             

@@ -18,6 +18,8 @@ const editForm = {
     ],
     on:{
         onViewShow: webix.once(function(){
+            this.config.width = 350;
+            this.resize();
             mediator.setForm(this);
         }),
     },

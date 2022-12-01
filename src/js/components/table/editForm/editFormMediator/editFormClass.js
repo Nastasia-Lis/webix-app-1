@@ -32,6 +32,11 @@ class EditForm {
         removeTableItem(this);
     }
 
+    static clearTempStorage(){
+        $$("editTableFormProperty").config.tempData = false;
+        webix.storage.local.remove("editFormTempData");
+    }
+
 
 }
 export {

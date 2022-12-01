@@ -84,6 +84,26 @@ function isLastKey(inputsKey, keys) {
     return result;
 }
 
+function prevArray(keys, currKey){
+    let value;
+    function loop(key){
+        const indexCurrKey = keys.indexOf(key);
+        let indexPrevKey   = indexCurrKey - 1;
+
+        if (indexPrevKey >= 0){
+
+            let key = keys[indexPrevKey];
+            if (visibleInputs[key].length){
+                value = visibleInputs[key];
+            } else {
+                loop(key);
+            }
+           
+        }
+    }
+    loop(currKey);
+    return value;
+}
 
 function findInputs(id, keys){
     const result    = {};
@@ -94,22 +114,12 @@ function findInputs(id, keys){
     result.lastInput = inputs[result.lastIndex]; 
 
     if (result.prevIndex < 0){ // удален последний элемент из коллекции
-
-        keys.forEach(function(key,i){
-
-            if ( key == id && i-1 >= 0){ // данная коллекция
-                inputs = visibleInputs[keys[i-1]];
-
-            }
-           
-        });
-
+        inputs = prevArray(keys, id); // найти не пустую коллекцию
         result.prevIndex = inputs.length - 1;
-
     }
    
     result.prevInput = inputs[result.prevIndex];
-
+ 
     return result;
 }
 
@@ -136,13 +146,12 @@ function hideSegmentBtn (action, inputsKey, thisInput){
        
 
     } else if (action === "remove" && checkKey.check){
-
+    
         const inputs     = findInputs (inputsKey, keys);
     
         const checkInput = isLastInput(inputs.lastInput, thisInput);
-
+ 
         if (checkInput){
-   
             hideBtn( inputs.prevInput );
         }
 
@@ -198,7 +207,6 @@ function clickContextBtnParent (id, el){
         hideMainInput       (thisInput, mainInput);
         hideHtmlEl          (el.id);
         hideSegmentBtn      ("remove", el.id, thisInput);
-     //   hideLastSegmentBtn  (el.id, thisInput);
         removeInStorage     (el,    thisInput);
     
         showEmptyTemplate   ();
@@ -208,8 +216,7 @@ function clickContextBtnParent (id, el){
 
     function addInput (){
         const idChild = createChildFields (el);
-            hideSegmentBtn ("add", el.id, idChild);
-        //hideLastSegmentBtn(el.id, idChild);
+        hideSegmentBtn ("add", el.id, idChild);
         Action.showItem(segmentBtn);
     }
 

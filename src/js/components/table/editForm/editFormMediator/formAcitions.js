@@ -8,17 +8,19 @@ import { setFunctionError,
 import { setLogValue }              from "../../../logBlock.js";
 
 import { popupExec }                from "../../../../blocks/notifications.js";
+import { mediator } from "../../../../blocks/_mediator.js";
 
 const logNameFile = "table => formActions";
 
 function unsetDirtyProp(){
     $$("table-editForm").setDirty(false);
+    mediator.tables.editForm.clearTempStorage();
 }
 
 function updateTable (itemData){
     try{
-        const table   = $$("table");
-        const id      = itemData.id;
+        const table = $$("table");
+        const id    = itemData.id;
         table.updateItem(id, itemData);
         table.clearSelection();
     } catch (err){
@@ -31,12 +33,14 @@ function updateTable (itemData){
     
 }
 
+
+
 function dateFormatting(arr){
     const vals          = Object.values(arr);
     const keys          = Object.keys(arr);
     const formattingArr = arr;
 
-    keys.forEach(function(el,i){
+    keys.forEach(function(el, i){
         const prop       = $$("editTableFormProperty");
         const item       = prop.getItem(el);
         const formatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
@@ -95,6 +99,7 @@ function putTable (updateSpace, isNavigate, form){
                 data = data.json();
              
                 if (data.err_type == "i"){
+
 
                     if (updateSpace){
                         form.defaultState();
@@ -233,6 +238,7 @@ function postTable (updateSpace, isNavigate, form){
 
  
             if (data.err_type == "i" && id){
+           
 
                 if (updateSpace){
                     form.defaultState();
@@ -300,6 +306,7 @@ function removeRow(){
     if(table){
         table.remove(tableSelect);
     }
+
 }
 
 function removeTableItem(form){
@@ -308,10 +315,8 @@ function removeTableItem(form){
 
     popupExec("Запись будет удалена").then(
         function(){
-
-            const formValues  = $$("editTableFormProperty").getValues();
-
-            removeRow();
+        
+            const formValues = $$("editTableFormProperty").getValues();
             const id    = formValues.id;
             const path  ="/init/default/api/" + currId + "/" + id + ".json";
             const removeData = webix.ajax().del(path, formValues);
@@ -323,10 +328,13 @@ function removeTableItem(form){
                     
                     form.defaultState();
 
+                    unsetDirtyProp();
+
                     setLogValue(
                         "success",
                         "Данные успешно удалены"
                     );
+                    removeRow();
                 } else {
                     setLogValue(
                         "error",
@@ -343,7 +351,8 @@ function removeTableItem(form){
                 );
             });
     
-    });
+        }
+    );
 
 }
 

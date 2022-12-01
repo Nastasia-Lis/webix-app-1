@@ -5,7 +5,6 @@ import { Button }              from "../../../viewTemplates/buttons.js";
 import { createEmptyTemplate } from "../../../viewTemplates/emptyTemplate.js";
 import { mediator }            from "../../../blocks/_mediator.js";
 
- 
 
 function setFormState(){
     mediator.tables.editForm.postState();
@@ -31,13 +30,14 @@ function modalBoxAddItem(){
 
 
 function addItem () {
-    
+
     const isDirtyForm = $$("table-editForm").isDirty();
     const table       = $$("table");
 
     if (isDirtyForm){
         modalBoxAddItem();
     } else {
+        mediator.tables.editForm.clearTempStorage();
         setFormState();
         table.hideOverlay("Ничего не найдено");
     }
@@ -50,6 +50,7 @@ function backTableBtnClick() {
     const table          = $$("table");
 
     function defaultState(){
+        mediator.tables.editForm.clearTempStorage();
         Action.hideItem(form);
         Action.showItem(tableContainer);
         if (table){
@@ -73,7 +74,6 @@ function backTableBtnClick() {
                         mediator.tables.editForm.post();
                     }
                 }
-
                 form.setDirty(false);
             }
         });
@@ -134,6 +134,15 @@ const saveBtn = new Button({
         click    : function(){
             mediator.tables.editForm.put();
         },
+        on:{
+            onViewShow:function(){
+                if (this.isVisible()){
+                    $$("editTableFormProperty")
+                    .config.tableStatus = "put";
+                }
+   
+            }
+        }
     },
     titleAttribute : "Сохранить запись в таблицу"
 
@@ -151,6 +160,16 @@ const saveNewBtn = new Button({
         click    : function(){
             mediator.tables.editForm.post();
         },
+        on:{
+            onViewShow:function(){
+
+                if (this.isVisible()){
+                    $$("editTableFormProperty")
+                    .config.tableStatus = "post";
+                }
+   
+            }
+        }
     },
     titleAttribute : "Сохранить новую запись в таблицу"
 

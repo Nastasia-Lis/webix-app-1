@@ -21,7 +21,7 @@ function setTableName(idCurrTable, idsParam) {
 
         if (names){
 
-            names.forEach(function(el,i){
+            names.forEach(function(el){
                 if (el.id == idsParam){  
                     const template  = $$(idCurrTable + "-templateHeadline");
                     const value     = el.name.toString();
@@ -29,7 +29,8 @@ function setTableName(idCurrTable, idsParam) {
                 }
             });
         }
-     
+       // $$("tree").callEvent("onBeforeOpen", [ "","auth_group" ]);
+
         
     } catch (err){  
         setFunctionError(err, logNameFile, "setTableName");

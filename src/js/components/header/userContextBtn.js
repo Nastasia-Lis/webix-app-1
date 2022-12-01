@@ -16,9 +16,19 @@ function navigateTo (path){
     return Backbone.history.navigate(path, {trigger : true});
 }
 
+function clearTree(){
+    const tree = $$("tree");
+    if (tree){
+        tree.unselectAll();
+        tree.closeAll();
+
+    }
+}
+
 function clickMenu(id, path = id){
     mediator.getGlobalModalBox(id).then(function(result){
         if (result){
+            clearTree();
             navigateTo (path);
         }
     });

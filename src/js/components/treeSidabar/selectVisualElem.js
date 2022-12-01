@@ -87,7 +87,7 @@ function removeTreeEdit(){
 }
 
 function selectElem(id){
-   
+
     const type = GetFields.attribute (id, "type");
 
     Action.hideItem($$("webix__none-content"));

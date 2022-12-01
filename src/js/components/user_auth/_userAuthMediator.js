@@ -21,7 +21,6 @@ class UserAuth {
 
     put (){
         return doAuthCp();
-      
     }
 
 }

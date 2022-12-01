@@ -19,6 +19,7 @@ const headline  = {
 function closeBtnClick(){
     Action.removeItem($$("dashContextLayout"));
     Action.hideItem  (container);
+    Action.showItem  ($$("dashboardInfoContainer"));
 
     mediator.linkParam(false, "id");
     mediator.linkParam(false, "src");
@@ -67,7 +68,7 @@ async function createPropElements(){
         });
     }
 
- 
+
     return data;
 }
 
@@ -75,13 +76,15 @@ async function returnProperty(){
     const property  = {
         view    : "property",  
         id      : "dashContextProperty", 
+        minHeight:100,
         elements: await createPropElements()
     };
 
     const propertyLayout = {   
         scroll     : "y", 
         rows       : [
-            property
+            property,
+            {}
         ]
     };
 
@@ -119,6 +122,7 @@ const goToTableBtn = new Button({
 
 
 async function createLayout(){
+ 
     const layout = {
         id      : "dashContextLayout",
         padding : 15,
@@ -164,12 +168,19 @@ function createContextProperty(data, idTable){
     item  = data;
     field = idTable;
 
-    container     = $$("dashboardContext");
     const filters = $$("dashboardTool");
-
     Action.hideItem(filters);
-    Action.showItem(container);
     
+    container = $$("dashboardContext");
+    Action.showItem(container);
+    if (window.innerWidth < 850){
+
+        container.config.width = window.innerWidth - 45;
+        console.log(container.config.width)
+        container.resize();
+        Action.hideItem($$("dashboardInfoContainer"));
+    }
+
     setLinkParams();
     createSpace();
 }
