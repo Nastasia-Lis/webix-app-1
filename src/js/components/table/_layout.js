@@ -37,7 +37,6 @@ function table (idTable, onFunc, editableParam = false) {
         },
         ready:function(){ 
             const firstCol = this.getColumns()[0];
-            this.markSorting(firstCol.id, "asc");
         },
     };
 }

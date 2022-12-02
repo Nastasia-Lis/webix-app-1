@@ -13,12 +13,12 @@ const valuesArray = [];
 
 function createQueryRefresh(){
     try{
-        idElements.forEach((el,i) => {
+        idElements.forEach((el) => {
             const val = $$(el.id).getValue();
             
             if (el.id.includes("customCombo")){
                 const textVal = $$(el.id).getText();
-                console.log(val, textVal)
+
                 valuesArray.push (el.name + "=" + textVal);
 
             } else if ( el.id.includes("customInputs")     || 
@@ -29,7 +29,11 @@ function createQueryRefresh(){
             }   
         });
     } catch (err){  
-        setFunctionError(err, logNameFile, "createQueryRefresh");
+        setFunctionError(
+            err, 
+            logNameFile, 
+            "createQueryRefresh"
+        );
     }
 }
 

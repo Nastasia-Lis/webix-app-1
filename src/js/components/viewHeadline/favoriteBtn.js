@@ -3,8 +3,8 @@ import { LoadServerData, GetFields }        from "../../blocks/globalStorage.js"
 import { setLogValue }                      from "../logBlock.js";
 import { setAjaxError, setFunctionError }   from "../../blocks/errors.js";
 import { getItemId, pushUserDataStorage, 
-        getUserDataStorage, 
-        Action}                from "../../blocks/commonFunctions.js";
+         getUserDataStorage, 
+         Action}                            from "../../blocks/commonFunctions.js";
 
 import { Popup }                            from "../../viewTemplates/popup.js";
 import { Button }                           from "../../viewTemplates/buttons.js";
@@ -25,7 +25,11 @@ function findName (id, names){
             
         });
     } catch (err){
-        setFunctionError(err, logNameFile, "findName");
+        setFunctionError(
+            err, 
+            logNameFile, 
+            "findName"
+        );
     }
 }
 
@@ -43,7 +47,10 @@ async function getLinkName(){
 
 function getLink(){
     try{
-        const link = window.location.href;
+        let link    = window.location.href;
+        const index = link.lastIndexOf("?");
+        link        = link.slice(0, index);
+
         const favTemplate = $$("favLink");
         if (favTemplate){
             favTemplate.setValues(link);

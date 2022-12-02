@@ -7,7 +7,7 @@ import { clearSpace, visibleInputs }         from "../common.js";
 import { getItemId, getTable, Action }       from "../../../../blocks/commonFunctions.js";
 
 import { Button }                            from "../../../../viewTemplates/buttons.js";
-
+import { modalBox }                          from "../../../../blocks/notifications.js";
 
 
 const logNameFile   = "tableFilter => buttons => resetBtn";
@@ -168,9 +168,19 @@ function resetTable(){
 function resetFilterBtnClick (){
     const table = getTable();
     try {
-        resetTable();
 
-        table.config.filter = null;
+        modalBox("Все фильтры будут удалены", 
+        "Вы уверены?", 
+        ["Отмена", "Удалить"]
+        )
+        .then(function (result){
+            if (result == 1){
+                resetTable();
+                table.config.filter = null;
+            }
+
+        });
+        
 
     } catch(err) {
         setFunctionError(

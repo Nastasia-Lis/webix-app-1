@@ -112,7 +112,12 @@ function createDateTimeInput(el){
 }
 
 
- function createReferenceInput(el){
+function comboTemplate(obj, config){
+    const value = obj.value;
+    const item  = config.collection.getItem(value);
+    return item ? item.value : "";
+}
+function createReferenceInput(el){
    
     const template =  returnTemplate(el);    
     
@@ -122,9 +127,7 @@ function createDateTimeInput(el){
     template.css      = el.id + "_container";
     template.options  = getComboOptions(findTableId);
     template.template = function(obj, common, val, config){
-        const value = obj.value;
-        const item  = config.collection.getItem(value);
-        return item ? item.value : "";
+       return comboTemplate(obj, config);
     };
 
     return template;
@@ -132,13 +135,17 @@ function createDateTimeInput(el){
 
 
 function createBooleanInput(el){
-    const template =  returnTemplate(el);  
-
-    template.type = "select";
-    template.options = [
+    const template =  returnTemplate(el);    
+ 
+    template.type     = "combo";
+    template.options  = [
         {id:1, value: "Да"},
         {id:2, value: "Нет"}
     ];
+    template.template = function(obj, common, val, config){
+        return comboTemplate(obj, config);
+    };
+
     return template;
 }
 

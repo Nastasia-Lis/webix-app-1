@@ -12,7 +12,6 @@
 
 html, body {
     scrollbar-width: 9px!important;  
-   // scrollbar-color: #b3b3b3 #ffffff!important;    
 }
 
 
@@ -58,18 +57,18 @@ html, body {
     line-height: 20px!important;
 }
 
-.webix_modal_box.webix_confirm{
-width: 400px!important;
-}
+
+
 .webix_popup_button{
-height: 35px!important;
-line-height: 26px!important;
+    height: 40px!important;
+    min-width: 120px!important;
+    line-height: 26px!important;
 }
 .webix_popup_title{
-font-weight: 600!important;
+    font-weight: 600!important;
 }
 .webix_resizer {
-border-width: 1px!important;
+    border-width: 1px!important;
 }
 
 .webix_dash-filter-headline .webix_template,
@@ -81,7 +80,7 @@ border-width: 1px!important;
 }
   
 .webix_mainContent > .webix_view.webix_layout_line{
-margin-left: 0px!important;
+    margin-left: 0px!important;
 }
 
 
@@ -113,28 +112,60 @@ margin-left: 0px!important;
     margin-bottom: 5px!important;
 }
 
-.webix_modal-custom-save .webix_popup_controls div:nth-child(2){
+// .webix_modal-custom-save .webix_popup_controls div:nth-child(2){
+//     @include secondary-btn;
+// }
+
+// .webix_modal-custom-save .webix_popup_controls div:nth-child(2):hover{
+//     @include secondary-btn--hover;
+// }
+
+// .webix_modal-custom-save .webix_popup_controls div:nth-child(2):active{
+//     @include secondary-btn--active;
+// }
+
+/// modalbox
+.webix_modal_box.webix_confirm{
+    width: 400px!important;
+}
+
+.webix_modal-custom-save > .webix_popup_controls .webix_popup_button{
     @include secondary-btn;
 }
 
-.webix_modal-custom-save .webix_popup_controls div:nth-child(2):hover{
-    @include secondary-btn--hover;
+.webix_modal-custom-save > .webix_popup_controls .webix_popup_button:hover{
+    @include primary-btn--hover;
+    color: #fff!important;
 }
-
-.webix_modal-custom-save .webix_popup_controls div:nth-child(2):active{
+.webix_modal-custom-save > .webix_popup_controls .webix_popup_button:active{
     @include secondary-btn--active;
+    color: #fff!important;
 }
 
-.webix_modal-custom-save .webix_popup_controls div:nth-child(3){
+.webix_modal-custom-save > .webix_popup_controls .webix_popup_button:last-child{
     @include primary-btn;
     color:#fff!important;
 }
-.webix_modal-custom-save .webix_popup_controls div:nth-child(3):hover{
+
+.webix_modal-custom-save > .webix_popup_controls .webix_popup_button:last-child:hover{
     @include primary-btn--hover;
 }
-.webix_modal-custom-save .webix_popup_controls div:nth-child(3):active{
+
+.webix_modal-custom-save > .webix_popup_controls .webix_popup_button:last-child:active{
     @include primary-btn--active;
 }
+
+
+// .webix_modal-custom-save .webix_popup_controls div:nth-child(3){
+//     @include primary-btn;
+//     color:#fff!important;
+// }
+// .webix_modal-custom-save .webix_popup_controls div:nth-child(3):hover{
+//     @include primary-btn--hover;
+// }
+// .webix_modal-custom-save .webix_popup_controls div:nth-child(3):active{
+//     @include primary-btn--active;
+// }
 
 .webix_list_item .webix_icon{
     font-size: 13px!important;
@@ -1146,5 +1177,15 @@ label, button{
     background  : var(--danger-light) !important;
     border-color: var(--danger)!important;
 }
+
+
+
+// table toolbar
+.btn-edit-icon-toolbar{
+    font-size:13px!important; 
+    color:var(--primary)!important
+}
+
+
 
 

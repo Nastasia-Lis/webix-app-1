@@ -7,7 +7,7 @@ import { toolbarDownloadButton }    from "./exportBtn.js";
 import { createTemplateCounter }    from "./counter.js";
 
 
-function tableToolbar (idTable, visible=false) {
+function tableToolbar (idTable, visible = false) {
 
     const idFindElements   = idTable+"-findElements",
           idFilterElements = idTable+"-idFilterElements",

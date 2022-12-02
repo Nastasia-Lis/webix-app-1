@@ -1,10 +1,9 @@
 import { setLogValue }                           from '../../../logBlock.js';
 
 import { setFunctionError,setAjaxError }         from "../../../../blocks/errors.js";
-import { setStorageData }                        from "../../../../blocks/storageSetting.js";
 import { modalBox }                              from "../../../../blocks/notifications.js";
 
-import { visibleInputs, PREFS_STORAGE }          from "./../common.js";
+import { visibleInputs}                          from "./../common.js";
 
 import { getItemId, pushUserDataStorage, 
          getUserDataStorage }                    from "../../../../blocks/commonFunctions.js";
@@ -18,7 +17,6 @@ let template;
 let currId;
 let sentObj;
 let currName;
-//PREFS_STORAGE
 
 function pushValues(id, value, operation, logic, parent){
 

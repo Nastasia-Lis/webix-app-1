@@ -173,7 +173,6 @@ const onFuncTable = {
     },  
 
     onAfterDelete: function() {
-        removeIdFromLink();
         function setOverlayState(){
             const id    = getTable().config.id;
             const table = $$(id);

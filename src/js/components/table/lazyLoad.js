@@ -27,6 +27,12 @@ function sortTable(table){
         table.config.sort       = sortInfo;
         table.config.offsetAttr = 0;
 
+
+        webix.storage.local.put(
+            "tableSortData", 
+            sortInfo
+        );
+
         table.clearAll();
         refreshTable(table);
         

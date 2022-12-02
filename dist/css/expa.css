@@ -474,12 +474,9 @@ body {
   line-height: 20px !important;
 }
 
-.webix_modal_box.webix_confirm {
-  width: 400px !important;
-}
-
 .webix_popup_button {
-  height: 35px !important;
+  height: 40px !important;
+  min-width: 120px !important;
   line-height: 26px !important;
 }
 
@@ -534,7 +531,11 @@ body {
   margin-bottom: 5px !important;
 }
 
-.webix_modal-custom-save .webix_popup_controls div:nth-child(2) {
+.webix_modal_box.webix_confirm {
+  width: 400px !important;
+}
+
+.webix_modal-custom-save > .webix_popup_controls .webix_popup_button {
   background: var(--secondary) !important;
   color: var(--primary) !important;
   -webkit-transition: 0.2s;
@@ -545,16 +546,17 @@ body {
   font-weight: 600 !important;
 }
 
-.webix_modal-custom-save .webix_popup_controls div:nth-child(2):hover {
-  background: var(--primary) !important;
-  color: var(--white) !important;
+.webix_modal-custom-save > .webix_popup_controls .webix_popup_button:hover {
+  background: var(--primary-light) !important;
+  color: #fff !important;
 }
 
-.webix_modal-custom-save .webix_popup_controls div:nth-child(2):active {
+.webix_modal-custom-save > .webix_popup_controls .webix_popup_button:active {
   background: var(--primary-dark) !important;
+  color: #fff !important;
 }
 
-.webix_modal-custom-save .webix_popup_controls div:nth-child(3) {
+.webix_modal-custom-save > .webix_popup_controls .webix_popup_button:last-child {
   background: var(--primary) !important;
   -webkit-transition: 0.2s;
   -o-transition: 0.2s;
@@ -565,11 +567,11 @@ body {
   color: #fff !important;
 }
 
-.webix_modal-custom-save .webix_popup_controls div:nth-child(3):hover {
+.webix_modal-custom-save > .webix_popup_controls .webix_popup_button:last-child:hover {
   background: var(--primary-light) !important;
 }
 
-.webix_modal-custom-save .webix_popup_controls div:nth-child(3):active {
+.webix_modal-custom-save > .webix_popup_controls .webix_popup_button:last-child:active {
   background: var(--primary-dark) !important;
 }
 
@@ -1516,4 +1518,9 @@ button {
 .dash-filter-invalid {
   background: var(--danger-light) !important;
   border-color: var(--danger) !important;
+}
+
+.btn-edit-icon-toolbar {
+  font-size: 13px !important;
+  color: var(--primary) !important;
 }

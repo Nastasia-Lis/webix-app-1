@@ -128,9 +128,10 @@ function inputItterate(name, count){
 }
 
 function submitClick (elem){
-    errors.length = 0;
+    errors.length  = 0;
 
-    const calendar=  $$("editCalendarDate");
+    const calendar = $$("editCalendarDate");
+    const form     = $$("table-editForm");
 
     const hour = inputItterate("hourInp", 23);
     const min  = inputItterate("minInp",  59);
@@ -145,8 +146,9 @@ function submitClick (elem){
     const sentVal = returnSentValue(dateVal, timeVal);
     setValToProperty(sentVal, elem);
 
-    $$("table-editForm").setDirty(true);
+    form.setDirty(true);
 
+    form.callEvent("onTimedKeyPress");
     return errors.length;
 }
 

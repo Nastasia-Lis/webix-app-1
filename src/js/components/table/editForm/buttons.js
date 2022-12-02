@@ -60,7 +60,7 @@ function backTableBtnClick() {
 
     function createModalBox(){
 
-        modalBox().then(function(result){
+        modalBox().then(function (result){
                         
             if (result == 1 || result == 2){
                 if (result == 1){

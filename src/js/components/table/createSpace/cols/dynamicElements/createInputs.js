@@ -35,12 +35,12 @@ function createTextInput    (i){
             onChange:function(){
                 const inputs = $$("customInputs").getChildViews();
 
-                inputs.forEach(function(el,i){
+                inputs.forEach(function(el){
                     const view = el.config.view;
                     const btn  = $$(el.config.id);
 
-                    if (view == "button" && !( btn.isEnabled() )){
-                        btn.enable();
+                    if (view == "button"){
+                        Action.enableItem(btn);
                     }
                 });
 
@@ -71,26 +71,23 @@ function getOptionData      (){
                 return template;
                 }
 
+      
                 function createOptions(){
               
                     try{
-                        if (dataSrc[0] && dataSrc[0].name !== undefined){
-                            
-                            dataSrc.forEach(function(data, i) {
-                                optionElement = dataTemplate(i,data.name);
-                                dataOptions.push(optionElement);
-                            });
-                        
-                        } else {
-                            dataSrc.forEach(function (data, i) {
-                                optionElement = dataTemplate(i,data);
-                                dataOptions.push(optionElement);
-                            });
-
-                        }
+                        dataSrc.forEach(function(data, i) {
+                            const name = dataSrc[0].name;
+                            const title = name ? name : data;
+                            optionElement = dataTemplate(i, title);
+                            dataOptions.push(optionElement); 
+                        });
                 
                     } catch (err){
-                        setFunctionError(err,logNameFile,"generateCustomInputs => getOptionData")
+                        setFunctionError(
+                            err,
+                            logNameFile,
+                            "generateCustomInputs => getOptionData"
+                        );
                     } 
                 }
 
@@ -100,7 +97,11 @@ function getOptionData      (){
 
             }).catch(err => {
                 console.log(err);
-                setAjaxError(err,logNameFile,"generateCustomInputs => getOptionData");
+                setAjaxError(
+                    err,
+                    logNameFile,
+                    "generateCustomInputs => getOptionData"
+                );
                 
             }));
             
@@ -123,7 +124,8 @@ function createSelectInput  (el, i){
         },
         on: {
             onAfterRender: function () {
-                this.getInputNode().setAttribute( "title", field.comment );
+                this.getInputNode()
+                .setAttribute( "title", field.comment );
                 setAdaptiveWidth(this);
             },
         }               
@@ -141,14 +143,17 @@ function createDeleteAction (i){
             header  : "Действие",
             label   : "Действие",
             css     : "action-column",
-            maxWidth: 100, 
             template: "{common.trashIcon()}"
         });
 
         table.refreshColumns();
 
     } catch (err){
-        setFunctionError(err,logNameFile,"generateCustomInputs => createDeleteAction")
+        setFunctionError(
+            err,
+            logNameFile,
+            "generateCustomInputs => createDeleteAction"
+        );
     } 
 
 }
@@ -185,7 +190,11 @@ function getInputsId        (element){
 
         });
     } catch (err){
-        setFunctionError(err,logNameFile,"generateCustomInputs => getInputsId");
+        setFunctionError(
+            err,
+            logNameFile,
+            "generateCustomInputs => getInputsId"
+        );
     } 
     return idElements;
 }
@@ -199,7 +208,7 @@ function createDeleteBtn    (findAction,i){
             hotkey   : "Shift+Q",
             icon     : "icon-trash", 
             value    : field.label,
-            click       : function (id) {
+            click    : function () {
                 const idElements = getInputsId (this);
                 submitBtn( idElements, findAction.url, "delete" );
             },
@@ -315,7 +324,7 @@ function createUpload       (i){
                 const parent = this  .getParentView();
                 const childs = parent.getChildViews();
 
-                childs.forEach(function(el,i){
+                childs.forEach(function(el){
                     if (el.config.id.includes("customBtn")){
                         el.enable();
                     }
@@ -351,7 +360,11 @@ function createDatepicker   (i){
                         }
                     });
                 } catch (err){
-                    setFunctionError(err,logNameFile,"generateCustomInputs => createDatepicker onChange");
+                    setFunctionError(
+                        err,
+                        logNameFile,
+                        "generateCustomInputs => createDatepicker onChange"
+                    );
                 } 
 
             }
@@ -362,12 +375,13 @@ function createDatepicker   (i){
 function createCheckbox     (i){
     return {   
         view       : "checkbox", 
-        id         : "customСheckbox"+i, 
+        id         : "customСheckbox" + i, 
         css        : "webix_checkbox-style",
         labelRight : field.label, 
         on         : {
             onAfterRender: function () {
-                this.getInputNode().setAttribute("title", field.comment);
+                this.getInputNode()
+                .setAttribute("title", field.comment);
             },
 
             onChange:function(){
@@ -381,7 +395,11 @@ function createCheckbox     (i){
                         }
                     });
                 } catch (err){
-                    setFunctionError(err,logNameFile,"generateCustomInputs => createCheckbox onChange");
+                    setFunctionError(
+                        err,
+                        logNameFile,
+                        "generateCustomInputs => createCheckbox onChange"
+                    );
                 } 
             }
         }

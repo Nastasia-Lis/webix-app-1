@@ -50,6 +50,7 @@ function setColsSize(col){
     const tableWidth     = containerWidth - 17;  
     const colWidth       = tableWidth / countCols;
 
+
     table.setColumnWidth(col, colWidth);
 }
 
@@ -136,9 +137,9 @@ function setUserPrefs(idTable, ids){
 
     const prefsName = "visibleColsPrefs_" + idsParam;
 
-    storageData     = webix.storage.local.get(prefsName);
+    storageData   = webix.storage.local.get(prefsName);
 
-    const allCols   = table.getColumns       (true);
+    const allCols = table.getColumns       (true);
  
    
     if( storageData && storageData.values.length ){
@@ -147,8 +148,8 @@ function setUserPrefs(idTable, ids){
         setWidthLastCol();
 
     } else {   
-     
-        allCols.forEach(function(el,i){
+   
+        allCols.forEach(function(el){
             setColsSize(el.id);  
         });
        

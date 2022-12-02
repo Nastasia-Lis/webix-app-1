@@ -1,20 +1,11 @@
 
 import { getItemId, pushUserDataStorage,
-        getUserDataStorage }                from "../../../blocks/commonFunctions.js";
-import { setFunctionError, setAjaxError }   from "../../../blocks/errors.js";
-import { setLogValue }                      from "../../logBlock.js";
-import { setStorageData }                   from "../../../blocks/storageSetting.js";
+        getUserDataStorage, getTable, Action }  from "../../../blocks/commonFunctions.js";
+import { setFunctionError, setAjaxError }       from "../../../blocks/errors.js";
+import { setLogValue }                          from "../../logBlock.js";
+import { setStorageData }                       from "../../../blocks/storageSetting.js";
 
-function destructPopup(){
-    try{
-        const popup = $$("popupVisibleCols");
-        if (popup){
-            popup.destructor();
-        }
-    } catch (err){
-        setFunctionError(err,"visibleColumns","destructPopup");
-    }
-}
+const logNameFile = "table => columnsSettings => visibleCols => userprefsPost";
 
 function setUpdateCols(sentVals){
     const table   = getTable();
@@ -52,7 +43,11 @@ function setUpdateCols(sentVals){
 
  
         } catch(err){
-            setFunctionError(err,"visibleColumns","setUpdateCols => setVisibleState");
+            setFunctionError(
+                err,
+                logNameFile,
+                "setUpdateCols => setVisibleState"
+            );
         }
     }
 
@@ -65,20 +60,6 @@ function setUpdateCols(sentVals){
     setVisibleState ();
     moveListItem    ();
 
-}
-
-function getTable(){
-    const tableTempl     = $$("table");
-    const tableTemplView = $$("table-view");
-    let table;
-
-    if ( tableTempl.isVisible() ){
-        table = tableTempl;
-    } else if ( tableTemplView.isVisible() ){
-        table = tableTemplView;
-    }
-
-    return table;
 }
 
 
@@ -99,6 +80,7 @@ function setSize(sentVals){
         setColWidth(el);
     });
 }
+
 async function postPrefsValues(values, visCol = false){
 
     let userData = getUserDataStorage();
@@ -145,10 +127,14 @@ async function postPrefsValues(values, visCol = false){
         });
 
         putData.fail(function(err){
-            setAjaxError(err, "visibleColumns","saveExistsTemplate => putUserprefsData");
+            setAjaxError(
+                err, 
+                logNameFile,
+                "saveExistsTemplate => putUserprefsData"
+            );
         });
 
-        destructPopup();
+        Action.destructItem($$("popupVisibleCols"));
     } 
 
     function saveNewTemplate(){
@@ -161,19 +147,23 @@ async function postPrefsValues(values, visCol = false){
             data = data.json();
  
             if (data.err_type !== "i"){
-                setFunctionError(data.err,"visibleColumns","saveNewTemplate")
+                setFunctionError(
+                    data.err,
+                    logNameFile,
+                    "saveNewTemplate"
+                );
             } else {
-                setLogValue   ("success","Рабочая область таблицы обновлена");
-                setStorageData("visibleColsPrefs_"+id, JSON.stringify(sentObj.prefs));
+                setLogValue   ("success", "Рабочая область таблицы обновлена");
+                setStorageData("visibleColsPrefs_" + id, JSON.stringify(sentObj.prefs));
                 setUpdateCols (sentVals);
             }
         });
 
         userprefsPost.fail(function(err){
-            setAjaxError(err, "visibleColumns","saveTemplate");
+            setAjaxError(err, logNameFile,"saveTemplate");
         });
 
-        destructPopup();
+        Action.destructItem($$("popupVisibleCols"));
     }
 
     function getUserprefsData(){
@@ -187,14 +177,18 @@ async function postPrefsValues(values, visCol = false){
             try{
                 data.forEach(function(el){
                     
-                    if (el.name == "visibleColsPrefs_"+id && !settingExists){
+                    if (el.name == "visibleColsPrefs_" + id && !settingExists){
                         idPutData = el.id
                         settingExists = true;
                 
                     }
                 });
             } catch (err){
-                setFunctionError(err,"visibleColumns","getUserprefsData getData");
+                setFunctionError(
+                    err,
+                    logNameFile,
+                    "getUserprefsData getData"
+                );
             }
         });
 
@@ -209,7 +203,7 @@ async function postPrefsValues(values, visCol = false){
 
 
         getData.fail(function(err){
-            setAjaxError(err, "toolbarTable","getUserprefsData");
+            setAjaxError(err, logNameFile,"getUserprefsData");
         });
 
         return settingExists;
@@ -221,7 +215,5 @@ async function postPrefsValues(values, visCol = false){
 
 
 export{
-    postPrefsValues,
-    getTable,
-    destructPopup
+    postPrefsValues
 };

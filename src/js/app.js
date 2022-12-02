@@ -1,4 +1,4 @@
-console.log("expa 1.0.59"); 
+console.log("expa 1.0.60"); 
 
 import { textInputClean }                     from "./blocks/commonFunctions.js";
 import { auth }                               from "./components/login.js";

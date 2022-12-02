@@ -8,7 +8,7 @@ function createDetailAction (columnsData, idsParam, idCurrTable){
     const data          = GetFields.item(idsParam);
     const table         = $$(idCurrTable);
 
-    columnsData.forEach(function(field,i){
+    columnsData.forEach(function(field, i){
         if( field.type  == "action" && data.actions[field.id].rtype == "detail"){
             checkAction = true;
             idCol       = i;
@@ -21,8 +21,8 @@ function createDetailAction (columnsData, idsParam, idCurrTable){
     
         if (checkAction){
             const columns = table.config.columns;
-            columns.splice(0,0,{ 
-                id      :"action-first"+idCol, 
+            columns.splice(0, 0, { 
+                id      :"action-first" + idCol, 
                 maxWidth:130, 
                 src     :urlFieldAction, 
                 css     :"action-column",

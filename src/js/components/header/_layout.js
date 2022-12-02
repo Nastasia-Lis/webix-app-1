@@ -11,10 +11,11 @@ const logo = {
 
 const search = {
     view        : "search", 
-    placeholder : "Поиск (Shift+F)", 
+    id          : "headerSearch",
+    placeholder : "Поиск (Alt+Shift+F)", 
     css         : "searchTable",
     height      : 42, 
-    hotkey      : "shift+f",
+    hotkey      : "alt+shift+f",
     maxWidth    : 250, 
     minWidth    : 40, 
 };

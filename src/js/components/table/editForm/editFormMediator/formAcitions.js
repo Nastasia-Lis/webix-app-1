@@ -227,7 +227,7 @@ function postTable (updateSpace, isNavigate, form){
         const property  = $$("editTableFormProperty");
         const newValues = property.getValues();
         const postObj   = createPostObj(newValues);
-
+ 
         const path      = "/init/default/api/" + currId;
         return  webix.ajax().post(path, postObj)
             .then(function(data){

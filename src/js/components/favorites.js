@@ -1,11 +1,16 @@
 
-import { setAjaxError, setFunctionError }           from "../blocks/errors.js";
-import { pushUserDataStorage, getUserDataStorage, Action }  from "../blocks/commonFunctions.js";
+import { setAjaxError, setFunctionError }   from "../blocks/errors.js";
+import { pushUserDataStorage, 
+        getUserDataStorage, Action }        from "../blocks/commonFunctions.js";
 
-import { Popup }                                    from "../viewTemplates/popup.js";
-import { Button }                                   from "../viewTemplates/buttons.js";
+import { Popup }                            from "../viewTemplates/popup.js";
+import { Button }                           from "../viewTemplates/buttons.js";
+import { modalBox }                         from "../blocks/notifications.js";
+
+import { setLogValue }                      from "./logBlock.js";
 
 
+const logNameFile = "favorites";
 
 function setAdaptiveSize(popup){
     if (window.innerWidth < 1200 ){
@@ -16,7 +21,7 @@ function setAdaptiveSize(popup){
         } catch (err){
             setFunctionError(
                 err,
-                "favsLink",
+                logNameFile,
                 "setAdaptiveSize"
             );
         }
@@ -30,12 +35,19 @@ function findFavsInUserData(data, id){
 
         data.forEach(function(el){
             if (el.name.includes("fav-link") && id == el.owner){
-                collection.push(JSON.parse(el.prefs));
+                const prefs  = JSON.parse(el.prefs);
+                prefs.dataId = el.id;
+                collection.push(prefs);
+                
             }
         });
 
     } catch (err){
-        setFunctionError(err ,"favsLink", "findFavsisUserData");
+        setFunctionError(
+            err, 
+            logNameFile, 
+            "findFavsisUserData"
+        );
     }
     
     return collection;
@@ -48,10 +60,12 @@ function createOptions(data, user){
     try{
         if (favCollection.length){
             favCollection.forEach(function(el){
+         
                 radio.addOption(
                     {   id      : el.id,
                         value   : el.name,
-                        favLink : el.link
+                        favLink : el.link,
+                        dataId  : el.dataId
                     }
                 );
                 radio.removeOption(
@@ -65,7 +79,7 @@ function createOptions(data, user){
     } catch (err){
         setFunctionError(
             err, 
-            "favsLink", 
+            logNameFile, 
             "createOptions"
         );
     }
@@ -110,7 +124,11 @@ function favsPopupSubmitClick(){
         const option = radio.getOption(value);
         window.location.replace(option.favLink);
     } catch (err){
-        setFunctionError(err,"favsLink","favsPopupSubmitClick");
+        setFunctionError(
+            err,
+            logNameFile,
+            "favsPopupSubmitClick"
+        );
     }
 }
 
@@ -123,17 +141,19 @@ function returnEmptyOption(){
 }
 
 const radioLinks = {
-    view:"radio", 
-    id:"favCollectionLinks",
-    vertical:true,
-    options:[
+    view     : "radio", 
+    id       : "favCollectionLinks",
+    vertical : true,
+    options  : [
         returnEmptyOption()
     ],
-    on:{
+    on       : {
         onChange:function(newValue, oldValue){
             if (newValue !== oldValue){
                 Action.enableItem($$("favLinkSubmit"));
             }
+
+            Action.enableItem($$("removeFavsBtn"));
         }
     }
 };
@@ -166,6 +186,82 @@ const btnSaveLink = new Button({
    
 }).maxView("primary");
 
+function deleteUserprefsData(options, option){
+    const id = option.dataId;
+
+    const url = "/init/default/api/userprefs/" + id;
+    const deleteData = webix.ajax().del(url, {id : option.id});
+    deleteData.then(function(data){
+
+        data = data.json();
+
+        if (data.err_type == "i"){
+            const length = options.data.options.length;
+            if (length == 1){
+                const emptyOpt = returnEmptyOption();
+                options.addOption(emptyOpt);
+            }
+            options.removeOption(option.id);
+
+        } else {
+            setFunctionError(
+                data.err, 
+                logNameFile, 
+                "deleteUserprefsData" 
+            );
+        }
+   
+    });
+
+    deleteData.fail(function(err){
+        setAjaxError(
+            err, 
+            logNameFile, 
+            "deleteUserprefsData"
+        );
+    });
+}
+function removeBtnClick(){
+    const options = $$("favCollectionLinks");
+    const value   = options.getValue();
+    const option  = options.getOption(value);
+    
+    modalBox("Закладка будет удалена из избранного", 
+        "Вы уверены?", 
+        ["Отмена", "Удалить"]
+    )
+    .then(function (result){
+
+        if (result == 1){
+
+            deleteUserprefsData(options, option);
+            setLogValue (
+                "success",
+                `Закладка «${option.value}» удалена из избранного`
+            );
+        }
+    });
+
+}
+
+function returnRemoveBtn(){
+    const removeBtn = new Button({
+
+        config   : {
+            id       : "removeFavsBtn",
+            hotkey   : "Alt+Shift+R",
+            icon     : "icon-trash",
+            disabled : true,
+            click    : function(){
+                removeBtnClick();
+            },
+        },
+        titleAttribute : "Удалить ссылку из избранного"
+       
+    }).minView("delete");
+
+    return removeBtn;
+}
 
 function favsPopup(){
 
@@ -186,7 +282,13 @@ function favsPopup(){
             rows : [
                 container,
                 {height:15},
-                btnSaveLink,
+                {
+                    cols:[
+                        btnSaveLink,
+                        returnRemoveBtn()
+                    ]
+                }
+               
             ]
           
         }
@@ -200,6 +302,6 @@ function favsPopup(){
 
 
 
-export{
+export {
     favsPopup,
 };

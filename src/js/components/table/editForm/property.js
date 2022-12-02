@@ -1,5 +1,5 @@
-import { setFunctionError } from "../../../blocks/errors.js";
-import { getItemId }        from "../../../blocks/commonFunctions.js";
+import { setFunctionError }   from "../../../blocks/errors.js";
+import { Action, getItemId }  from "../../../blocks/commonFunctions.js";
 
 const logNameFile = "tableEditForm => property";
 
@@ -12,7 +12,11 @@ function editingEnd (editor, value){
         property.updateItem(editor);
 
     } catch (err){
-        setFunctionError(err, logNameFile, "editingEnd");
+        setFunctionError(
+            err, 
+            logNameFile, 
+            "editingEnd"
+        );
     }
 }
 
@@ -87,6 +91,54 @@ function setFormDirty(){
   
 }
 
+function isEqual(obj1, obj2) {
+    if (obj1){
+        const keys1 = Object.keys(obj1);
+        const keys2 = Object.keys(obj2);
+
+        if (keys1.length !== keys2.length) {
+            return false;
+        }
+        for (let key of keys1) {
+            if (obj1[key] !== obj2[key]) {
+                return false;
+            }
+        }
+    } else {
+        return false;
+    }
+    return true;
+}
+
+function createTempData(self){
+    if (!self.config.tempData){
+        self.config.tempData = true;
+    }
+   
+    const id      = getItemId();
+    const status  = self.config.tableStatus;
+    const values  = self.getValues();
+
+    const tableValue  = $$("table").getItem(values.id);
+    const storageName = "editFormTempData";
+
+    if ( !isEqual(tableValue, values) ){
+        const sentVals= {
+            table : id,
+            status: status,
+            values: values
+        };
+
+        webix.storage.local.put(
+            storageName, 
+            sentVals
+        );
+    } else {
+        webix.storage.local.remove(storageName);
+    }
+}
+
+
 const propertyEditForm = {   
     view     : "property",  
     id       : "editTableFormProperty", 
@@ -99,34 +151,25 @@ const propertyEditForm = {
     elements : [],
     keyPressTimeout:800,
     on       : {
-        onBeforeEditStop:function(state, editor){
-            function setStateSaveBtn(){
-                const saveBtn = $$("table-saveBtn"); 
-                if (saveBtn              && 
-                    saveBtn.isVisible()  &&
-                  !(saveBtn.isEnabled()) ){ 
-                    saveBtn.enable();
-                }
-            }
 
-            setStateSaveBtn();
+        onAfterEditStop:function(state, editor){
+            Action.enableItem($$("table-saveBtn"));
 
-            const inputEditor = document.getElementById('custom-date-editor');
+            const inputEditor = document
+            .getElementById('custom-date-editor');
 
             if (inputEditor){
                 createTemplate ();
             }
+ 
+            setFormDirty();// for combo inputs
 
-            const type = editor.config.type;
-            if (type == "combo"){
-                setFormDirty();
-            }
-
+            editingEnd (editor.config.id, state.value);
+            createTempData(this);
         },
 
-        onEditorChange:function(editor, value){
-            editingEnd (editor, value);
-            setFormDirty();
+        onEditorChange:function(){
+            setFormDirty(); // for text inputs
         },
 
         onBeforeRender:function (){
@@ -149,49 +192,7 @@ const propertyEditForm = {
         },
 
         onTimedKeyPress:function(){
-            if (!this.config.tempData){
-                this.config.tempData = true;
-            }
-
-            function isEqual(obj1, obj2) {
-                if (obj1){
-                    const keys1 = Object.keys(obj1);
-                    const keys2 = Object.keys(obj2);
-
-                    if (keys1.length !== keys2.length) {
-                        return false;
-                    }
-                    for (let key of keys1) {
-                        if (obj1[key] !== obj2[key]) {
-                            return false;
-                        }
-                    }
-                } else {
-                    return false;
-                }
-                return true;
-            }
-
-            const id      = getItemId();
-            const status  = this.config.tableStatus;
-            const values  = this.getValues();
-
-            const tableValue = $$("table").getItem(values.id);
-          
-            if ( !isEqual(tableValue, values) ){
-                const sentVals= {
-                    table : id,
-                    status: status,
-                    values: values
-                };
-
-                webix.storage.local.put(
-                    "editFormTempData", 
-                    sentVals
-                );
-            } else {
-                webix.storage.local.remove("editFormTempData");
-            }
+            createTempData(this);
         }
     }
 };
@@ -216,6 +217,7 @@ const propertyLayout = {
         {width:4}
     ]
 };
+
 
 export {
     propertyLayout

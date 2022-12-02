@@ -18,10 +18,10 @@ function returnSumWidthCols(){
 function setNewWidth(table){
     const lastCol      = returnCol(1);
     const scrollWidth  = 17;
-    const widthTable   = table.$width - scrollWidth
-    ;
+    const widthTable   = table.$width - scrollWidth;
     const sumWidthCols = returnSumWidthCols();
-    if (sumWidthCols < widthTable){
+    
+    if (sumWidthCols < widthTable && lastCol){
         const different = widthTable - sumWidthCols;
         const newWidth  = lastCol.width + different;
         
@@ -42,11 +42,11 @@ function columnResize(table){
             const lastResizer = 2;
             const isExists    = lengthCols - lastResizer;
             const prevCol     = returnCol(lastResizer);
-            
-            if ( isExists > -1 && prevCol.id == id){ // это последняя колонка
+         
+        //    if ( isExists > -1 && prevCol.id == id){ // это последняя колонка
                 setNewWidth(table);
                
-            }
+           // }
         }
 
     });

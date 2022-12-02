@@ -1,13 +1,13 @@
-import { postPrefsValues }                  from "./common.js";
+import { postPrefsValues }  from "./userprefsPost.js";
 
 function setColsWidthStorage(table){
-    table.attachEvent("onColumnResize",function(id,newWidth, oldWidth, action){
+    table.attachEvent("onColumnResize",function(id, newWidth, oldWidth, action){
         if (action){
            
             const cols   = table.getColumns();
             const values = [];
 
-            cols.forEach(function(el,i){
+            cols.forEach(function(el){
 
                 values.push({
                     column  : el.id, 

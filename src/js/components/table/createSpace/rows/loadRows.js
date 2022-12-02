@@ -10,6 +10,8 @@ import { setDefaultValues }                 from './setDefaultValues.js';
 
 import { selectContextId }                  from '../createContextSpace.js';
 import { returnLostData }                   from '../returnLostData.js';
+import { returnSortData }                   from '../returnSortData.js';
+
 const logNameFile = "table => createSpace => loadData";
 
 
@@ -157,16 +159,20 @@ function returnSort(tableElem){
     const firstCol = tableElem.getColumns()[0].id;
     const sortCol  = tableElem.config.sort.idCol;
     const sortType = tableElem.config.sort.type;
-
+   
     if (sortCol){
         if (sortType == "desc"){
             sort = "~" + itemTreeId + '.' + sortCol;
         } else {
-            sort =       itemTreeId + '.' + sortCol;
+            sort = itemTreeId + '.' + sortCol;
         }
+        tableElem.markSorting(sortCol, sortType);
     } else {
-            sort =       itemTreeId + '.' + firstCol;
+        sort = itemTreeId + '.' + firstCol;
+        tableElem.markSorting(firstCol, "asc");
     }
+
+
     return sort;
 }
 
@@ -230,7 +236,11 @@ async function loadTableData(table, id, idsParam, offset){
     idFindElem  = idCurrTable + "-findElements";
 
     const filter    = await returnFilter(tableElem);
-   
+
+    if (!offsetParam){
+        returnSortData ();
+    }
+
 
     const sort      = returnSort  (tableElem);
 
@@ -276,13 +286,15 @@ async function loadTableData(table, id, idsParam, offset){
                 //         "user_id": 2,
                 //     }
                 // ]
-              
+        
    
                 setTableState(table);
                 parseRowData (data);
                 if (!offsetParam){
+                
                     selectContextId();  
-                    returnLostData();
+                    returnLostData ();
+                   
                 }
             
 
