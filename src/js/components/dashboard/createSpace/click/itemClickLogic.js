@@ -197,9 +197,9 @@ function cursorPointer(self, elem){
         } else if (elem.data){
             elem.data.forEach(function(el, i){
 
-                if (i == 1 || i == 4 ){
-                    el.action = action2; 
-                }
+                // if (i == 1 || i == 4 ){
+                //     el.action = action2; 
+                // }
             
                 if (el.action){
                     setCursorPointer(areas, false, el.id);

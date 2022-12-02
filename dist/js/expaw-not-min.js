@@ -6063,9 +6063,9 @@ function cursorPointer(self, elem){
         } else if (elem.data){
             elem.data.forEach(function(el, i){
 
-                if (i == 1 || i == 4 ){
-                    el.action = action2; 
-                }
+                // if (i == 1 || i == 4 ){
+                //     el.action = action2; 
+                // }
             
                 if (el.action){
                     setCursorPointer(areas, false, el.id);
@@ -13078,21 +13078,45 @@ const propertyEditForm = {
                 this.config.tempData = true;
             }
 
+            function isEqual(obj1, obj2) {
+                if (obj1){
+                    const keys1 = Object.keys(obj1);
+                    const keys2 = Object.keys(obj2);
+
+                    if (keys1.length !== keys2.length) {
+                        return false;
+                    }
+                    for (let key of keys1) {
+                        if (obj1[key] !== obj2[key]) {
+                            return false;
+                        }
+                    }
+                } else {
+                    return false;
+                }
+                return true;
+            }
+
             const id      = getItemId();
             const status  = this.config.tableStatus;
             const values  = this.getValues();
 
-            const sentVals= {
-                table : id,
-                status: status,
-                values: values
-            };
+            const tableValue = $$("table").getItem(values.id);
+          
+            if ( !isEqual(tableValue, values) ){
+                const sentVals= {
+                    table : id,
+                    status: status,
+                    values: values
+                };
 
-            webix.storage.local.put(
-                "editFormTempData", 
-                sentVals
-            );
- 
+                webix.storage.local.put(
+                    "editFormTempData", 
+                    sentVals
+                );
+            } else {
+                webix.storage.local.remove("editFormTempData");
+            }
         }
     }
 };
