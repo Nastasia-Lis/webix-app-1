@@ -77,14 +77,14 @@ async function returnProperty(){
         view    : "property",  
         id      : "dashContextProperty", 
         minHeight:100,
-        elements: await createPropElements()
+        elements: await createPropElements(),
     };
 
     const propertyLayout = {   
         scroll     : "y", 
         rows       : [
             property,
-            {}
+            {height : 20}
         ]
     };
 
@@ -133,8 +133,9 @@ async function createLayout(){
                 closeBtn 
             ]},
             await returnProperty(),
-            {height : 20},
-            goToTableBtn
+           // {height : 20},
+            goToTableBtn,
+            {}
         ]
       
     };

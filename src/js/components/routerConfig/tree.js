@@ -2,51 +2,32 @@
 import { setFunctionError }             from "../../blocks/errors.js";
 import { LoadServerData, GetFields }    from "../../blocks/globalStorage.js";
 import { mediator }                     from "../../blocks/_mediator.js";
-import { getWorkspace }                 from "./common.js";
+import { RouterActions }                from "./actions/_RouterActions.js";
 
 const logNameFile = "router => tree";
 
+ 
 let id;
 
 
-function selectTreeItem(){
-    const tree   = $$("tree");
 
-    const pull   = tree.data.pull;
-    const values = Object.values(pull);
+// function returnTopParent(){
+//     let topParent;
 
-    let topParent;
-    values.forEach(function(el){
+//     const pull   = tree.data.pull;
+//     const values = Object.values(pull);
+
+//     values.forEach(function(el){
    
-        if ( el.webix_kids && !(tree.exists (id)) ){
-        
-            const obj = [el.id];
-         
-            tree.callEvent("onBeforeOpen", obj);
+//         if ( el.webix_kids && !(tree.exists (id)) ){
+//             topParent = el.id;
+//         }
 
-            topParent = el.id;
-        }
+//     });
 
-    });
+//     return topParent;
+// }
 
-
-    function setScroll(){
-        const scroll = tree.getScrollState();
-        tree.scrollTo(0, scroll.y); 
-    }
-
-    if (tree.exists(id)){
-        if (topParent){
-        
-            tree.open     (topParent, true);
-            tree.select   (id);
-            tree.showItem (id);
-
-            setScroll();
-        }
-
-    }
-}
 
 async function getTableData (){
 
@@ -55,15 +36,12 @@ async function getTableData (){
  
     if (keys){
         mediator.sidebar.selectItem(id);
-        selectTreeItem  ();
     }
-
-
 }
 
 
 async function createTableSpace (){
-    await getWorkspace ();
+    RouterActions.createContentSpace();
 
     const isFieldsExists = GetFields.keys;
     try{   
@@ -87,21 +65,28 @@ async function createTableSpace (){
 
 
 
-function checkTable(){
+async function checkTable(){
+
     try {
-        if (mediator.sidebar.dataLength() == 0){
+        const isSidebarData = mediator.sidebar.dataLength();
+        
+        if (!isSidebarData){
             createTableSpace ();
             
         }
     } catch (err){
-        setFunctionError(err, logNameFile, "checkTable");
+        setFunctionError(
+            err, 
+            logNameFile, 
+            "checkTable"
+        );
 
     }    
   
 }
-function treeRouter(selectId){
+async function treeRouter(selectId){
     id = selectId;
-    
+
     checkTable();
 }
 

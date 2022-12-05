@@ -1,6 +1,6 @@
  
-import { setFunctionError }   from "../../../blocks/errors.js";
-import { mediator } from "../../../blocks/_mediator.js";
+import { setFunctionError }     from "../../../blocks/errors.js";
+import { returnFormTemplate }   from "./formTemplate.js";
 
 const logNameFile   = "settings => tabbar => workspaceForm";
 
@@ -16,7 +16,11 @@ const logBlockRadio = {
     ],
     on:{
         onAfterRender: function () {
-            this.getInputNode().setAttribute("title","Показать/скрыть по умолчанию блок системных сообщений");
+            this.getInputNode().setAttribute(
+                "title",
+                "Показать/скрыть по умолчанию" + 
+                " блок системных сообщений"
+                );
         },
 
         onChange:function(newValue, oldValue){
@@ -45,92 +49,48 @@ const logBlockRadio = {
 };
 
 const loginActionSelect = {   
-    view         : "select", 
-    name         : "LoginActionOpt",
-    label        : "Действие после входа в систему", 
-    labelPosition: "top",
-    value        : 2, 
-    options      : [
+    view          : "select", 
+    name          : "LoginActionOpt",
+    label         : "Действие после входа в систему", 
+    labelPosition : "top",
+    value         : 2, 
+    options       : [
     { "id" : 1, "value" : "Перейти на главную страницу"            },
     { "id" : 2, "value" : "Перейти на последнюю открытую страницу" },
     ],
     on:{
         onAfterRender: function () {
-            this.getInputNode().setAttribute("title","Показывать/не показывать всплывающее окно при загрузке приложения");
+            this.getInputNode().setAttribute(
+                "title",
+                "Показывать/не показывать " + 
+                "всплывающее окно при загрузке приложения"
+            );
         },
 
     }
 };
 
-const workspaceForm =  {    
-    view      : "form", 
-    id        : "userprefsWorkspaceForm",
-    borderless: true,
-    elements  : [
-        { cols:[
-            { rows:[  
-                logBlockRadio,
-                {height:15},
-                
-                {cols:[
-                    loginActionSelect,
-                    {}
-                ]}
 
-            ]},
+function returnForm(){
+    const elems = [
+        { rows : [  
+            logBlockRadio,
+            {height : 15},
+            
+            {cols : [
+                loginActionSelect,
+                {}
+            ]}
+
         ]},
+    ]; 
 
-    ],
+    return returnFormTemplate(
+        "userprefsWorkspaceForm",  
+        elems
+    );
+}
 
-    on        :{
-        onViewShow: webix.once(function(){
-           mediator.setForm(this);
-        }),
-
-        onChange:function(){
-            const form     = $$("userprefsWorkspaceForm");
-            const saveBtn  = $$("userprefsSaveBtn");
-            const resetBtn = $$("userprefsResetBtn");
-
-            function setSaveBtnState(){
-                try{
-                    if ( form.isDirty() && !(saveBtn.isEnabled()) ){
-                        saveBtn.enable();
-                    } else if ( !(form.isDirty()) ){
-                        saveBtn.disable();
-                    }
-                } catch (err){
-                    setFunctionError(
-                        err,
-                        logNameFile,
-                        "setSaveBtnState"
-                    );
-                }
-            }
-
-            function setResetBtnState(){
-                try{
-                    if ( form.isDirty() && !(resetBtn.isEnabled()) ){
-                        resetBtn.enable();
-                    } else if ( !(form.isDirty()) ){
-                        resetBtn.disable();
-                    }  
-                } catch (err){
-                    setFunctionError(
-                        err,
-                        logNameFile,
-                        "setResetBtnState"
-                    );
-                }
-            }
-      
-            setSaveBtnState ();
-            setResetBtnState();
-        }
-    },
-
-    
-};
 
 const workspaceLayout = {
     view      : "scrollview",
@@ -138,7 +98,7 @@ const workspaceLayout = {
     css       : "webix_multivew-cell",
     id        : "userprefsWorkspace",
     scroll    : "y", 
-    body      : workspaceForm
+    body      : returnForm()
 };
 
 

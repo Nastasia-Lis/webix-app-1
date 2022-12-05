@@ -1,4 +1,5 @@
-import { setFunctionError }             from "../../blocks/errors.js";
+import { setFunctionError }   from "../../blocks/errors.js";
+import { Action }             from "../../blocks/commonFunctions.js";
 
 const logNameFile = " treeSidebar => loadMenu";
 
@@ -98,6 +99,7 @@ function generateMenuTree (menu){
 
     tree.clearAll();
     tree.parse(menuTree);
+    Action.hideItem($$("loadTreeOverlay"));
 
     let popupData = btnContext.config.popup.data;
     if (popupData !== undefined){

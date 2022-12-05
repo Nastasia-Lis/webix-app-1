@@ -10,7 +10,8 @@ import { Header }              from "../components/header/_headerMediator.js";
 import { clickModalBox }       from "./globalModalBox.js";
 import { setParamToLink,
          removeParamFromLink } from "./setParamToLink.js";
-         
+import { encodeQueryData }     from "./queryToString.js";
+        
 const elems = [
     "dashboards",
     "tables",
@@ -65,6 +66,10 @@ const mediator = {
         } else {
             removeParamFromLink(param);
         }
+    },
+
+    createQuery(params){
+        return encodeQueryData(params);
     }
 
 

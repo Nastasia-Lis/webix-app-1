@@ -4,6 +4,7 @@ import { Action }                         from '../../../../blocks/commonFunctio
 
 import { createFilterLayout }             from '../filter/filterLayout.js';
 import { createDashboardCharts }          from './chartsLayout.js';
+import { createOverlayTemplate }          from '../../../../viewTemplates/loadTemplate.js';
 
 const logNameFile = "dashboards => createSpace => dynamicElems";
 
@@ -18,8 +19,8 @@ function removeCharts(){
 }
 
 function removeFilter(){
-    Action.removeItem ($$("dashboard-tool-main"        ));
-    Action.removeItem ($$("dashboard-tool-adaptive"    ));
+    Action.removeItem ($$("dashboard-tool-main"    ));
+    Action.removeItem ($$("dashboard-tool-adaptive"));
 }
 
 function setLogHeight(height){
@@ -75,31 +76,25 @@ function setUpdate(dataCharts){
 }
 
 function setUserUpdateMsg(){
-    if ( url.includes("?") || url.includes("sdt") && url.includes("edt") ){
-        setLogValue("success", "Данные обновлены");
+    if ( url.includes("?")   || 
+         url.includes("sdt") && 
+         url.includes("edt") )
+        {
+        setLogValue(
+            "success", 
+            "Данные обновлены"
+        );
     } 
 }
 
 function addLoadElem(){
-    if (!($$("dashLoad"))){
-        const view = {
-            view  : "align", 
-            align : "middle, center",
-            id    : "dashLoad",
-            borderless : true, 
-            body  : {  
-                borderless : true, 
-                template   : "Загрузка ...", 
-                height     : 50, 
-                css        : {
-                    "color"     : "#858585",
-                    "font-size" : "14px!important"
-                }
-            }
-            
-        };
-    
-        $$("dashboardInfoContainer").addView(view, 2);
+    const id = "dashLoad";
+    if (!($$(id))){
+        Action.removeItem($$("dashLoadErr"));
+
+        const view = createOverlayTemplate(id);
+
+        $$("dashboardInfoContainer").addView(view);
     }   
 }
 
@@ -142,6 +137,13 @@ function getChartsLayout(){
     });
    
     getData.fail(function(err){
+        const id = "dashLoadErr";
+        Action.removeItem($$("dashLoad"));
+        if ( !$$(id) ){
+            $$("dashboardInfoContainer").addView(  
+            createOverlayTemplate(id, "Ошибка"));
+        }
+   
         setAjaxError(err, logNameFile, "getAjax");
     });
     

@@ -1,56 +1,50 @@
-import { STORAGE, getData}  from "../../blocks/globalStorage.js";
+import { Action }               from "../../blocks/commonFunctions.js";
+import { STORAGE, getData }     from "../../blocks/globalStorage.js";
 
 const logNameFile = "router => index";
 
-function indexRouter(){
-
-    function goToContentPage(){
+function goToContentPage(){
     
-        try {
-            Backbone.history.navigate("content", { trigger:true});
-        } catch (err){
-            console.log(err + " " + logNameFile + " goToContentPage");
-        }
+    try {
+        Backbone.history.navigate(
+            "content", 
+            {trigger : true}
+        );
+    } catch (err){
+        console.log(
+            err + 
+            " " + 
+            logNameFile + 
+            " goToContentPage"
+        );
     }
-
-    function showWorkspace(){
-        try{
-            const main  = $$("mainLayout");
-            const login = $$("userAuth");
-            
-            if(main){
-                (main).hide();
-            }
-          
-            if(login){
-                login.show();
-            }
-            
-        } catch (err){
-            window.alert("getAuth: " + err + 
-            " (Подробности: ошибка в отрисовке контента, router:index function showWorkspace)");
-            console.log(err + " " + logNameFile + " function showWorkspace");
-        }
-    }
-
-    async function getAuth () {
-     
-        if (!STORAGE.whoami ){
-            await getData("whoami"); 
-        }
-
-
-        if (STORAGE.whoami){
-            goToContentPage();
-
-        } else {
-  
-            showWorkspace();
-        }
-    }
-    getAuth ();
-    
 }
+
+
+
+function showWorkspace(){
+    Action.hideItem($$("mainLayout"));
+    Action.showItem($$("userAuth")  );
+
+}
+
+async function indexRouter(){
+
+    if (!STORAGE.whoami ){
+        await getData("whoami"); 
+    }
+
+
+    if (STORAGE.whoami){
+        goToContentPage();
+
+    } else {
+        showWorkspace();
+    }
+}
+
+
+
 export {
     indexRouter
 };

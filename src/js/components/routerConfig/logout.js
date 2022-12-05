@@ -1,47 +1,49 @@
 import { setFunctionError, setAjaxError }   from "../../blocks/errors.js";
+import { mediator }                         from "../../blocks/_mediator.js";
 
 const logNameFile = "router => logout";
 
+function clearStorage(){
+    try{
+        webix.storage.local.clear();
+    } catch (err){
+        setFunctionError(
+            err, 
+            logNameFile, 
+            "clearStorage"
+        );
+    }
+}
+
+
+function backPage(){
+    try{
+        history.back();
+    } catch (err){
+        setFunctionError(
+            err, 
+            logNameFile, 
+            "backPage"
+        );
+    }
+}
+
 function logoutRouter(){
-    const logoutData = webix.ajax().post("/init/default/logout/");
+    const path = "/init/default/logout/";
+    const logoutData = webix.ajax().post(path);
 
-    logoutData.then(function(){
-
-        function clearTree (){
-            try{
-                const tree = $$("tree");
-
-                if( tree){
-                    tree.clearAll();
-                }
-            } catch (err){
-                setFunctionError(err, logNameFile, "clearTree");
-            }
-        }
-
-        function clearStorage(){
-            try{
-                webix.storage.local.clear();
-            } catch (err){
-                setFunctionError(err, logNameFile, "clearStorage");
-            }
-        }
-
-        function backPage(){
-            try{
-                history.back();
-            } catch (err){
-                setFunctionError(err, logNameFile, "backPage");
-            }
-        }
-
+    logoutData.then(function (){
         backPage        ();
-        clearTree       ();
+        mediator.sidebar.clear();
         clearStorage    ();
     });
 
-    logoutData.fail(function(err){
-        setAjaxError(err, logNameFile, "logoutData");
+    logoutData.fail(function (err){
+        setAjaxError(
+            err, 
+            logNameFile, 
+            "logoutData"
+        );
     });  
 }
 

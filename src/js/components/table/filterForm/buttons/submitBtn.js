@@ -183,9 +183,12 @@ function filterSubmitBtn (){
                 formattingDateValue ();
                 formattinSelectValue();
                 query.push(createQuery(el));
+               
             }
 
         });
+
+        console.log(query)
     }
 
     

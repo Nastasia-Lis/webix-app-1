@@ -1,9 +1,9 @@
 const headline = {   
-    view:"template",
-    template:"<div>Настройки</div>",
-    css:"webix_headline-userprefs",
-    height:35, 
-    borderless:true,
+    view        : "template",
+    template    : "<div>Настройки</div>",
+    css         : "webix_headline-userprefs",
+    height      : 35, 
+    borderless  : true,
 };
 
 const userInfo =  {   

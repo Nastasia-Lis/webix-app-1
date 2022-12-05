@@ -1,10 +1,11 @@
-import { setAjaxError }     from "../../blocks/errors.js"; 
-import { preparationView }  from "./preparationView.js"; 
-import { mediator }         from "../../blocks/_mediator.js"; 
+import { preparationView }       from "./preparationView.js"; 
+import { mediator }              from "../../blocks/_mediator.js"; 
 
-import { loadFields }       from "./loadFields.js";
-import { getFields }        from "./navigate.js";
-import { setAdaptiveState } from "./adaptive.js";
+import { loadFields }            from "./loadFields.js";
+import { getFields }             from "./navigate.js";
+import { setAdaptiveState }      from "./adaptive.js";
+import { setErrLoad }            from "./errorLoad.js";
+import { Action }                from "../../blocks/commonFunctions.js";
 
 function isBranch(id){
     return $$("tree").isBranch(id);
@@ -25,6 +26,12 @@ function treeSidebar () {
         clipboard   : true,
         data        : [],
         on          : {
+            onAfterLoad:function(){
+                Action.hideItem($$("treeErrOverlay"));
+            },
+            onLoadError:function(xhr){
+                setErrLoad(xhr);
+            },
 
             onItemClick: function(id) {
              
@@ -51,14 +58,6 @@ function treeSidebar () {
                 preparationView(id);
             },
 
-            onLoadError:function(xhr){
-                setAjaxError(
-                    xhr, 
-                    "sidebar",
-                    "onLoadError"
-                );
-            },
-
             onBeforeOpen:function (id, selectItem){
                 loadFields(id, selectItem);
             },
@@ -69,6 +68,10 @@ function treeSidebar () {
             },
 
         },
+
+        ready:function(){
+           
+        }
 
     };
 

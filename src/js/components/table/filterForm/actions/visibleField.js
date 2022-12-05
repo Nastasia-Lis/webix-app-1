@@ -1,43 +1,15 @@
 
 
-import { Action }                            from "../../../blocks/commonFunctions.js";
-import { setFunctionError, setAjaxError }    from "../../../blocks/errors.js";
+import { Action }              from "../../../../blocks/commonFunctions.js";
+import { setFunctionError }    from "../../../../blocks/errors.js";
+import { Filter }              from "./_FilterActions.js";
 
-const visibleInputs = {};
-const PREFS_STORAGE = {};
-
-const logNameFile = "tableFilter => common";
-
-function getUserprefsData (){
-
-    return webix.ajax().get(`/init/default/api/userprefs/`)
-    .then(function (data) {
-        PREFS_STORAGE.userprefs = data.json();
-        return PREFS_STORAGE.userprefs;
-    }).fail(err => {
-        setAjaxError(err, logNameFile, "getUserprefsData");
-    }
-);
-}
-
-
-
-function addClass(elem, className){
-    if (!(elem.classList.contains(className))){
-        elem.classList.add(className);
-    }
-}
-
-function removeClass(elem, className){
-    if (elem.classList.contains(className)){
-        elem.classList.remove(className);
-    }
-}
+const logNameFile = "filterForm => actions => visibleField";
 
 function checkChild(elementClass){
     let unique = true;
-
-    if ( visibleInputs[elementClass].length ){
+    
+    if (Filter.lengthKey(elementClass)){
         unique = false;
     }
 
@@ -53,22 +25,25 @@ function visibleField (condition, elementClass = null, el = null){
 
     function editStorage(){
         if (condition && el !== "selectAll"){
-
-            if ( !visibleInputs[elementClass] ){
-                visibleInputs[elementClass] = [];
-            }
+            Filter.clearKey(elementClass)
+            // if ( !visibleInputs[elementClass] ){
+            //     visibleInputs[elementClass] = [];
+            // }
 
 
             const unique = checkChild(elementClass, el);
 
             if (unique){
-                visibleInputs[elementClass].push(el);
+        
+                Filter.pushInPull(elementClass, el);
+               // visibleInputs[elementClass].push(el);
                 Action.showItem(segmentBtn);
             }
          
 
         } else if (el !== "selectAll") {
-            visibleInputs[elementClass] = [];
+            Filter.clearKey(elementClass)
+           // visibleInputs[elementClass] = [];
         }
 
     }
@@ -214,38 +189,7 @@ function visibleField (condition, elementClass = null, el = null){
     }
 }
 
-function clearSpace(){
-    const values = Object.values(visibleInputs);
-
-    function hideElements(arr){
-        arr.forEach(function(el,i){
-            if ( !el.includes("_filter-child-") ){
-                const colId      = $$(el).config.columnName;
-                const segmentBtn = $$(el + "_segmentBtn");
-
-                visibleField (0, colId, el);
-                segmentBtn.setValue(1);
-                Action.hideItem(segmentBtn);
-            }
-        });
-    }
-
-    values.forEach(function(el){
-     
-        if (el.length){
-            hideElements(el);
-        }
-    });
-}
-
 
 export {
-    addClass,
-    removeClass,
-    visibleField,
-    clearSpace,
-    
-    visibleInputs,
-    PREFS_STORAGE,
-    getUserprefsData
+    visibleField
 };

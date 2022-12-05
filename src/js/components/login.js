@@ -1,5 +1,4 @@
-import { router }                                 from "./routerConfig/_router.js";
-import { createElements, removeElements }         from "./routerConfig/common.js";
+import { router }              from "./routerConfig/_router.js";
 
 
 function createSentObj(){
@@ -194,7 +193,5 @@ const auth = {
 }; 
 
 export {
-    createElements,
-    removeElements,
-    auth
+    auth 
 };

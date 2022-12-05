@@ -1,8 +1,7 @@
 import { lib }                from "../../expalib.js";
 
 lib ();
-
-import { getWorkspace }       from "./common.js";
+import { RouterActions }      from "./actions/_RouterActions.js";
 import { treeRouter }         from "./tree.js";
 import { indexRouter }        from "./index.js";
 import { cpRouter }           from "./cp.js";
@@ -25,7 +24,7 @@ function router (){
         },
         
         content:function(){
-            getWorkspace();
+            RouterActions.createContentSpace();
         },
     
         index:function(){

@@ -7,7 +7,8 @@ function setAjaxError(err, file, func){
             file +
             " function " + func + ": " +
             err.status + " " + err.statusText + " " + 
-            err.responseURL + " (" + err.responseText + ") ");
+            err.responseURL + " (" + err.responseText + ") "
+        );
     } else {
         setLogValue(
             "error", 
@@ -22,7 +23,7 @@ function setAjaxError(err, file, func){
     }
 }
 
-function setFunctionError(err,file,func){
+function setFunctionError(err, file, func){
     console.log(err);
     setLogValue("error", file + " function " + func + ": " + err);
 }

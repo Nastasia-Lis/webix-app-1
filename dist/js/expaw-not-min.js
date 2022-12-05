@@ -716,10 +716,14 @@ class LoadServerData {
             return webix.ajax().get(path)
             .then(function (data){
                 self[nameFile] = data.json();
+                return true;
             })
             .fail(function (err){
                 if (checkNotAuth (err)){
                     popupNotAuth();
+                } else {
+                    $$("tree").callEvent("onLoadError", [err]);
+                    return false;
                 }
             });
 
@@ -907,7 +911,7 @@ async function createLogMessage(srcTable) {
     let name;
 
     if (srcTable == "version"){
-        name = 'Expa v1.0.60';
+        name = 'Expa v1.0.61';
 
     } else if (srcTable == "cp"){
         name = 'Смена пароля';
@@ -996,7 +1000,11 @@ const logBlock = {
     data    : [],
     on      : {
         onAfterLoad:function(){
-            setLogValue ("success", "Интерфейс загружен", "version");   
+            setLogValue (
+                "success", 
+                "Интерфейс загружен", 
+                "version"
+            );   
         },
         onAfterAdd:function(id){
             const btn = $$("webix_log-btn");
@@ -1047,7 +1055,8 @@ function setAjaxError(err, file, func){
             file +
             " function " + func + ": " +
             err.status + " " + err.statusText + " " + 
-            err.responseURL + " (" + err.responseText + ") ");
+            err.responseURL + " (" + err.responseText + ") "
+        );
     } else {
         setLogValue(
             "error", 
@@ -1062,7 +1071,7 @@ function setAjaxError(err, file, func){
     }
 }
 
-function errors_setFunctionError(err,file,func){
+function errors_setFunctionError(err, file, func){
     console.log(err);
     setLogValue("error", file + " function " + func + ": " + err);
 }
@@ -5754,14 +5763,14 @@ async function returnProperty(){
         view    : "property",  
         id      : "dashContextProperty", 
         minHeight:100,
-        elements: await createPropElements()
+        elements: await createPropElements(),
     };
 
     const propertyLayout = {   
         scroll     : "y", 
         rows       : [
             property,
-            {}
+            {height : 20}
         ]
     };
 
@@ -5810,8 +5819,9 @@ async function createLayout(){
                 closeBtn 
             ]},
             await returnProperty(),
-            {height : 20},
-            goToTableBtn
+           // {height : 20},
+            goToTableBtn,
+            {}
         ]
       
     };
@@ -5863,110 +5873,12 @@ function createContextProperty(data, idTable){
 }
 
 
-;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/click/itemClickLogic.js
+;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/click/updateSpace.js
 
 
 
 
-
-
-
-const itemClickLogic_logNameFile = "table => createSpace => click => itemClickLogic";
-const uid         = webix.uid();
-
-
-const action = {
-    navigate: "true - переход на другую страницу, false - обновление в данном дашборде",
-    context : "true - открыть окно с записью таблицы, false - обновить таблицу",
-    field   : "название из fields (id таблицы должен быть идентичным, если navigate = false)",
-    params  :{
-        // sorts
-        filter : "auth_group.id > 3", 
-    }
-   
-};
-const action2 = {
-    navigate: false,
-    field   : "auth_group",
-    context : true,
-    params  :{
-        filter : "auth_group.id = 3" 
-    // filter : "auth_group.id != '1' or auth_group.id != '3' and auth_group.role contains 'р' or auth_group.role = 'а'" 
-    }
-    
- };
-function createSentObj(prefs){
-    const sentObj = {
-        name    : "dashboards_context-prefs_" + uid,
-        prefs   : prefs,
-    };
-
-    const ownerId = webix.storage.local.get("user").id;
-
-    if (ownerId){
-        sentObj.owner = ownerId;
-    }
-
-    return sentObj;
-}
-
-function createPath(field){
-    const url ="tree/" + field;
-    const parameter = "prefs=" + uid;
- 
-    if (field){
-        return url + "?" + parameter;
-    }
-   
-}
-
-function itemClickLogic_navigate(field){
-    const path = createPath(field);
-    Backbone.history.navigate(path, { trigger : true });
-    window.location.reload();   
-}
-
-function postPrefs(chartAction){
-    const sentObj = createSentObj(chartAction);
-
-    const path          = "/init/default/api/userprefs/";
-    const userprefsPost = webix.ajax().post(path, sentObj);
-                    
-    userprefsPost.then(function(data){
-        data = data.json();
-   
-        if (data.err_type == "i"){
-
-            itemClickLogic_navigate(chartAction.field);
-
-        } else {
-            setLogValue("error", data.error);
-        }
-    });
-
-    userprefsPost.fail(function(err){
-        setAjaxError(
-            err, 
-            itemClickLogic_logNameFile,
-            "postPrefs"
-        );
-    });
-}
-
-function setCursorPointer(areas, fullElems, idElem){
-
-    areas.forEach(function(el,i){
-        if (el.tagName){
-            const attr = el.getAttribute("webix_area_id");
-
-            if (attr == idElem || fullElems){
-                el.style.cursor = "pointer";
-            }
-            
-        }
-    });
-
-}
+const updateSpace_logNameFile = "table => createSpace => click => updateSpace";
 
 function createQuery(filter, sorts){
  
@@ -5980,22 +5892,25 @@ function createQuery(filter, sorts){
     return query;
 }
 
+
 function scrollToTable(tableElem){
     const node = tableElem.getNode();
     node.scrollIntoView();
 }
 
 function setDataToTable(table, data){
+
     const tableElem = $$(table);
-    tableElem.clearAll();
+
     if (tableElem){
+        tableElem.clearAll();
         tableElem.parse(data);
 
     } else {    
         errors_setFunctionError(
             "Таблица с id «" + table + 
             "» не найдена на странице", 
-            itemClickLogic_logNameFile, 
+            updateSpace_logNameFile, 
             "setDataToTable"
         );
     }
@@ -6013,12 +5928,13 @@ function getTableData(tableId, query, onlySelect){
         data             = data.json();
         const notifyType = data.err_type;
         const notifyMsg  = data.err;
-        const content = data.content;
+        const content    = data.content;
+        const item       = content[0];
 
         if (!onlySelect){
-            setDataToTable     (tableId, content);
-        } else if (content[0]){
-            createContextProperty(content[0], tableId);
+            setDataToTable (tableId, content);
+        } else if (item){
+            createContextProperty (item, tableId);
         }
        
 
@@ -6029,7 +5945,7 @@ function getTableData(tableId, query, onlySelect){
     queryData.fail(function(err){
         setAjaxError(
             err, 
-            itemClickLogic_logNameFile, 
+            updateSpace_logNameFile, 
             "getTableData"
         );
     });
@@ -6049,6 +5965,124 @@ function updateSpace(chartAction){
 
     getTableData(tableId, query, onlySelect);
     
+}
+
+
+;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/click/navigate.js
+
+
+
+
+const navigate_logNameFile = "table => createSpace => click => navigate";
+
+function createSentObj(prefs){
+    const sentObj = {
+        name    : "dashboards_context-prefs",
+        prefs   : prefs,
+    };
+
+    const ownerId = webix.storage.local.get("user").id;
+
+    if (ownerId){
+        sentObj.owner = ownerId;
+    }
+
+    return sentObj;
+}
+
+function navigate_navigate(field, id){
+    if (id){
+        const path = "tree/" + field + "?" + "prefs=" + id;
+        Backbone.history.navigate(path, { trigger : true });
+        window.location.reload();   
+    } 
+}
+
+function postPrefs(chartAction){
+    const sentObj       = createSentObj(chartAction);
+    const path          = "/init/default/api/userprefs/";
+    const userprefsPost = webix.ajax().post(path, sentObj);
+                    
+    userprefsPost.then(function(data){
+        data = data.json();
+   
+        if (data.err_type == "i"){
+            const id = data.content.id;
+            if (id){
+                navigate_navigate(chartAction.field, id);
+            } else {
+                const errs   = data.content.errors;
+                const values = Object.values(errs);
+                const keys   = Object.keys  (errs);
+
+                values.forEach(function(err, i){
+                    errors_setFunctionError(
+                        err + " - " + keys[i] , 
+                        navigate_logNameFile, 
+                        "postPrefs"
+                    );
+                });
+               
+            }
+          
+
+        } else {
+            setLogValue("error", data.error);
+        }
+    });
+
+    userprefsPost.fail(function(err){
+        setAjaxError(
+            err, 
+            navigate_logNameFile,
+            "postPrefs"
+        );
+    });
+}
+
+
+;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/click/itemClickLogic.js
+
+
+
+
+
+
+
+const action = {
+    navigate: "true - переход на другую страницу, false - обновление в данном дашборде",
+    context : "true - открыть окно с записью таблицы, false - обновить таблицу",
+    field   : "название из fields (id таблицы должен быть идентичным, если navigate = false)",
+    params  :{
+        // sorts
+        filter : "auth_group.id > 3", 
+    }
+   
+};
+
+const action2 = {
+    navigate: false,
+    field   : "auth_group",
+   context : true,
+    params  :{
+        filter : "auth_group.id = 3" 
+    //filter : "auth_group.id != '1' or auth_group.id != '3' and auth_group.role contains 'р' or auth_group.role = 'а'" 
+    } 
+};
+
+function setCursorPointer(areas, fullElems, idElem){
+
+    areas.forEach(function(el){
+        if (el.tagName){
+            const attr = el.getAttribute("webix_area_id");
+
+            if (attr == idElem || fullElems){
+                el.style.cursor = "pointer";
+            }
+            
+        }
+    });
+
 }
 
 function cursorPointer(self, elem){
@@ -6085,7 +6119,7 @@ async function findField(chartAction){
         field = chartAction.field;
     }
 
-    keys.forEach(function(key,i){
+    keys.forEach(function(key){
    
         if ( key == field ){
             if (chartAction.navigate){
@@ -6099,6 +6133,7 @@ async function findField(chartAction){
 }
 
 function findInnerChartField(elem, idEl){
+    // найти выбранный элемент в data
     const collection = elem.data;
         
     let selectElement;
@@ -6122,31 +6157,28 @@ function setAttributes(elem, topAction){
         elem.action = topAction;
     }
 
-    elem.borderless  = true;
-    elem.minWidth    = 250;
-    elem.on          = {
-        onAfterRender:function(){
+    elem.borderless = true;
+    elem.minWidth   = 250;
+    elem.on         = {
+        onAfterRender: function(){
             cursorPointer(this, elem);
         },
 
-        onItemClick:function(idEl){
+        onItemClick  : function(idEl){
             console.log("пример: ", action);
     
             if (elem.action){ // action всего элемента
                 findField(elem.action);
                 
-            } else { // action в data
+            } else {          // action в data
                 findInnerChartField(elem, idEl);
             }
             
         },
 
-
     };
      
-
     return elem;
- 
 }
 
 
@@ -6877,7 +6909,36 @@ function createDashboardCharts(idsParam, dataCharts){
 
 
 
+;// CONCATENATED MODULE: ./src/js/viewTemplates/loadTemplate.js
+
+function createOverlayTemplate(id, text = "Загрузка...", hidden = false){
+
+    const template = {
+        view    : "align", 
+        hidden  :  hidden,
+        align   : "middle,center",
+        body    : {  
+            borderless : true, 
+            template   : text, 
+            width      : 100,
+            height     : 50, 
+        },
+        css     : "global_loadTemplate"
+
+    };
+ 
+
+    if (id){
+        template.id = id;
+    }
+
+    return template;
+     
+}
+
+
 ;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/dynamicElements/_layout.js
+
 
 
 
@@ -6898,8 +6959,8 @@ function removeCharts(){
 }
 
 function removeFilter(){
-    Action.removeItem ($$("dashboard-tool-main"        ));
-    Action.removeItem ($$("dashboard-tool-adaptive"    ));
+    Action.removeItem ($$("dashboard-tool-main"    ));
+    Action.removeItem ($$("dashboard-tool-adaptive"));
 }
 
 function setLogHeight(height){
@@ -6955,31 +7016,25 @@ function setUpdate(dataCharts){
 }
 
 function setUserUpdateMsg(){
-    if ( url.includes("?") || url.includes("sdt") && url.includes("edt") ){
-        setLogValue("success", "Данные обновлены");
+    if ( url.includes("?")   || 
+         url.includes("sdt") && 
+         url.includes("edt") )
+        {
+        setLogValue(
+            "success", 
+            "Данные обновлены"
+        );
     } 
 }
 
 function addLoadElem(){
-    if (!($$("dashLoad"))){
-        const view = {
-            view  : "align", 
-            align : "middle, center",
-            id    : "dashLoad",
-            borderless : true, 
-            body  : {  
-                borderless : true, 
-                template   : "Загрузка ...", 
-                height     : 50, 
-                css        : {
-                    "color"     : "#858585",
-                    "font-size" : "14px!important"
-                }
-            }
-            
-        };
-    
-        $$("dashboardInfoContainer").addView(view, 2);
+    const id = "dashLoad";
+    if (!($$(id))){
+        Action.removeItem($$("dashLoadErr"));
+
+        const view = createOverlayTemplate(id);
+
+        $$("dashboardInfoContainer").addView(view);
     }   
 }
 
@@ -7022,6 +7077,13 @@ function getChartsLayout(){
     });
    
     getData.fail(function(err){
+        const id = "dashLoadErr";
+        Action.removeItem($$("dashLoad"));
+        if ( !$$(id) ){
+            $$("dashboardInfoContainer").addView(  
+            createOverlayTemplate(id, "Ошибка"));
+        }
+   
         setAjaxError(err, _layout_logNameFile, "getAjax");
     });
     
@@ -7809,11 +7871,12 @@ function autorefresh_autorefresh (data){
 ;// CONCATENATED MODULE: ./src/js/components/table/createSpace/rows/userContext.js
 
 
-
+ 
 const userContext_logNameFile = "table => createSpace => userContext";
 
 let prefs;
 let tableId;
+
 function returnParameter(el, parameter){
     const prefs = JSON.parse(el.prefs)[parameter];
     return prefs;
@@ -7826,7 +7889,11 @@ function removePref(el){
     userprefsDel.then(function (data){
         data = data.json();
         if (data.err_type !== "i"){
-            errors_setFunctionError(data.err, userContext_logNameFile, "removePref");
+            errors_setFunctionError(
+                data.err, 
+                userContext_logNameFile, 
+                "removePref"
+            );
         }
     });
 
@@ -7839,32 +7906,41 @@ function removePref(el){
     });
 }
 
-function findPrefs(data, urlParameter){
-    const name = "dashboards_context-prefs_" + urlParameter;
-    let prefs;
-    data.forEach(function(el,i){
-        if (el.name == name){
-            prefs   = returnParameter(el,"params");
-            tableId = returnParameter(el,"field");
 
-            removePref(el);
-        }
+function userContext_createQuery(id){
  
-    });
-    return prefs;
+    const tableSort = "userprefs.id";
+ 
+    const data = { 
+        'query' : tableSort + "=" + id, 
+        'sorts' : tableSort, 
+        'limit' : 80 , 
+        'offset': 0 
+    };
+
+    const  queryString = mediator.createQuery(data);
+
+    return queryString;
 }
 
 async function getDataPrefs(urlParameter){
-    const path          = "/init/default/api/userprefs/";
+    const query        = userContext_createQuery(urlParameter);
+    const path         = "/init/default/api/smarts?" + query ;
     const userprefsGet = webix.ajax().get(path);
                     
     await userprefsGet.then(function (data){
         data         = data.json().content;
-        const values = Object.values(data);
-        prefs = findPrefs(values, urlParameter);
+        const item   = data[0];
+        
+        if (item){
+            prefs        = returnParameter(item, "params");
+            tableId      = returnParameter(item, "field");
+            removePref(item);
+        }
+    
     });
 
-    userprefsGet.fail(function(err){
+    userprefsGet.fail(function (err){
         setAjaxError(
             err, 
             userContext_logNameFile,
@@ -7875,6 +7951,7 @@ async function getDataPrefs(urlParameter){
 
 
 async function getUserPrefsContext(urlParameter, parameter){
+ 
     await getDataPrefs(urlParameter);
 
     if (prefs){
@@ -8227,7 +8304,7 @@ function createContextSpace_getLinkParams(param){
 function createContextSpace_selectContextId(){
     const idParam = createContextSpace_getLinkParams("id");
     const table   = getTable();
-
+    
     if (table && table.exists(idParam)){
         table.select(idParam);
     } else {
@@ -11606,7 +11683,7 @@ function clearSpace(){
         });
     }
 
-    values.forEach(function(el,i){
+    values.forEach(function(el){
      
         if (el.length){
             hideElements(el);
@@ -15307,9 +15384,12 @@ function filterSubmitBtn (){
                 formattingDateValue ();
                 formattinSelectValue();
                 query.push(createQuery(el));
+               
             }
 
         });
+
+        console.log(query)
     }
 
     
@@ -19200,7 +19280,9 @@ function getInfoEditTree() {
 
     getTrees();
 
-    treeEdit.clearAll();
+    if (treeEdit){
+        treeEdit.clearAll();
+    }   
  
 }
 
@@ -19477,6 +19559,7 @@ class UserAuth {
                 ],
             }, 
         7);
+
     }
 
     put (){
@@ -19488,11 +19571,11 @@ class UserAuth {
 
 ;// CONCATENATED MODULE: ./src/js/components/settings/headline.js
 const headline_headline = {   
-    view:"template",
-    template:"<div>Настройки</div>",
-    css:"webix_headline-userprefs",
-    height:35, 
-    borderless:true,
+    view        : "template",
+    template    : "<div>Настройки</div>",
+    css         : "webix_headline-userprefs",
+    height      : 35, 
+    borderless  : true,
 };
 
 const userInfo =  {   
@@ -19537,7 +19620,69 @@ const layoutHeadline =  [
 ];
 
 
+;// CONCATENATED MODULE: ./src/js/components/settings/tabbar/formTemplate.js
+ 
+
+
+
+function returnFormTemplate(id, elems){
+    const form =  {    
+        view       : "form", 
+        id         : id,
+        borderless : true,
+        elements   : [
+            {cols  : elems},
+        ],
+    
+        on        :{
+            onViewShow: webix.once(function(){
+               mediator.setForm(this);
+            }),
+    
+            onChange:function(){
+                const form     = this;
+                const isDirty  = form.isDirty();
+
+                const saveBtn  = $$("userprefsSaveBtn");
+                const resetBtn = $$("userprefsResetBtn");
+ 
+    
+                function setSaveBtnState(){
+                    if ( isDirty ){
+                        Action.enableItem(saveBtn);
+    
+                    } else if ( !isDirty ){
+                        Action.disableItem(saveBtn);
+    
+                    }
+                }
+    
+                function setResetBtnState(){
+                    if (isDirty){
+                        Action.enableItem(resetBtn);
+    
+                    } else if ( !isDirty ){
+                        Action.disableItem(resetBtn);
+    
+                    }  
+                 
+                }
+          
+                setSaveBtnState ();
+                setResetBtnState();
+            }
+        },
+    
+        
+    };
+
+    return form;
+}
+
+
 ;// CONCATENATED MODULE: ./src/js/components/settings/tabbar/formOther.js
+
+
 
 
 const formOther_logNameFile   = "settings => tabbar => otherForm";
@@ -19554,27 +19699,17 @@ const autorefRadio   = {
     ],
     on              : {
         onChange:function(newValue){
-          //  $$("userprefsOtherForm").setDirty();
-            try{
 
-                const counter = $$("userprefsAutorefCounter");
+            const counter = $$("userprefsAutorefCounter");
 
-                if (newValue == 1 ){
-                    counter.show();
-                }
-
-                if (newValue == 2){
-                    counter.hide();
-                }
-        
-            } catch (err){
-                errors_setFunctionError(
-                    err, 
-                    formOther_logNameFile, 
-                    "onChange"
-                );
+            if (newValue == 1 ){
+                Action.showItem(counter);
             }
-         
+
+            if (newValue == 2){
+                Action.hideItem(counter);
+            }
+        
         }
     }
 };
@@ -19601,12 +19736,14 @@ const autorefCounter = {
                 const counter = $$("userprefsAutorefCounter");
                 const minVal  = counter.config.min;
                 const maxVal  = counter.config.max;
+
+                const defText = "возможное значение";
                 
                 if (newValue == minVal){
-                    createMsg ("Минимально возможное значение");
+                    createMsg ("Минимально" +  defText);
 
                 } else if (newValue == maxVal){
-                    createMsg ("Максимально возможное значение");
+                    createMsg ("Максимально" + defText);
                 }
             } catch (err){
                 errors_setFunctionError(
@@ -19632,67 +19769,24 @@ const visibleIdRadio = {
     ],
 };
 
-const otherForm =  {    
-    view        : "form", 
-    id          : "userprefsOtherForm",
-    borderless  : true,
-    elements    : [
-        autorefRadio,
-        {height:5},
-        autorefCounter,
-        {height:5},
-        visibleIdRadio,
-        {}
-    ],
-    on:{
-        onViewShow: webix.once(function(){
-            mediator.setForm(this);
-        }),
-
-        onChange:function(){
-            const saveBtn  = $$("userprefsSaveBtn");
-            const resetBtn = $$("userprefsResetBtn");
-            const form     = $$("userprefsOtherForm");
-
-            function setSaveBtnState(){
-                try{
-                    if ( form.isDirty() && !(saveBtn.isEnabled()) ){
-                        saveBtn.enable();
-                    } else if (!(form.isDirty())){
-                        saveBtn.disable();
-                    }
-                } catch (err){
-                    errors_setFunctionError(
-                        err,
-                        formOther_logNameFile,
-                        "onChange setSaveBtnState"
-                    );
-                }
-            }
-
-            
-            function setResetBtnState(){
-                try{
-                    if ( form.isDirty() && !(resetBtn.isEnabled()) ){
-                        resetBtn.enable();
-                    } else if ( !(form.isDirty()) ){
-                        resetBtn.disable();
-                    }  
-                } catch (err){
-                    errors_setFunctionError(
-                        err,
-                        formOther_logNameFile,
-                        "onChange setResetBtnState"
-                    );
-                }
-            }
-            
-            setSaveBtnState ();
-            setResetBtnState();
-         
-        }
-    }
-};
+function formOther_returnForm(){
+    const elems = [{
+        rows: [
+            autorefRadio,
+            {height:5},
+            autorefCounter,
+            {height:5},
+            visibleIdRadio,
+            {}
+        ]
+    }];
+    
+ 
+    return returnFormTemplate(
+        "userprefsOtherForm", 
+        elems
+    );
+}
 
 const otherFormLayout = {
     view      : "scrollview",
@@ -19700,7 +19794,7 @@ const otherFormLayout = {
     css       : "webix_multivew-cell",
     id        : "userprefsOther", 
     scroll    : "y", 
-    body      : otherForm
+    body      : formOther_returnForm()
 };
 
 
@@ -19723,7 +19817,11 @@ const logBlockRadio = {
     ],
     on:{
         onAfterRender: function () {
-            this.getInputNode().setAttribute("title","Показать/скрыть по умолчанию блок системных сообщений");
+            this.getInputNode().setAttribute(
+                "title",
+                "Показать/скрыть по умолчанию" + 
+                " блок системных сообщений"
+                );
         },
 
         onChange:function(newValue, oldValue){
@@ -19752,92 +19850,48 @@ const logBlockRadio = {
 };
 
 const loginActionSelect = {   
-    view         : "select", 
-    name         : "LoginActionOpt",
-    label        : "Действие после входа в систему", 
-    labelPosition: "top",
-    value        : 2, 
-    options      : [
+    view          : "select", 
+    name          : "LoginActionOpt",
+    label         : "Действие после входа в систему", 
+    labelPosition : "top",
+    value         : 2, 
+    options       : [
     { "id" : 1, "value" : "Перейти на главную страницу"            },
     { "id" : 2, "value" : "Перейти на последнюю открытую страницу" },
     ],
     on:{
         onAfterRender: function () {
-            this.getInputNode().setAttribute("title","Показывать/не показывать всплывающее окно при загрузке приложения");
+            this.getInputNode().setAttribute(
+                "title",
+                "Показывать/не показывать " + 
+                "всплывающее окно при загрузке приложения"
+            );
         },
 
     }
 };
 
-const workspaceForm =  {    
-    view      : "form", 
-    id        : "userprefsWorkspaceForm",
-    borderless: true,
-    elements  : [
-        { cols:[
-            { rows:[  
-                logBlockRadio,
-                {height:15},
-                
-                {cols:[
-                    loginActionSelect,
-                    {}
-                ]}
 
-            ]},
+function formWorkspace_returnForm(){
+    const elems = [
+        { rows : [  
+            logBlockRadio,
+            {height : 15},
+            
+            {cols : [
+                loginActionSelect,
+                {}
+            ]}
+
         ]},
+    ]; 
 
-    ],
+    return returnFormTemplate(
+        "userprefsWorkspaceForm",  
+        elems
+    );
+}
 
-    on        :{
-        onViewShow: webix.once(function(){
-           mediator.setForm(this);
-        }),
-
-        onChange:function(){
-            const form     = $$("userprefsWorkspaceForm");
-            const saveBtn  = $$("userprefsSaveBtn");
-            const resetBtn = $$("userprefsResetBtn");
-
-            function setSaveBtnState(){
-                try{
-                    if ( form.isDirty() && !(saveBtn.isEnabled()) ){
-                        saveBtn.enable();
-                    } else if ( !(form.isDirty()) ){
-                        saveBtn.disable();
-                    }
-                } catch (err){
-                    errors_setFunctionError(
-                        err,
-                        formWorkspace_logNameFile,
-                        "setSaveBtnState"
-                    );
-                }
-            }
-
-            function setResetBtnState(){
-                try{
-                    if ( form.isDirty() && !(resetBtn.isEnabled()) ){
-                        resetBtn.enable();
-                    } else if ( !(form.isDirty()) ){
-                        resetBtn.disable();
-                    }  
-                } catch (err){
-                    errors_setFunctionError(
-                        err,
-                        formWorkspace_logNameFile,
-                        "setResetBtnState"
-                    );
-                }
-            }
-      
-            setSaveBtnState ();
-            setResetBtnState();
-        }
-    },
-
-    
-};
 
 const workspaceLayout = {
     view      : "scrollview",
@@ -19845,7 +19899,7 @@ const workspaceLayout = {
     css       : "webix_multivew-cell",
     id        : "userprefsWorkspace",
     scroll    : "y", 
-    body      : workspaceForm
+    body      : formWorkspace_returnForm()
 };
 
 
@@ -19873,11 +19927,115 @@ const defaultValue = {
 const tabbar_buttons_logNameFile   = "settings => tabbar => buttons";
 
 let buttons_tabbar;
-let value;
 let tabbarVal;
 let buttons_form;
 
-async function buttons_getUserprefsData(){
+let buttons_values;
+let buttons_sentObj;
+
+function putPrefs(el){
+    const path    = "/init/default/api/userprefs/" + el.id;
+    const putData = webix.ajax().put(path, buttons_sentObj);
+
+    return putData.then(function(data){
+        data = data.json();
+        if (data.err_type == "i"){
+            const formVals = JSON.stringify(buttons_values);
+            setStorageData (tabbarVal, formVals);
+
+            const name         = buttons_tabbar.getValue();
+            defaultValue[name] = buttons_values;
+
+            buttons_form.setDirty(false);
+
+            setLogValue(
+                "success", 
+                "Настройки сохранены"
+            );
+            return true;
+        } else {
+            setLogValue("error", data.error);
+            return false;
+        }
+
+    }).fail(function(err){
+        setAjaxError(
+            err, 
+            tabbar_buttons_logNameFile, 
+            "putPrefs"
+        );
+        return false;
+    });
+}
+
+
+function findExistsData(data){
+    const result = {
+        exists : false
+    };
+
+    try{
+        data.forEach(function(el){
+           
+            if (el.name == tabbarVal){
+                result.exists = true;
+                result.findElem = el;
+            } 
+        });
+    } catch (err){
+        errors_setFunctionError(
+            err, 
+            tabbar_buttons_logNameFile, 
+            "findExistsData"
+        );
+    }
+    return result;
+}
+
+
+function buttons_postPrefs(){
+   
+    const path = "/init/default/api/userprefs/";
+
+    const postData = webix.ajax().post(path, buttons_sentObj);
+
+    return postData.then(function(data){
+        data = data.json();
+
+        if (data.err_type == "i"){
+            const tabbarVal         = buttons_tabbar.getValue();
+            defaultValue[tabbarVal] = buttons_values;
+
+            buttons_form.setDirty(false);
+
+            setLogValue(
+                "success", 
+                "Настройки сохранены"
+            );
+
+            return true;
+        } else {
+            setLogValue(
+                "error", 
+                data.error
+            );
+
+            return false;
+        }
+
+    }).fail(function(err){
+        setAjaxError(
+            err, 
+            tabbar_buttons_logNameFile, 
+            "postPrefs"
+        );
+
+        return false;
+    });
+}
+
+
+async function savePrefs(){
     let ownerId = getUserDataStorage();
 
     if (!ownerId){
@@ -19891,103 +20049,21 @@ async function buttons_getUserprefsData(){
     return getData.then(function(data){
         data = data.json().content;
 
-        let settingExists = false;
+        buttons_values = buttons_form.getValues();
 
-        const values = buttons_form.getValues();
-
-        const sentObj = {
+        buttons_sentObj = {
             name  : tabbarVal,
             owner : ownerId.id,
-            prefs : values,
+            prefs : buttons_values,
         };
 
-        function putPrefs(el){
-            const path    = "/init/default/api/userprefs/" + el.id;
-            const putData = webix.ajax().put(path, sentObj);
+        const result          = findExistsData(data);
+        const isExistsSetting = result.exists;
 
-            return putData.then(function(data){
-                data = data.json();
-                if (data.err_type == "i"){
-                    const formVals = JSON.stringify(values);
-                    setStorageData (tabbarVal, formVals);
-        
-                    const name         = buttons_tabbar.getValue();
-                    defaultValue[name] = values;
-    
-                    buttons_form.setDirty(false);
-
-                    setLogValue("success", "Настройки сохранены");
-                    return true;
-                } else {
-                    setLogValue("error", data.error);
-                    return false;
-                }
-
-            }).fail(function(err){
-                setAjaxError(err, tabbar_buttons_logNameFile, "putPrefs");
-                return false;
-            });
-        }
- 
-        function findExistsData(){
-            let findElem;
-            try{
-                data.forEach(function(el){
-                   
-                    if (el.name == tabbarVal){
-                        settingExists = true;
-                        findElem = el;
-                       // putPrefs(el);
-                    } 
-                });
-            } catch (err){
-                errors_setFunctionError(
-                    err, 
-                    tabbar_buttons_logNameFile, 
-                    "findExistsData"
-                );
-            }
-            return findElem;
-        }
-
-
-        function postPrefs(){
-   
-            const path = "/init/default/api/userprefs/";
-
-            const postData = webix.ajax().post(path, sentObj);
-
-            return postData.then(function(data){
-                data = data.json();
-
-                if (data.err_type == "i"){
-                    const tabbarVal         = buttons_tabbar.getValue();
-                    defaultValue[tabbarVal] = values;
-    
-                    buttons_form.setDirty(false);
-
-                    setLogValue(
-                        "success", 
-                        "Настройки сохранены"
-                    );
-
-                    return true;
-                } else {
-                    setLogValue("error", data.error);
-                    return false;
-                }
-       
-            }).fail(function(err){
-                setAjaxError(err, tabbar_buttons_logNameFile, "postPrefs");
-                return false;
-            });
-        }
-
-        const findElem = findExistsData();
-
-        if (!settingExists){
-            return postPrefs();
+        if (!isExistsSetting){
+            return buttons_postPrefs();
         } else {
+            const findElem = result.findElem;
             return putPrefs(findElem);
         }
 
@@ -19995,7 +20071,7 @@ async function buttons_getUserprefsData(){
         setAjaxError(
             err, 
             tabbar_buttons_logNameFile, 
-            "getUserprefsData"
+            "savePrefs"
         );
     });
 }
@@ -20003,15 +20079,18 @@ async function buttons_getUserprefsData(){
 
 async function saveSettings (){
     buttons_tabbar    = $$("userprefsTabbar");
-    value     = buttons_tabbar.getValue();
+    const value     = buttons_tabbar.getValue();
     tabbarVal = value + "Form" ;
     buttons_form      = $$(tabbarVal);
 
     if (buttons_form.isDirty()){
-        return buttons_getUserprefsData();   
+        return savePrefs();   
    
     } else {
-        setLogValue("debug","Сохранять нечего");
+        setLogValue(
+            "debug", 
+            "Сохранять нечего"
+        );
         return true;
     }
 }
@@ -20047,7 +20126,6 @@ const clearBtn = new Button({
     config   : {
         id       : "userprefsResetBtn",
         hotkey   : "Shift+X",
-        disabled : true,
         value    : "Сбросить", 
         click    : clearSettings,
     },
@@ -20089,6 +20167,7 @@ const buttons =  {
 
 
 
+
 const tabbar_tabbar_logNameFile   = "settings => tabbar => tabbar";
 
 
@@ -20121,24 +20200,14 @@ const tabbar_tabbar = {
             const tabbarVal = value + "Form";
             const form      = $$(tabbarVal);
 
-            function disableBtn(btn){
-                try{
-                    if (btn.isEnabled()){
-                        btn.disable();
-                    }   
-                } catch (err){
-                    errors_setFunctionError(err, tabbar_tabbar_logNameFile, "onBeforeTabClick");
-                }
-            }
-
             function createModalBox(){
                 try{
                     webix.modalbox({
-                        title   :"Данные не сохранены",
-                        css     :"webix_modal-custom-save",
-                        buttons :["Отмена", "Не сохранять", "Сохранить"],
-                        width   :500,
-                        text    :"Выберите действие перед тем как продолжить"
+                        title   : "Данные не сохранены",
+                        css     : "webix_modal-custom-save",
+                        buttons : ["Отмена", "Не сохранять", "Сохранить"],
+                        width   : 500,
+                        text    : "Выберите действие перед тем как продолжить"
                     }).then(function(result){
 
                         if ( result == 1){
@@ -20146,14 +20215,12 @@ const tabbar_tabbar = {
                             const storageData = webix.storage.local.get(tabbarVal);
                             const saveBtn     = $$("userprefsSaveBtn");
                             const resetBtn    = $$("userprefsResetBtn");
-                           
 
                             form.setValues(storageData);
 
                             tabbar.setValue(id);
-
-                            disableBtn(saveBtn);
-                            disableBtn(resetBtn);
+                            Action.disableItem(saveBtn);
+                            Action.disableItem(resetBtn);
 
                         } else if ( result == 2){
                             saveSettings ();
@@ -20161,7 +20228,11 @@ const tabbar_tabbar = {
                         }
                     });
                 } catch (err){
-                    errors_setFunctionError(err, tabbar_tabbar_logNameFile, "createModalBox");
+                    errors_setFunctionError(
+                        err, 
+                        tabbar_tabbar_logNameFile, 
+                        "createModalBox"
+                    );
                 }
             }
 
@@ -20205,13 +20276,13 @@ const layoutTabbar =  {
 const settingsLayout = {
 
     rows:[
-        {   padding:{
-                top     :15, 
-                bottom  :0, 
-                left    :20, 
-                right   :0
+        {   padding: {
+                top    : 15, 
+                bottom : 0, 
+                left   : 20, 
+                right  : 0
             },
-            rows:layoutHeadline,
+            rows   :layoutHeadline,
         },
         layoutTabbar,
     ]
@@ -20594,7 +20665,7 @@ function loadFields(selectId, treeItem){
 
 
 
-const navigate_logNameFile = "treeSidebar => navigate";
+const treeSidabar_navigate_logNameFile = "treeSidebar => navigate";
 
 function getFields (id){
     const menu  = GetMenu.content;
@@ -20603,7 +20674,7 @@ function getFields (id){
         try{
             Backbone.history.navigate("tree/" + id, { trigger : true });
         } catch (err){
-            errors_setFunctionError(err, navigate_logNameFile, "getFields");
+            errors_setFunctionError(err, treeSidabar_navigate_logNameFile, "getFields");
         }
     }
 }
@@ -20631,10 +20702,51 @@ function setAdaptiveState(){
 }
 
 
+;// CONCATENATED MODULE: ./src/js/components/treeSidabar/errorLoad.js
+
+
+
+
+
+function setErrLoad(err){
+    Action.hideItem($$("loadTreeOverlay"));
+                
+    const container = $$("sidebarContainer");
+    const id        = "treeErrOverlay"; 
+
+    if ( !$$(id) && container){
+
+        const errOverlay  = createOverlayTemplate(
+            id,
+            "Ошибка"
+        );
+
+        container.addView(errOverlay, 0);
+    }
+
+    if (err){
+        setLogValue(
+            "error", 
+            err.status + " " + err.statusText + " " +
+            err.responseURL + " (" + err.responseText + "). " +
+            "Меню не загружено sidebar => onLoadError",
+            "version"
+        );
+    } else {
+        setLogValue(
+            "error", 
+            "Меню не загружено sidebar => onLoadError", 
+            "version"
+        );
+    }
+}
+
+
 ;// CONCATENATED MODULE: ./src/js/components/treeSidabar/_layout.js
  
  
- 
+
+
 
 
 
@@ -20659,6 +20771,12 @@ function treeSidebar () {
         clipboard   : true,
         data        : [],
         on          : {
+            onAfterLoad:function(){
+                Action.hideItem($$("treeErrOverlay"));
+            },
+            onLoadError:function(xhr){
+                setErrLoad(xhr);
+            },
 
             onItemClick: function(id) {
              
@@ -20685,14 +20803,6 @@ function treeSidebar () {
                 preparationView(id);
             },
 
-            onLoadError:function(xhr){
-                setAjaxError(
-                    xhr, 
-                    "sidebar",
-                    "onLoadError"
-                );
-            },
-
             onBeforeOpen:function (id, selectItem){
                 loadFields(id, selectItem);
             },
@@ -20704,6 +20814,10 @@ function treeSidebar () {
 
         },
 
+        ready:function(){
+           
+        }
+
     };
 
     return tree;
@@ -20711,6 +20825,7 @@ function treeSidebar () {
 
 
 ;// CONCATENATED MODULE: ./src/js/components/treeSidabar/loadMenu.js
+
 
 
 const loadMenu_logNameFile = " treeSidebar => loadMenu";
@@ -20811,6 +20926,7 @@ function generateMenuTree (menu){
 
     tree.clearAll();
     tree.parse(menuTree);
+    Action.hideItem($$("loadTreeOverlay"));
 
     let popupData = btnContext.config.popup.data;
     if (popupData !== undefined){
@@ -20862,19 +20978,22 @@ class Tree {
         return $$(this.name).data.order.length;
     }
 
-    close(){
+    close (){
         const tree = $$(this.name);
-        try{
-            if (tree){
-                tree.closeAll();
-            }
-        } catch (err){
-            errors_setFunctionError(
-                err,
-                _treeMediator_logNameFile,
-                "close"
-            );
+
+        if (tree){
+            tree.closeAll();
         }
+
+    }
+
+    clear (){
+        const tree = $$(this.name);
+    
+        if (tree){
+            tree.clearAll();
+        }
+
     }
 
 }
@@ -21568,7 +21687,7 @@ const logo = {
     view    : "label",
     label   : "<img src='/init/static/images/expalogo.png' "+
         " style='height:30px; margin: 10px;'>", 
-    height  : 25
+    height  : 25,
 };
 
 const search = {
@@ -21712,7 +21831,7 @@ function unsetDirty(){
 
     if (forms){
         forms.forEach(function(form){
-
+     
             if (form && form.isDirty()){
                 form.clear();
                 form.setDirty(false);
@@ -21849,6 +21968,28 @@ function removeParamFromLink(id){
 
 
 
+;// CONCATENATED MODULE: ./src/js/blocks/queryToString.js
+function encodeQueryData(data) {
+    const ret = [];
+    for (let item in data){
+        const name  = encodeURIComponent(item);
+        const param = encodeURIComponent(data[item]);
+        ret.push(name + '=' + param);
+    }
+ 
+    return ret.join('&');
+}
+
+
+// const data = { 
+//     'query' : table + id, 
+//     'sorts' : table, 
+//     'limit' : 80 , 
+//     'offset': 0 
+// };
+
+
+
 ;// CONCATENATED MODULE: ./src/js/blocks/_mediator.js
 
 
@@ -21861,7 +22002,8 @@ function removeParamFromLink(id){
 
 
 
-         
+
+        
 const elems = [
     "dashboards",
     "tables",
@@ -21916,6 +22058,10 @@ const mediator = {
         } else {
             removeParamFromLink(param);
         }
+    },
+
+    createQuery(params){
+        return encodeQueryData(params);
     }
 
 
@@ -21924,195 +22070,27 @@ const mediator = {
 
 
 
-;// CONCATENATED MODULE: ./src/js/components/routerConfig/common.js
+;// CONCATENATED MODULE: ./src/js/components/routerConfig/actions/hideAllElements.js
 
 
 
-
-
-
-
-
-const routerConfig_common_logNameFile = "router => common";
-function createElements(specificElement){
-
-    function createDefaultWorkspace(){
-        if(!specificElement){
-            mediator.dashboards.create();
-            mediator.tables.create();
-            mediator.forms.create();
-        }
-    }
-
-    function createTreeTempl(){
-        try{
-            if (specificElement == "treeTempl"){
-                mediator.treeEdit.create();
-            }
-        } catch (err){
-            errors_setFunctionError(
-                err,
-                routerConfig_common_logNameFile,
-                "createTreeTempl"
-            );
-        }
-    }
-
-    function createCp(){
-        try{
-            if (specificElement == "cp"){
-                mediator.user_auth.create();
-            }
-        } catch (err){
-            errors_setFunctionError(
-                err,
-                routerConfig_common_logNameFile,
-                "createCp"
-            );
-        }
-    }
-
-    function createUserprefs(){
-        try{
-            if (specificElement == "settings"){
-                mediator.settings.create();
-            }
-        } catch (err){
-            errors_setFunctionError(
-                err,
-                routerConfig_common_logNameFile,
-                "createUserprefs"
-            );
-        }
-    }
-
-    function createSpecificWorkspace (){
-        createTreeTempl();
-        createCp();
-        createUserprefs();
-    }
-   
-
-    createDefaultWorkspace();
-    createSpecificWorkspace ();
-  
-}
-
-function removeElements(){
-
-    function removeElement(idElement){
-        try {
-            const elem   = $$(idElement);
-            const parent = $$("container");
-            if (elem){
-                parent.removeView(elem);
-            }
-        } catch (err){
-            setFunctionError(
-                err,
-                routerConfig_common_logNameFile,
-                "removeElement (element: " + idElement + ")"
-            );
-        }
-    }
-    removeElement ("tables");
-    removeElement ("dashboards");
-    removeElement ("forms");
-    removeElement ("user_auth");
-}
-
-
-function getWorkspace (){
-
-    function getMenuTree() {
-
-
-        LoadServerData.content("mmenu")
-        
-        .then(function (){
-            const menu = GetMenu.content;
-            mediator.sidebar.load(menu);
-            mediator.header.load(menu);
-        });
- 
-    }
-
-    function createContent (){ 
- 
-        function showMainContent(){
-            try {
-                $$("userAuth").hide();
-                $$("mainLayout").show();
-            } catch (err){
-                window.alert
-                ("showMainContent: " + err +  " (Подробности: ошибка в отрисовке контента)");
-                errors_setFunctionError(err,routerConfig_common_logNameFile,"showMainContent");
-            }
-        }
-
-        function setUserData(){
-            const userStorageData      = {};
-            userStorageData.id       = STORAGE.whoami.content.id;
-            userStorageData.name     = STORAGE.whoami.content.first_name;
-            userStorageData.username = STORAGE.whoami.content.username;
-            
-            setStorageData("user", JSON.stringify(userStorageData));
-        }
-
-        showMainContent();
-
-        setUserData();
-
-        createElements();
-
-        getMenuTree();
-    }
-
-    async function getAuth () {
-        if (!STORAGE.whoami){
-            await getData("whoami"); 
-        }
-
-        if (STORAGE.whoami){
-            createContent (); 
-        }
-
-    }
-
-    getAuth ();
-
-}
-
-
-function checkTreeOrder(){
-
-    try{
-        if (mediator.sidebar.dataLength() == 0){
-            getWorkspace ();
-        }
-    
-    } catch (err){
-        errors_setFunctionError(
-            err,
-            routerConfig_common_logNameFile,
-            "checkTreeOrder"
-        );
-    }
-}
 
 function hideAllElements (){
 
     try {
-        $$("container").getChildViews().forEach(function(el,i){
+        const container = $$("container");
+        const childs    = container.getChildViews();
+        
+        childs.forEach(function(el){
             const view = el.config.view;
-            if(view == "scrollview"|| view == "layout"){
+            if(view == "scrollview" || view == "layout"){
                 Action.hideItem($$(el.config.id));
             }
         });
     } catch (err){
         errors_setFunctionError(
             err,
-            routerConfig_common_logNameFile,
+            "routerConfig => hideAllElements",
             "hideAllElements"
         );
     }
@@ -22121,6 +22099,154 @@ function hideAllElements (){
 }
 
 
+;// CONCATENATED MODULE: ./src/js/components/routerConfig/actions/createElements.js
+
+
+let specificElement;
+
+function createDefaultWorkspace(){
+    if(!specificElement){
+        mediator.dashboards.create();
+        mediator.tables.create();
+        mediator.forms.create();
+    }
+}
+
+function createTreeTempl(){
+    if (specificElement == "treeTempl"){
+        mediator.treeEdit.create();
+    }
+ 
+}
+
+function createCp(){
+    if (specificElement == "cp"){
+        mediator.user_auth.create();
+    }
+
+}
+
+function createUserprefs(){
+    if (specificElement == "settings"){
+        mediator.settings.create();
+    }
+
+}
+
+function createSpecificWorkspace (){
+    createTreeTempl();
+    createCp();
+    createUserprefs();
+}
+
+
+function createElements(specElem){
+    specificElement = specElem;
+    createDefaultWorkspace();
+    createSpecificWorkspace ();
+  
+}
+
+
+;// CONCATENATED MODULE: ./src/js/components/routerConfig/actions/createContent.js
+
+
+
+
+
+
+
+
+
+function getMenuTree() {
+
+    LoadServerData.content("mmenu")
+    
+    .then(function (result){
+        if (result){
+            const menu = GetMenu.content;
+            mediator.sidebar.load(menu);
+            mediator.header.load(menu);
+        }
+
+    });
+
+}
+
+function setUserData(){
+  
+    const data = STORAGE.whoami.content;
+
+    const userStorageData = {
+        id       : data.id,
+        name     : data.first_name,
+        username : data.username
+    };
+
+    setStorageData(
+        "user", 
+        JSON.stringify(userStorageData)
+    );
+}
+
+
+async function createContent (){
+
+    if (!STORAGE.whoami){
+        await getData("whoami"); 
+    }
+
+    if (STORAGE.whoami){
+        Action.hideItem($$("userAuth"  ));
+        Action.showItem($$("mainLayout"));
+    
+        setUserData();
+    
+        createElements();
+    
+        getMenuTree();
+    }
+
+
+}
+
+
+
+;// CONCATENATED MODULE: ./src/js/components/routerConfig/actions/_RouterActions.js
+
+
+
+
+
+
+
+class RouterActions {
+    static hideEmptyTemplates(){
+        Action.removeItem($$("webix__null-content"));
+        Action.hideItem  ($$("webix__none-content"));     
+    }
+
+    static hideContent   (){
+        hideAllElements();
+    }
+
+    static createContentSpace (){
+        createContent  ();
+    }
+
+    static async loadSpace(){
+        const isSidebarData = mediator.sidebar.dataLength();
+
+        if (!isSidebarData){
+            await createContent();
+        }
+    }
+
+    static createContentElements(id){
+        createElements (id);
+    }
+
+}
 
 
 ;// CONCATENATED MODULE: ./src/js/components/routerConfig/tree.js
@@ -22132,47 +22258,28 @@ function hideAllElements (){
 
 const tree_logNameFile = "router => tree";
 
+ 
 let tree_id;
 
 
-function selectTreeItem(){
-    const tree   = $$("tree");
 
-    const pull   = tree.data.pull;
-    const values = Object.values(pull);
+// function returnTopParent(){
+//     let topParent;
 
-    let topParent;
-    values.forEach(function(el){
+//     const pull   = tree.data.pull;
+//     const values = Object.values(pull);
+
+//     values.forEach(function(el){
    
-        if ( el.webix_kids && !(tree.exists (tree_id)) ){
-        
-            const obj = [el.id];
-         
-            tree.callEvent("onBeforeOpen", obj);
+//         if ( el.webix_kids && !(tree.exists (id)) ){
+//             topParent = el.id;
+//         }
 
-            topParent = el.id;
-        }
+//     });
 
-    });
+//     return topParent;
+// }
 
-
-    function setScroll(){
-        const scroll = tree.getScrollState();
-        tree.scrollTo(0, scroll.y); 
-    }
-
-    if (tree.exists(tree_id)){
-        if (topParent){
-        
-            tree.open     (topParent, true);
-            tree.select   (tree_id);
-            tree.showItem (tree_id);
-
-            setScroll();
-        }
-
-    }
-}
 
 async function tree_getTableData (){
 
@@ -22181,15 +22288,12 @@ async function tree_getTableData (){
  
     if (keys){
         mediator.sidebar.selectItem(tree_id);
-        selectTreeItem  ();
     }
-
-
 }
 
 
 async function createTableSpace (){
-    await getWorkspace ();
+    RouterActions.createContentSpace();
 
     const isFieldsExists = GetFields.keys;
     try{   
@@ -22213,21 +22317,28 @@ async function createTableSpace (){
 
 
 
-function checkTable(){
+async function checkTable(){
+
     try {
-        if (mediator.sidebar.dataLength() == 0){
+        const isSidebarData = mediator.sidebar.dataLength();
+        
+        if (!isSidebarData){
             createTableSpace ();
             
         }
     } catch (err){
-        errors_setFunctionError(err, tree_logNameFile, "checkTable");
+        errors_setFunctionError(
+            err, 
+            tree_logNameFile, 
+            "checkTable"
+        );
 
     }    
   
 }
-function treeRouter(selectId){
+async function treeRouter(selectId){
     tree_id = selectId;
-    
+
     checkTable();
 }
 
@@ -22235,57 +22346,51 @@ function treeRouter(selectId){
 ;// CONCATENATED MODULE: ./src/js/components/routerConfig/index.js
 
 
+
 const routerConfig_logNameFile = "router => index";
 
-function indexRouter(){
-
-    function goToContentPage(){
+function goToContentPage(){
     
-        try {
-            Backbone.history.navigate("content", { trigger:true});
-        } catch (err){
-            console.log(err + " " + routerConfig_logNameFile + " goToContentPage");
-        }
+    try {
+        Backbone.history.navigate(
+            "content", 
+            {trigger : true}
+        );
+    } catch (err){
+        console.log(
+            err + 
+            " " + 
+            routerConfig_logNameFile + 
+            " goToContentPage"
+        );
     }
-
-    function showWorkspace(){
-        try{
-            const main  = $$("mainLayout");
-            const login = $$("userAuth");
-            
-            if(main){
-                (main).hide();
-            }
-          
-            if(login){
-                login.show();
-            }
-            
-        } catch (err){
-            window.alert("getAuth: " + err + 
-            " (Подробности: ошибка в отрисовке контента, router:index function showWorkspace)");
-            console.log(err + " " + routerConfig_logNameFile + " function showWorkspace");
-        }
-    }
-
-    async function getAuth () {
-     
-        if (!STORAGE.whoami ){
-            await getData("whoami"); 
-        }
-
-
-        if (STORAGE.whoami){
-            goToContentPage();
-
-        } else {
-  
-            showWorkspace();
-        }
-    }
-    getAuth ();
-    
 }
+
+
+
+function showWorkspace(){
+    Action.hideItem($$("mainLayout"));
+    Action.showItem($$("userAuth")  );
+
+}
+
+async function indexRouter(){
+
+    if (!STORAGE.whoami ){
+        await getData("whoami"); 
+    }
+
+
+    if (STORAGE.whoami){
+        goToContentPage();
+
+    } else {
+        showWorkspace();
+    }
+}
+
+
+
 
 ;// CONCATENATED MODULE: ./src/js/components/routerConfig/cp.js
 
@@ -22293,83 +22398,59 @@ function indexRouter(){
 
 
 
-const cp_logNameFile = "router => cp";
 
-function showUserAuth(){
-    try{
-        const elem = $$("user_auth");
-        if (elem){
-            elem.show();
-        }
-    } catch (err){
-        errors_setFunctionError(err,cp_logNameFile,"showUserAuth");
-    }
-}
-   
+const cp_logNameFile = "router => cp";
+ 
 function setUserValues(){
     const user     = webix.storage.local.get("user");
     const authName =  $$("authName");
     try{
         if (user){
-            authName.setValues(user.name.toString());
+            const values = user.name.toString();
+            authName.setValues(values);
         }
     } catch (err){
-        errors_setFunctionError(err,cp_logNameFile,"setUserValues");
+        errors_setFunctionError(
+            err,
+            cp_logNameFile,
+            "setUserValues"
+        );
     }
 }
 
-function hideNoneContent(){
-    try{
-        const elem = $$("webix__none-content");
-        if(elem){
-            elem.hide();
-        }
-    } catch (err){
-        errors_setFunctionError(err,cp_logNameFile,"hideNoneContent");
-    }
-}
-
-function removeNullContent(){
-    try{
-        const elem = $$("webix__null-content");
-        if(elem){
-            const parent = elem.getParentView();
-            parent.removeView(elem);
-        }
-    } catch (err){
-        errors_setFunctionError(err,cp_logNameFile,"removeNoneContent");
+ 
+function cp_createCp(){
+    const auth = $$("user_auth");
+    
+    if(auth){
+        Action.showItem(auth);
+    } else {
+        RouterActions.createContentElements("cp");
+        Action.showItem($$("user_auth"));
+   
     }
 }
 
 
+function loadSpace(){
+    const isSidebarData = mediator.sidebar.dataLength();
 
-
-
-
+    if (!isSidebarData){
+        RouterActions.createContentSpace(); //async ?
+    }
+}
 
 function cpRouter(){
     
- 
- 
-    checkTreeOrder();
+    loadSpace();
 
-
-    hideAllElements ();
-  
-    if($$("user_auth")){
-        showUserAuth();
-    } else {
-    
-        createElements("cp");
-        showUserAuth();
-   
-    }
-  
+    RouterActions.hideContent();
+    cp_createCp        ();
+ 
     mediator.sidebar.close();
-    setUserValues();
-    hideNoneContent();
 
-    removeNullContent();
+    setUserValues     ();
+    RouterActions.hideEmptyTemplates();
 }
 
 
@@ -22379,105 +22460,101 @@ function cpRouter(){
 
 
 
+
 const settings_logNameFile = "router => settings";
 
-function showUserprefs(){
-    try{
-        $$("settings").show();
-    } catch (err){
-      
-        errors_setFunctionError(err, settings_logNameFile, "showUserprefs");
-    }
-}
+
 
 function setUserprefsNameValue (){
     const user = webix.storage.local.get("user");
     try{
         if (user){
-            $$("settingsName").setValues(user.name.toString());
+            const name = user.name.toString();
+            $$("settingsName").setValues(name);
         }
     } catch (err){
       
-        errors_setFunctionError(err, settings_logNameFile, "setUserprefsNameValue");
+        errors_setFunctionError(
+            err, 
+            settings_logNameFile,
+            "setUserprefsNameValue"
+        );
     }
 
 }
 
-function settings_hideNoneContent(){
+
+
+function setTemplateValue(data){
+
     try{
-        const elem = $$("webix__none-content");
-        if(elem){
-            elem.hide();
-        }
+        data.forEach(function(el){
+            const name    = el.name;
+            const prefsId = "userprefs";
+            if (name.includes   (prefsId)     && 
+                name.lastIndexOf(prefsId) == 0){
+
+                const prefs = JSON.parse(el.prefs);
+                const form  = $$(name);
+                form.setValues(prefs);
+                form.config.storagePrefs = prefs;
+            }
+        });
     } catch (err){
-        
-        errors_setFunctionError(err, settings_logNameFile, "hideNoneContent");
+        errors_setFunctionError(
+            err, 
+            settings_logNameFile, 
+            "getDataUserprefs"
+        );
     }
+
+
 }
 
 function getDataUserprefs(){
-    const userprefsData = webix.ajax().get("/init/default/api/userprefs/");
+    const path          = "/init/default/api/userprefs/";
+    const userprefsData = webix.ajax().get(path);
 
     userprefsData.then(function(data){
-
         data = data.json().content;
-    
-        function setTemplateValue(){
-            try{
-                data.forEach(function(el,i){
-        
-                    if (el.name.includes   ("userprefs")     && 
-                        el.name.lastIndexOf("userprefs") == 0){
-                        $$(el.name).setValues(JSON.parse(el.prefs));
-                    }
-                });
-            } catch (err){
-                errors_setFunctionError(err, settings_logNameFile, "getDataUserprefs");
-            }
-        }
-
-        setTemplateValue();
+        setTemplateValue(data);
         
     });
 
-    userprefsData.fail(function(err){
-        setAjaxError(err, settings_logNameFile, "getDataUserprefs");
+    userprefsData.fail(function (err){
+        setAjaxError(
+            err, 
+            settings_logNameFile, 
+            "getDataUserprefs"
+        );
     });
-}
-
-function settings_removeNullContent(){
-    try{
-        const elem = $$("webix__null-content");
-        if(elem){
-            const parent = elem.getParentView();
-            parent.removeView(elem);
-        }
-    } catch (err){
-        errors_setFunctionError(err, settings_logNameFile, "removeNullContent");
-    }
 }
 
 
 function settingsRouter(){
 
-    hideAllElements ();
-  
-    checkTreeOrder();
+    const id   = "settings";
+    const elem = $$(id);
+    
+    RouterActions.hideContent();
 
-    if ($$("settings")){
-        showUserprefs();
+    if (mediator.sidebar.dataLength() == 0){
+        RouterActions.createContentSpace();
+    }
+
+    if (elem){
+        Action.showItem(elem);
     } else {
-        createElements("settings");
+        RouterActions.createContentElements (id);
         getDataUserprefs();
-        showUserprefs();
-      
-
+        Action.showItem($$(id));
     }
 
     setUserprefsNameValue   ();
+
     mediator.sidebar.close  ();
-    settings_hideNoneContent         ();
-    settings_removeNullContent       ();
+    RouterActions.hideEmptyTemplates();
+    
   
 }
 
@@ -22486,42 +22563,32 @@ function settingsRouter(){
 
 
 
-
-
-
-
-const experimental_logNameFile = "router => experimental";
-
-function experimental_removeNullContent(){
-    try{
-        const elem = $$("webix__null-content");
-        if(elem){
-            const parent = elem.getParentView();
-            parent.removeView(elem);
-        }
-    } catch (err){
-        errors_setFunctionError(err,experimental_logNameFile,"removeNullContent");
+function experimental_loadSpace(){
+    const isTreeData = mediator.sidebar.dataLength();
+    if (!isTreeData){
+        RouterActions.createContentSpace();
     }
 }
 
-function experimentalRouter(){
-    experimental_removeNullContent();
-
-    hideAllElements ();
-    Action.hideItem($$("webix__none-content"));
-    
-    
-    checkTreeOrder();
-    
-    
-    if($$("treeTempl")){
-        mediator.treeEdit.showView();
-        mediator.treeEdit.load();
-    }else {
-        createElements("treeTempl");
-        mediator.treeEdit.load();
-        mediator.treeEdit.showView();
+function createTreeTemplate(){
+    const id = "treeTempl";
+    if (!$$(id)){
+        RouterActions.createContentElements(id);
     }
+
+    mediator.treeEdit.showView();
+    mediator.treeEdit.load();
+}
+
+
+function experimentalRouter(){
+    RouterActions.hideEmptyTemplates();
+   
+    RouterActions.hideContent();
+
+    experimental_loadSpace          ();
+    
+    createTreeTemplate ();
     
     mediator.sidebar.close();
 }
@@ -22531,48 +22598,50 @@ function experimentalRouter(){
 ;// CONCATENATED MODULE: ./src/js/components/routerConfig/logout.js
 
 
+
 const logout_logNameFile = "router => logout";
 
+function clearStorage(){
+    try{
+        webix.storage.local.clear();
+    } catch (err){
+        errors_setFunctionError(
+            err, 
+            logout_logNameFile, 
+            "clearStorage"
+        );
+    }
+}
+
+
+function backPage(){
+    try{
+        history.back();
+    } catch (err){
+        errors_setFunctionError(
+            err, 
+            logout_logNameFile, 
+            "backPage"
+        );
+    }
+}
+
 function logoutRouter(){
-    const logoutData = webix.ajax().post("/init/default/logout/");
+    const path = "/init/default/logout/";
+    const logoutData = webix.ajax().post(path);
 
-    logoutData.then(function(){
-
-        function clearTree (){
-            try{
-                const tree = $$("tree");
-
-                if( tree){
-                    tree.clearAll();
-                }
-            } catch (err){
-                errors_setFunctionError(err, logout_logNameFile, "clearTree");
-            }
-        }
-
-        function clearStorage(){
-            try{
-                webix.storage.local.clear();
-            } catch (err){
-                errors_setFunctionError(err, logout_logNameFile, "clearStorage");
-            }
-        }
-
-        function backPage(){
-            try{
-                history.back();
-            } catch (err){
-                errors_setFunctionError(err, logout_logNameFile, "backPage");
-            }
-        }
-
+    logoutData.then(function (){
         backPage        ();
-        clearTree       ();
+        mediator.sidebar.clear();
         clearStorage    ();
     });
 
-    logoutData.fail(function(err){
-        setAjaxError(err, logout_logNameFile, "logoutData");
+    logoutData.fail(function (err){
+        setAjaxError(
+            err, 
+            logout_logNameFile, 
+            "logoutData"
+        );
     });  
 }
 
@@ -22581,7 +22650,6 @@ function logoutRouter(){
 
 
 lib ();
-
 
 
 
@@ -22605,7 +22673,7 @@ function router (){
         },
         
         content:function(){
-            getWorkspace();
+            RouterActions.createContentSpace();
         },
     
         index:function(){
@@ -22644,7 +22712,6 @@ function router (){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/login.js
-
 
 
 
@@ -23185,17 +23252,21 @@ function backButtonBrowserLogic (){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/routerConfig/routerStart.js
+function routerStart_navigate(path){
+    Backbone.history.start({pushState: true, root: path});
+}
+
 function setRouterStart(){
     if (window.location.host.includes("localhost:3000")){
-        Backbone.history.start({pushState: true, root: '/index.html/'});
+        routerStart_navigate('/index.html/');
     } else {
-        Backbone.history.start({pushState: true, root: '/init/default/spaw/'});
+        routerStart_navigate('/init/default/spaw/');
     }
 }
 
 
 ;// CONCATENATED MODULE: ./src/js/app.js
-console.log("expa 1.0.60"); 
+console.log("expa 1.0.61"); 
 
 
 
@@ -23213,7 +23284,8 @@ console.log("expa 1.0.60");
 
          
 
- 
+
+
 
 
 const emptySpace = {
@@ -23270,7 +23342,12 @@ const mainLayout = {
                     adaptive,
                 
                     {cols : [
-                        mediator.sidebar.create(),
+                        {   id:"sidebarContainer",
+                            rows : [
+                            createOverlayTemplate("loadTreeOverlay"),
+                            mediator.sidebar.create(),
+                           
+                        ]},
                         sideMenuResizer,
                         app_container,
                     ]}

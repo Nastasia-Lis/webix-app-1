@@ -1,8 +1,12 @@
+function navigate(path){
+    Backbone.history.start({pushState: true, root: path});
+}
+
 function setRouterStart(){
     if (window.location.host.includes("localhost:3000")){
-        Backbone.history.start({pushState: true, root: '/index.html/'});
+        navigate('/index.html/');
     } else {
-        Backbone.history.start({pushState: true, root: '/init/default/spaw/'});
+        navigate('/init/default/spaw/');
     }
 }
 

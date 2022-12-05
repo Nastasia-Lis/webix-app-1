@@ -1,86 +1,61 @@
-import { setFunctionError }                 from "../../blocks/errors.js";
-import { hideAllElements, checkTreeOrder,
-          createElements }        from "./common.js";
+import { setFunctionError }   from "../../blocks/errors.js";
+import { mediator }           from "../../blocks/_mediator.js";
+import { Action }             from "../../blocks/commonFunctions.js";
 
-import { mediator }                 from "../../blocks/_mediator.js";
+import { RouterActions }      from "./actions/_RouterActions.js";
 
 const logNameFile = "router => cp";
-
-function showUserAuth(){
-    try{
-        const elem = $$("user_auth");
-        if (elem){
-            elem.show();
-        }
-    } catch (err){
-        setFunctionError(err,logNameFile,"showUserAuth");
-    }
-}
-   
+ 
 function setUserValues(){
     const user     = webix.storage.local.get("user");
     const authName =  $$("authName");
     try{
         if (user){
-            authName.setValues(user.name.toString());
+            const values = user.name.toString();
+            authName.setValues(values);
         }
     } catch (err){
-        setFunctionError(err,logNameFile,"setUserValues");
+        setFunctionError(
+            err,
+            logNameFile,
+            "setUserValues"
+        );
     }
 }
 
-function hideNoneContent(){
-    try{
-        const elem = $$("webix__none-content");
-        if(elem){
-            elem.hide();
-        }
-    } catch (err){
-        setFunctionError(err,logNameFile,"hideNoneContent");
-    }
-}
-
-function removeNullContent(){
-    try{
-        const elem = $$("webix__null-content");
-        if(elem){
-            const parent = elem.getParentView();
-            parent.removeView(elem);
-        }
-    } catch (err){
-        setFunctionError(err,logNameFile,"removeNoneContent");
+ 
+function createCp(){
+    const auth = $$("user_auth");
+    
+    if(auth){
+        Action.showItem(auth);
+    } else {
+        RouterActions.createContentElements("cp");
+        Action.showItem($$("user_auth"));
+   
     }
 }
 
 
+function loadSpace(){
+    const isSidebarData = mediator.sidebar.dataLength();
 
-
-
-
+    if (!isSidebarData){
+        RouterActions.createContentSpace(); //async ?
+    }
+}
 
 function cpRouter(){
     
- 
- 
-    checkTreeOrder();
+    loadSpace();
 
-
-    hideAllElements ();
-  
-    if($$("user_auth")){
-        showUserAuth();
-    } else {
-    
-        createElements("cp");
-        showUserAuth();
-   
-    }
-  
+    RouterActions.hideContent();
+    createCp        ();
+ 
     mediator.sidebar.close();
-    setUserValues();
-    hideNoneContent();
 
-    removeNullContent();
+    setUserValues     ();
+    RouterActions.hideEmptyTemplates();
 }
 
 

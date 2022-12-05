@@ -1,10 +1,12 @@
-import { setAjaxError, setFunctionError }   from "../../../../blocks/errors.js";
-
-
+import { setAjaxError, 
+         setFunctionError }   from "../../../../blocks/errors.js";
+import { mediator }           from "../../../../blocks/_mediator.js";
+ 
 const logNameFile = "table => createSpace => userContext";
 
 let prefs;
 let tableId;
+
 function returnParameter(el, parameter){
     const prefs = JSON.parse(el.prefs)[parameter];
     return prefs;
@@ -17,7 +19,11 @@ function removePref(el){
     userprefsDel.then(function (data){
         data = data.json();
         if (data.err_type !== "i"){
-            setFunctionError(data.err, logNameFile, "removePref");
+            setFunctionError(
+                data.err, 
+                logNameFile, 
+                "removePref"
+            );
         }
     });
 
@@ -30,32 +36,41 @@ function removePref(el){
     });
 }
 
-function findPrefs(data, urlParameter){
-    const name = "dashboards_context-prefs_" + urlParameter;
-    let prefs;
-    data.forEach(function(el,i){
-        if (el.name == name){
-            prefs   = returnParameter(el,"params");
-            tableId = returnParameter(el,"field");
 
-            removePref(el);
-        }
+function createQuery(id){
  
-    });
-    return prefs;
+    const tableSort = "userprefs.id";
+ 
+    const data = { 
+        'query' : tableSort + "=" + id, 
+        'sorts' : tableSort, 
+        'limit' : 80 , 
+        'offset': 0 
+    };
+
+    const  queryString = mediator.createQuery(data);
+
+    return queryString;
 }
 
 async function getDataPrefs(urlParameter){
-    const path          = "/init/default/api/userprefs/";
+    const query        = createQuery(urlParameter);
+    const path         = "/init/default/api/smarts?" + query ;
     const userprefsGet = webix.ajax().get(path);
                     
     await userprefsGet.then(function (data){
         data         = data.json().content;
-        const values = Object.values(data);
-        prefs = findPrefs(values, urlParameter);
+        const item   = data[0];
+        
+        if (item){
+            prefs        = returnParameter(item, "params");
+            tableId      = returnParameter(item, "field");
+            removePref(item);
+        }
+    
     });
 
-    userprefsGet.fail(function(err){
+    userprefsGet.fail(function (err){
         setAjaxError(
             err, 
             logNameFile,
@@ -66,6 +81,7 @@ async function getDataPrefs(urlParameter){
 
 
 async function getUserPrefsContext(urlParameter, parameter){
+ 
     await getDataPrefs(urlParameter);
 
     if (prefs){

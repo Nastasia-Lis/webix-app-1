@@ -1,5 +1,7 @@
-import { setFunctionError  }  from "../../../blocks/errors.js";
-import { mediator  }          from "../../../blocks/_mediator.js";
+import { Action } from "../../../blocks/commonFunctions.js";
+import { setFunctionError  }    from "../../../blocks/errors.js";
+import { returnFormTemplate }   from "./formTemplate.js";
+
 const logNameFile   = "settings => tabbar => otherForm";
 
 const autorefRadio   = {
@@ -14,27 +16,17 @@ const autorefRadio   = {
     ],
     on              : {
         onChange:function(newValue){
-          //  $$("userprefsOtherForm").setDirty();
-            try{
 
-                const counter = $$("userprefsAutorefCounter");
+            const counter = $$("userprefsAutorefCounter");
 
-                if (newValue == 1 ){
-                    counter.show();
-                }
-
-                if (newValue == 2){
-                    counter.hide();
-                }
-        
-            } catch (err){
-                setFunctionError(
-                    err, 
-                    logNameFile, 
-                    "onChange"
-                );
+            if (newValue == 1 ){
+                Action.showItem(counter);
             }
-         
+
+            if (newValue == 2){
+                Action.hideItem(counter);
+            }
+        
         }
     }
 };
@@ -61,12 +53,14 @@ const autorefCounter = {
                 const counter = $$("userprefsAutorefCounter");
                 const minVal  = counter.config.min;
                 const maxVal  = counter.config.max;
+
+                const defText = "возможное значение";
                 
                 if (newValue == minVal){
-                    createMsg ("Минимально возможное значение");
+                    createMsg ("Минимально" +  defText);
 
                 } else if (newValue == maxVal){
-                    createMsg ("Максимально возможное значение");
+                    createMsg ("Максимально" + defText);
                 }
             } catch (err){
                 setFunctionError(
@@ -92,67 +86,24 @@ const visibleIdRadio = {
     ],
 };
 
-const otherForm =  {    
-    view        : "form", 
-    id          : "userprefsOtherForm",
-    borderless  : true,
-    elements    : [
-        autorefRadio,
-        {height:5},
-        autorefCounter,
-        {height:5},
-        visibleIdRadio,
-        {}
-    ],
-    on:{
-        onViewShow: webix.once(function(){
-            mediator.setForm(this);
-        }),
-
-        onChange:function(){
-            const saveBtn  = $$("userprefsSaveBtn");
-            const resetBtn = $$("userprefsResetBtn");
-            const form     = $$("userprefsOtherForm");
-
-            function setSaveBtnState(){
-                try{
-                    if ( form.isDirty() && !(saveBtn.isEnabled()) ){
-                        saveBtn.enable();
-                    } else if (!(form.isDirty())){
-                        saveBtn.disable();
-                    }
-                } catch (err){
-                    setFunctionError(
-                        err,
-                        logNameFile,
-                        "onChange setSaveBtnState"
-                    );
-                }
-            }
-
-            
-            function setResetBtnState(){
-                try{
-                    if ( form.isDirty() && !(resetBtn.isEnabled()) ){
-                        resetBtn.enable();
-                    } else if ( !(form.isDirty()) ){
-                        resetBtn.disable();
-                    }  
-                } catch (err){
-                    setFunctionError(
-                        err,
-                        logNameFile,
-                        "onChange setResetBtnState"
-                    );
-                }
-            }
-            
-            setSaveBtnState ();
-            setResetBtnState();
-         
-        }
-    }
-};
+function returnForm(){
+    const elems = [{
+        rows: [
+            autorefRadio,
+            {height:5},
+            autorefCounter,
+            {height:5},
+            visibleIdRadio,
+            {}
+        ]
+    }];
+    
+ 
+    return returnFormTemplate(
+        "userprefsOtherForm", 
+        elems
+    );
+}
 
 const otherFormLayout = {
     view      : "scrollview",
@@ -160,7 +111,7 @@ const otherFormLayout = {
     css       : "webix_multivew-cell",
     id        : "userprefsOther", 
     scroll    : "y", 
-    body      : otherForm
+    body      : returnForm()
 };
 
 export {

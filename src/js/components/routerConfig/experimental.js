@@ -1,43 +1,32 @@
-import { setFunctionError }                 from "../../blocks/errors.js";
-import { Action }                           from "../../blocks/commonFunctions.js";
+import { mediator }          from "../../blocks/_mediator.js";
+import { RouterActions }     from "./actions/_RouterActions.js";
 
-import { hideAllElements, checkTreeOrder, 
-        createElements }         from "./common.js";
-
-import { mediator }                         from "../../blocks/_mediator.js";
-
-const logNameFile = "router => experimental";
-
-function removeNullContent(){
-    try{
-        const elem = $$("webix__null-content");
-        if(elem){
-            const parent = elem.getParentView();
-            parent.removeView(elem);
-        }
-    } catch (err){
-        setFunctionError(err,logNameFile,"removeNullContent");
+function loadSpace(){
+    const isTreeData = mediator.sidebar.dataLength();
+    if (!isTreeData){
+        RouterActions.createContentSpace();
     }
 }
 
-function experimentalRouter(){
-    removeNullContent();
-
-    hideAllElements ();
-    Action.hideItem($$("webix__none-content"));
-    
-    
-    checkTreeOrder();
-    
-    
-    if($$("treeTempl")){
-        mediator.treeEdit.showView();
-        mediator.treeEdit.load();
-    }else {
-        createElements("treeTempl");
-        mediator.treeEdit.load();
-        mediator.treeEdit.showView();
+function createTreeTemplate(){
+    const id = "treeTempl";
+    if (!$$(id)){
+        RouterActions.createContentElements(id);
     }
+
+    mediator.treeEdit.showView();
+    mediator.treeEdit.load();
+}
+
+
+function experimentalRouter(){
+    RouterActions.hideEmptyTemplates();
+   
+    RouterActions.hideContent();
+
+    loadSpace          ();
+    
+    createTreeTemplate ();
     
     mediator.sidebar.close();
 }

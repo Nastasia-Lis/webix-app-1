@@ -1000,6 +1000,16 @@ label, button{
 
 
 
+// global load
+.global_loadTemplate{
+    color :#858585;
+    font-size : 14px!important;
+}
+.global_loadTemplate,
+.global_loadTemplate div{
+    background-color : var(--bg) !important;
+}
+
 
 
 // popup
@@ -1185,6 +1195,8 @@ label, button{
     font-size:13px!important; 
     color:var(--primary)!important
 }
+
+
 
 
 

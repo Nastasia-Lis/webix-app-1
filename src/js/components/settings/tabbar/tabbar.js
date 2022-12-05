@@ -1,4 +1,5 @@
 
+import { Action }            from "../../../blocks/commonFunctions.js";
 import { setFunctionError }  from "../../../blocks/errors.js";
 import { saveSettings }      from "./buttons.js";
 
@@ -34,24 +35,14 @@ const tabbar = {
             const tabbarVal = value + "Form";
             const form      = $$(tabbarVal);
 
-            function disableBtn(btn){
-                try{
-                    if (btn.isEnabled()){
-                        btn.disable();
-                    }   
-                } catch (err){
-                    setFunctionError(err, logNameFile, "onBeforeTabClick");
-                }
-            }
-
             function createModalBox(){
                 try{
                     webix.modalbox({
-                        title   :"Данные не сохранены",
-                        css     :"webix_modal-custom-save",
-                        buttons :["Отмена", "Не сохранять", "Сохранить"],
-                        width   :500,
-                        text    :"Выберите действие перед тем как продолжить"
+                        title   : "Данные не сохранены",
+                        css     : "webix_modal-custom-save",
+                        buttons : ["Отмена", "Не сохранять", "Сохранить"],
+                        width   : 500,
+                        text    : "Выберите действие перед тем как продолжить"
                     }).then(function(result){
 
                         if ( result == 1){
@@ -59,14 +50,12 @@ const tabbar = {
                             const storageData = webix.storage.local.get(tabbarVal);
                             const saveBtn     = $$("userprefsSaveBtn");
                             const resetBtn    = $$("userprefsResetBtn");
-                           
 
                             form.setValues(storageData);
 
                             tabbar.setValue(id);
-
-                            disableBtn(saveBtn);
-                            disableBtn(resetBtn);
+                            Action.disableItem(saveBtn);
+                            Action.disableItem(resetBtn);
 
                         } else if ( result == 2){
                             saveSettings ();
@@ -74,7 +63,11 @@ const tabbar = {
                         }
                     });
                 } catch (err){
-                    setFunctionError(err, logNameFile, "createModalBox");
+                    setFunctionError(
+                        err, 
+                        logNameFile, 
+                        "createModalBox"
+                    );
                 }
             }
 

@@ -1395,6 +1395,16 @@ button {
   color: var(--gray) !important;
 }
 
+.global_loadTemplate {
+  color: #858585;
+  font-size: 14px !important;
+}
+
+.global_loadTemplate,
+.global_loadTemplate div {
+  background-color: var(--bg) !important;
+}
+
 .popup-date_template .webix_template {
   padding-right: 0px !important;
 }

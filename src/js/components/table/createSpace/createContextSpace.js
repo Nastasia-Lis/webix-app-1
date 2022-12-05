@@ -10,7 +10,7 @@ function getLinkParams(param){
 function selectContextId(){
     const idParam = getLinkParams("id");
     const table   = getTable();
-
+    
     if (table && table.exists(idParam)){
         table.select(idParam);
     } else {

@@ -31,19 +31,22 @@ class Tree {
         return $$(this.name).data.order.length;
     }
 
-    close(){
+    close (){
         const tree = $$(this.name);
-        try{
-            if (tree){
-                tree.closeAll();
-            }
-        } catch (err){
-            setFunctionError(
-                err,
-                logNameFile,
-                "close"
-            );
+
+        if (tree){
+            tree.closeAll();
         }
+
+    }
+
+    clear (){
+        const tree = $$(this.name);
+    
+        if (tree){
+            tree.clearAll();
+        }
+
     }
 
 }

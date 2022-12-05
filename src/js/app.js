@@ -1,4 +1,4 @@
-console.log("expa 1.0.60"); 
+console.log("expa 1.0.61"); 
 
 import { textInputClean }                     from "./blocks/commonFunctions.js";
 import { auth }                               from "./components/login.js";
@@ -17,7 +17,8 @@ import { webixGlobalPrefs, protoUIEdittree,
          backButtonBrowserLogic }             from "./blocks/webixGlobalPrefs.js";
          
 import { setRouterStart }                     from "./components/routerConfig/routerStart.js";
- 
+
+import { createOverlayTemplate }                 from "./viewTemplates/loadTemplate.js";
 
 
 const emptySpace = {
@@ -74,7 +75,12 @@ const mainLayout = {
                     adaptive,
                 
                     {cols : [
-                        mediator.sidebar.create(),
+                        {   id:"sidebarContainer",
+                            rows : [
+                            createOverlayTemplate("loadTreeOverlay"),
+                            mediator.sidebar.create(),
+                           
+                        ]},
                         sideMenuResizer,
                         container,
                     ]}

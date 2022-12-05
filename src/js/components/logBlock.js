@@ -104,7 +104,7 @@ async function createLogMessage(srcTable) {
     let name;
 
     if (srcTable == "version"){
-        name = 'Expa v1.0.60';
+        name = 'Expa v1.0.61';
 
     } else if (srcTable == "cp"){
         name = 'Смена пароля';
@@ -193,7 +193,11 @@ const logBlock = {
     data    : [],
     on      : {
         onAfterLoad:function(){
-            setLogValue ("success", "Интерфейс загружен", "version");   
+            setLogValue (
+                "success", 
+                "Интерфейс загружен", 
+                "version"
+            );   
         },
         onAfterAdd:function(id){
             const btn = $$("webix_log-btn");

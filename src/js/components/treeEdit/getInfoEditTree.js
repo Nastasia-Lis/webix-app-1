@@ -210,7 +210,9 @@ function getInfoEditTree() {
 
     getTrees();
 
-    treeEdit.clearAll();
+    if (treeEdit){
+        treeEdit.clearAll();
+    }   
  
 }
 

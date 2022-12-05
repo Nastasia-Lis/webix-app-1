@@ -6,7 +6,7 @@ const logo = {
     view    : "label",
     label   : "<img src='/init/static/images/expalogo.png' "+
         " style='height:30px; margin: 10px;'>", 
-    height  : 25
+    height  : 25,
 };
 
 const search = {

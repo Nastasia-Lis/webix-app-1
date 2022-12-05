@@ -57,10 +57,14 @@ class LoadServerData {
             return webix.ajax().get(path)
             .then(function (data){
                 self[nameFile] = data.json();
+                return true;
             })
             .fail(function (err){
                 if (checkNotAuth (err)){
                     popupNotAuth();
+                } else {
+                    $$("tree").callEvent("onLoadError", [err]);
+                    return false;
                 }
             });
 

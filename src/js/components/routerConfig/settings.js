@@ -1,107 +1,102 @@
 import { setFunctionError, setAjaxError}    from "../../blocks/errors.js";
-import { hideAllElements, checkTreeOrder, 
-        createElements }                    from "./common.js";
-
 import { mediator }                         from "../../blocks/_mediator.js";
+import { Action }                           from "../../blocks/commonFunctions.js";
+import { RouterActions }                    from "./actions/_RouterActions.js";
+
 const logNameFile = "router => settings";
 
-function showUserprefs(){
-    try{
-        $$("settings").show();
-    } catch (err){
-      
-        setFunctionError(err, logNameFile, "showUserprefs");
-    }
-}
+
 
 function setUserprefsNameValue (){
     const user = webix.storage.local.get("user");
     try{
         if (user){
-            $$("settingsName").setValues(user.name.toString());
+            const name = user.name.toString();
+            $$("settingsName").setValues(name);
         }
     } catch (err){
       
-        setFunctionError(err, logNameFile, "setUserprefsNameValue");
+        setFunctionError(
+            err, 
+            logNameFile,
+            "setUserprefsNameValue"
+        );
     }
 
 }
 
-function hideNoneContent(){
+
+
+function setTemplateValue(data){
+
     try{
-        const elem = $$("webix__none-content");
-        if(elem){
-            elem.hide();
-        }
+        data.forEach(function(el){
+            const name    = el.name;
+            const prefsId = "userprefs";
+            if (name.includes   (prefsId)     && 
+                name.lastIndexOf(prefsId) == 0){
+
+                const prefs = JSON.parse(el.prefs);
+                const form  = $$(name);
+                form.setValues(prefs);
+                form.config.storagePrefs = prefs;
+            }
+        });
     } catch (err){
-        
-        setFunctionError(err, logNameFile, "hideNoneContent");
+        setFunctionError(
+            err, 
+            logNameFile, 
+            "getDataUserprefs"
+        );
     }
+
+
 }
 
 function getDataUserprefs(){
-    const userprefsData = webix.ajax().get("/init/default/api/userprefs/");
+    const path          = "/init/default/api/userprefs/";
+    const userprefsData = webix.ajax().get(path);
 
     userprefsData.then(function(data){
-
         data = data.json().content;
-    
-        function setTemplateValue(){
-            try{
-                data.forEach(function(el,i){
-        
-                    if (el.name.includes   ("userprefs")     && 
-                        el.name.lastIndexOf("userprefs") == 0){
-                        $$(el.name).setValues(JSON.parse(el.prefs));
-                    }
-                });
-            } catch (err){
-                setFunctionError(err, logNameFile, "getDataUserprefs");
-            }
-        }
-
-        setTemplateValue();
+        setTemplateValue(data);
         
     });
 
-    userprefsData.fail(function(err){
-        setAjaxError(err, logNameFile, "getDataUserprefs");
+    userprefsData.fail(function (err){
+        setAjaxError(
+            err, 
+            logNameFile, 
+            "getDataUserprefs"
+        );
     });
-}
-
-function removeNullContent(){
-    try{
-        const elem = $$("webix__null-content");
-        if(elem){
-            const parent = elem.getParentView();
-            parent.removeView(elem);
-        }
-    } catch (err){
-        setFunctionError(err, logNameFile, "removeNullContent");
-    }
 }
 
 
 function settingsRouter(){
 
-    hideAllElements ();
-  
-    checkTreeOrder();
+    const id   = "settings";
+    const elem = $$(id);
+    
+    RouterActions.hideContent();
 
-    if ($$("settings")){
-        showUserprefs();
+    if (mediator.sidebar.dataLength() == 0){
+        RouterActions.createContentSpace();
+    }
+
+    if (elem){
+        Action.showItem(elem);
     } else {
-        createElements("settings");
+        RouterActions.createContentElements (id);
         getDataUserprefs();
-        showUserprefs();
-      
-
+        Action.showItem($$(id));
     }
 
     setUserprefsNameValue   ();
+
     mediator.sidebar.close  ();
-    hideNoneContent         ();
-    removeNullContent       ();
+    RouterActions.hideEmptyTemplates();
+    
   
 }
 
