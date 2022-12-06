@@ -12,10 +12,10 @@ function onChangeLibBtn (){
     const radioValue = lib.getOption(libValue);
 
     if (radioValue && radioValue.id !== selectedValue){
-        Action.enableItem($$("editFormPopupLibRemoveBtn"));
+        Action.enableItem ($$("editFormPopupLibRemoveBtn"));
         Action.enableItem (submitBtn);
     } else {
-        Action.disableItem (submitBtn);
+        Action.disableItem(submitBtn);
     }
 
 

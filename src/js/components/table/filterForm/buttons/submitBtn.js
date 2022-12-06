@@ -1,263 +1,289 @@
-import { setLogValue }                      from '../../../logBlock.js';
+import { setLogValue }       from '../../../logBlock.js';
 
-import { setFunctionError, setAjaxError }   from "../../../../blocks/errors.js";
+import { setFunctionError, 
+        setAjaxError }       from "../../../../blocks/errors.js";
 
-import { visibleInputs }                    from "../common.js";
+import { getItemId, 
+        getTable, Action }   from "../../../../blocks/commonFunctions.js";
 
-import { getItemId, getTable, Action }      from "../../../../blocks/commonFunctions.js";
+import { Button }            from "../../../../viewTemplates/buttons.js";
 
-import { Button }                           from "../../../../viewTemplates/buttons.js";
+import { Filter }            from "../actions/_FilterActions.js";
 
+ 
 const logNameFile   = "tableFilter => buttons => submitBtn";
 
-function filterSubmitBtn (){
+
+function setLogicValue(value){
+    let logic = null; 
     
-                             
-    let query =[];
+    if (value == "1"){
+        logic = "+and+";
 
-    
-    function setLogicValue(value){
-        let logic = null; 
-        
-        if (value == "1"){
-            logic = "+and+";
-
-        } else if (value == "2"){
-            logic = "+or+";
-        }
-
-        return logic;
+    } else if (value == "2"){
+        logic = "+or+";
     }
 
-    function setOperationValue(value){
-        let operation;
-        if (value === "=" || !value){
-            operation = "+=+";
-        
-        } else if (value === "!="){
-            operation = "+!=+";
+    return logic;
+}
 
-        } else if (value === "<"){
-            operation = "+<+";
-            
-        } else if (value === ">"){
-            operation = "+>+";
 
-        } else if (value === "<="){
-            operation = "+<=+";
-    
-        } else if (value === ">="){
-            operation = "+>=+";
-            
-        } else if (value === "⊆"){
-            operation = "+contains+";
-        } 
+function setOperationValue(value){
+    let operation;
 
-        return operation;
+    if (!value){
+        operation =  "=";
+    } else if (value === "⊆"){
+        operation = "contains";
+    } else {
+        operation = value;
     }
 
-    function setName(value){
-        const itemTreeId     = getItemId ();
+    return "+" + operation + "+";
+}
 
-        return itemTreeId + "." + value;
+function setName(value){
+    const itemTreeId = getItemId ();
+
+    return itemTreeId + "." + value;
+}
+
+function isBool(name){
+    const table = getTable();
+    const col   = table.getColumnConfig(name);
+    const type  = col.type;
+
+    let check   = false;
+  
+    if (type && type === "boolean"){
+        check = true;
     }
 
-    function isBool(name){
-        const table = getTable();
-        const col   = table.getColumnConfig(name);
-        let check   = false;
-        if (col.type && col.type === "boolean"){
-            check = true;
-        }
+    return check;
+}
 
-        return check;
+function returnBoolValue(value){
+    if (value == 1){
+        return true;
+    } else if (value == 2){
+        return false;
+    }
+}
+
+function setValue(name, value){
+
+    let sentValue = "'" + value + "'";
+
+
+    if (isBool(name)){
+        sentValue = returnBoolValue(value);
     }
 
-    function returnBoolValue(value){
-        if (value == 1){
-            return true;
-        } else if (value == 2){
-            return false;
-        }
+    return sentValue;
+}
+
+function createQuery (input){
+    const name      = setName           (input.name);
+    const value     = setValue          (input.name, input.value);
+    const logic     = setLogicValue     (input.logic);
+    const operation = setOperationValue (input.operation);
+
+    let query = name + operation + value;
+
+    if (logic){
+        query = query + logic;
     }
 
-    function setValue(name, value){
+    return query;
+}
 
-        let sentValue = "'" + value + "'";
-
-        if (value == 1 || value == 2){
-
-            if ( isBool(name) ){
-                sentValue = returnBoolValue(value);
-            } 
-            
-        }
-        return sentValue;
-    }
-
-    function createQuery (input){
-        const name      = setName           (input.name);
-        const value     = setValue          (input.name, input.value);
-        const logic     = setLogicValue     (input.logic);
-        const operation = setOperationValue (input.operation);
-
-        let query = name + operation + value;
-
-        if (logic){
-            query = query + logic;
-        }
-
-        return query;
-    }
-
-    
-    function createValuesArray(){
-        const keys       = Object.keys(visibleInputs);
-        const keysLength = keys.length;
-        const valuesArr  = [];
-        let inputs       = [];
-
-
-        // объединить все inputs в один массив 
-        for (let i = 0; i < keysLength; i++) {   
-            const key = keys[i];
-            inputs = inputs.concat(visibleInputs[key]);
-        }
-
-        function segmentBtnValue(input) {
-            const segmentBtn = $$(input + "_segmentBtn") ;
-            let value        = null;
-
-            if (segmentBtn.isVisible()){
-                value = segmentBtn.getValue();
-            }
-            return value;
-        }
-
-        inputs.forEach(function(input,i){
-            const name       = $$(input).config.columnName;
-            const value      = $$(input)                         .getValue();
-            const operation  = $$(input + "-btnFilterOperations").getValue();
-
-            const logic      = segmentBtnValue(input); 
-
-            valuesArr.push ( { 
-                id        : input,
-                name      : name, 
-                value     : value,
-                operation : operation,
-                logic     : logic  
-            });
-        });
-
-        return valuesArr;
-    }
-
-
-    function createGetData(){
-       
-        const postFormatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
-        const valuesArr      = createValuesArray();
-
-
-        valuesArr.forEach(function(el,i){
-      
-            let filterEl = el.id;
-            let value    = el.value ;
-       
-            function formattingDateValue(){
-                const view = $$(filterEl).config.view; 
-                if ( view == "datepicker" ){
-                    value = postFormatData(value);
-                }
-            }
+function segmentBtnValue(input) {
  
-            function formattinSelectValue(){
-                const text = $$(filterEl).config.text;
-                if ( text && text == "Нет" ){
-                    value = 0;
-                }
-            }
+    const segmentBtn = $$(input + "_segmentBtn");
+    const isVisible  = segmentBtn.isVisible();
 
-            if ($$(filterEl)){
-                formattingDateValue ();
-                formattinSelectValue();
-                query.push(createQuery(el));
-               
-            }
+    let value = null;
 
-        });
-
-        console.log(query)
+    if (isVisible){
+        value = segmentBtn.getValue();
     }
 
-    
-    if ($$("filterTableForm").validate()){
+    return value;
+}
+
+function concatInputs(){
+    // объединить все inputs в один массив 
+
+    const items      = Filter.getAllChilds ();
+
+    function concat(arr) {
+        return [].concat(...arr);
+    }
+
+    return concat(items);
+}
+
+
+function createValuesArray(){
+    const valuesArr  = [];
+    const inputs     = concatInputs();
+
+    inputs.forEach(function(input){
         
-        createGetData();
+        const name       = $$(input).config.columnName;
+        const value      = $$(input)                         .getValue();
+        const operation  = $$(input + "-btnFilterOperations").getValue();
+
+        const logic      = segmentBtnValue(input); 
+
+        valuesArr.push ( { 
+            id        : input,
+            name      : name, 
+            value     : value,
+            operation : operation,
+            logic     : logic  
+        });
+    });
+
+    return valuesArr;
+}
+
+
+function createGetData(){
+       
+    const format         = "%d.%m.%Y %H:%i:%s";
+    const postFormatData = webix.Date.dateToStr(format);
+    const valuesArr      = createValuesArray();
+    const query          = [];
+
+    valuesArr.forEach(function(el){
+  
+        const filterEl = $$(el.id);
+
+        let value      = el.value;
+   
+        function formattingDateValue(){
+            const view = filterEl.config.view; 
+            if ( view == "datepicker" ){
+                value = postFormatData(value);
+            }
+        }
+
+        function formattingSelectValue(){
+            const text = filterEl.config.text;
+            if ( text && text == "Нет" ){
+                value = 0;
+            }
+        }
+
+        if (filterEl){
+            formattingDateValue ();
+            formattingSelectValue();
+            query.push(createQuery(el));
+           
+        }
+
+    });
+
+    return query;
+}
+
+function createSentQuery(){
+    const query = createGetData();
+    return query.join("");
+}
+
+function setTableConfig(table, query){
+    table.config.filter = {
+        table:  table.config.filter,
+        query:  query
+    };
+}
+
+function setData(currTableView, data){
+    const overlay = "Ничего не найдено";
+    try{
+        currTableView.clearAll();
+        if (data.length){
+            currTableView.hideOverlay(overlay);
+            currTableView.parse(data);
+        } else {
+            currTableView.showOverlay(overlay);
+        }
+    } catch (err){
+        setFunctionError(
+            err, 
+            logNameFile, 
+            "setData"
+        );
+    }
+}
+
+function setCounterValue (reccount){
+    try{
+        const counter = $$("table-idFilterElements");
+        counter.setValues(reccount.toString());
+    } catch (err){
+        setFunctionError(
+            err, 
+            logNameFile, 
+            "setCounterVal"
+        );
+    }
+}
+
+
+function filterSubmitBtn (){
+                           
+ 
+    const isValid = $$("filterTableForm").validate();
+
+    if (isValid){
 
         const currTableView = getTable();
+        const query         = createSentQuery();
 
-        const fullQuery = query.join("");
+        setTableConfig(currTableView, query);
 
-        currTableView.config.filter = {
-            table:  currTableView.config.idTable,
-            query:  fullQuery
-        };
-
-        const queryData = webix.ajax("/init/default/api/smarts?query=" + fullQuery );
+        const path = "/init/default/api/smarts?query=" + query;
+        const queryData = webix.ajax(path);
 
         queryData.then(function(data){
             data             = data.json();
             const reccount   = data.reccount;
             const notifyType = data.err_type;
             const notifyMsg  = data.err;
-
             data             = data.content;
-
-            function setData(){
-                try{
-                    currTableView.clearAll();
-                    if (data.length !== 0){
-                        currTableView.hideOverlay("Ничего не найдено");
-                        currTableView.parse(data);
-                    } else {
-                        currTableView.showOverlay("Ничего не найдено");
-                    }
-                } catch (err){
-                    setFunctionError(err, logNameFile, "function filterSubmitBtn => setData");
-                }
-            }
-
-            function setCounterValue (){
-                try{
-                    const counter = $$("table-idFilterElements");
-                    counter.setValues(reccount.toString());
-                } catch (err){
-                    setFunctionError(err, logNameFile, "setCounterVal");
-                }
-            }
-
          
             if (notifyType == "i"){
 
-                setData();
-                setCounterValue();
-                Action.hideItem($$("tableFilterPopup"));
+                setData         (currTableView, data);
+                setCounterValue (reccount);
+                Action.hideItem ($$("tableFilterPopup"));
         
-                setLogValue("success","Фильтры успшено применены");
+                setLogValue(
+                    "success",
+                    "Фильтры успшено применены"
+                );
             
             } else {
-                setLogValue("error",notifyMsg);
+                setLogValue("error", notifyMsg);
             } 
         });
 
-        queryData.fail(function(err){
-            setAjaxError(err, logNameFile, "createGetData");
+        queryData.fail(function (err){
+            setAjaxError(
+                err, 
+                logNameFile, 
+                "createGetData"
+            );
         });
 
     } else {
-        setLogValue("error", "Не все поля формы заполнены");
+        setLogValue(
+            "error", 
+            "Не все поля формы заполнены"
+        );
     }
   
 

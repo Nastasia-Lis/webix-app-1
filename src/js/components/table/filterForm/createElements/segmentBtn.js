@@ -2,10 +2,12 @@ function segmentBtn(element, isChild, uniqueId){
     let id;
     let hideAttribute = false;
 
+    const idEl = element.id + "_filter";
+
     if (isChild){
-        id = element.id + "_filter-child-" + uniqueId;
+        id = idEl + "-child-" + uniqueId;
     } else {
-        id            = element.id + "_filter";
+        id            = idEl;
         hideAttribute = true;
     }
 

@@ -2,6 +2,22 @@
 import { modalBox }  from "./notifications.js";
 import { mediator }  from "./_mediator.js";
 
+function getSettingsFormValues(id){
+    const storageData = webix.storage.local.get(id);
+    return storageData;
+
+}
+
+function settingsForm(form){
+    const id = form.config.id;
+    if (id == "userprefsWorkspaceForm" || 
+        id == "userprefsOtherForm")
+    {
+        getSettingsFormValues(form);
+    }
+    const storageData = getSettingsFormValues(id);
+    form.setValues(storageData);
+}
 
 function unsetDirty(){
     const forms = mediator.getForms();
@@ -11,9 +27,13 @@ function unsetDirty(){
 
     if (forms){
         forms.forEach(function(form){
-     
+
             if (form && form.isDirty()){
+
                 form.clear();
+
+                settingsForm (form);
+
                 form.setDirty(false);
             }
         });

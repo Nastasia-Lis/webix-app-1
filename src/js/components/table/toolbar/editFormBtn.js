@@ -2,7 +2,7 @@
 import { Action }             from "../../../blocks/commonFunctions.js";
 import { setFunctionError  }  from "../../../blocks/errors.js";
 import { Button }             from "../../../viewTemplates/buttons.js";
-
+ 
 const logNameFile = "tableEditForm => toolbarBtn";
 
 function setSecondaryState(){

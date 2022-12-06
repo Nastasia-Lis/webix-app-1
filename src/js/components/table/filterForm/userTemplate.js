@@ -2,11 +2,8 @@
 import { setLogValue }                          from '../../logBlock.js';
 import { setFunctionError, setAjaxError }       from "../../../blocks/errors.js";
 import { createChildFields }                    from "./createElements/childFilter.js";
-
-import { visibleInputs, visibleField, 
-         clearSpace, addClass, removeClass }    from "./common.js";
-
 import { getItemId, Action, getTable }          from "../../../blocks/commonFunctions.js";
+import { Filter }                               from "./actions/_FilterActions.js";
 
 const logNameFile     = "tableFilter => userTemplate";
 
@@ -33,8 +30,8 @@ function showParentField (el){
     const idEl      = el.id;
     const element   = $$(idEl);
     const htmlClass = element.config.columnName;
- 
-    visibleField(1, htmlClass, idEl);
+    Filter.setFieldState(1, htmlClass, idEl);
+   // visibleField(1, htmlClass, idEl);
 
     setBtnsValue(el);
     setValue    (element, el.value);
@@ -53,23 +50,23 @@ function createChildField(el){
     setValue    ($$(idField), el.value);
 }
 
+
+function returnValue(array, index){
+    const lastKey = array.length - index;
+    return array[lastKey];
+}
+
 function hideSegmentBtn(){
-    function returnValue(array, index){
-        const lastKey = array.length - index;
-        return array[lastKey];
-    }
-
-    const lastCollection = returnValue (Object.keys(visibleInputs)   , 1);
-    const lastInput      = returnValue (visibleInputs[lastCollection], 1);
-
-    const segmentBtn = $$(lastInput + "_segmentBtn");
+    const lastCollection = returnValue (Filter.getItems(), 1);
+    const lastInput      = returnValue (Filter.getItem(lastCollection), 1);
+    const segmentBtn     = $$(lastInput + "_segmentBtn");
     Action.hideItem(segmentBtn);
 }
 
 
 function  createWorkspace(prefs){
 
-    clearSpace();
+    Filter.clearFilter();
 
     const values = prefs.values;
 
@@ -86,36 +83,35 @@ function  createWorkspace(prefs){
 
 }
 
-function removeFilterPopup(){
-    const popup = $$("popupFilterEdit");
-    if (popup){
-        popup.destructor();
-    }
+function setToSelectStorage(id, val){
+    SELECT_TEMPLATE.id    = id;
+    SELECT_TEMPLATE.value = val;
 }
-
-
 
 function createFiltersByTemplate(data) {
     const currId     = getItemId ();
+
     data             = data.json().content;
+
     const lib        = $$("filterEditLib");
     const libValue   = lib.getValue ();
     const radioValue = lib.getOption(libValue);
 
     try{
-        data.forEach(function(el){
-            const name = currId + "_filter-template_" + radioValue.value;
+        data.forEach(function (el){
+            const value = radioValue.value;
+
+            const name = 
+            currId + "_filter-template_" + value;
 
             if (el.name == name){
                 const prefs = JSON.parse(el.prefs);
                 createWorkspace(prefs);
             }
 
-            removeFilterPopup();
-            Action.enableItem($$("btnFilterSubmit"));
-
-            SELECT_TEMPLATE.id    = radioValue.id;
-            SELECT_TEMPLATE.value = radioValue.value;
+            Action.destructItem($$("popupFilterEdit"));
+            Action.enableItem  ($$("btnFilterSubmit"));
+            setToSelectStorage (radioValue.id, value);
 
         });
     } catch(err){
@@ -128,12 +124,12 @@ function createFiltersByTemplate(data) {
 }
 
 function showHtmlContainers(){
-    const keys = Object.keys(visibleInputs);
-
-    keys.forEach(function(el, i){
-        const htmlElement = document.querySelector("." + el);
-        addClass   (htmlElement, "webix_show-content");
-        removeClass(htmlElement, "webix_hide-content");
+    const keys = Filter.getItems();
+    
+    keys.forEach(function(el){
+        const htmlElement = document.querySelector("." + el );
+        Filter.addClass   (htmlElement, "webix_show-content");
+        Filter.removeClass(htmlElement, "webix_hide-content");
     });
 }
 
@@ -158,8 +154,6 @@ function getLibraryData(){
             "getLibraryData"
         );
     });
-
-  
 
 }
 

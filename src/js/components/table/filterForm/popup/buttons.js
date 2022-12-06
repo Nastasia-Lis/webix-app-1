@@ -1,83 +1,87 @@
 
-import { setLogValue }                       from '../../../logBlock.js';
+import { setLogValue }          from '../../../logBlock.js';
 
-import { setFunctionError, setAjaxError }    from "../../../../blocks/errors.js";
-import { modalBox }                          from "../../../../blocks/notifications.js";
+import { setFunctionError, 
+        setAjaxError }          from "../../../../blocks/errors.js";
 
+import { modalBox }             from "../../../../blocks/notifications.js";
 
+import { getLibraryData }       from "../userTemplate.js";
 
-import { getUserprefsData, PREFS_STORAGE }   from "../common.js";
-import { visibleField, visibleInputs }       from "../common.js";
+import { Action }               from "../../../../blocks/commonFunctions.js";
 
+import { Button }               from "../../../../viewTemplates/buttons.js";
 
-import { getLibraryData }      from "../userTemplate.js";
+import { SELECT_TEMPLATE }      from "../userTemplate.js";
 
-import { getItemId, Action }   from "../../../../blocks/commonFunctions.js";
+import { Filter }               from "../actions/_FilterActions.js";
 
-import { Button }              from "../../../../viewTemplates/buttons.js";
-
-import { SELECT_TEMPLATE }     from "../userTemplate.js";
 
 const logNameFile = "tableFilter => popup => buttons";
+
+
+function returnCollection(value){
+    const colId      = $$(value).config.columnName;
+    return Filter.getItem(colId);
+}
+
+function visibleSegmentBtn(selectAll, selectValues){
+
+    const selectLength = selectValues.length;
+
+    selectValues.forEach(function(value, i){
+        const collection = returnCollection(value);
+    
+        const length     = collection.length;
+        const lastIndex  = length - 1;
+        const lastId     = collection[lastIndex];
+
+        const segmentBtn = $$(lastId + "_segmentBtn");
+
+        const lastElem   = selectLength - 1;
+        const prevElem   = selectLength - 1;
+
+        if ( i === lastElem){
+          //  скрыть последний элемент
+            Action.hideItem(segmentBtn);
+
+        } else if ( i === prevElem || selectAll){
+            Action.showItem(segmentBtn);
+        }
+   
+    });
+}
 
 
 function createWorkspaceCheckbox (){
     const values       = $$("editFormPopup").getValues();
     const selectValues = [];
 
-    function returnSegmentBtn(input){
-        return $$( input + "_segmentBtn");
-    }
- 
-    function visibleSegmentBtn(selectAll){
-
-        const selectLength = selectValues.length;
-
-        selectValues.forEach(function(value,i){
-            const colId      = $$(value).config.columnName;
-
-            const collection = visibleInputs[colId];
-            const length     = collection.length;
-            const lastIndex  = length - 1;
-
-            const segmentBtn = returnSegmentBtn(collection[lastIndex]);
-
-            if ( i === selectLength - 1){
-              //  скрыть последний элемент
-              Action.hideItem(segmentBtn);
-  
-        
-            } else if ( i === selectLength - 2 || selectAll){
-                Action.showItem(segmentBtn);
-            }
-
-       
-        });
-    }
     try{
         const keys    = Object.keys(values); 
         let selectAll = false;
 
-        keys.forEach(function(el,i){
+        keys.forEach(function(el){
+            const isChecked = values[el];
 
-            if (values[el] && el !== "selectAll"){
+            if (isChecked && el !== "selectAll"){
                 selectValues.push(el);
             } else if (el == "selectAll"){
                 selectAll = true;
             }
 
             const columnName = $$(el).config.columnName;
-            visibleField (values[el], columnName, el);
+            Filter.setFieldState(values[el], columnName, el);
   
         });
 
-        visibleSegmentBtn(selectAll);
+        visibleSegmentBtn(selectAll, selectValues);
 
     } catch(err){
         setFunctionError(
             err,
             logNameFile,
-            "function createWorkspaceCheckbox"
+            "createWorkspaceCheckbox"
         );
     }
 }
@@ -87,8 +91,9 @@ function visibleCounter(){
     const values        = Object.values(elements);
     let visibleElements = 0;
     try{
-        values.forEach(function(el,i){
-            if ( !(el.config.hidden) ){
+        values.forEach(function(el){
+            const isVisibleElem = el.config.hidden;
+            if ( !isVisibleElem ){
                 visibleElements++;
             }
             
@@ -106,13 +111,6 @@ function visibleCounter(){
 }
 
 
-function hideFilterPopup (){
-    const popup = $$("popupFilterEdit");
-    if (popup){
-        popup.destructor();
-    }
-}
-
 function resetLibSelectOption(){
     if (SELECT_TEMPLATE){
         delete SELECT_TEMPLATE.id;
@@ -120,90 +118,111 @@ function resetLibSelectOption(){
     }
 }
 
+function setDisableTabState(){
+    const visibleElements = visibleCounter();
 
+    if (!(visibleElements)){
+        Action.showItem     ($$("filterEmptyTempalte" ));
+
+        Action.disableItem  ($$("btnFilterSubmit"     ));
+        Action.disableItem  ($$("filterLibrarySaveBtn"));
+    } 
+}
+
+function getCheckboxData(){
+      
+    Action.enableItem($$("filterLibrarySaveBtn"));
+    createWorkspaceCheckbox ();
+
+    setDisableTabState();
+
+    Action.destructItem($$("popupFilterEdit"));
+
+    resetLibSelectOption();
+
+    setLogValue(
+        "success",
+        "Рабочая область фильтра обновлена"
+    );
+}
+
+function showEmptyTemplate(){
+    const keys = Filter.lengthPull();
+    if ( !keys ){
+        Action.showItem($$("filterEmptyTempalte"));
+    }
+}
 
 function popupSubmitBtn (){
-
-    function getCheckboxData(){
-      
-        Action.enableItem($$("filterLibrarySaveBtn"));
-        createWorkspaceCheckbox ();
-
-        const visibleElements = visibleCounter();
-
-        if (!(visibleElements)){
-            Action.showItem     ($$("filterEmptyTempalte" ));
-            Action.disableItem  ($$("btnFilterSubmit"     ));
-            Action.disableItem  ($$("filterLibrarySaveBtn"));
-        } 
-
-        hideFilterPopup     ();
-        resetLibSelectOption();
-        setLogValue(
-            "success",
-            "Рабочая область фильтра обновлена"
-        );
-    }
-
     try {                                             
         const tabbarValue = $$("filterPopupTabbar").getValue();
 
         if (tabbarValue == "editFormPopupLib" ){
+   
             $$("resetFilterBtn").callEvent("resetFilter");
-            getLibraryData();
+            getLibraryData ();
 
         } else if (tabbarValue == "editFormScroll" ){
             getCheckboxData();
         }
+
     } catch (err) {
         setFunctionError( 
             err ,
             logNameFile, 
-            "function popupSubmitBtn"
+            "popupSubmitBtn"
         );
-        $$("popupFilterEdit").destructor();
+
+        Action.destructItem($$("popupFilterEdit"));
     }
 
-    function showEmptyTemplate(){
-        const keys = Object.keys(visibleInputs).length;
-
-        if ( !keys ){
-            Action.showItem($$("filterEmptyTempalte"));
-        }
-    }
     showEmptyTemplate();
 
 }
 
-function deleteElement(el, id, value, lib){
 
-    const url            = "/init/default/api/userprefs/" + el.id;
-    const deleteTemplate = webix.ajax().del(url, el);
+
+let lib;
+let radioValue;
+
+function removeOptionState (){
+    const id      = radioValue.id;
+    const options = lib.config.options;
+    try{
+        options.forEach(function(el){
+            if (el.id == id){
+                el.value = el.value + " (шаблон удалён)";
+                lib.refresh();
+                lib.disableOption(lib.getValue());
+                lib.setValue("");
+            }
+        });
+    } catch (err){
+        setFunctionError(
+            err, 
+            logNameFile, 
+            "removeOptionState"
+        );
+    }
+}
+
+function deleteElement(){
+    const prefs   = radioValue.prefs;
+    const idPrefs = prefs.id;
+
+    const path = "/init/default/api/userprefs/" + idPrefs;
+    const deleteTemplate = webix.ajax().del(path, prefs);
 
     deleteTemplate.then(function(data){
         data = data.json();
-    
-        function removeOptionState (){
-            try{
-                lib.config.options.forEach(function(el,i){
-                    if (el.id == id){
-                        el.value = value + " (шаблон удалён)";
-                        lib.refresh();
-                        lib.disableOption(lib.getValue());
-                        lib.setValue("");
-                    }
-                });
-            } catch (err){
-                setFunctionError(
-                    err, 
-                    logNameFile, 
-                    "function deleteElement => removeOptionState"
-                );
-            }
-        }
 
-        if (data.err_type !== "e"&& data.err_type !== "x"){
-            setLogValue("success","Шаблон « " + value + " » удален");
+        const value = radioValue.value;
+
+        if (data.err_type == "i"){
+            setLogValue(
+                "success",
+                "Шаблон « " + value + " » удален"
+            );
             removeOptionState ();
         } else {
             setFunctionError(
@@ -214,6 +233,7 @@ function deleteElement(el, id, value, lib){
         }
 
     });
+
     deleteTemplate.fail(function(err){
         setAjaxError(
             err, 
@@ -224,33 +244,21 @@ function deleteElement(el, id, value, lib){
 }
 
 async function userprefsData (){ 
-    const currId     = getItemId ();
-    const lib        = $$("filterEditLib");
-    const libValue   = lib.getValue();
-    const radioValue = lib.getOption(libValue);
 
-    if (!PREFS_STORAGE.userprefs){
-        await getUserprefsData (); 
+    lib = $$("filterEditLib");
+    const libValue = lib.getValue();
+    radioValue = lib.getOption(libValue);
+
+    const idPrefs = radioValue.prefs.id;
+
+    if (idPrefs){
+        deleteElement       (radioValue, lib);
+        resetLibSelectOption();
+        Action.disableItem  ($$("editFormPopupLibRemoveBtn"));
     }
 
-    if (PREFS_STORAGE.userprefs){
-        const data         = PREFS_STORAGE.userprefs.content;
+    
 
-        const id           = radioValue.id;
-        const value        = radioValue.value;
-
-        const templateName = currId + "_filter-template_" + value;
-
-        data.forEach(function(el){
-            if (el.name == templateName){
-                deleteElement(el, id, value, lib);
-                resetLibSelectOption();
-                Action.disableItem($$("editFormPopupLibRemoveBtn"));
-            }
-        });
-
-
-    }
 }
 
 

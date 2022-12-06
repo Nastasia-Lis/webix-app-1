@@ -38,7 +38,9 @@ function createFilterPopup() {
     
         elements : {
             rows : [
-                createEmptyTemplate("Выберите нужные поля или шаблон из библиотеки"),
+                createEmptyTemplate(
+                    "Выберите нужные поля или шаблон из библиотеки"
+                ),
                 editFormPopup
             ]
           

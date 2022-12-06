@@ -1,15 +1,11 @@
 
-import { Action }                                           from "../../../blocks/commonFunctions.js";
-import { setFunctionError }                                 from "../../../blocks/errors.js";
+import { Action }             from "../../../blocks/commonFunctions.js";
+import { Filter }             from "./actions/_FilterActions.js";
 
-import { createParentFilter }                               from "./createElements/parentFilter.js";
-
-
-const logNameFile = "tableFilter => toolbarBtnClick";
+import { createParentFilter } from "./createElements/parentFilter.js";
 
 const primaryBtnClass   = "webix-transparent-btn--primary";
 const secondaryBtnClass = "webix-transparent-btn";
-
 
 function resizeContainer(width){
     const filterContainer = $$("filterTableBarContainer");
@@ -21,74 +17,90 @@ function resizeContainer(width){
 function filterMinAdaptive(){
     Action.hideItem($$("tableContainer"));
     Action.hideItem($$("tree"));
+
     Action.showItem($$("table-backTableBtnFilter"));
-    resizeContainer(window.innerWidth - 45);
+
+    const emptySpace = 45;
+    resizeContainer(window.innerWidth - emptySpace);
 
 }
 
-function setPrimaryBtnState(btnClass){
-    try{
-        btnClass.classList.add   (primaryBtnClass);
-        btnClass.classList.remove(secondaryBtnClass);
-    } catch (err) {
-        setFunctionError(err,logNameFile,"filterMaxAdaptive => setPrimaryBtnState");
+function setBtnCssState(btnClass, add, remove){
+    Filter.addClass    (btnClass, add);
+    Filter.removeClass (btnClass, remove);
+}
+
+
+let btnClass;
+
+function setPrimaryState(filter){
+    Action.hideItem ($$("table-editForm"));
+    Action.showItem (filter);
+
+    const isChildExists = filter.getChildViews();
+
+    if(isChildExists){
+        createParentFilter("filterTableForm", 3);
     }
+
+    setBtnCssState(
+        btnClass, 
+        primaryBtnClass, 
+        secondaryBtnClass
+    );
+
+    Action.showItem($$("filterTableBarContainer"));
 }
 
-function setSecondaryBtnState(btnClass){   
-    try{   
-        btnClass.classList.add(secondaryBtnClass);
-        btnClass.classList.remove(primaryBtnClass);
-    } catch (err) {
-        setFunctionError(err,logNameFile,"filterMaxAdaptive => setSecondaryBtnState");
+function setSecondaryState(){
+    setBtnCssState(
+        btnClass, 
+        secondaryBtnClass, 
+        primaryBtnClass
+    );
+    Action.hideItem($$("filterTableForm"));
+    Action.hideItem($$("filterTableBarContainer"));
+}
+
+function toolbarBtnLogic(filter){
+    btnClass = document.querySelector(".webix_btn-filter");
+    const isPrimaryClass = btnClass.classList.contains(primaryBtnClass);
+    
+    if(!isPrimaryClass){
+        setPrimaryState(filter);
+    } else {
+        setSecondaryState();
     }
-}
-
+}     
 
 function filterMaxAdaptive(filter, idTable){
 
-    function toolbarBtnLogic(){
-        const btnClass  = document.querySelector(".webix_btn-filter");
-
-        if(!(btnClass.classList.contains(primaryBtnClass))){
-
-            Action.hideItem($$("table-editForm"));
-            Action.showItem(filter);
-
-            if(filter.getChildViews() !== 0){
-                createParentFilter("filterTableForm", 3);
-            }
-
-            setPrimaryBtnState(btnClass);
-
-            Action.showItem($$("filterTableBarContainer"));
-        } else {
-            setSecondaryBtnState(btnClass);
-            Action.hideItem($$("filterTableForm"));
-            Action.hideItem($$("filterTableBarContainer"));
-
-        }
-    }     
- 
     $$(idTable).clearSelection();
 
-    toolbarBtnLogic();
+    toolbarBtnLogic(filter);
     resizeContainer(350);
 }
 
 
 function filterBtnClick (idTable){
 
+    Filter.clearAll(); // clear inputs storage
+    
     const filter    = $$("filterTableForm");
     const container = $$("container");
 
     filterMaxAdaptive(filter, idTable);
-   
-    if (container.$width < 850){
+    
+    const width    = container.$width;
+    const minWidth = 850;
+
+    if (width < minWidth){
         Action.hideItem($$("tree"));
-        if (container.$width  < 850 ){
+
+        if (width < minWidth ){
             filterMinAdaptive();
         }
+
     } else {
         Action.hideItem($$("table-backTableBtnFilter"));
         filter.config.width = 350;

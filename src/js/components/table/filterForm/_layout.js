@@ -1,6 +1,36 @@
 import { buttonsFormFilter }    from "./buttons/_layoutBtn.js";
 import { createEmptyTemplate }  from "../../../viewTemplates/emptyTemplate.js";
 
+function returnBtns(){
+    const btns = [
+        {   rows   : [
+            {   
+                margin      : 2, 
+                cols        : [
+                    buttonsFormFilter("filterBackTableBtn"),
+                    buttonsFormFilter("formEditBtn"),
+                    buttonsFormFilter("formResetBtn"),
+                ],
+            },
+            ]
+        },
+
+        {   id   : "btns-adaptive",
+            rows : [
+                {  
+                    margin      : 2, 
+                    cols        : [
+                        buttonsFormFilter("formBtnSubmit"),
+                        buttonsFormFilter("formLibrarySaveBtn"),
+                    ]
+                },
+                
+            ]
+        }
+    ];
+
+    return btns;
+}
 
 const filterTableForm = {
     view        : "form", 
@@ -11,42 +41,19 @@ const filterTableForm = {
     elements    : [
         {   
             css       : "webix_form-adaptive",
-            rows      : [
-                {   rows   : [
-                      
-                    {   
-                        margin      : 2, 
-                        cols        : [
-                            buttonsFormFilter("filterBackTableBtn"),
-                            buttonsFormFilter("formEditBtn"),
-                            buttonsFormFilter("formResetBtn"),
-                        ],
-                    },
-                    ]
-                },
-
-                {   id   : "btns-adaptive",
-                    rows : [
-                        {  
-                            margin      : 2, 
-                            cols        : [
-                                buttonsFormFilter("formBtnSubmit"),
-                                buttonsFormFilter("formLibrarySaveBtn"),
-                            ]
-                        },
-                        
-                    ]
-                }
-            ]
+            rows      :  returnBtns()
         },
         {   id        : "filterEmptyTempalte",
             rows      : [
-                createEmptyTemplate("Добавьте фильтры из редактора")
+                createEmptyTemplate(
+                    "Добавьте фильтры из редактора"
+                )
             ],
         }
 
         
     ],
+
     rules:{
         $all:webix.rules.isNotEmpty
     },
@@ -59,18 +66,21 @@ const filterTableForm = {
 };
 
 function filterForm (){
-    return {    id      : "filterTableBarContainer", 
-                minWidth: 250,
-                width   : 350, 
-                hidden  : true, 
-                rows    : [
-                    {   id  : "editFilterBarAdaptive", 
-                        rows: [
-                            filterTableForm
-                        ]
-                    }
+    const form = {   
+        id       : "filterTableBarContainer", 
+        minWidth : 250,
+        width    : 350, 
+        hidden   : true, 
+        rows     : [
+            {   id   : "editFilterBarAdaptive", 
+                rows : [
+                    filterTableForm
                 ]
-            };
+            }
+        ]
+    };
+    
+    return form;
 }
 
 export{

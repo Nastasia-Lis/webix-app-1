@@ -1,17 +1,20 @@
 
 
-import { getComboOptions, Action }  from "../../../../blocks/commonFunctions.js";
+import { getComboOptions, 
+        Action }            from "../../../../blocks/commonFunctions.js";
 
 
 let el ;
 let uniqueId;
 let typeField;
 
+
+
 function createFieldTemplate(){
 
-    const elemId        = el.id;
+    const elemId  = el.id;
+    const fieldId = elemId + "_filter-child-" + uniqueId;
 
-    const fieldId       = elemId + "_filter-child-" + uniqueId;
     const fieldTemplate = {
         id        : fieldId, 
         name      : fieldId,
@@ -32,15 +35,17 @@ function createFieldTemplate(){
     return fieldTemplate;
 }
 
+
 function createText(type){
-    const element       = createFieldTemplate();
-    element.view        = "text";
+    const element = createFieldTemplate();
+    element.view  = "text";
 
     if(type == "text"){
         element.placeholder = "Введите текст";
     } else if (type == "int"){
         element.placeholder    = "Введите число";
-        element.invalidMessage = "Поле поддерживает только числовой формат";
+        element.invalidMessage = 
+        "Поле поддерживает только числовой формат";
         element.validate       = function(val){
             return !isNaN(val*1);
         };

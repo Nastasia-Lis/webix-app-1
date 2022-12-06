@@ -13,9 +13,11 @@ let viewPosition;
 let inputTemplate;
 
 function createInputTemplate (el){
+    const id = el.id + "_filter";
+ 
     inputTemplate = { 
-        id              : el.id + "_filter",
-        name            : el.id + "_filter", 
+        id              : id,
+        name            : id, 
         hidden          : true,
         label           : el.label, 
         labelPosition   : "top",
@@ -73,7 +75,8 @@ function createText (type){
 
     } else if (type == "int"){
         elem.placeholder     = "Введите число";
-        elem.invalidMessage  = "Поле поддерживает только числовой формат";
+        elem.invalidMessage  = 
+        "Поле поддерживает только числовой формат";
         elem.validate        = function (val) {
             return !isNaN(val*1);
         };
@@ -128,7 +131,7 @@ function generateElements(){
     const inputsArray = [];
     const columnsData = $$("table").getColumns(true);
     try{
-        columnsData.forEach((el, i) => {
+        columnsData.forEach((el) => {
             const id = el.id;
 
             createInputTemplate (el);
@@ -187,8 +190,7 @@ function createFilter(arr){
 function addInputs(inputs){
 
     const elem = $$(parentElement);
-
-
+    
     try{
         if(elem){ 
             elem.addView(

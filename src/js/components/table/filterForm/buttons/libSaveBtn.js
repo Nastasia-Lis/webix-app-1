@@ -2,13 +2,11 @@ import { setLogValue }                           from '../../../logBlock.js';
 
 import { setFunctionError,setAjaxError }         from "../../../../blocks/errors.js";
 import { modalBox }                              from "../../../../blocks/notifications.js";
-
-import { visibleInputs}                          from "./../common.js";
-
 import { getItemId, pushUserDataStorage, 
          getUserDataStorage }                    from "../../../../blocks/commonFunctions.js";
 
 import { Button }                                from "../../../../viewTemplates/buttons.js";
+import { Filter }                                from "../actions/_FilterActions.js";
 
 const logNameFile   = "tableFilter => buttons => libSaveBtn";
 
@@ -18,7 +16,31 @@ let currId;
 let sentObj;
 let currName;
 
-function pushValues(id, value, operation, logic, parent){
+
+function isParent(el){
+    const config = el.config;
+    const name   = config.columnName;
+    const parent = name + "_filter";
+    const id     = config.id;
+
+    let check    = null;
+
+    if (parent !== id){
+        check = name;
+    } else {
+
+    }
+
+    return check;
+}
+
+function pushValues(id, logic){
+
+    const btn = $$(id + "-btnFilterOperations");
+
+    const operation = btn.getValue();
+    const value     = $$(id).getValue();
+    const parent    = isParent($$(id));
 
     template.values.push({
         id          : id, 
@@ -30,55 +52,37 @@ function pushValues(id, value, operation, logic, parent){
 
 }
 
-function isParent(el){
-    const parent = el.config.columnName + "_filter";
-    const id     = el.config.id;
-    let check    = null;
-
-    if (parent !== id){
-        check = el.config.columnName;
-    } else {
-
-    }
-
-    return check;
-}
-
 function setOperation(arr){
     arr.forEach(function(el){
    
         try{
-            const value      = $$( el ).getValue();
-
-            const operation  = $$( el + "-btnFilterOperations" ).getValue();
-
             const segmentBtn = $$( el + "_segmentBtn" );
+
             let logic = null;
+
             if (segmentBtn.isVisible()){
                 logic = segmentBtn.getValue();
             }
 
-            const parent = isParent($$( el ));
-    
-            pushValues(el, value, operation, logic, parent);
+            pushValues(el, logic);
 
         } catch(err){
             setFunctionError(
                 err,
                 logNameFile,
-                "function setOperation"
+                "setOperation"
             );
         }
     });
 }
 
 function createPrefsValue(){
-    const keys             = Object.keys(visibleInputs);
-    const keysLength       = keys.length;
+    const keys       = Filter.getItems  ();
+    const keysLength = Filter.lengthPull();
    
     for (let i = 0; i < keysLength; i++) {   
         const key = keys[i];
-        setOperation(visibleInputs[key]);
+        setOperation(Filter.getItem(key));
     }
 
 }
@@ -227,7 +231,7 @@ async function saveTemplate (result){
     };
 
     sentObj            = {
-        name    : currId + "_filter-template_" + nameTemplate,
+        name    : currName,
         prefs   : template,
         owner   : user.id
     };
@@ -283,7 +287,8 @@ const librarySaveBtn = new Button({
         disabled : true, 
         click    : libraryBtnClick
     },
-    titleAttribute : "Сохранить шаблон с полями в библиотеку"
+    titleAttribute : 
+    "Сохранить шаблон с полями в библиотеку"
 
    
 }).minView();

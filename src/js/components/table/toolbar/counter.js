@@ -4,14 +4,17 @@ function createTemplateCounter(idEl, text){
         id      : idEl,
         css     : "webix_style-template-count",
         height  : 30,
-        template:function () {
+        template: function () {
+
             const values = $$(idEl).getValues();
             const keys   = Object.keys(values);
-            if (keys.length !==0){
-                
+
+            if (keys.length){
                 return "<div style='color:#999898;'>" + 
                         text + ": " + values + 
-                        " </div>";
+                        " </div>"
+                ;
+                
             } else {
                 return "";
             }

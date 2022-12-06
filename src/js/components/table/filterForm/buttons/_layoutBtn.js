@@ -1,6 +1,6 @@
 import { librarySaveBtn }   from "./libSaveBtn.js";
 import { backBtn }          from "./backBtn.js";
-import { editBtn }          from "./editBtn.js";
+import { editBtn }          from "./editBtn/_layout.js";
 import { submitBtn }        from "./submitBtn.js";
 import { resetBtn }         from "./resetBtn.js";
 

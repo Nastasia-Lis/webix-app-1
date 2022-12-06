@@ -2,9 +2,12 @@
 import { setFunctionError }   from "../../../../../blocks/errors.js";
 import { Action }             from "../../../../../blocks/commonFunctions.js";
 import { SELECT_TEMPLATE }    from "../../userTemplate.js";
+
+
 const logNameFile = "tableFilter => popup => tabbar => tabbar";
 
 function btnSubmitState (state){
+
     const btn = $$("popupFilterSubmitBtn");
 
     if (state=="enable"){
@@ -30,8 +33,9 @@ function visibleRemoveBtn (param){
 
 function setSelectedOption(){
     const radio = $$("filterEditLib");
+
     if (SELECT_TEMPLATE && SELECT_TEMPLATE.id){
-        radio.setValue(SELECT_TEMPLATE.id);
+        radio.setValue   (SELECT_TEMPLATE.id);
         Action.enableItem($$("editFormPopupLibRemoveBtn"));
         btnSubmitState   ("disable");
     }
@@ -54,7 +58,11 @@ function filterLibrary(){
         visibleRemoveBtn  (true);
         setSelectedOption ();
     }catch(err){
-        setFunctionError(err, logNameFile, "filterLibrary");
+        setFunctionError(
+            err, 
+            logNameFile, 
+            "filterLibrary"
+        );
     }  
 
 }
@@ -75,7 +83,11 @@ function editFilter (){
                 }
             });
         } catch(err){
-            setFunctionError(err, logNameFile, "countChecked");
+            setFunctionError(
+                err, 
+                logNameFile, 
+                "countChecked"
+            );
         }
     }
     

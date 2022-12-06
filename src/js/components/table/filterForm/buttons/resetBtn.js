@@ -2,33 +2,25 @@ import { setLogValue }                       from '../../../logBlock.js';
 
 import { setFunctionError, setAjaxError }    from "../../../../blocks/errors.js";
 
-import { clearSpace, visibleInputs }         from "../common.js";
-
 import { getItemId, getTable, Action }       from "../../../../blocks/commonFunctions.js";
 
 import { Button }                            from "../../../../viewTemplates/buttons.js";
 import { modalBox }                          from "../../../../blocks/notifications.js";
-
+import { Filter }                            from "../actions/_FilterActions.js";
 
 const logNameFile   = "tableFilter => buttons => resetBtn";
 
-function clearVisibleStorage(){
-    const keys = Object.keys(visibleInputs);
-    if (keys){
-        keys.forEach(function(key){
-            delete visibleInputs[key];
-        });
-    }
-  
-}
+
 
 function removeValues(collection){
-    if (collection){
-        collection.forEach(function(el, i){
 
-            if (el.includes("_filter-child-")){
-                const container = $$(el + "-container");
-                Action.removeItem(container);
+    if (collection){
+
+        collection.forEach(function(el){
+            const idChild = el.includes("_filter-child-");
+
+            if (idChild){
+                Action.removeItem($$(el + "-container"));
             }
      
         });
@@ -37,23 +29,26 @@ function removeValues(collection){
 }
 
 function removeChilds(){
-    const keys   = Object.keys(visibleInputs);
+   const keys = Filter.getItems();
 
-    keys.forEach(function(key, i){
-        removeValues(visibleInputs[key]);
+    keys.forEach(function(key){ 
+        const item = Filter.getItem(key);
+        removeValues(item);
     });
 
 }
 
 function setDataTable(data, table){
+    const overlay = "Ничего не найдено";
     try{
         if (data.length !== 0){
-            table.hideOverlay("Ничего не найдено");
-            table.clearAll();
-            table.parse(data);
+            table.hideOverlay(overlay);
+            table.clearAll   ();
+            table.parse      (data);
+
         } else {
-            table.clearAll();
-            table.showOverlay("Ничего не найдено");
+            table.clearAll   ();
+            table.showOverlay(overlay);
         }
     } catch (err){
         setFunctionError(
@@ -88,14 +83,13 @@ function clearFilterValues(){
 }
 
 function hideInputsContainer(){
-    const inputs = document.querySelectorAll(".webix_filter-inputs");
-
+    const css       = ".webix_filter-inputs";
+    const inputs    = document.querySelectorAll(css);
     const hideClass = "webix_hide-content";
+
     try{
-        inputs.forEach(function(elem,i){
-            if ( !(elem.classList.contains(hideClass)) ){
-                   elem.classList.add     (hideClass);
-            }
+        inputs.forEach(function(elem){
+            Filter.addClass(elem, hideClass);
         });
     } catch (err){
         setFunctionError(
@@ -110,14 +104,16 @@ function hideInputsContainer(){
 
 function resetTable(){
     const itemTreeId = getItemId ();
-    const table      = getTable();
+    const table      = getTable  ();
     const query      = [
         `query=${itemTreeId}.id+%3E%3D+0&sorts=
-        ${itemTreeId}.id&limit=80&offset=0`
+               ${itemTreeId}.id&limit=80&offset=0
+        `
     ];
+   
 
-    const url        = "/init/default/api/smarts?" + query;
-    const queryData  = webix.ajax(url);
+    const path       = "/init/default/api/smarts?" + query;
+    const queryData  = webix.ajax(path);
 
      
     queryData.then(function(data){
@@ -133,14 +129,18 @@ function resetTable(){
             
                 clearFilterValues   ();
                 hideInputsContainer ();
-                clearSpace          ();
+
+                Filter.clearFilter  ();
 
                 Action.hideItem   ($$("tableFilterPopup"    ));
+
                 Action.disableItem($$("filterLibrarySaveBtn"));
                 Action.disableItem($$("resetFilterBtn"      ));
+
                 Action.showItem   ($$("filterEmptyTempalte" ));
 
-                clearVisibleStorage();
+                Filter.clearAll(); // clear inputs storage
+
             } catch (err){
                 setFunctionError(
                     err,
@@ -153,14 +153,18 @@ function resetTable(){
         } else {
             setLogValue(
                 "error", 
-                "tableFilter => buttons function resetFilterBtn ajax: " +
+                "resetFilterBtn ajax: " +
                 dataErr.err
             );
         }
     });
 
     queryData.fail(function(err){
-        setAjaxError(err, logNameFile,"resetFilterBtn");
+        setAjaxError(
+            err, 
+            logNameFile,
+            "resetFilterBtn"
+        );
     });
 }
 
@@ -170,8 +174,8 @@ function resetFilterBtnClick (){
     try {
 
         modalBox("Все фильтры будут удалены", 
-        "Вы уверены?", 
-        ["Отмена", "Удалить"]
+                 "Вы уверены?", 
+                ["Отмена", "Удалить"]
         )
         .then(function (result){
             if (result == 1){
@@ -185,8 +189,9 @@ function resetFilterBtnClick (){
     } catch(err) {
         setFunctionError(
             err,
-            "Ошибка при очищении фильтров; tableFilter => buttons",
-            "function resetFilterBtnClick"
+            "Ошибка при очищении фильтров; " +
+            "filterForm => buttons",
+            "resetFilterBtnClick"
         );
     }
 }
@@ -201,14 +206,15 @@ const resetBtn = new Button({
         disabled : true,
         icon     : "icon-trash", 
         click    : function(){
-            this.callEvent("resetFilter");
+             resetFilterBtnClick();
         }
     },
     titleAttribute : "Сбросить фильтры",
     onFunc: {
         resetFilter:function(){
-            resetFilterBtnClick();
-        
+            const table = getTable();
+            table.config.filter = null;
+            resetTable();
         }
     }
 

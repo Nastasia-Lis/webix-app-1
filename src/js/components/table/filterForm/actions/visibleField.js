@@ -6,10 +6,19 @@ import { Filter }              from "./_FilterActions.js";
 
 const logNameFile = "filterForm => actions => visibleField";
 
+
+const showClass   = "webix_show-content";
+const hideClass   = "webix_hide-content";
+
+let segmentBtn;
+let elementClass;
+let condition;
+let el;
+
 function checkChild(elementClass){
     let unique = true;
     
-    if (Filter.lengthKey(elementClass)){
+    if (Filter.lengthItem(elementClass)){
         unique = false;
     }
 
@@ -17,178 +26,182 @@ function checkChild(elementClass){
  
 }
 
-function visibleField (condition, elementClass = null, el = null){
-    const showClass  = "webix_show-content";
-    const hideClass  = "webix_hide-content";
-    const segmentBtn = $$( el + "_segmentBtn");
 
-
-    function editStorage(){
-        if (condition && el !== "selectAll"){
-            Filter.clearKey(elementClass)
-            // if ( !visibleInputs[elementClass] ){
-            //     visibleInputs[elementClass] = [];
-            // }
-
-
-            const unique = checkChild(elementClass, el);
-
-            if (unique){
-        
-                Filter.pushInPull(elementClass, el);
-               // visibleInputs[elementClass].push(el);
-                Action.showItem(segmentBtn);
-            }
-         
-
-        } else if (el !== "selectAll") {
-            Filter.clearKey(elementClass)
-           // visibleInputs[elementClass] = [];
-        }
-
-    }
-
-    editStorage();
-
-
-    const htmlElement = document.querySelectorAll(".webix_filter-inputs");
-
-    function showHtmlEl(){
-  
-        try{
-         
-            htmlElement.forEach(function(elem,i){
+function editStorage(){
+    if (condition && el !== "selectAll"){
        
-                if (elem.classList.contains(elementClass)){
-                    addClass   (elem, showClass);
-                    removeClass(elem, hideClass);
+        const item = Filter.getItem(elementClass);
 
-                } else {
-                    addClass   (elem, hideClass);
-
-                }
-            });
-
-        } catch(err){
-            setFunctionError(err,logNameFile,"function visibleField => showHtmlEl");
+        if (!item){
+            Filter.clearItem (elementClass); // =>  key = []
         }
-    }
-
-    function showInputContainers(){
-        Action.showItem($$(el));
-        Action.showItem($$(el+"_container-btns"));
-    }
 
 
-    function setValueHiddenBtn(btn,value){
-        if( btn ){
-            btn.setValue(value);
+        const unique = checkChild(elementClass, el);
+
+        if (unique){
+            Filter.pushInPull(elementClass, el);
+            Action.showItem  (segmentBtn);
         }
+     
+
+    } else if (el !== "selectAll") {
+        Filter.clearItem(elementClass);
     }
 
-    function hideInputContainers (){
-        const operBtn     =  $$(el+"-btnFilterOperations");
-        const segmentBtn = $$(el+"_segmentBtn");
-        const btns       = $$(el+"_container-btns");
-        
-      
+}
 
-        $$(el).setValue("");
-        $$(el).hide();
 
-        setValueHiddenBtn(operBtn,  "=");
-        setValueHiddenBtn(segmentBtn, 1);
-        Action.hideItem(btns);
-   
+function showInputContainers(){
+    Action.showItem($$(el));
+    Action.showItem($$(el + "_container-btns"));
+}
+
+function setValueHiddenBtn(btn, value){
+    if( btn ){
+        btn.setValue(value);
     }
+}
+function setDefStateBtns(){
+    const operBtn    = $$(el + "-btnFilterOperations");
+    const btns       = $$(el + "_container-btns"     );
 
-    function hideHtmlEl (){
-        try{
-            htmlElement.forEach(function(elem,i){
-                if (elem.classList.contains(elementClass)){
-                    addClass   (elem, hideClass);
-                    removeClass(elem, showClass);
-                }
-            });
+    
+    setValueHiddenBtn(operBtn   , "=");
+    setValueHiddenBtn(segmentBtn,  1);
+    Action.hideItem  (segmentBtn    );
+    Action.hideItem  (btns          );
+}
 
-        } catch(err){
-            setFunctionError(err,logNameFile,"function visibleField => hideHtmlEl");
-        }
-    }
+function setDefStateInputs (){
+    $$(el).setValue("");
+    $$(el).hide();
+}
+
+
+function setHtmlState(add, remove){
   
-    function removeChilds(){
-        const countChild = $$(el+"_rows").getChildViews();  
-        const childs     = [];
+    const css = ".webix_filter-inputs";
+    const htmlElement = document.querySelectorAll(css);
+    
+    try{
+        htmlElement.forEach(function (elem){
+            const isClassExists = elem.classList.contains(elementClass);
+     
+            if (isClassExists){
+                Filter.addClass   (elem, add   );
+                Filter.removeClass(elem, remove);
+            } 
 
-        try{
-           
-            Object.values(countChild).forEach(function(elem,i){
-              
-                if (elem.config.id.includes("child")){
-                    childs.push($$(elem.config.id));
-                }
+        });
 
-            });
+        
 
-            childs.forEach(function(el,i){
-                const parent = el.getParentView();
-                parent.removeView($$(el.config.id));
-
-            });
-
-        } catch(err){
-            setFunctionError(err,logNameFile,"function visibleField => removeChids");
-        }
+    } catch(err){
+        setFunctionError(
+            err,
+            logNameFile,
+            "hideHtmlEl"
+        );
     }
+}
 
+function removeChilds(){
+    const container       = $$(el + "_rows");
+    const containerChilds = container.getChildViews();
+
+    const values = Object.values(containerChilds);
+    const childs = [];
+
+    try{
+       
+        values.forEach(function(elem){
+            const id = elem.config.id;
+
+            if (id.includes("child")){
+                childs.push($$(id));
+            }
+
+        });
+
+        childs.forEach(function(el){
+            Action.removeItem(el);
+        });
+
+    } catch(err) {
+        setFunctionError(
+            err,
+            logNameFile,
+            "removeChids"
+        );
+    }
+}
+
+function isChildExists(){
     let checkChilds = false;
-    if (el!=="selectAll"){
-        const childs = $$(el+"_rows").getChildViews();
+
+    if (el !== "selectAll"){
+        const container = $$(el + "_rows");
+        const childs    = container.getChildViews();
+
         if (childs.length > 1){
             checkChilds = true;
         }
      
     }
 
-    if ( !checkChilds ){
-        if (condition){
-            showHtmlEl          ();
-            showInputContainers ();
-            Action.enableItem   ($$("resetFilterBtn"        ));
-            Action.enableItem   ($$("filterLibrarySaveBtn"  ));
-            Action.hideItem     ($$("filterEmptyTempalte"   ));
-        } else{
-            try{
-    
-                if ($$(el).isVisible()){
-                    hideHtmlEl ();
-                }
-
-                if($$(el+"_rows")){
-                    removeChilds();
-                }
-
-                hideInputContainers ();
-
-            } catch(err){
-                setFunctionError(err,logNameFile,"function visibleField => hideElements");
-            }
-        }
-    } else {
-        if ( !condition ){
-            if ($$(el).isVisible()){
-                hideHtmlEl ();
-            }
-
-            if($$(el+"_rows")){
-                removeChilds();
-            }
-
-            hideInputContainers ();
-        }
-    }
+    return checkChilds;
 }
 
+function showInput(){
+
+    setHtmlState(showClass, hideClass);
+    showInputContainers ();
+    Action.enableItem   ($$("resetFilterBtn"        ));
+    Action.enableItem   ($$("filterLibrarySaveBtn"  ));
+    Action.hideItem     ($$("filterEmptyTempalte"   ));  
+}
+
+function hideInput(){
+
+    if ($$(el).isVisible()){
+        setHtmlState(hideClass, showClass);
+    }
+
+ 
+
+    if($$(el + "_rows")){
+        removeChilds();
+    }
+
+    setDefStateInputs();
+    setDefStateBtns  ();
+
+}
+
+
+function visibleField (visible, cssClass, element){
+ 
+    condition    = visible;
+    elementClass = cssClass;
+    el           = element;
+
+    segmentBtn   = $$( el + "_segmentBtn");
+    
+    editStorage();
+
+    if (!isChildExists()){
+        if (condition){
+            showInput();
+        } else {
+            hideInput();
+        }
+    } else if (!condition){
+        hideInput(); 
+    }
+
+
+}
 
 export {
     visibleField
