@@ -1,8 +1,7 @@
 
 import { setFunctionError }   from "../../../../../blocks/errors.js";
 import { Action }             from "../../../../../blocks/commonFunctions.js";
-import { SELECT_TEMPLATE }    from "../../userTemplate.js";
-
+import { Filter }             from "../../actions/_FilterActions.js";
 
 const logNameFile = "tableFilter => popup => tabbar => tabbar";
 
@@ -34,8 +33,10 @@ function visibleRemoveBtn (param){
 function setSelectedOption(){
     const radio = $$("filterEditLib");
 
-    if (SELECT_TEMPLATE && SELECT_TEMPLATE.id){
-        radio.setValue   (SELECT_TEMPLATE.id);
+    const currTemplate = Filter.getActiveTemplate();
+
+    if (currTemplate && currTemplate.id){
+        radio.setValue   (currTemplate.id);
         Action.enableItem($$("editFormPopupLibRemoveBtn"));
         btnSubmitState   ("disable");
     }
@@ -98,6 +99,8 @@ function editFilter (){
             btnSubmitState ("disable");
         }
     }
+
+    
 
     countChecked     ();
     visibleRemoveBtn (false);

@@ -11,6 +11,10 @@ class FilterPull {
       
     }
 
+    static getIndex(){
+
+    }
+
     static clearItem (key){
         visibleInputs[key] = [];
     }
@@ -24,6 +28,19 @@ class FilterPull {
         return Object.values(visibleInputs);
     }
 
+    static getIndexFilters(){
+        const container = $$("inputsFilter");
+        const result    = [];
+        if(container){
+            const childs = container.getChildViews();
+            childs.forEach(function(el, i){
+                result[el.config.idCol] = i;
+              
+            });
+        }
+
+        return result;
+    }
 
 
     static getAll (){
@@ -101,8 +118,15 @@ class Filter extends FilterPull {
     static setStateToStorage(){
         setState();
     }
-    
 
+    static setActiveTemplate(val){
+        $$("filterTableForm").config.activeTemplate = val;
+    }
+    
+    static getActiveTemplate(){
+        return $$("filterTableForm").config.activeTemplate;
+    }
+    
     
 }
 

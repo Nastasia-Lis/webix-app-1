@@ -8,6 +8,7 @@ function setStorageData (name, value){
 
 function setLoginActionPref(userLocation, userprefsWorkspace){
     function replaceUser(){
+        console.log(userLocation,  userLocation.href, window.location.href)
         if (userLocation       && 
             userLocation.href  && 
             userLocation.href !== window.location.href ){
@@ -16,6 +17,7 @@ function setLoginActionPref(userLocation, userprefsWorkspace){
         }
     }
     try{
+    
         if (userprefsWorkspace){
             if (userprefsWorkspace.LoginActionOpt == 2){
                 replaceUser();
@@ -24,7 +26,11 @@ function setLoginActionPref(userLocation, userprefsWorkspace){
             replaceUser();
         }
     } catch(err){
-        setFunctionError(err,"storageSettings","setLoginActionPref");
+        setFunctionError(
+            err,
+            "storageSettings",
+            "setLoginActionPref"
+        );
     }
 }
 
@@ -61,6 +67,51 @@ function moveUser(){
         }
 
     }
+}
+
+let restorePref;
+let restore;
+
+function setRestoreToStorage(name, value){
+    if(restore && value){
+        setStorageData (name, JSON.stringify(value));
+
+    } 
+}
+
+function restoreData(){
+    restore = webix.storage.local.get("userRestoreData");
+
+    const path = "/init/default/api/userprefs/" + restorePref.id;
+
+    const delData = webix.ajax().del(path, restorePref);
+
+    delData.then(function(data){
+        data = data.json();
+
+        if (data.err_type !== "i"){
+            setFunctionError(
+                data.err, 
+                "storageSettings", 
+                "restoreData"
+            );
+        }
+    });
+
+    delData.fail(function(err){
+        setAjaxError(
+            err, 
+            "storageSettings", 
+            "restoreData"
+        );
+    });
+ 
+ 
+  
+    setRestoreToStorage("editFormTempData", restore.editProp);
+    setRestoreToStorage("currFilterState",  restore.filter  );
+ 
+    
 }
 
 
@@ -100,7 +151,11 @@ function setLogPref(){
 
         }
     } catch(err){
-        setFunctionError(err,"storageSettings","userprefsWorkspace");
+        setFunctionError(
+            err,
+            "storageSettings",
+            "userprefsWorkspace"
+        );
     }
 }
 
@@ -121,14 +176,26 @@ function setUserPrefs (userData){
         function setDataToStorage(){
  
             try{
-                data.forEach(function(el,i){
+                data.forEach(function(el){
                     if (el.owner == user.id && !(el.name.includes("fav-link_"))){
                         setStorageData (el.name, el.prefs);
                     }
+
+
+                    if (el.owner == user.id && el.name == "userRestoreData"){
+                        restorePref = el;
+
+                    }
+
+                    
                
                 });
             } catch(err){
-                setFunctionError(err,"storageSettings","setDataToStorage");
+                setFunctionError(
+                    err,
+                    "storageSettings",
+                    "setDataToStorage"
+                );
             }
         }
 
@@ -153,6 +220,8 @@ function setUserPrefs (userData){
                     setDataToStorage ();
                     moveUser         ();
                     setLogPref       ();
+
+                    restoreData();
                 });
 
                 userprefsGetData.fail(function(err){
@@ -163,6 +232,8 @@ function setUserPrefs (userData){
  
                 setDataToStorage();
                 moveUser        ();
+
+                restoreData();
             }
 
         

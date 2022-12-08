@@ -7,7 +7,6 @@ import { Filter }                               from "./actions/_FilterActions.j
 
 const logNameFile     = "tableFilter => userTemplate";
 
-const SELECT_TEMPLATE = {};
 
 function setValue(el, value){
     if (value){
@@ -40,39 +39,67 @@ function createChildField(el){
     const table = getTable();
     const col   = table.getColumnConfig(el.parent);
  
-    const idField = createChildFields (col);
+    const idField = createChildFields  (col, el.index);
 
-    const values = el;
-    values.id = idField;
+    const values  = el;
+    values.id     = idField;
   
     setBtnsValue(values);
+
     setValue    ($$(idField), el.value);
 }
 
 
-function returnValue(array, index){
+function returnLastItem(array){
+    const indexes       = Filter.getIndexFilters();
+    const selectIndexes = [];
+
     if (array){
-        const lastKey = array.length - index;
-        return array[lastKey];
+
+        array.forEach(function(el){
+            selectIndexes.push(indexes[el]);
+        });
+
+ 
+        let lastIndex = 0;
+
+        for (let i = 0; i < selectIndexes.length; i++){
+
+            if (selectIndexes[i] > lastIndex) {
+                lastIndex = selectIndexes[i];
+            }
+        }
+
+        const keys = Object.keys(indexes);
+
+        const lastInput = 
+        keys.find(key => indexes[key] === lastIndex);
+
+  
+        return lastInput;
     }
 
 }
 
+function returnLastChild(item){
+    return item[item.length - 1];
+}
+
 function hideSegmentBtn(){
-    const lastCollection = returnValue (Filter.getItems(), 1);
-    const lastInput      = returnValue (Filter.getItem(lastCollection), 1);
+    const lastCollection = returnLastItem  (Filter.getItems());
+    const lastInput      = returnLastChild (Filter.getItem(lastCollection));
     const segmentBtn     = $$(lastInput + "_segmentBtn");
+
     Action.hideItem(segmentBtn);
 }
 
 
 function createWorkspace(prefs){
- 
+    
     Filter.clearFilter();
 
-
+ 
     prefs.forEach(function(el){
-
         if (!el.parent){
             showParentField  (el);
         } else {
@@ -85,10 +112,6 @@ function createWorkspace(prefs){
 
 }
 
-function setToSelectStorage(id, val){
-    SELECT_TEMPLATE.id    = id;
-    SELECT_TEMPLATE.value = val;
-}
 
 function createFiltersByTemplate(data) {
     const currId     = getItemId ();
@@ -98,22 +121,26 @@ function createFiltersByTemplate(data) {
     const lib        = $$("filterEditLib");
     const libValue   = lib.getValue ();
     const radioValue = lib.getOption(libValue);
-
+ 
     try{
         data.forEach(function (el){
             const value = radioValue.value;
 
             const name = 
             currId + "_filter-template_" + value;
-
+      
             if (el.name == name){
                 const prefs = JSON.parse(el.prefs);
                 createWorkspace(prefs.values);
+
+                Action.destructItem($$("popupFilterEdit"));
+                Action.enableItem  ($$("btnFilterSubmit"));
+                Filter.setActiveTemplate(radioValue);
             }
 
-            Action.destructItem($$("popupFilterEdit"));
-            Action.enableItem  ($$("btnFilterSubmit"));
-            setToSelectStorage (radioValue.id, value);
+ 
+            
+     
 
         });
     } catch(err){
@@ -127,7 +154,7 @@ function createFiltersByTemplate(data) {
 
 function showHtmlContainers(){
     const keys = Filter.getItems();
-    
+ 
     keys.forEach(function(el){
         const htmlElement = document.querySelector("." + el );
         Filter.addClass   (htmlElement, "webix_show-content");
@@ -162,6 +189,5 @@ function getLibraryData(){
 
 export{
     getLibraryData,
-    SELECT_TEMPLATE ,
     createWorkspace 
 };

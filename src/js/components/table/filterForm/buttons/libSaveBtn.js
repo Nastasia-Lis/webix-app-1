@@ -16,7 +16,7 @@ let sentObj;
 let currName;
 
 
-function isTemplateExists(){
+async function isTemplateExists(){
     let exists = {
         check : false
     };
@@ -24,12 +24,13 @@ function isTemplateExists(){
     const path = "/init/default/api/userprefs/";
     const userprefsData = webix.ajax().get(path);
 
-    return userprefsData.then(function(data){
+    await userprefsData.then(function(data){
         data = data.json().content;
 
         data.forEach(function(el){
-       
+   
             if (el.name == currName){
+              
                 exists = {
                     check : true,
                     id    : el.id
@@ -37,17 +38,17 @@ function isTemplateExists(){
             } 
         });
 
-        return exists;
-    
+
     }).fail(function(err){
         setAjaxError(
             err, 
             logNameFile,
             "isTemplateExists"
         );
-        return exists;
+        
     });
 
+    return exists;
 }
 
 
@@ -152,9 +153,9 @@ async function saveTemplate (result){
     const currId = getItemId();
     const values = Filter.getFilter().values;
 
-    currName     = currId + "_filter-template_" + nameTemplate;
-    nameTemplate = result;
 
+    nameTemplate = result;
+    currName     = currId + "_filter-template_" + nameTemplate;
 
     
     const template = {
@@ -172,7 +173,7 @@ async function saveTemplate (result){
 
     const existsInfo = await isTemplateExists();
     const isExists   = existsInfo.check;
-    
+
 
     if (isExists){
         const id = existsInfo.id;

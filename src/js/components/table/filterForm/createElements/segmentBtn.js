@@ -1,3 +1,6 @@
+
+import { Filter }              from "../actions/_FilterActions.js";
+
 function segmentBtn(element, isChild, uniqueId){
     let id;
     let hideAttribute = false;
@@ -19,7 +22,12 @@ function segmentBtn(element, isChild, uniqueId){
         options : [
             { "id" : "1", "value" : "и" }, 
             { "id" : "2", "value" : "или" }, 
-        ]
+        ],
+        on:{
+            onChange:function(){
+                Filter.setStateToStorage();
+            }
+        }
     };
 }
 

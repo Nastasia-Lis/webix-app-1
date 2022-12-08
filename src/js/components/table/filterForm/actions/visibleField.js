@@ -1,5 +1,4 @@
 
-
 import { Action }              from "../../../../blocks/commonFunctions.js";
 import { setFunctionError }    from "../../../../blocks/errors.js";
 import { Filter }              from "./_FilterActions.js";
@@ -164,25 +163,26 @@ function showInput(){
 }
 
 function hideInput(){
+   
+    if (el !== "selectAll"){
+        if ($$(el).isVisible()){
+            setHtmlState(hideClass, showClass);
+        }
 
-    if ($$(el).isVisible()){
-        setHtmlState(hideClass, showClass);
+    
+
+        if($$(el + "_rows")){
+            removeChilds();
+        }
+
+        setDefStateInputs();
+        setDefStateBtns  ();
     }
-
- 
-
-    if($$(el + "_rows")){
-        removeChilds();
-    }
-
-    setDefStateInputs();
-    setDefStateBtns  ();
-
 }
 
 
 function visibleField (visible, cssClass, element){
- 
+
     condition    = visible;
     elementClass = cssClass;
     el           = element;
@@ -190,7 +190,7 @@ function visibleField (visible, cssClass, element){
     segmentBtn   = $$( el + "_segmentBtn");
     
     editStorage();
-
+   
     if (!isChildExists()){
         if (condition){
             showInput();

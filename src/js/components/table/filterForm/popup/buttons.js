@@ -12,11 +12,8 @@ import { Action }               from "../../../../blocks/commonFunctions.js";
 
 import { Button }               from "../../../../viewTemplates/buttons.js";
 
-import { SELECT_TEMPLATE }      from "../userTemplate.js";
-
 import { Filter }               from "../actions/_FilterActions.js";
 
-import { getFilterState }       from "../actions/getFilterState.js";
 
 const logNameFile = "tableFilter => popup => buttons";
 
@@ -113,10 +110,7 @@ function visibleCounter(){
 
 
 function resetLibSelectOption(){
-    if (SELECT_TEMPLATE){
-        delete SELECT_TEMPLATE.id;
-        delete SELECT_TEMPLATE.value;
-    }
+    Filter.setActiveTemplate(null);
 }
 
 function setDisableTabState(){
@@ -140,7 +134,7 @@ function getCheckboxData(){
     Action.destructItem($$("popupFilterEdit"));
 
     resetLibSelectOption();
-
+  
     setLogValue(
         "success",
         "Рабочая область фильтра обновлена"
@@ -158,7 +152,7 @@ function popupSubmitBtn (){
     try {                                             
         const tabbarValue = $$("filterPopupTabbar").getValue();
 
-        if (tabbarValue == "editFormPopupLib" ){
+        if (tabbarValue == "editFormPopupLib"){
    
             $$("resetFilterBtn").callEvent("resetFilter");
             getLibraryData ();

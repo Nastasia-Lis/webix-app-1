@@ -38,7 +38,7 @@ function clickMenu(id, path = id){
 function itemClickContext(id){
 
     if (id=="logout"){
-        clickMenu("logout");
+        clickMenu("logout", "logout?auto=true");
 
     } else if (id == "cp"){
         clickMenu("cp", "/cp");

@@ -9,19 +9,28 @@ import { pushUserDataStorage,
     getUserDataStorage }                 from "../../blocks/commonFunctions.js";
 
 
-function sentPrefs(id, sentObj){
+const logNameFile = "logout => common";
+
+function putPrefs(id, sentObj){
+
     const path    = "/init/default/api/userprefs/" + id;
     const putData = webix.ajax().put(path, sentObj);
 
     putData.then(function(data){
+   
         data = data.json();
+    
         if (data.err_type !== "i"){
             setLogValue("error", data.err);
         }
     });
 
     putData.fail(function(err){
-        setAjaxError(err, "autoLogout", "putUserPrefs");
+        setAjaxError(
+            err, 
+            logNameFile, 
+            "putUserPrefs"
+        );
     });   
 }
 
@@ -29,43 +38,69 @@ function sentPrefs(id, sentObj){
 //editFormTempData
 
 
-
-
-function putUserPrefs(data, sentObj){
-    let check = false;
+function isPrefExists(data){
+    const result = {
+        exists : false
+    };
+ 
     try{
-        data.forEach(function(el,i){
+        data.forEach(function(el){
             if (el.name == "userLocationHref"){
-                check = true;
-                sentPrefs(el.id, sentObj);
+                result.exists = true;
+                result.id     = el.id;
             } 
         });  
     }   catch(err){
-        setFunctionError(err, "autoLogout", "putUserPrefs");
+        setFunctionError(
+            err, 
+            logNameFile, 
+            "isPrefExists"
+        );
     }
-    return check;
+    
+    return result;
 }
 
 
+
 function postUserPrefs(sentObj){
+
     const path     = "/init/default/api/userprefs/";
     const postData = webix.ajax().post(path, sentObj);
 
     postData.then(function(data){
         data = data.json();
-
+ 
+        console.log(data.err_type ,'ddd')
         if (data.err_type !== "i"){
-            setFunctionError(data.err, "autoLogout", "putUserPrefs");
+            setFunctionError(
+                data.err, 
+                logNameFile, 
+                "putUserPrefs"
+            );
         }
     });
 
     postData.fail(function(err){
-        setAjaxError(err, "autoLogout", "postUserPrefs");
+        setAjaxError(
+            err, 
+            logNameFile, 
+            "postUserPrefs"
+        );
     });
 
 }
 
+
+function returnSentTamplate(name, data){
+    return {
+        name  : name,
+        prefs : data
+    };
+}
+
 async function logout() {
+   
     let ownerId = getUserDataStorage();
 
     if (!ownerId){
@@ -73,57 +108,52 @@ async function logout() {
         ownerId = getUserDataStorage();
     }
 
-    const userprefsData = webix.ajax().get("/init/default/api/userprefs/");
+    const path = "/init/default/api/userprefs/";
+    const userprefsData = webix.ajax().get(path);
 
     userprefsData.then(function(data){
-        data = data.json();
-
-        if (data.err_type !== "i"){
-            setFunctionError(
-                data.err, 
-                "autoLogout", 
-                "putUserPrefs"
-            );
-        }
-
+        data = data.json().content;
 
         const location    = {};
-        data              = data.content;
+    
 
         location.href     = window.location.href;
-  
-        const sentObj = {
-            name  : "userLocationHref",
-            prefs : location
+
+        const restore = {
+            editProp :  webix.storage.local.get("editFormTempData"),
+            filter   :  webix.storage.local.get("currFilterState")
         };
-
-        const editPropData = webix.storage.local.get("editFormTempData");
-        const filterData = webix.storage.local.get("currFilterState");
-
-        console.log(editPropData, filterData)
-      
-        // const sentObj = {
-        //     name  : "userLocationHref",
-        //     prefs : location
-        // };
-
+        const locationData = returnSentTamplate("userLocationHref", location);
+        const restoreData  = returnSentTamplate("userRestoreData",  restore);
+   
         if (window.location.pathname !== "/index.html/content"){
-            const settingExists = putUserPrefs(data, sentObj);
 
-            if (!settingExists){
-                sentObj.owner = ownerId.id;
-                postUserPrefs(sentObj);
+            const result = isPrefExists(data);
+            const isExists = result.exists;
+      
+         
+            if (isExists){
+                const id = result.id;
+                putPrefs(id, locationData);
+            } else {
+                locationData.owner = ownerId.id;
+                postUserPrefs(locationData);
             }
+            restoreData.owner = ownerId.id;
+            postUserPrefs(restoreData); // тк удаляется при login
         }
     });
 
-    userprefsData.then(function(data){
-        Backbone.history.navigate("logout", { trigger:true});
-        Backbone.history.navigate("/",      { trigger:true});
+    userprefsData.then(function(){
+        Backbone.history.navigate("logout?auto=true", { trigger:true});
     });
 
     userprefsData.fail(function(err){
-        setAjaxError(err, "autoLogout", "logout");
+        setAjaxError(
+            err, 
+            logNameFile, 
+            "logout"
+        );
     });
   
 }
@@ -180,15 +210,27 @@ function popupNotAuth(){
 }
 
 function checkNotAuth (err){
+ 
     let notAuth = false;
+ 
     if (err.status               === 401                  && 
         window.location.pathname !== "/index.html"        && 
         window.location.pathname !== "/init/default/spaw/"){
+        
         notAuth = true;
+        
+        let params    = new URLSearchParams(document.location.search);
+        let autoParam = params.get("auto");
+
         const prefs = {
             href : window.location.href
         };
-        setStorageData ("outsideHref", JSON.stringify(prefs) );
+
+        if (!autoParam){
+            setStorageData ("outsideHref", JSON.stringify(prefs) );
+        }
+   
+
         Backbone.history.navigate("/", { trigger:true});
 
     }

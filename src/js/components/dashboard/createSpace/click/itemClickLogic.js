@@ -20,7 +20,7 @@ const action = {
 const action2 = {
     navigate: false,
     field   : "auth_group",
-   context : true,
+    context : false,
     params  :{
         filter : "auth_group.id = 3" 
     //filter : "auth_group.id != '1' or auth_group.id != '3' and auth_group.role contains 'р' or auth_group.role = 'а'" 
@@ -113,7 +113,7 @@ function setAttributes(elem, topAction){
     if (topAction){
         elem.action = topAction;
     }
-
+  //  elem.action = action2;
     elem.borderless = true;
     elem.minWidth   = 250;
     elem.on         = {
@@ -144,23 +144,25 @@ function iterateArr(container, topAction){
     const elements = [];
 
     function loop(container){
-        container.forEach(function(el){
-         
-            const nextContainer = el.rows || el.cols;
-     
-            if (!el.rows && !el.cols){
-                if (el.view && el.view == "chart"){
-                    el = setAttributes(el, topAction);
+        if (typeof(container) !== 'undefined') {
+            container.forEach(function(el){
+            
+                const nextContainer = el.rows || el.cols;
+        
+                if (!el.rows && !el.cols){
+                    if (el.view && el.view == "chart"){
+                        el = setAttributes(el, topAction);
+                    }
+                    
+                    elements.push(el);
+                } else {
+                    loop(nextContainer);
                 }
-                
-                elements.push(el);
-            } else {
-                loop(nextContainer);
-            }
-        });
+            });
+        }
     }
 
-    loop( container );
+    loop (container);
 
     if (elements.length){
         res = elements;

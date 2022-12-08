@@ -1,7 +1,9 @@
 import { Action }               from "../../blocks/commonFunctions.js";
 import { STORAGE, getData }     from "../../blocks/globalStorage.js";
 
+
 const logNameFile = "router => index";
+
 
 function goToContentPage(){
     
@@ -21,10 +23,9 @@ function goToContentPage(){
 }
 
 
-
-function showWorkspace(){
+function showLogin(){
     Action.hideItem($$("mainLayout"));
-    Action.showItem($$("userAuth")  );
+    Action.showItem($$("userAuth"  ));
 
 }
 
@@ -39,7 +40,7 @@ async function indexRouter(){
         goToContentPage();
 
     } else {
-        showWorkspace();
+        showLogin();
     }
 }
 

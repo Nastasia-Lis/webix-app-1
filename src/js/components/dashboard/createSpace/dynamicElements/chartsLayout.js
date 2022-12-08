@@ -72,7 +72,7 @@ function createChart(dataCharts){
         //     "onDblClick": {}
         // };
      
-        // dataCharts.push(table)
+      //  dataCharts.push(table)
         dataCharts.forEach(function(el){
           
             if (el.cols || el.rows){

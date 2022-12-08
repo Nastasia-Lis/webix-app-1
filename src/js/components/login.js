@@ -12,7 +12,10 @@ function createSentObj(){
         loginData.np    = userData.password;
         
     } catch (err){
-        console.log(err + " login function createSentObj");
+        console.log(
+            err + 
+            " login function createSentObj"
+        );
     }
 
     return loginData;
@@ -42,15 +45,24 @@ function postLoginData(){
         } else {
 
             if (form && form.isDirty()){
-                form.markInvalid("username", "");
-                form.markInvalid("password", "Неверный логин или пароль");
+                form.markInvalid(
+                    "username", 
+                    ""
+                );
+                form.markInvalid(
+                    "password", 
+                    "Неверный логин или пароль"
+                );
             }
         }
 
     });
 
     postData.fail(function(err){
-        console.log(err + " login function postLoginData");
+        console.log(
+            err + 
+            " login function postLoginData"
+        );
     });
 }
 

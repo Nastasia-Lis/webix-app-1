@@ -71,6 +71,7 @@ function addInputToContainer(btns){
     const idContainer   = 
     elemId + "_filter-child-" + uniqueId + "-container";
 
+ 
     containerRows.addView(
         {   id          : idContainer,
             padding     : 5,
@@ -126,10 +127,13 @@ function createChildFields (el, customPosition) {
     elemId   = el.id;
     uniqueId = webix.uid();
 
+ 
+   
     getPosition (customPosition);
     getTypeField(el);
 
     addInput    ();
+    Filter.setStateToStorage();
 
     return getIdCreatedField();
 }

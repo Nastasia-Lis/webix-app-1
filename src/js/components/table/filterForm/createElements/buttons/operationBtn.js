@@ -1,6 +1,8 @@
 
 import { setFunctionError }    from "../../../../../blocks/errors.js";
 import { Button }              from "../../../../../viewTemplates/buttons.js";
+import { Filter }              from "../../actions/_FilterActions.js";
+
 
 const logNameFile = "tableFilter => createElement => buttons => operationBtn";
 
@@ -103,6 +105,11 @@ function createOperationBtn(typeField, elemId){
             width    : 40,
             popup    : popup,
             inputHeight:38,
+            on:{
+                onChange:function(){
+                    Filter.setStateToStorage();
+                }
+            }
         },
         titleAttribute : "Выбрать условие поиска по полю",
         css            : "webix_filterBtns",

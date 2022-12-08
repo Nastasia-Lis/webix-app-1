@@ -22,7 +22,7 @@ function isParent(el){
     return check;
 }
 
-function pushValues(id, logic){
+function pushValues(id, logic, index){
 
     const btn = $$(id + "-btnFilterOperations");
 
@@ -36,13 +36,15 @@ function pushValues(id, logic){
         operation   : operation,
         logic       : logic,
         parent      : parent,
+        index       : index
     });
 
 }
 
 function setOperation(arr){
-    arr.forEach(function(el){
+    arr.forEach(function(el, i){
    
+        
         try{
             const segmentBtn = $$( el + "_segmentBtn" );
 
@@ -51,8 +53,8 @@ function setOperation(arr){
             if (segmentBtn.isVisible()){
                 logic = segmentBtn.getValue();
             }
-
-            pushValues(el, logic);
+ 
+            pushValues(el, logic,  i);
 
         } catch(err){
             setFunctionError(

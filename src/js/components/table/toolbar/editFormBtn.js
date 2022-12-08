@@ -116,8 +116,14 @@ function toolbarEditButton (idTable, visible){
             maxWidth : 200, 
             onlyIcon : false,
             click    : function(){
-                editBtnClick(idBtnEdit);
+                this.callEvent("clickEvent", [ "" ]);
             },
+            on:{
+                clickEvent:function(){
+                    editBtnClick(idBtnEdit);
+                }
+               
+            }
         },
         css            : "edit-btn-icon",
         titleAttribute : "Показать/скрыть фильтры",

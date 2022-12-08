@@ -13,6 +13,7 @@ function setStorageData (name, value){
 
 function setLoginActionPref(userLocation, userprefsWorkspace){
     function replaceUser(){
+        console.log(userLocation,  userLocation.href, window.location.href)
         if (userLocation       && 
             userLocation.href  && 
             userLocation.href !== window.location.href ){
@@ -21,6 +22,7 @@ function setLoginActionPref(userLocation, userprefsWorkspace){
         }
     }
     try{
+    
         if (userprefsWorkspace){
             if (userprefsWorkspace.LoginActionOpt == 2){
                 replaceUser();
@@ -29,7 +31,11 @@ function setLoginActionPref(userLocation, userprefsWorkspace){
             replaceUser();
         }
     } catch(err){
-        errors_setFunctionError(err,"storageSettings","setLoginActionPref");
+        errors_setFunctionError(
+            err,
+            "storageSettings",
+            "setLoginActionPref"
+        );
     }
 }
 
@@ -66,6 +72,51 @@ function moveUser(){
         }
 
     }
+}
+
+let restorePref;
+let restore;
+
+function setRestoreToStorage(name, value){
+    if(restore && value){
+        setStorageData (name, JSON.stringify(value));
+
+    } 
+}
+
+function restoreData(){
+    restore = webix.storage.local.get("userRestoreData");
+
+    const path = "/init/default/api/userprefs/" + restorePref.id;
+
+    const delData = webix.ajax().del(path, restorePref);
+
+    delData.then(function(data){
+        data = data.json();
+
+        if (data.err_type !== "i"){
+            errors_setFunctionError(
+                data.err, 
+                "storageSettings", 
+                "restoreData"
+            );
+        }
+    });
+
+    delData.fail(function(err){
+        setAjaxError(
+            err, 
+            "storageSettings", 
+            "restoreData"
+        );
+    });
+ 
+ 
+  
+    setRestoreToStorage("editFormTempData", restore.editProp);
+    setRestoreToStorage("currFilterState",  restore.filter  );
+ 
+    
 }
 
 
@@ -105,7 +156,11 @@ function setLogPref(){
 
         }
     } catch(err){
-        errors_setFunctionError(err,"storageSettings","userprefsWorkspace");
+        errors_setFunctionError(
+            err,
+            "storageSettings",
+            "userprefsWorkspace"
+        );
     }
 }
 
@@ -126,14 +181,26 @@ function setUserPrefs (userData){
         function setDataToStorage(){
  
             try{
-                data.forEach(function(el,i){
+                data.forEach(function(el){
                     if (el.owner == user.id && !(el.name.includes("fav-link_"))){
                         setStorageData (el.name, el.prefs);
                     }
+
+
+                    if (el.owner == user.id && el.name == "userRestoreData"){
+                        restorePref = el;
+
+                    }
+
+                    
                
                 });
             } catch(err){
-                errors_setFunctionError(err,"storageSettings","setDataToStorage");
+                errors_setFunctionError(
+                    err,
+                    "storageSettings",
+                    "setDataToStorage"
+                );
             }
         }
 
@@ -158,6 +225,8 @@ function setUserPrefs (userData){
                     setDataToStorage ();
                     moveUser         ();
                     setLogPref       ();
+
+                    restoreData();
                 });
 
                 userprefsGetData.fail(function(err){
@@ -168,6 +237,8 @@ function setUserPrefs (userData){
  
                 setDataToStorage();
                 moveUser        ();
+
+                restoreData();
             }
 
         
@@ -464,19 +535,28 @@ class Popup {
 
 
 
-function sentPrefs(id, sentObj){
+const logNameFile = "logout => common";
+
+function putPrefs(id, sentObj){
+
     const path    = "/init/default/api/userprefs/" + id;
     const putData = webix.ajax().put(path, sentObj);
 
     putData.then(function(data){
+   
         data = data.json();
+    
         if (data.err_type !== "i"){
             setLogValue("error", data.err);
         }
     });
 
     putData.fail(function(err){
-        setAjaxError(err, "autoLogout", "putUserPrefs");
+        setAjaxError(
+            err, 
+            logNameFile, 
+            "putUserPrefs"
+        );
     });   
 }
 
@@ -484,43 +564,69 @@ function sentPrefs(id, sentObj){
 //editFormTempData
 
 
-
-
-function putUserPrefs(data, sentObj){
-    let check = false;
+function isPrefExists(data){
+    const result = {
+        exists : false
+    };
+ 
     try{
-        data.forEach(function(el,i){
+        data.forEach(function(el){
             if (el.name == "userLocationHref"){
-                check = true;
-                sentPrefs(el.id, sentObj);
+                result.exists = true;
+                result.id     = el.id;
             } 
         });  
     }   catch(err){
-        errors_setFunctionError(err, "autoLogout", "putUserPrefs");
+        errors_setFunctionError(
+            err, 
+            logNameFile, 
+            "isPrefExists"
+        );
     }
-    return check;
+    
+    return result;
 }
 
 
+
 function postUserPrefs(sentObj){
+
     const path     = "/init/default/api/userprefs/";
     const postData = webix.ajax().post(path, sentObj);
 
     postData.then(function(data){
         data = data.json();
-
+ 
+        console.log(data.err_type ,'ddd')
         if (data.err_type !== "i"){
-            errors_setFunctionError(data.err, "autoLogout", "putUserPrefs");
+            errors_setFunctionError(
+                data.err, 
+                logNameFile, 
+                "putUserPrefs"
+            );
         }
     });
 
     postData.fail(function(err){
-        setAjaxError(err, "autoLogout", "postUserPrefs");
+        setAjaxError(
+            err, 
+            logNameFile, 
+            "postUserPrefs"
+        );
     });
 
 }
 
+
+function returnSentTamplate(name, data){
+    return {
+        name  : name,
+        prefs : data
+    };
+}
+
 async function logout() {
+   
     let ownerId = getUserDataStorage();
 
     if (!ownerId){
@@ -528,57 +634,52 @@ async function logout() {
         ownerId = getUserDataStorage();
     }
 
-    const userprefsData = webix.ajax().get("/init/default/api/userprefs/");
+    const path = "/init/default/api/userprefs/";
+    const userprefsData = webix.ajax().get(path);
 
     userprefsData.then(function(data){
-        data = data.json();
-
-        if (data.err_type !== "i"){
-            errors_setFunctionError(
-                data.err, 
-                "autoLogout", 
-                "putUserPrefs"
-            );
-        }
-
+        data = data.json().content;
 
         const location    = {};
-        data              = data.content;
+    
 
         location.href     = window.location.href;
-  
-        const sentObj = {
-            name  : "userLocationHref",
-            prefs : location
+
+        const restore = {
+            editProp :  webix.storage.local.get("editFormTempData"),
+            filter   :  webix.storage.local.get("currFilterState")
         };
-
-        const editPropData = webix.storage.local.get("editFormTempData");
-        const filterData = webix.storage.local.get("currFilterState");
-
-        console.log(editPropData, filterData)
-      
-        // const sentObj = {
-        //     name  : "userLocationHref",
-        //     prefs : location
-        // };
-
+        const locationData = returnSentTamplate("userLocationHref", location);
+        const restoreData  = returnSentTamplate("userRestoreData",  restore);
+   
         if (window.location.pathname !== "/index.html/content"){
-            const settingExists = putUserPrefs(data, sentObj);
 
-            if (!settingExists){
-                sentObj.owner = ownerId.id;
-                postUserPrefs(sentObj);
+            const result = isPrefExists(data);
+            const isExists = result.exists;
+      
+         
+            if (isExists){
+                const id = result.id;
+                putPrefs(id, locationData);
+            } else {
+                locationData.owner = ownerId.id;
+                postUserPrefs(locationData);
             }
+            restoreData.owner = ownerId.id;
+            postUserPrefs(restoreData); // тк удаляется при login
         }
     });
 
-    userprefsData.then(function(data){
-        Backbone.history.navigate("logout", { trigger:true});
-        Backbone.history.navigate("/",      { trigger:true});
+    userprefsData.then(function(){
+        Backbone.history.navigate("logout?auto=true", { trigger:true});
     });
 
     userprefsData.fail(function(err){
-        setAjaxError(err, "autoLogout", "logout");
+        setAjaxError(
+            err, 
+            logNameFile, 
+            "logout"
+        );
     });
   
 }
@@ -635,15 +736,27 @@ function popupNotAuth(){
 }
 
 function checkNotAuth (err){
+ 
     let notAuth = false;
+ 
     if (err.status               === 401                  && 
         window.location.pathname !== "/index.html"        && 
         window.location.pathname !== "/init/default/spaw/"){
+        
         notAuth = true;
+        
+        let params    = new URLSearchParams(document.location.search);
+        let autoParam = params.get("auto");
+
         const prefs = {
             href : window.location.href
         };
-        setStorageData ("outsideHref", JSON.stringify(prefs) );
+
+        if (!autoParam){
+            setStorageData ("outsideHref", JSON.stringify(prefs) );
+        }
+   
+
         Backbone.history.navigate("/", { trigger:true});
 
     }
@@ -907,7 +1020,7 @@ async function createLogMessage(srcTable) {
     let name;
 
     if (srcTable == "version"){
-        name = 'Expa v1.0.63 ';
+        name = 'Expa v1.0.64 ';
 
     } else if (srcTable == "cp"){
         name = 'Смена пароля';
@@ -5521,7 +5634,7 @@ function dashboardLayout () {
 
 
 
-const logNameFile = "dashboard => createSpace => dynamicElements => filterLayout";
+const filterLayout_logNameFile = "dashboard => createSpace => dynamicElements => filterLayout";
 
 
 
@@ -5578,7 +5691,7 @@ function createMainView(inputsArray){
       
         $$("dashboardTool").addView( mainView );
     } catch (err){  
-        errors_setFunctionError(err, logNameFile, "createMainView");
+        errors_setFunctionError(err, filterLayout_logNameFile, "createMainView");
     }
 }
 
@@ -6059,7 +6172,7 @@ const action = {
 const action2 = {
     navigate: false,
     field   : "auth_group",
-   context : true,
+    context : false,
     params  :{
         filter : "auth_group.id = 3" 
     //filter : "auth_group.id != '1' or auth_group.id != '3' and auth_group.role contains 'р' or auth_group.role = 'а'" 
@@ -6152,7 +6265,7 @@ function setAttributes(elem, topAction){
     if (topAction){
         elem.action = topAction;
     }
-
+  //  elem.action = action2;
     elem.borderless = true;
     elem.minWidth   = 250;
     elem.on         = {
@@ -6183,23 +6296,25 @@ function iterateArr(container, topAction){
     const elements = [];
 
     function loop(container){
-        container.forEach(function(el){
-         
-            const nextContainer = el.rows || el.cols;
-     
-            if (!el.rows && !el.cols){
-                if (el.view && el.view == "chart"){
-                    el = setAttributes(el, topAction);
+        if (typeof(container) !== 'undefined') {
+            container.forEach(function(el){
+            
+                const nextContainer = el.rows || el.cols;
+        
+                if (!el.rows && !el.cols){
+                    if (el.view && el.view == "chart"){
+                        el = setAttributes(el, topAction);
+                    }
+                    
+                    elements.push(el);
+                } else {
+                    loop(nextContainer);
                 }
-                
-                elements.push(el);
-            } else {
-                loop(nextContainer);
-            }
-        });
+            });
+        }
     }
 
-    loop( container );
+    loop (container);
 
     if (elements.length){
         res = elements;
@@ -6767,7 +6882,7 @@ function createChart(dataCharts){
         //     "onDblClick": {}
         // };
      
-        // dataCharts.push(table)
+      //  dataCharts.push(table)
         dataCharts.forEach(function(el){
           
             if (el.cols || el.rows){
@@ -8350,7 +8465,19 @@ function isFilterParamExists(){
     }
 }
 
+function isEditParamExists(){
+    const param = returnLostData_getLinkParams("view");
+    if (param == "edit"){
+        return true;
+    }
+}
+
+
 function returnLostData(){
+
+    if (isEditParamExists()){
+        $$("table-editTableBtnId").callEvent("clickEvent", [ "" ]);
+    }
   
     if (!isFilterParamExists()){
 
@@ -8582,7 +8709,6 @@ function modalBox (title, text, btns){
 
 
 
-
 const visibleField_logNameFile = "filterForm => actions => visibleField";
 
 
@@ -8743,25 +8869,26 @@ function showInput(){
 }
 
 function hideInput(){
+   
+    if (visibleField_el !== "selectAll"){
+        if ($$(visibleField_el).isVisible()){
+            setHtmlState(hideClass, showClass);
+        }
 
-    if ($$(visibleField_el).isVisible()){
-        setHtmlState(hideClass, showClass);
+    
+
+        if($$(visibleField_el + "_rows")){
+            removeChilds();
+        }
+
+        setDefStateInputs();
+        setDefStateBtns  ();
     }
-
- 
-
-    if($$(visibleField_el + "_rows")){
-        removeChilds();
-    }
-
-    setDefStateInputs();
-    setDefStateBtns  ();
-
 }
 
 
 function visibleField (visible, cssClass, element){
- 
+
     condition    = visible;
     elementClass = cssClass;
     visibleField_el           = element;
@@ -8769,7 +8896,7 @@ function visibleField (visible, cssClass, element){
     segmentBtn   = $$( visibleField_el + "_segmentBtn");
     
     editStorage();
-
+   
     if (!isChildExists()){
         if (condition){
             showInput();
@@ -8847,7 +8974,7 @@ function isParent(el){
     return check;
 }
 
-function pushValues(id, logic){
+function pushValues(id, logic, index){
 
     const btn = $$(id + "-btnFilterOperations");
 
@@ -8861,13 +8988,15 @@ function pushValues(id, logic){
         operation   : operation,
         logic       : logic,
         parent      : parent,
+        index       : index
     });
 
 }
 
 function setOperation(arr){
-    arr.forEach(function(el){
+    arr.forEach(function(el, i){
    
+        
         try{
             const segmentBtn = $$( el + "_segmentBtn" );
 
@@ -8876,8 +9005,8 @@ function setOperation(arr){
             if (segmentBtn.isVisible()){
                 logic = segmentBtn.getValue();
             }
-
-            pushValues(el, logic);
+ 
+            pushValues(el, logic,  i);
 
         } catch(err){
             errors_setFunctionError(
@@ -8916,12 +9045,19 @@ function getFilterState(){
 
 
 function setState () {
-    const result = Filter.getFilter();
-    const sentObj = {
-        id    :getItemId(),
-        values:result
+    const result   = Filter.getFilter();
+    const template = Filter.getActiveTemplate();
+    
+    const sentObj  = {
+        id             : getItemId(),
+        activeTemplate : template,
+        values         : result
     };
-    webix.storage.local.put("currFilterState", sentObj);
+
+    webix.storage.local.put(
+        "currFilterState", 
+        sentObj
+    );
     
 }
 
@@ -8941,6 +9077,10 @@ class FilterPull {
       
     }
 
+    static getIndex(){
+
+    }
+
     static clearItem (key){
         visibleInputs[key] = [];
     }
@@ -8954,6 +9094,19 @@ class FilterPull {
         return Object.values(visibleInputs);
     }
 
+    static getIndexFilters(){
+        const container = $$("inputsFilter");
+        const result    = [];
+        if(container){
+            const childs = container.getChildViews();
+            childs.forEach(function(el, i){
+                result[el.config.idCol] = i;
+              
+            });
+        }
+
+        return result;
+    }
 
 
     static getAll (){
@@ -9031,8 +9184,15 @@ class Filter extends FilterPull {
     static setStateToStorage(){
         setState();
     }
-    
 
+    static setActiveTemplate(val){
+        $$("filterTableForm").config.activeTemplate = val;
+    }
+    
+    static getActiveTemplate(){
+        return $$("filterTableForm").config.activeTemplate;
+    }
+    
     
 }
 
@@ -9449,6 +9609,8 @@ function createContextBtn (el, id, isChild){
 
 
 
+
+
 const operationBtn_logNameFile = "tableFilter => createElement => buttons => operationBtn";
 
  
@@ -9550,6 +9712,11 @@ function createOperationBtn(typeField, elemId){
             width    : 40,
             popup    : popup,
             inputHeight:38,
+            on:{
+                onChange:function(){
+                    Filter.setStateToStorage();
+                }
+            }
         },
         titleAttribute : "Выбрать условие поиска по полю",
         css            : "webix_filterBtns",
@@ -9590,6 +9757,9 @@ function createBtns(element, typeField, isChild, uniqueId = null){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/table/filterForm/createElements/segmentBtn.js
+
+
+
 function segmentBtn_segmentBtn(element, isChild, uniqueId){
     let id;
     let hideAttribute = false;
@@ -9611,7 +9781,12 @@ function segmentBtn_segmentBtn(element, isChild, uniqueId){
         options : [
             { "id" : "1", "value" : "и" }, 
             { "id" : "2", "value" : "или" }, 
-        ]
+        ],
+        on:{
+            onChange:function(){
+                Filter.setStateToStorage();
+            }
+        }
     };
 }
 
@@ -9690,6 +9865,7 @@ function addInputToContainer(btns){
     const idContainer   = 
     elemId + "_filter-child-" + childFilter_uniqueId + "-container";
 
+ 
     containerRows.addView(
         {   id          : idContainer,
             padding     : 5,
@@ -9745,10 +9921,13 @@ function createChildFields (el, customPosition) {
     elemId   = el.id;
     childFilter_uniqueId = webix.uid();
 
+ 
+   
     getPosition (customPosition);
     getTypeField(el);
 
     addInput    ();
+    Filter.setStateToStorage();
 
     return getIdCreatedField();
 }
@@ -9764,7 +9943,6 @@ function createChildFields (el, customPosition) {
 
 const userTemplate_logNameFile     = "tableFilter => userTemplate";
 
-const SELECT_TEMPLATE = {};
 
 function setValue(el, value){
     if (value){
@@ -9797,39 +9975,67 @@ function createChildField(el){
     const table = getTable();
     const col   = table.getColumnConfig(el.parent);
  
-    const idField = createChildFields (col);
+    const idField = createChildFields  (col, el.index);
 
-    const values = el;
-    values.id = idField;
+    const values  = el;
+    values.id     = idField;
   
     setBtnsValue(values);
+
     setValue    ($$(idField), el.value);
 }
 
 
-function userTemplate_returnValue(array, index){
+function returnLastItem(array){
+    const indexes       = Filter.getIndexFilters();
+    const selectIndexes = [];
+
     if (array){
-        const lastKey = array.length - index;
-        return array[lastKey];
+
+        array.forEach(function(el){
+            selectIndexes.push(indexes[el]);
+        });
+
+ 
+        let lastIndex = 0;
+
+        for (let i = 0; i < selectIndexes.length; i++){
+
+            if (selectIndexes[i] > lastIndex) {
+                lastIndex = selectIndexes[i];
+            }
+        }
+
+        const keys = Object.keys(indexes);
+
+        const lastInput = 
+        keys.find(key => indexes[key] === lastIndex);
+
+  
+        return lastInput;
     }
 
 }
 
+function returnLastChild(item){
+    return item[item.length - 1];
+}
+
 function userTemplate_hideSegmentBtn(){
-    const lastCollection = userTemplate_returnValue (Filter.getItems(), 1);
-    const lastInput      = userTemplate_returnValue (Filter.getItem(lastCollection), 1);
+    const lastCollection = returnLastItem  (Filter.getItems());
+    const lastInput      = returnLastChild (Filter.getItem(lastCollection));
     const segmentBtn     = $$(lastInput + "_segmentBtn");
+
     Action.hideItem(segmentBtn);
 }
 
 
 function createWorkspace(prefs){
- 
+    
     Filter.clearFilter();
 
-
+ 
     prefs.forEach(function(el){
-
         if (!el.parent){
             showParentField  (el);
         } else {
@@ -9842,10 +10048,6 @@ function createWorkspace(prefs){
 
 }
 
-function setToSelectStorage(id, val){
-    SELECT_TEMPLATE.id    = id;
-    SELECT_TEMPLATE.value = val;
-}
 
 function createFiltersByTemplate(data) {
     const currId     = getItemId ();
@@ -9855,22 +10057,26 @@ function createFiltersByTemplate(data) {
     const lib        = $$("filterEditLib");
     const libValue   = lib.getValue ();
     const radioValue = lib.getOption(libValue);
-
+ 
     try{
         data.forEach(function (el){
             const value = radioValue.value;
 
             const name = 
             currId + "_filter-template_" + value;
-
+      
             if (el.name == name){
                 const prefs = JSON.parse(el.prefs);
                 createWorkspace(prefs.values);
+
+                Action.destructItem($$("popupFilterEdit"));
+                Action.enableItem  ($$("btnFilterSubmit"));
+                Filter.setActiveTemplate(radioValue);
             }
 
-            Action.destructItem($$("popupFilterEdit"));
-            Action.enableItem  ($$("btnFilterSubmit"));
-            setToSelectStorage (radioValue.id, value);
+ 
+            
+     
 
         });
     } catch(err){
@@ -9884,7 +10090,7 @@ function createFiltersByTemplate(data) {
 
 function showHtmlContainers(){
     const keys = Filter.getItems();
-    
+ 
     keys.forEach(function(el){
         const htmlElement = document.querySelector("." + el );
         Filter.addClass   (htmlElement, "webix_show-content");
@@ -9945,23 +10151,38 @@ function isFormFill(){
     return check;
 }
 
+function hideHtmlContainers(){
+    const container = $$("inputsFilter").getChildViews();
+
+    container.forEach(function(el){
+
+        const node = el.getNode();
+
+        const isShowContainer = node.classList.contains("webix_show-content");
+        if (!isShowContainer){
+            Filter.addClass(node, "webix_hide-content");
+        }
+       
+    });
+
+}
+
 function returnLostFilter(id){
     const url       = window.location.search;
     const params    = new URLSearchParams(url);
     const viewParam = params.get("view"); 
 
-  
 
     if (viewParam && viewParam == "filter"){
         const data = webix.storage.local.get("currFilterState");
-     
- 
-        if (isDataExists(data) && id == data.id){
-            Action.hideItem($$("table-editForm"));
 
-            $$("table-filterId").callEvent("clickEvent", [ "" ]);
+        Action.hideItem($$("table-editForm"));
+        $$("table-filterId").callEvent("clickEvent", [ "" ]);
+        Filter.setActiveTemplate(data.activeTemplate); // option in popup library
+        if (isDataExists(data) && id == data.id){
             createWorkspace(data.values.values);
 
+            hideHtmlContainers();
             if (isFormFill()){
                 Action.enableItem($$("btnFilterSubmit"));
             }
@@ -13163,6 +13384,7 @@ function generateElements(){
         
             const filter  =  {   
                 id  : idFullContainer,
+                idCol:id,
                 css : cssContainer,
                 rows: [
                     {   id      : idInnerContainer,
@@ -13552,8 +13774,14 @@ function toolbarEditButton (idTable, visible){
             maxWidth : 200, 
             onlyIcon : false,
             click    : function(){
-                editBtnClick(idBtnEdit);
+                this.callEvent("clickEvent", [ "" ]);
             },
+            on:{
+                clickEvent:function(){
+                    editBtnClick(idBtnEdit);
+                }
+               
+            }
         },
         css            : "edit-btn-icon",
         titleAttribute : "Показать/скрыть фильтры",
@@ -14342,7 +14570,7 @@ let sentObj;
 let currName;
 
 
-function isTemplateExists(){
+async function isTemplateExists(){
     let exists = {
         check : false
     };
@@ -14350,12 +14578,13 @@ function isTemplateExists(){
     const path = "/init/default/api/userprefs/";
     const userprefsData = webix.ajax().get(path);
 
-    return userprefsData.then(function(data){
+    await userprefsData.then(function(data){
         data = data.json().content;
 
         data.forEach(function(el){
-       
+   
             if (el.name == currName){
+              
                 exists = {
                     check : true,
                     id    : el.id
@@ -14363,17 +14592,17 @@ function isTemplateExists(){
             } 
         });
 
-        return exists;
-    
+
     }).fail(function(err){
         setAjaxError(
             err, 
             libSaveBtn_logNameFile,
             "isTemplateExists"
         );
-        return exists;
+        
     });
 
+    return exists;
 }
 
 
@@ -14478,9 +14707,9 @@ async function saveTemplate (result){
     const currId = getItemId();
     const values = Filter.getFilter().values;
 
-    currName     = currId + "_filter-template_" + nameTemplate;
-    nameTemplate = result;
 
+    nameTemplate = result;
+    currName     = currId + "_filter-template_" + nameTemplate;
 
     
     const template = {
@@ -14498,7 +14727,7 @@ async function saveTemplate (result){
 
     const existsInfo = await isTemplateExists();
     const isExists   = existsInfo.check;
-    
+
 
     if (isExists){
         const id = existsInfo.id;
@@ -14632,9 +14861,6 @@ const backBtn = new Button({
 
 
 
-
-
-
 const buttons_logNameFile = "tableFilter => popup => buttons";
 
 
@@ -14730,10 +14956,7 @@ function visibleCounter(){
 
 
 function resetLibSelectOption(){
-    if (SELECT_TEMPLATE){
-        delete SELECT_TEMPLATE.id;
-        delete SELECT_TEMPLATE.value;
-    }
+    Filter.setActiveTemplate(null);
 }
 
 function setDisableTabState(){
@@ -14757,7 +14980,7 @@ function getCheckboxData(){
     Action.destructItem($$("popupFilterEdit"));
 
     resetLibSelectOption();
-
+  
     setLogValue(
         "success",
         "Рабочая область фильтра обновлена"
@@ -14775,7 +14998,7 @@ function popupSubmitBtn (){
     try {                                             
         const tabbarValue = $$("filterPopupTabbar").getValue();
 
-        if (tabbarValue == "editFormPopupLib" ){
+        if (tabbarValue == "editFormPopupLib"){
    
             $$("resetFilterBtn").callEvent("resetFilter");
             getLibraryData ();
@@ -14946,7 +15169,6 @@ const btnLayout = {
 
 
 
-
 const tabbar_logNameFile = "tableFilter => popup => tabbar => tabbar";
 
 function btnSubmitState (state){
@@ -14977,8 +15199,10 @@ function visibleRemoveBtn (param){
 function setSelectedOption(){
     const radio = $$("filterEditLib");
 
-    if (SELECT_TEMPLATE && SELECT_TEMPLATE.id){
-        radio.setValue   (SELECT_TEMPLATE.id);
+    const currTemplate = Filter.getActiveTemplate();
+
+    if (currTemplate && currTemplate.id){
+        radio.setValue   (currTemplate.id);
         Action.enableItem($$("editFormPopupLibRemoveBtn"));
         btnSubmitState   ("disable");
     }
@@ -15041,6 +15265,8 @@ function editFilter (){
             btnSubmitState ("disable");
         }
     }
+
+    
 
     countChecked     ();
     visibleRemoveBtn (false);
@@ -15117,11 +15343,11 @@ const tabForm = {
 
 
 
-
 function onChangeLibBtn (){
     const submitBtn = $$("popupFilterSubmitBtn");
 
-    const selectedValue = SELECT_TEMPLATE.id;
+    const template      = Filter.getActiveTemplate();
+    const selectedValue = template ? template : null;
 
     const lib        = $$("filterEditLib");
     const libValue   = lib.getValue ();
@@ -20511,7 +20737,7 @@ let buttons_form;
 let buttons_values;
 let buttons_sentObj;
 
-function putPrefs(el){
+function buttons_putPrefs(el){
     const path    = "/init/default/api/userprefs/" + el.id;
     const putData = webix.ajax().put(path, buttons_sentObj);
 
@@ -20642,7 +20868,7 @@ async function savePrefs(){
             return buttons_postPrefs();
         } else {
             const findElem = result.findElem;
-            return putPrefs(findElem);
+            return buttons_putPrefs(findElem);
         }
 
     }).fail(function(err){
@@ -22112,7 +22338,7 @@ function clickMenu(id, path = id){
 function itemClickContext(id){
 
     if (id=="logout"){
-        clickMenu("logout");
+        clickMenu("logout", "logout?auto=true");
 
     } else if (id == "cp"){
         clickMenu("cp", "/cp");
@@ -22945,7 +23171,9 @@ async function treeRouter(selectId){
 
 
 
+
 const routerConfig_logNameFile = "router => index";
+
 
 function goToContentPage(){
     
@@ -22965,10 +23193,9 @@ function goToContentPage(){
 }
 
 
-
-function showWorkspace(){
+function showLogin(){
     Action.hideItem($$("mainLayout"));
-    Action.showItem($$("userAuth")  );
+    Action.showItem($$("userAuth"  ));
 
 }
 
@@ -22983,7 +23210,7 @@ async function indexRouter(){
         goToContentPage();
 
     } else {
-        showWorkspace();
+        showLogin();
     }
 }
 
@@ -23197,10 +23424,12 @@ function experimentalRouter(){
 
 
 
+
 const logout_logNameFile = "router => logout";
 
 function clearStorage(){
     try{
+    
         webix.storage.local.clear();
     } catch (err){
         errors_setFunctionError(
@@ -23214,7 +23443,9 @@ function clearStorage(){
 
 function backPage(){
     try{
-        history.back();
+        const search = window.location.search;
+        Backbone.history.navigate("/content" + search, { trigger:true});
+        window.location.reload();
     } catch (err){
         errors_setFunctionError(
             err, 
@@ -23224,10 +23455,12 @@ function backPage(){
     }
 }
 
+
+
 function logoutRouter(){
     const path = "/init/default/logout/";
     const logoutData = webix.ajax().post(path);
-
+  
     logoutData.then(function (){
         backPage        ();
         mediator.sidebar.clear();
@@ -23324,7 +23557,10 @@ function login_createSentObj(){
         loginData.np    = userData.password;
         
     } catch (err){
-        console.log(err + " login function createSentObj");
+        console.log(
+            err + 
+            " login function createSentObj"
+        );
     }
 
     return loginData;
@@ -23354,15 +23590,24 @@ function postLoginData(){
         } else {
 
             if (form && form.isDirty()){
-                form.markInvalid("username", "");
-                form.markInvalid("password", "Неверный логин или пароль");
+                form.markInvalid(
+                    "username", 
+                    ""
+                );
+                form.markInvalid(
+                    "password", 
+                    "Неверный логин или пароль"
+                );
             }
         }
 
     });
 
     postData.fail(function(err){
-        console.log(err + " login function postLoginData");
+        console.log(
+            err + 
+            " login function postLoginData"
+        );
     });
 }
 
@@ -23864,7 +24109,7 @@ function setRouterStart(){
 
 
 ;// CONCATENATED MODULE: ./src/js/app.js
-console.log("expa 1.0.63"); 
+console.log("expa 1.0.64"); 
 
 
 

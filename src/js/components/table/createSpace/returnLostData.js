@@ -36,7 +36,19 @@ function isFilterParamExists(){
     }
 }
 
+function isEditParamExists(){
+    const param = getLinkParams("view");
+    if (param == "edit"){
+        return true;
+    }
+}
+
+
 function returnLostData(){
+
+    if (isEditParamExists()){
+        $$("table-editTableBtnId").callEvent("clickEvent", [ "" ]);
+    }
   
     if (!isFilterParamExists()){
 

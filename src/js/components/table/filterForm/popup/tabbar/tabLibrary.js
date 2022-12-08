@@ -1,11 +1,11 @@
-import { Action }           from "../../../../../blocks/commonFunctions.js";
-import { SELECT_TEMPLATE }  from "../../userTemplate.js";
-
+import { Action }   from "../../../../../blocks/commonFunctions.js";
+import { Filter }   from "../../actions/_FilterActions.js";
 
 function onChangeLibBtn (){
     const submitBtn = $$("popupFilterSubmitBtn");
 
-    const selectedValue = SELECT_TEMPLATE.id;
+    const template      = Filter.getActiveTemplate();
+    const selectedValue = template ? template : null;
 
     const lib        = $$("filterEditLib");
     const libValue   = lib.getValue ();

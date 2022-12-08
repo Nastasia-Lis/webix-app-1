@@ -170,6 +170,7 @@ function generateElements(){
         
             const filter  =  {   
                 id  : idFullContainer,
+                idCol:id,
                 css : cssContainer,
                 rows: [
                     {   id      : idInnerContainer,
