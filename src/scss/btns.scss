@@ -1,0 +1,271 @@
+.webix{
+
+    &_close-btn {
+        margin-top: 2px!important;
+        margin-left: -5px!important;
+    }
+    &_close-btn .webix_button.webix_img_btn,
+    &_close-btn .webix_button.webix_img_btn:hover,
+    &_close-btn .webix_button.webix_img_btn:active{
+        background-color: transparent!important;
+    }
+
+
+    &_filterBtns{
+        vertical-align:bottom!important;
+        height:38px!important;
+    }
+
+
+    
+    &_button .webix_button{
+        font-weight: 400!important;
+    }
+
+    &_tree_item{
+        cursor: pointer!important;
+        padding: 5px 10px!important;
+        border-radius: 4px!important;
+    }
+    &_tree_item:hover{
+        background-color: var(--gray-light)!important;
+    }
+
+    &_tree_folder_open{
+        color: var(--primary-light)!important;
+    }
+    &_tree_item.webix_selected > .webix_tree_file{
+        color: var(--primary-light)!important;
+    }
+    
+    &_tree .webix_tree_item.webix_selected{
+        background-color: var(--gray-light)!important;
+        font-weight: 500;
+    }
+
+    &_webix_selected .webix_tree_file{
+        color: var(--primary-light)!important;
+    }
+
+    &_tree_item:hover .webix_tree_folder,
+    &_tree_item:hover .webix_tree_folder_open,
+    &_tree_item:hover .webix_tree_file{
+        color: var(--primary-light);
+    }
+
+   
+
+    
+    
+    &_primary .webix_button{
+        @include primary-btn;
+    }
+    &_primary .webix_button:hover{
+        @include primary-btn--hover;
+    }
+    &_primary .webix_button:active{
+        @include primary-btn--active;
+    }
+
+
+
+    &_secondary .webix_button{
+        @include secondary-btn;
+    }
+    &_secondary .webix_button .webix_icon_btn{
+        color: var(--primary)!important;
+    }
+
+    &_secondary .webix_button:hover{
+        @include secondary-btn--hover;
+    }
+    &_secondary .webix_button:hover .webix_icon_btn{
+        color:var(--white)!important;
+    }
+
+    &_secondary .webix_button:active{
+        @include secondary-btn--active;
+    }
+
+
+    &_view.webix_control .webix_disabled_box .webix_button{
+        color: rgb(124, 124, 124)!important;
+        background: var(--gray) !important;
+    }
+
+    &_disabled_box .webix_img_btn  {
+        color: rgb(124, 124, 124)!important;
+    }
+
+
+
+    &_danger .webix_button .webix_icon_btn {
+        color: var(--danger)!important;
+    }
+    &_danger .webix_button{
+        background: var(--danger-light)!important;
+        transition: .2s;
+        border-radius: 4px!important;
+    }
+
+    &_danger:hover .webix_button{
+        background: var(--danger)!important;
+    }
+
+    &_danger .webix_button:hover .webix_icon_btn{
+        color:var(--white)!important;
+    }
+    &_danger:active .webix_button{
+        background: var(--danger-dark)!important;
+    }
+
+    // &_danger .webix_icon_btn,
+    // &_btn-download .webix_icon_btn,
+    // &_log-btn .webix_icon_btn,
+    // &_btn-filter .webix_icon_btn,
+    // &_btn-edit .webix_icon_btn{
+    //     margin: 0px !important;
+    // }
+
+    
+
+    &_add-btn > .webix_el_box > .webix_button {
+        background: var(--add)!important;
+        transition: .2s;
+    }
+    &_add-btn > .webix_el_box > .webix_button > .webix_icon_btn{
+        color:var(--white)!important;
+    }
+    &_add-btn:hover > .webix_el_box > .webix_button {
+        background: var(--add-light)!important;
+    }
+    &_add-btn:active > .webix_el_sbox > .webix_button {
+        background: var(--add-dark)!important;
+    }
+
+
+    &_pager_item_selected{
+        cursor: pointer;
+        border-radius: 4px!important;
+        @include primary-btn;
+    }
+    &_pager_item_selected:hover{
+        cursor: pointer;
+        @include primary-btn--hover;
+    }
+    &_pager_item_selected:active{
+        @include primary-btn--active;
+    }
+
+    &_view .webix_pager_item{
+        border-radius: 4px!important;
+        @include secondary-btn;
+    }
+    &_view .webix_pager_item:hover{
+        @include secondary-btn--hover;
+    }
+    &_view .webix_pager_item:active{
+        @include secondary-btn--active;
+    }
+
+    
+}
+
+
+
+.webix_disabled_box .webix_button .webix_icon_btn {
+    color: rgb(124, 124, 124)!important;
+}
+.webix_collapse .webix_button{
+    padding-left:15px;
+    padding-top:2px;
+}
+
+
+
+
+.webix_collapse .webix_button,
+.webix_collapse .webix_button:hover,
+.webix_collapse .webix_button:active{
+    background : transparent!important;
+}
+
+ 
+.webix_collapse .webix_button:hover .webix_icon_btn{
+    color: var(--dark)!important;
+}
+
+
+.webix_inp_counter_prev,
+.webix_inp_counter_next {
+    color: var(--primary)!important;
+    border-radius: 5px!important;
+    border: 1px solid var(--gray)!important;
+}
+
+
+
+//// segment btn
+/// 
+/// 
+.webix_el_segmented{
+   margin-top: 7px!important;
+}
+.webix_segment_N,
+.webix_segment_0{
+    font-size: 14px!important;
+
+    margin:0px 5px!important;
+    width: 100px!important;
+    border-radius: 5px!important;
+
+}
+
+.webix_segment_N.webix_selected,
+.webix_selected.webix_segment_0{
+    background-color: var(--primary)!important;
+    border-color: var(--primary)!important;
+    color: #fff!important;
+}
+
+.webix_segment_N,
+.webix_segment_0{
+    @include secondary-btn;
+}
+
+.webix_segment_N:hover,
+.webix_segment_0:hover{
+    @include secondary-btn--hover;
+}
+
+.webix_segment_N:active,
+.webix_segment_0:active{
+    @include secondary-btn--active;
+}
+
+
+.webix_all_segments{
+    text-align: center;
+}
+
+ 
+
+ 
+
+
+
+
+
+
+// editBtn
+.edit-btn-icon .webix_button .webix_icon{
+    color:var(--primary)!important;
+}
+
+.edit-btn-icon .webix_button .webix_icon{
+    color:var(--primary)!important;
+}
+
+.edit-btn-icon .webix_button:hover .webix_icon {
+    color: var(--white) !important;
+  }

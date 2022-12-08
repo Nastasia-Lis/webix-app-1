@@ -1,0 +1,34 @@
+@mixin primary-btn {
+  background: var(--primary)!important;
+  transition: .2s;
+  border-radius: 4px!important;
+  font-size: 13px!important;
+  font-weight: 600!important;
+}
+@mixin primary-btn--hover {
+  background: var(--primary-light)!important;
+}  
+@mixin primary-btn--active {
+  background: var(--primary-dark)!important;
+} 
+
+
+@mixin secondary-btn {
+  background: var(--secondary )!important;
+  color:var(--primary)!important;
+  transition: .2s;
+  border-radius: 4px!important;
+  font-size: 13px!important;
+  font-weight: 600!important;
+}
+@mixin secondary-btn--hover {
+  background: var(--primary)!important;
+  color:var(--white)!important;
+}
+
+@mixin secondary-btn--active {
+  background: var(--primary-dark)!important;
+}
+
+
+//@include mixin-name;

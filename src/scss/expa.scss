@@ -1,0 +1,1203 @@
+@import "src/scss/vars";
+
+@import "src/scss/mixins";
+
+@import "src/scss/btns";
+
+
+// icons
+@import "src/scss/icons/icomoon";
+
+
+
+html, body {
+    scrollbar-width: 9px!important;  
+}
+
+
+
+/* полоса прокрутки (скроллбар) */
+::-webkit-scrollbar {
+    width: auto!important;   /* ширина для вертикального скролла */
+    height: auto!important; /* высота для горизонтального скролла */
+}
+
+/* ползунок скроллбара */
+::-webkit-scrollbar-thumb {
+    background-color: #b3b3b3!important;  
+    border-radius: 0px!important;
+}
+::-webkit-scrollbar-thumb:hover {
+    background-color: #c4c3c3!important; 
+}
+
+::-webkit-scrollbar-thumb:active {
+    background-color: #a0a0a0!important; 
+}
+
+.webix_view,
+.webix_confirm  {
+    font-weight: 400!important;
+    font-size: 14px!important;
+    line-height: 150%!important;
+}
+
+.webix_inp_top_label{
+    font-size: 12px!important;
+ 
+}
+
+.search_mark {
+    background: #d1ceff!important;
+    color:#000000!important;
+}
+
+.webix_tree_item{
+    height: 31px!important;
+    line-height: 20px!important;
+}
+
+
+
+.webix_popup_button{
+    height: 40px!important;
+    min-width: 120px!important;
+    line-height: 26px!important;
+}
+.webix_popup_title{
+    font-weight: 600!important;
+}
+.webix_resizer {
+    border-width: 1px!important;
+}
+
+.webix_dash-filter-headline .webix_template,
+.table-edit-headline .webix_template,
+.table-filter-headline .webix_template{
+    font-size: 16px!important;
+    font-weight: 600!important;
+    padding: 0px!important;
+}
+  
+.webix_mainContent > .webix_view.webix_layout_line{
+    margin-left: 0px!important;
+}
+
+
+.webix_view.webix_layout_line{
+    transition: none!important;
+}   
+
+.webix_auth{
+    margin: 1px 0px 0px 1px!important;
+}
+.webix_cp-form,
+.webix_headline-userprefs{
+    font-weight: 600!important;
+    font-size: 18px!important;
+}
+.webix_cp-form >  .webix_template,
+.webix_headline-userprefs > .webix_template,
+.webix_userprefs-info > .webix_template{
+    padding-left: 0px!important;
+}
+
+
+
+
+.webix_alert .webix_popup_title{
+    box-shadow:none!important;
+}
+.webix_modal-custom-save.webix_alert .webix_popup_text{
+    margin-bottom: 5px!important;
+}
+
+// .webix_modal-custom-save .webix_popup_controls div:nth-child(2){
+//     @include secondary-btn;
+// }
+
+// .webix_modal-custom-save .webix_popup_controls div:nth-child(2):hover{
+//     @include secondary-btn--hover;
+// }
+
+// .webix_modal-custom-save .webix_popup_controls div:nth-child(2):active{
+//     @include secondary-btn--active;
+// }
+
+/// modalbox
+.webix_modal_box.webix_confirm{
+    width: 400px!important;
+}
+
+.webix_modal-custom-save > .webix_popup_controls .webix_popup_button{
+    @include secondary-btn;
+}
+
+.webix_modal-custom-save > .webix_popup_controls .webix_popup_button:hover{
+    @include primary-btn--hover;
+    color: #fff!important;
+}
+.webix_modal-custom-save > .webix_popup_controls .webix_popup_button:active{
+    @include secondary-btn--active;
+    color: #fff!important;
+}
+
+.webix_modal-custom-save > .webix_popup_controls .webix_popup_button:last-child{
+    @include primary-btn;
+    color:#fff!important;
+}
+
+.webix_modal-custom-save > .webix_popup_controls .webix_popup_button:last-child:hover{
+    @include primary-btn--hover;
+}
+
+.webix_modal-custom-save > .webix_popup_controls .webix_popup_button:last-child:active{
+    @include primary-btn--active;
+}
+
+
+// .webix_modal-custom-save .webix_popup_controls div:nth-child(3){
+//     @include primary-btn;
+//     color:#fff!important;
+// }
+// .webix_modal-custom-save .webix_popup_controls div:nth-child(3):hover{
+//     @include primary-btn--hover;
+// }
+// .webix_modal-custom-save .webix_popup_controls div:nth-child(3):active{
+//     @include primary-btn--active;
+// }
+
+.webix_list_item .webix_icon{
+    font-size: 13px!important;
+    margin-right: 8px!important;
+}
+
+.webix_list_item.menu{
+    font-size: 13px!important;
+}
+.icon-sign-out{
+    color:var(--danger-dark)!important;
+}
+
+.webix_badge{
+    background-color: var(--danger)!important;
+}
+
+
+.webix_progress_top .webix_progress_state, .webix_progress_bottom .webix_progress_state{
+    background: var(--primary-light)!important;
+ 
+    background-image:none!important;
+
+}
+.webix_progress_bottom .webix_progress_state{
+    height: 8px!important;
+}
+
+
+.webix_hide-content{
+    display: none!important;
+}
+.webix_show-content{
+    display: block!important;
+}
+
+.webix_log-headline{
+    font-weight: 600;
+}
+
+.webix_view.webix_control.webix_el_checkbox.webix_checkbox-style .webix_inp_label {
+    width: 20px!important;
+}
+.webix_dash-charts-flex .webix_view.webix_layout_line div:nth-child(1){
+    margin: 0 !important;
+    text-align: center;
+}
+
+.webix_filter-inputs{
+    margin-top: 0px!important; 
+}
+
+
+.webix_userprefs-info {
+    height: 45px!important;
+}
+
+
+
+.webix_btn-recover{
+    margin: 5px 0px!important;
+}
+.webix_btn-recover > .webix_el_box{
+    padding:  0px 10px!important;
+}
+
+
+.webix_form-adaptive{
+    min-height: 98px!important;
+    max-height: 151px!important;
+}
+
+.webix_layout_space{
+    background-color: var(--bg) !important
+}
+
+
+h1, h2, h3, h4, h5, h6{
+    color:var(--dark)!important;
+}
+
+select {
+    cursor:pointer;
+}
+
+
+a{
+    color: var(--dark);
+}
+a:hover{
+    color: var(--primary);
+}
+a:active{
+    color: var(--primary-dark);
+}
+
+.webix_custom_checkbox {
+    color:  var(--primary)!important;
+}
+
+.webix_custom_checkbox:focus {
+    color:  var(--primary)!important;
+}
+.webix_el_checkbox .webix_label_right{
+    font-size: 14px!important;
+    font-weight: 400!important;
+}
+
+input:focus,
+.webix_inp_static:focus,
+select:focus{
+    border: 1px solid var(--primary)!important;
+}
+
+::placeholder {
+    color: #858585 !important;
+}
+  
+
+input, 
+select,
+textarea,
+.webix_inp_static {
+    border-radius: 4px!important;
+    font-weight: 400!important;
+}
+
+textarea:focus{
+    border: 1px solid var(--primary)!important;
+}
+
+label, button{
+    font-weight: 500!important;
+}
+
+
+.webix_mainContent > .webix_view.webix_layout_line{
+    margin-left: 0px!important;
+  }
+
+
+.webix_log-block .webix_list_item{
+    cursor: default!important;
+    font-size: 13px!important;
+}
+.webix_list_item{
+    height:auto!important;
+}
+.webix_template-user{
+    width:auto!important;
+}
+
+
+.webix_contextmenu a:last-child{
+    color:  var(--danger-dark)!important;
+}
+.webix_contextmenu a:last-child:hover{
+    color:  var(--dark)!important;
+}
+
+
+
+.webix{
+    &_view{
+        border-color: var(--gray-light) !important;
+    }
+    &_popup{
+        border-radius: 6px!important;
+       // padding: 10px 20px!important;
+    }
+
+    &_popup-prev-href{
+        padding: 20px!important;
+    }
+
+
+    &_win_body > .webix_view{
+        border-radius: 6px!important;
+    }
+    &_dashboard-h2 .webix_template{
+        padding: 0px!important;
+    }
+
+    &_tree.webix_tree-main{
+        background-color: var(--bg)!important;
+        border-width:0px!important;
+    }
+
+    &_header-style{
+        background-color: var(--bg)!important;
+    }
+    &_side-container{
+        background-color: var(--bg)!important;
+    }
+
+    //--------------dashboard
+ 
+    &_accordion-container > .webix_accordionitem.collapsed .webix_accordionitem_header{
+        color:var(--dark)!important;
+        background-color: var(--bg)!important;
+    }
+    &_accordion-container > .webix_accordionitem .webix_accordionitem_header{
+        font-weight: 400!important;
+        font-size: 15px!important;
+        background-color: var(--gray-light)!important;
+    }
+
+    &_accordion-container > .webix_accordionitem.collapsed .webix_accordionitem_header .webix_accordionitem_button{
+        color:var(--dark)!important;
+    }
+    &_accordion-container > .webix_accordionitem .webix_accordionitem_header .webix_accordionitem_button{
+        color:var(--primary)!important;
+    }
+    
+    
+    &_timeline_node{
+        stroke: var(--primary)!important;
+    }
+
+
+    //--------------dashboard
+
+   
+    //--------------forms tree item
+    &_form-template > .webix_template{
+        padding: 0px!important;
+    }
+    //--------------forms tree item
+
+    //--------------table
+
+    &_hcolumn, &_pager_item_selected{
+        font-weight: 500!important;
+        font-size: 14px!important;
+    }
+    &_table-style .webix_hcell, &_style-template-count{
+        background:var(--bg)!important;
+    }
+
+
+    &_dtable .webix_ss_header .webix_hcolumn div.webix_last_row,
+    &_dtable div.webix_ss_vscroll_header,
+    &_dtable div.webix_ss_vscroll_footer{
+        border-bottom-color: rgb(218, 222, 224) !important;
+        border-top-color: rgb(218, 222, 224) !important;
+    }
+
+    &_dtable .webix_select_mark > div.webix_row_select{
+        box-shadow: inset 2px 0 var(--primary)!important;
+    }
+    &_cell{
+        cursor: pointer;
+    }
+
+
+    &_dtable .webix_ss_footer .webix_hcolumn > div:first-child, .webix_dtable .webix_ss_footer .webix_hcell[row="0"]{
+        border-top-color: rgb(218, 222, 224) !important;
+    }
+
+
+    //--------------table
+
+
+
+
+    //--------------notify
+    &_success{
+        border-radius: 4px!important;
+        font-weight: 500!important;
+    }
+    &_success div{
+        background-color: var( --success);
+    }
+
+
+    &_error{
+        border-radius: 4px!important;
+        font-weight: 500!important;
+    }
+    &_error div{
+        background-color: var( --error);
+    }
+
+    &_debug{
+        border-radius: 4px!important;
+        font-weight: 500!important;
+    }
+    &_debug div{
+        background-color: var(--notify);
+    }
+    //--------------notify
+
+
+
+
+    //--------------popup confirm
+   
+
+    &_confirm .webix_popup_title{
+        box-shadow: none !important;
+    }
+    &_popup_button.confirm{
+        @include primary-btn;
+    }
+
+    &_popup_button.confirm:hover{
+        @include primary-btn--hover;
+    }
+
+    &_popup_button.confirm:active{
+        @include primary-btn--active;
+    }
+
+    &_popup_button{
+        padding: 5px 10px!important;
+    }
+
+    &_popup_controls > :first-child{
+        @include secondary-btn;
+    }
+
+    &_popup_controls > :first-child:hover{
+        @include secondary-btn--hover ;
+    }
+    &_popup_controls > :first-child:active{
+        @include secondary-btn--active ;
+    }
+    &_modal_box{
+        border-radius: 4px!important;
+        padding: 15px 30px!important;
+    }
+    //--------------popup confirm
+
+    //--------------label-img
+    &_img-user > .webix_el_box{
+        line-height: 0px!important;
+    }
+    //--------------label-img
+
+    //--------------calendar
+    &_cal_body .webix_cal_today .webix_cal_day_inner{
+        box-shadow: inset 0 0 0 1px var(--primary)!important;
+    }
+    &_cal_body .webix_cal_event{
+        color: var(--primary)!important;
+    }
+
+    &_cal_body .webix_cal_block.webix_selected span:hover{
+        background-color: var(--primary-light)!important;
+    }
+    &_cal_body .webix_cal_block.webix_selected span{
+        background-color: var(--primary)!important;
+    }
+    &_cal_body .webix_cal_block.webix_selected span:active{
+        background-color: var(--primary-dark)!important;
+    }
+    &_cal_body .webix_cal_block span:hover{
+        background-color: var(--secondary)!important;
+    }
+
+    
+    &_cal_prev_button:hover{
+        color: var(--primary-light)!important;
+    }
+    &_cal_next_button:hover{
+        color: var(--primary-light)!important;
+    }
+
+    &_cal_next_button:focus{
+        color: var(--primary)!important;
+    }
+
+    &_cal_prev_button:focus{
+        color: var(--primary)!important;
+    }
+
+    &_cal_done {
+        @include secondary-btn;
+        height: 35px!important;
+        cursor: pointer;
+    }
+    &_cal_done:hover{
+        @include secondary-btn--hover;
+        border:none!important;
+    }
+    &_cal_done:active{
+        @include secondary-btn--active;
+        border:none!important;
+    }
+    &_win_body > .webix_view {
+        border-radius: 4px;
+    }
+
+
+    //------select
+    &_list_item.webix_selected {
+        box-shadow: inset 2px 0 var(--primary)!important;
+    }
+    //------select
+
+    &_block-title{
+        font-weight: 600!important;
+        font-size: 16px!important;
+        height: auto!important;
+    }
+
+    &_dash-title > .webix_template{
+        padding: 8px 12px !important;
+        text-align: center;
+      
+    }
+}
+.webix_cal_body .webix_cal_select .webix_cal_day_inner:hover,
+.webix_cal_body .webix_cal_today.webix_cal_select .webix_cal_day_inner:hover {
+    background: var(--primary-light)!important;
+}
+.webix_cal_body .webix_cal_select .webix_cal_day_inner,
+.webix_cal_body .webix_cal_today.webix_cal_select .webix_cal_day_inner {
+    background: var(--primary)!important;
+}
+.webix_cal_body .webix_cal_select .webix_cal_day_inner:active,
+.webix_cal_body .webix_cal_today.webix_cal_select .webix_cal_day_inner:active {
+    background: var(--primary-dark)!important;
+}
+
+.webix_cal_body .webix_cal_day_inner:hover{
+    background: var(--secondary)!important;
+}
+.webix_cal_icon:hover, .webix_cal_time:hover, .webix_cal_month_name:hover, 
+.webix_cal_icon:focus, .webix_cal_time:focus, .webix_cal_month_name:focus{
+    color: var(--primary)!important;
+}
+
+//--------------calendar
+
+//--------------radio
+.webix_el_radio .webix_radio_1 .webix_custom_radio{
+    color: var(--primary)!important;
+}
+.webix_el_radio .webix_radio_1 .webix_custom_radio:hover{
+    color: var(--primary-light)!important;
+}
+.webix_el_radio .webix_custom_radio:focus {
+    color: var(--primary)!important;
+  }
+.webix_el_radio .webix_radio_1 .webix_custom_radio:active{
+    color: var(--primary-dark)!important;
+}
+
+.webix_radio_option label{
+    font-weight: 400!important;
+}
+
+//--------------radio
+.webix_property_line  {
+    word-wrap:break-word!important;
+}
+
+
+.webix_multivew-cell{
+    transition:none!important;
+}
+
+
+
+.webix_btn-edit .webix_icon{
+    color: var(--primary)!important;
+    font-size: 14px!important;
+    margin-left: -8px!important;
+}
+
+.webix_btn-edit:hover  .webix_icon{
+    color: #fff!important;
+}
+
+.webix_icon_btn{
+    font-size: 13px!important; 
+    margin-right: 0px!important;
+}
+
+
+
+.webix_img_btn > .webix_icon_btn{
+    margin-bottom: 1px !important;
+}
+.webix_img_btn > .icon-trash{
+    margin-bottom: 2px!important;
+}
+
+
+
+
+// tabbar
+
+.webix_filter-popup-tabbar  .webix_item_tab.webix_selected{
+    //border-color: 
+    box-shadow: inset 0 -2px var(--primary)!important;
+}
+
+.webix_filter-popup-tabbar  .webix_item_tab{
+    //border-color: 
+    box-shadow: inset 0 -2px var(--gray)!important;
+}
+
+.webix_all_tabs .webix_item_tab{
+    color: var(--primary)!important;
+    font-size: 15px!important;
+}
+
+.webix_edit-form-popup{
+    margin-top:-15px!important;
+}
+
+.webix_edit-form-popup > .webix_scroll_cont > .webix_view.webix_layout_line{
+    margin-top: 0px!important;
+}
+
+
+
+//prompt
+.webix_prompt-filter-lib .webix_popup_title{
+    box-shadow: none!important;
+    font-size: 17px!important;
+    padding-bottom: 10px!important;
+}
+
+
+.webix_popup_input.webix_el_text{
+    padding: 0!important;
+    margin-bottom: 10px!important;
+}
+
+.webix_popup_input.webix_el_text input{
+    height: 32px!important;
+}
+
+
+
+.webix_popup_input.webix_el_text.webix_required::before{
+    display: none;
+}
+
+
+.webix_prompt-filter-lib{
+    border-radius:6px!important;
+}
+
+
+.webix_prompt-filter-lib > .webix_popup_controls div:nth-child(2){
+    @include secondary-btn;
+}
+
+.webix_prompt-filter-lib > .webix_popup_controls div:nth-child(2):hover{
+    @include secondary-btn--hover ;
+}
+
+.webix_prompt-filter-lib > .webix_popup_controls div:nth-child(2):active{
+    @include secondary-btn--active ;
+}
+
+
+.webix_tree.webix_tree-edit{
+    background-color: none !important;
+}
+
+
+
+.webix_view.webix_form.webix_layout_form .webix_el_slider{
+    display: none !important;
+}
+
+ 
+.webix_template-datepicker .webix_template{
+    //font-size: 18px !important;
+    font-weight: 500;
+    padding: 5px 0px!important;
+    color:var(--primary);
+}
+
+.webix_view.webix_colon_template .webix_template{
+    padding: 6px 0px 0px!important;
+    font-size: 23px!important;
+}
+
+.webix_view.dashboardBody.webix_layout_line{
+    overflow:visible!important;
+}
+
+
+.webix_cal_icon {
+    font-size: 13px!important;
+}
+
+.webix_cal_icon_clear.webix_cal_icon{
+    color: var(--danger);
+}
+
+.webix_cal_icon_clear.webix_cal_icon:hover{
+    color: var(--danger-light)!important;
+}
+
+.webix_cal_icon_clear.webix_cal_icon:active{
+    color: var(--danger-dark)!important;
+}
+
+.webix_cal_icons span:not(:last-child){
+    margin-right: 5px!important;
+}
+
+.webix_cal_body .webix_cal_block span {
+    border-radius: 8%!important;
+}
+
+
+.webix_chart canvas{
+    right: 0!important;
+}
+
+
+
+.webix_dash-chart-headline .webix_template{
+    padding:12px 0 0 0 !important;
+}
+
+
+
+.webix_inp_counter_value{
+    margin: 0px 5px 0px 5px!important;
+    border: 1px solid var(--gray)!important;
+    padding: 0px!important;
+    cursor:text!important;
+}
+
+
+.webix_el_counter .webix_inp_counter_value{
+    width: 75px!important;
+}
+
+
+
+
+.webix_template-actions  .webix_template{
+    font-weight: 600;
+    font-size: 16px;
+    padding:5px 0 0 !important;
+}
+
+
+.webix_popup-config{
+    padding:20px 20px!important;
+    margin-left: auto!important;
+    margin-right: auto!important;
+    left: 0!important;
+    right: 0!important;
+}
+
+
+.webix_btn-not-found-back  button {
+    padding: 0px!important;
+}
+
+.webix_btn-not-found-back .webix_el_box{
+    padding: 0px 9px!important;
+}
+
+
+
+.webix_filter-headline-wrapper{
+    display: flex!important;
+    justify-content: space-between!important;
+}
+
+
+
+.webix_cal_day_inner{
+    border-radius: 5px!important;
+}
+
+
+
+/// ----- popups
+
+.webix_template-not-found .webix_template,
+.popup_headline .webix_template {
+    font-weight: 600;
+    font-size: 16px;
+    padding: 9px 0px 0px 9px!important;
+}
+
+
+
+.webix_template-not-found-descr > .webix_template{
+    padding: 0px 0px 0px 8px!important;
+}
+
+
+.popup_close-btn .webix_button.webix_img_btn{
+    background-color: transparent!important;
+    width: 27px!important;
+}
+
+
+.popup_close-btn .webix_button:hover .webix_icon_btn{
+    color: var(--primary-light)!important;
+}
+
+.popup_close-btn .webix_button:active .webix_icon_btn{
+    color: var(--primary-dark)!important;
+}
+
+.popup_close-btn .webix_icon_btn{
+    font-size: 20px!important;
+}
+
+.popup_subtitle{
+    height: auto!important;
+}
+
+.popup_padding-container{
+    padding: 10px!important;
+}
+
+
+
+// общее
+.webix_empty-template {
+    color:#858585!important;
+    font-size:13px!important;
+}
+
+.webix_block-headline{
+    display:inline-block!important;
+    font-size:15px!important;
+    font-weight:600!important;
+    background:var(--bg)!important;
+}
+
+
+
+///---- favs
+.webix-transparent-btn  .webix_button.webix_img_btn{
+    background:transparent!important;
+}
+
+.webix-transparent-btn  .webix_button.webix_img_btn:hover{
+    background:var(--gray-light)!important;
+   // color:var(--gray)!important;
+}
+
+.webix-transparent-btn  .webix_button.webix_img_btn:active{
+    background:var(--gray)!important;
+   // color:var(--gray)!important;
+}
+.webix-transparent-btn .webix_button .webix_icon_btn{
+    padding-top: 4px!important;
+}
+.webix-transparent-btn .webix_button:hover .webix_icon_btn{
+    color:var(--primary-dark)!important;
+}
+
+
+.webix-transparent-btn--primary{
+    background-color:transparent!important;
+    color:var(--primary-dark)!important;
+}
+
+
+
+
+////history btns
+.btn-history {
+    background:var(--gray-light)!important;
+}
+.btn-history .webix_button.webix_img_btn:hover {
+    background:#d5d4d5!important;
+}
+
+
+
+
+/// tree
+.tree_none-items{
+    color: var(--gray)!important;
+}
+.tree_none-items:hover{
+    background-color: transparent!important;
+}
+
+.tree_none-items .webix_tree_file{
+    color: var(--gray-light) !important;
+}
+
+.tree_none-items:hover .webix_tree_file{
+    color: var(--gray-light) !important;
+}
+.tree_none-items:active .webix_tree_file{
+    color: var(--gray-light) !important;
+}
+
+
+
+.tree_delim-items{
+    color: transparent!important;
+    pointer-events: none;
+    height: 1px!important;
+    border-bottom: 1px solid var(--gray)!important;
+    padding: 0px 2px!important;
+    margin-bottom: 8px!important;
+    margin-left: 15px!important;
+}
+
+
+.tree_delim-items .webix_tree_file{
+    color: transparent!important;
+}
+
+
+.tree_load-items, .tree_none-items, .tree_disabled-item{
+    pointer-events: none;
+}
+
+.tree_load-items .webix_tree_file{
+    color: transparent!important;
+}
+
+.tree_disabled-item .webix_tree_folder_open,
+.tree_disabled-item .webix_tree_close      ,
+.tree_disabled-item .webix_tree_open,
+.tree_disabled-item {
+    color : var(--gray)!important;
+}
+
+
+
+// global load
+.global_loadTemplate{
+    color :#858585;
+    font-size : 14px!important;
+}
+.global_loadTemplate,
+.global_loadTemplate div{
+    background-color : var(--bg) !important;
+}
+
+
+
+// popup
+.popup-date_template .webix_template{
+    padding-right: 0px!important;
+}
+
+.popup-time_template .webix_template{
+    padding-left: 0px!important;
+    padding-right: 0px!important;
+}
+
+
+.popup_time-spacer {
+    background-color: transparent!important;
+    font-size: 20px!important;
+}
+.popup_time-spacer .webix_template{
+    padding: 2px 2px 0px 2px!important;
+ 
+}
+
+
+.popup_time-timeFormHead{
+    background-color: transparent!important;
+}.popup_time-timeFormHead .webix_template{
+    padding: 0px!important;
+}
+
+
+
+
+/// context menu
+.webix_view.webix_menu .webix_list_item .webix_submenu_icon{
+    font-size: 0!important;
+    width: 0px!important;
+}
+
+
+
+// trash btn transparent 
+
+.webix-trash-btn-color .webix_button .webix_icon_btn {
+    color:var(--danger)!important;
+}
+
+
+
+
+/// list filter
+
+.list-filter-borders{
+    background-color:var(--bg)!important;
+    border-radius: 0px 0px 6px 6px;
+}
+.list-filter-empty .webix_empty-template{
+    background-color:var(--bg)!important;
+}
+.list-filter-headline{
+    background-color:var(--gray-light)!important;
+    border-radius: 6px 6px 0px 0px;
+    font-weight: 600!important;
+    margin-top: 10px!important;
+    padding: 7px 0px 10px 0px!important;
+}
+
+ 
+.list-filter-move-btns .icon-arrow-right{
+    font-size: 11px!important;
+}
+.list-filter-move-btns .icon-arrow-left{
+    font-size: 11px!important;
+}
+
+.list-filter-head .webix_template{
+    padding: 7px 0px 0px 2px!important;
+}
+
+
+
+
+
+.webix_el_checkbox .webix_label_right{
+    padding-top:6px!important;
+}
+
+
+
+
+
+/// popup
+.no-wrap-headline{
+    text-overflow   : ellipsis!important;
+    white-space     : nowrap;
+    overflow        : hidden;
+    font-size       : 15px!important;
+    font-weight     : 600;
+    padding-top     : 5px!important;
+    width           : 100%!important;
+}
+
+// .webix_popup-headline  .webix_template{
+//     padding-left: 5px!important;
+// }
+
+
+/// property
+/// 
+.webix_property{
+    border-radius: 5px!important;
+}
+
+
+
+// popup calendar 
+.webix_view.webix_form.webix_layout_space{
+    border-radius: 5px!important;
+}
+
+
+
+
+// visible columns list
+
+.webix_list.list-filter-borders .webix_scroll_cont{
+    padding-bottom: 28px!important;
+}
+
+
+
+
+// table counter
+.webix_style-template-count{
+    font-size: 13px!important;
+}
+
+
+
+
+// password input
+.password-icon {
+    padding     : 7px 6px 0px 0px!important;
+    font-size   : 18px!important;
+    transition  : .2s;
+    cursor      : pointer;
+
+}
+.password-icon:hover{
+    color       :var(--gray);
+}
+
+.password-icon:active{
+    color       :var(--gray-dark);
+    
+}
+
+
+
+//property
+.propery-error{
+    background-color: var(--danger-light); 
+}
+
+
+
+
+
+// dashboard timepicker
+.dash-timeboard{
+    display: none!important;
+}
+
+//dashboard invalid input
+.dash-filter-invalid{
+    background  : var(--danger-light) !important;
+    border-color: var(--danger)!important;
+}
+
+
+
+// table toolbar
+.btn-edit-icon-toolbar{
+    font-size:13px!important; 
+    color:var(--primary)!important
+}
+
+
+
+
+
+
