@@ -34,10 +34,6 @@ function putPrefs(id, sentObj){
     });   
 }
 
-//currFilterState
-//editFormTempData
-
-
 function isPrefExists(data){
     const result = {
         exists : false
@@ -71,7 +67,6 @@ function postUserPrefs(sentObj){
     postData.then(function(data){
         data = data.json();
  
-        console.log(data.err_type ,'ddd')
         if (data.err_type !== "i"){
             setFunctionError(
                 data.err, 
@@ -124,7 +119,7 @@ async function logout() {
             filter   :  webix.storage.local.get("currFilterState")
         };
         const locationData = returnSentTamplate("userLocationHref", location);
-        const restoreData  = returnSentTamplate("userRestoreData",  restore);
+        const restoreData  = returnSentTamplate("userRestoreData",  restore );
    
         if (window.location.pathname !== "/index.html/content"){
 

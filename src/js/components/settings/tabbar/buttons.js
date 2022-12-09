@@ -19,12 +19,16 @@ let values;
 let sentObj;
 
 function putPrefs(el){
+ 
     const path    = "/init/default/api/userprefs/" + el.id;
     const putData = webix.ajax().put(path, sentObj);
 
     return putData.then(function(data){
+
         data = data.json();
+
         if (data.err_type == "i"){
+
             const formVals = JSON.stringify(values);
             setStorageData (tabbarVal, formVals);
 
@@ -135,12 +139,14 @@ async function savePrefs(){
         data = data.json().content;
 
         values = form.getValues();
-
+ 
         sentObj = {
             name  : tabbarVal,
             owner : ownerId.id,
             prefs : values,
         };
+
+   
 
         const result          = findExistsData(data);
         const isExistsSetting = result.exists;
@@ -187,9 +193,10 @@ function clearSettings (){
     const form      = $$(tabbarVal);
 
     if (tabbarVal === "userprefsWorkspaceForm"){
+    
         form.setValues({
             logBlockOpt    : '1', 
-            LoginActionOpt : '1'
+        //    LoginActionOpt : '1'
         });
 
     } else if (tabbarVal === "userprefsOtherForm"){

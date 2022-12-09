@@ -5,70 +5,56 @@ var __webpack_exports__ = {};
 ;// CONCATENATED MODULE: ./src/js/blocks/storageSetting.js
 
 
+
+
 function setStorageData (name, value){
     if (typeof(Storage) !== 'undefined') {
         localStorage.setItem(name, value);
     } 
 }
 
-function setLoginActionPref(userLocation, userprefsWorkspace){
-    function replaceUser(){
-        console.log(userLocation,  userLocation.href, window.location.href)
-        if (userLocation       && 
-            userLocation.href  && 
-            userLocation.href !== window.location.href ){
-        
-            window.location.replace(userLocation.href);
-        }
-    }
-    try{
-    
-        if (userprefsWorkspace){
-            if (userprefsWorkspace.LoginActionOpt == 2){
-                replaceUser();
-            }
-        } else {
-            replaceUser();
-        }
-    } catch(err){
-        errors_setFunctionError(
-            err,
-            "storageSettings",
-            "setLoginActionPref"
-        );
+function isLocationParam(userLocation){
+    if (userLocation       && 
+        userLocation.href  && 
+        userLocation.href !== window.location.href )
+    {
+        return true;
     }
 }
 
 
+function setLoginActionPref(userLocation){
+    if (isLocationParam(userLocation)){
+        window.location.replace(userLocation.href);
+    }
+}
+
+function setLink(data){
+    const url          = new URL( data.href );
+    const isLogoutPath = url.pathname.includes("logout");
+    const origin       = window.location.origin;
+
+    if (url.origin == origin && !isLogoutPath) {
+        setLoginActionPref(data);
+    }
+}
 
 function moveUser(){
 
     const localPath = "/index.html/content";
     const expaPath  = "/init/default/spaw/content";
 
-
-
-    if ( window.location.pathname == localPath || window.location.pathname == expaPath ){
+    const path = window.location.pathname;
+    if ( path == localPath || path == expaPath ){
   
-        const userprefsWorkspace = webix.storage.local.get("userprefsWorkspaceForm");
-        const userLocation       = webix.storage.local.get("userLocationHref");
-        const outsideHref        = webix.storage.local.get("outsideHref");
+        const userLocation = webix.storage.local.get("userLocationHref");
+        const outsideHref  = webix.storage.local.get("outsideHref");
 
+   
         if (outsideHref){
-            const url = new URL( outsideHref.href );
-            
-            if ( url.origin == window.location.origin && !(url.pathname.includes("logout"))) {
-                setLoginActionPref( outsideHref, userprefsWorkspace );
-            }
-
+            setLink(outsideHref);
         } else {
-            const url = new URL( userLocation.href );
-            if ( userprefsWorkspace && userprefsWorkspace.LoginActionOpt || !userprefsWorkspace ){
-
-                if ( url.origin == window.location.origin && !(url.pathname.includes("logout"))) {
-                    setLoginActionPref( userLocation, userprefsWorkspace );
-                }
-            }
+            setLink(userLocation);
         }
 
     }
@@ -87,170 +73,158 @@ function setRestoreToStorage(name, value){
 function restoreData(){
     restore = webix.storage.local.get("userRestoreData");
 
-    const path = "/init/default/api/userprefs/" + restorePref.id;
+    if (restore){
+        const path = "/init/default/api/userprefs/" + restorePref.id;
 
-    const delData = webix.ajax().del(path, restorePref);
+        const delData = webix.ajax().del(path, restorePref);
 
-    delData.then(function(data){
-        data = data.json();
+        delData.then(function(data){
+            data = data.json();
 
-        if (data.err_type !== "i"){
-            errors_setFunctionError(
-                data.err, 
+            if (data.err_type !== "i"){
+                errors_setFunctionError(
+                    data.err, 
+                    "storageSettings", 
+                    "restoreData"
+                );
+            }
+        });
+
+        delData.fail(function(err){
+            setAjaxError(
+                err, 
                 "storageSettings", 
                 "restoreData"
             );
-        }
-    });
-
-    delData.fail(function(err){
-        setAjaxError(
-            err, 
-            "storageSettings", 
-            "restoreData"
-        );
-    });
- 
- 
-  
-    setRestoreToStorage("editFormTempData", restore.editProp);
-    setRestoreToStorage("currFilterState",  restore.filter  );
- 
+        });
     
+    
+        setRestoreToStorage(
+            "editFormTempData", 
+            restore.editProp
+        );
+
+        setRestoreToStorage(
+            "currFilterState",  
+            restore.filter  
+        );
+ 
+    }
+}
+
+function setLogState(value){
+    const logLayout          = $$("logLayout");
+    const logBtn             = $$("webix_log-btn");
+    
+    let height;
+    let icon;
+
+    if (value == 1){
+        height = 5;
+        icon = "icon-eye";
+    } else {
+        height = 90;
+        icon = "icon-eye-slash";
+    }
+
+    logLayout.config.height = height;
+    logBtn.config.icon      = icon;
+
+    logBtn.setValue(value);
+
+    logLayout.resize ();
+    logBtn   .refresh();
 }
 
 
 function setLogPref(){
-    const userprefsWorkspace = webix.storage.local.get("userprefsWorkspaceForm");
-    const logLayout          = $$("logLayout");
-    const logBtn             = $$("webix_log-btn");
+  
+    const form = "userprefsWorkspaceForm";
 
-    function hideLog(){
-        logLayout.config.height = 5;
-        logBtn.config.icon ="icon-eye";
-        logBtn.setValue(1);
-    }
-
-    function showLog(){
-        logLayout.config.height = 90;
-        logBtn.config.icon ="icon-eye-slash";
-        logBtn.setValue(2);
-    }
-    
-    try{
-        if (userprefsWorkspace){
+    const userprefsWorkspace = webix.storage.local.get(form);
  
-            if (userprefsWorkspace.logBlockOpt !== undefined ){
+    if (userprefsWorkspace){
+        const option = userprefsWorkspace.logBlockOpt;
 
-                if (userprefsWorkspace.logBlockOpt == "2"){
-                    hideLog();
+        if (option){
+            if (option == "2"){
+                setLogState(1);
 
-                } else if(userprefsWorkspace.logBlockOpt == "1"){
-                    showLog();
-                }
-
-                logLayout.resize();
-                logBtn.refresh();
+            } else if(option == "1"){
+                setLogState(2);
             }
 
-
         }
+
+    }
+   
+}
+
+
+function setDataToStorage(data, user){
+ 
+    try{
+        data.forEach(function(el){
+            const owner = el.owner;
+            const name  = el.name;
+
+            const isFavPref = name.includes("fav-link_");
+
+            if (owner == user.id && !isFavPref){
+                setStorageData (el.name, el.prefs);
+
+                if (name == "userRestoreData"){
+                    restorePref = el;
+                }
+            }
+
+        });
     } catch(err){
         errors_setFunctionError(
             err,
             "storageSettings",
-            "userprefsWorkspace"
+            "setDataToStorage"
         );
     }
 }
 
 
 
-function setUserPrefs (userData){
+async function setUserPrefs (userData){
+    
+    let user = getUserDataStorage();
+
+    if (!user){
+        await pushUserDataStorage(); 
+        user = getUserDataStorage();
+    }
  
-    const userprefsData = webix.ajax("/init/default/api/userprefs/");
-   
+    const path = "/init/default/api/userprefs/";
+    const userprefsData = webix.ajax(path);
+
     userprefsData.then( function (data) {
         let user = webix.storage.local.get("user");
-        data       = data.json().content;
+        data     = data.json().content;
 
         if (userData){
             user = userData;
         }
-        
-        function setDataToStorage(){
- 
-            try{
-                data.forEach(function(el){
-                    if (el.owner == user.id && !(el.name.includes("fav-link_"))){
-                        setStorageData (el.name, el.prefs);
-                    }
-
-
-                    if (el.owner == user.id && el.name == "userRestoreData"){
-                        restorePref = el;
-
-                    }
-
-                    
-               
-                });
-            } catch(err){
-                errors_setFunctionError(
-                    err,
-                    "storageSettings",
-                    "setDataToStorage"
-                );
-            }
-        }
-
-        
-        function setPrefs(){
    
-            if (!user){
-                const userprefsGetData = webix.ajax("/init/default/api/whoami");
-                userprefsGetData.then(function(data){
-                    data = data.json().content;
-                
-                    let userData = {};
-                
-                    userData.id       = data.id;
-                    userData.name     = data.first_name;
-                    userData.username = data.username;
-           
-                    setStorageData("user", JSON.stringify(userData));
-                });
-                userprefsGetData.then(function(data){
-                    user = webix.storage.local.get("user");
-                    setDataToStorage ();
-                    moveUser         ();
-                    setLogPref       ();
+        setDataToStorage(data, user);
+     
+        moveUser        ();
 
-                    restoreData();
-                });
-
-                userprefsGetData.fail(function(err){
-                    setAjaxError(err, "favsLink", "btnSaveLpostContentinkClick => getUserData");
-                });
-    
-            } else {
- 
-                setDataToStorage();
-                moveUser        ();
-
-                restoreData();
-            }
-
-        
-          
-        }
-        setPrefs();
-    }).then(function(){
-        setLogPref();
+        restoreData();
+     
+        setLogPref ();
+   
     });
+
     userprefsData.fail(function(err){
         console.log(err);
-        console.log("storageSettings function setUserPrefs");
+        console.log(
+            "storageSettings function setUserPrefs"
+        );
     });
 
 }
@@ -560,10 +534,6 @@ function putPrefs(id, sentObj){
     });   
 }
 
-//currFilterState
-//editFormTempData
-
-
 function isPrefExists(data){
     const result = {
         exists : false
@@ -597,7 +567,6 @@ function postUserPrefs(sentObj){
     postData.then(function(data){
         data = data.json();
  
-        console.log(data.err_type ,'ddd')
         if (data.err_type !== "i"){
             errors_setFunctionError(
                 data.err, 
@@ -650,7 +619,7 @@ async function logout() {
             filter   :  webix.storage.local.get("currFilterState")
         };
         const locationData = returnSentTamplate("userLocationHref", location);
-        const restoreData  = returnSentTamplate("userRestoreData",  restore);
+        const restoreData  = returnSentTamplate("userRestoreData",  restore );
    
         if (window.location.pathname !== "/index.html/content"){
 
@@ -1020,7 +989,7 @@ async function createLogMessage(srcTable) {
     let name;
 
     if (srcTable == "version"){
-        name = 'Expa v1.0.64 ';
+        name = 'Expa v1.0.65';
 
     } else if (srcTable == "cp"){
         name = 'Смена пароля';
@@ -1405,10 +1374,17 @@ function getUserDataStorage(){
 }
 
 async function pushUserDataStorage(){
-    const userprefsGetData = webix.ajax("/init/default/api/whoami");
-    await userprefsGetData.then(function(data){
-        data      = data.json().content;
+ 
+    const path = "/init/default/api/whoami";
+    const userprefsGetData = webix.ajax(path).fail(function(err){
+        setAjaxError(err, "commonFunctions", "getUserData");
+        return false;
+    });
 
+    userprefsGetData.then(function(data){
+
+        data      = data.json().content;
+ 
         const userData = {};
     
         userData.id       = data.id;
@@ -1419,9 +1395,9 @@ async function pushUserDataStorage(){
 
     
     });
-    userprefsGetData.fail(function(err){
-        setAjaxError(err, "commonFunctions", "getUserData");
-    });
+
+ 
+   
 }
 
 
@@ -6170,7 +6146,7 @@ const action = {
 };
 
 const action2 = {
-    navigate: false,
+    navigate: true,
     field   : "auth_group",
     context : false,
     params  :{
@@ -7986,7 +7962,7 @@ function autorefresh_autorefresh (data){
 const userContext_logNameFile = "table => createSpace => userContext";
 
 let prefs;
-let tableId;
+//let tableId;
 
 function returnParameter(el, parameter){
     const prefs = JSON.parse(el.prefs)[parameter];
@@ -8045,7 +8021,7 @@ async function getDataPrefs(urlParameter){
         
         if (item){
             prefs        = returnParameter(item, "params");
-            tableId      = returnParameter(item, "field");
+          //  tableId      = returnParameter(item, "field");
             removePref(item);
         }
     
@@ -8060,11 +8036,18 @@ async function getDataPrefs(urlParameter){
     });
 }
 
+// function clearFilterBtn(){
+//     const btn = {
+//         view:"button", 
+//         id:"my_button", 
+//         value:"Button",
+//     } ;
+// }
 
 async function getUserPrefsContext(urlParameter, parameter){
  
     await getDataPrefs(urlParameter);
-
+ 
     if (prefs){
         return prefs[parameter];
     }
@@ -8535,174 +8518,6 @@ function returnSortData(){
 }
 
 
-;// CONCATENATED MODULE: ./src/js/components/table/filterForm/createElements/field.js
-
-
-
-
-
-let el ;
-let uniqueId;
-let typeField;
-
-
-
-function createFieldTemplate(){
-
-    const elemId  = el.id;
-    const fieldId = elemId + "_filter-child-" + uniqueId;
-
-    const fieldTemplate = {
-        id        : fieldId, 
-        name      : fieldId,
-        label     : el.label,
-        columnName: elemId,
-        labelPosition:"top",
-        on        :{
-            onKeyPress:function(){
-               
-                $$("filterTableForm").clearValidation();
-       
-                const btn = $$("btnFilterSubmit");
-                Action.enableItem(btn);
-            },
-        }
-    };
-
-    return fieldTemplate;
-}
-
-
-function createText(type){
-    const element = createFieldTemplate();
-    element.view  = "text";
- 
-    if(type == "text"){
-        element.placeholder = "Введите текст";
-    } else if (type == "int"){
-        element.placeholder    = "Введите число";
-        element.invalidMessage = 
-        "Поле поддерживает только числовой формат";
-        element.validate       = function(val){
-            return !isNaN(val*1);
-        };
-    }
-
-
-   
-
-    return element;
-}
-
-function findComboTable(){
-    if (el.editor && el.editor == "combo"){
-        return el.type.slice(10);
-    } 
-}
-
-function createCombo(type){
-
-    const element       = createFieldTemplate();
-    const findTableId   = findComboTable();
-
-    element.view        = "combo";
-    element.placeholder = "Выберите вариант";
-
-    if (type == "default"){
-        element.options     = {
-            data:getComboOptions(findTableId)
-        };
-
-    } else if (type == "bool"){
-        element.options = [
-            {id:1, value: "Да"},
-            {id:2, value: "Нет"}
-        ];
-    }
-
-    return element;
-}
-
-function createDatepicker() {
-    const element       = createFieldTemplate();
-    element.view        = "datepicker";
-    element.placeholder = "дд.мм.гг";
-    element.editable    = true,
-    element.format      = "%d.%m.%Y %H:%i:%s";
-    element.timepicker  = true;
-  
-    return element;
-}
-
-function createField(){
- 
-    if (typeField=="text"){
-        return createText("text");
-
-    } else if (typeField=="combo"){
-        return createCombo("default");
-
-    } else if (typeField=="boolean"){
-        return createCombo("bool");
-
-    } else if (typeField=="date"){
-        return createDatepicker();
-
-    } else if (typeField=="integer"){
-        return createText("int");
-
-    }
-
-}
-
-
-function field_field (id, type, element){
-  
-    uniqueId    = id;
-    el          = element;
-    typeField   = type;
-
-    return createField();
-}
-
-
-;// CONCATENATED MODULE: ./src/js/blocks/notifications.js
-function popupExec (titleText) { 
-
-    return webix.confirm({
-        width:300,
-        ok: 'Да',
-        cancel: 'Отмена',
-        title:titleText,
-        text:"Вы уверены, что хотите продолжить?"
-    });
-}
-
-
-function modalBox (title, text, btns){
-
-    if(!title && !text && !btns){
-        return webix.modalbox({
-            title   : "Данные не сохранены",
-            css     : "webix_modal-custom-save",
-            buttons : ["Отмена", "Не сохранять", "Сохранить"],
-            width   : 500,
-            text    : "Выберите действие перед тем как продолжить"
-
-        });
-    } else {
-        return webix.modalbox({
-            title   : title,
-            css     : "webix_modal-custom-save",
-            buttons : btns,
-            width   : 500,
-            text    : text
-
-        });
-    }
-
-}
-
 ;// CONCATENATED MODULE: ./src/js/components/table/filterForm/actions/visibleField.js
 
 
@@ -8718,7 +8533,7 @@ const hideClass   = "webix_hide-content";
 let segmentBtn;
 let elementClass;
 let condition;
-let visibleField_el;
+let el;
 
 function checkChild(elementClass){
     let unique = true;
@@ -8733,7 +8548,7 @@ function checkChild(elementClass){
 
 
 function editStorage(){
-    if (condition && visibleField_el !== "selectAll"){
+    if (condition && el !== "selectAll"){
        
         const item = Filter.getItem(elementClass);
 
@@ -8742,15 +8557,15 @@ function editStorage(){
         }
 
 
-        const unique = checkChild(elementClass, visibleField_el);
+        const unique = checkChild(elementClass, el);
 
         if (unique){
-            Filter.pushInPull(elementClass, visibleField_el);
+            Filter.pushInPull(elementClass, el);
             Action.showItem  (segmentBtn);
         }
      
 
-    } else if (visibleField_el !== "selectAll") {
+    } else if (el !== "selectAll") {
         Filter.clearItem(elementClass);
     }
 
@@ -8758,8 +8573,8 @@ function editStorage(){
 
 
 function showInputContainers(){
-    Action.showItem($$(visibleField_el));
-    Action.showItem($$(visibleField_el + "_container-btns"));
+    Action.showItem($$(el));
+    Action.showItem($$(el + "_container-btns"));
 }
 
 function setValueHiddenBtn(btn, value){
@@ -8768,8 +8583,8 @@ function setValueHiddenBtn(btn, value){
     }
 }
 function setDefStateBtns(){
-    const operBtn    = $$(visibleField_el + "-btnFilterOperations");
-    const btns       = $$(visibleField_el + "_container-btns"     );
+    const operBtn    = $$(el + "-btnFilterOperations");
+    const btns       = $$(el + "_container-btns"     );
 
     
     setValueHiddenBtn(operBtn   , "=");
@@ -8779,8 +8594,8 @@ function setDefStateBtns(){
 }
 
 function setDefStateInputs (){
-    $$(visibleField_el).setValue("");
-    $$(visibleField_el).hide();
+    $$(el).setValue("");
+    $$(el).hide();
 }
 
 
@@ -8812,7 +8627,7 @@ function setHtmlState(add, remove){
 }
 
 function removeChilds(){
-    const container       = $$(visibleField_el + "_rows");
+    const container       = $$(el + "_rows");
     const containerChilds = container.getChildViews();
 
     const values = Object.values(containerChilds);
@@ -8845,8 +8660,8 @@ function removeChilds(){
 function isChildExists(){
     let checkChilds = false;
 
-    if (visibleField_el && visibleField_el !== "selectAll"){
-        const container = $$(visibleField_el + "_rows");
+    if (el && el !== "selectAll"){
+        const container = $$(el + "_rows");
      
         const childs    = container.getChildViews();
 
@@ -8870,14 +8685,14 @@ function showInput(){
 
 function hideInput(){
    
-    if (visibleField_el !== "selectAll"){
-        if ($$(visibleField_el).isVisible()){
+    if (el !== "selectAll"){
+        if ($$(el).isVisible()){
             setHtmlState(hideClass, showClass);
         }
 
     
 
-        if($$(visibleField_el + "_rows")){
+        if($$(el + "_rows")){
             removeChilds();
         }
 
@@ -8891,9 +8706,9 @@ function visibleField (visible, cssClass, element){
 
     condition    = visible;
     elementClass = cssClass;
-    visibleField_el           = element;
+    el           = element;
 
-    segmentBtn   = $$( visibleField_el + "_segmentBtn");
+    segmentBtn   = $$( el + "_segmentBtn");
     
     editStorage();
    
@@ -8946,6 +8761,8 @@ function clearSpace(){
             hideElements(el);
         }
     });
+
+    Action.disableItem($$("btnFilterSubmit"));
 }
 
 
@@ -9090,9 +8907,22 @@ class FilterPull {
         return visibleInputs[key];
     }
 
-    static getAllChilds (){
-        return Object.values(visibleInputs);
+    static getAllChilds (isConcat){
+        const values =  Object.values(visibleInputs);
+        
+        function concat(arr) {
+            return [].concat(...arr);
+        }
+
+        if (isConcat){
+            return concat(values);
+        } else{
+            return values;
+        }
+   
     }
+
+   
 
     static getIndexFilters(){
         const container = $$("inputsFilter");
@@ -9196,6 +9026,200 @@ class Filter extends FilterPull {
     
 }
 
+
+;// CONCATENATED MODULE: ./src/js/components/table/filterForm/createElements/field.js
+
+
+
+
+
+    
+    
+let field_el ;
+let typeField;
+let uniqueId;
+let partId;
+
+function enableSubmitBtn(){
+    Action.enableItem($$("btnFilterSubmit"));
+}
+
+function createFieldTemplate(){
+
+    const elemId  = field_el.id;
+    const fieldId = elemId + partId;
+
+    const fieldTemplate = {
+        id        : fieldId, 
+        name      : fieldId,
+        label     : field_el.label,
+        columnName: elemId,
+        labelPosition:"top",
+    };
+
+    if (!uniqueId) fieldTemplate.hidden = true;
+
+    return fieldTemplate;
+}
+
+function activeState(){
+    enableSubmitBtn();
+    Filter.setStateToStorage();
+    $$("filterTableForm").clearValidation();
+}
+
+function createText(type){
+    const element = createFieldTemplate();
+    element.view  = "text";
+ 
+    element.on    = {
+        onTimedKeypress:function(){
+            activeState();
+        }
+    };
+
+    if(type == "text"){
+        element.placeholder = "Введите текст";
+    } else if (type == "int"){
+        element.placeholder    = "Введите число";
+        element.invalidMessage = 
+        "Поле поддерживает только числовой формат";
+        element.validate       = function(val){
+            return !isNaN(val*1);
+        };
+    }
+
+
+    
+
+    return element;
+}
+
+function findComboTable(){
+    if (field_el.editor && field_el.editor == "combo"){
+        return field_el.type.slice(10);
+    } 
+}
+
+function createCombo(type){
+
+    const element       = createFieldTemplate();
+    const findTableId   = findComboTable();
+
+    element.view        = "combo";
+    element.placeholder = "Выберите вариант";
+
+    element.on    = {
+        onChange:function(){
+            activeState();
+        }
+    };
+
+    if (type == "default"){
+        element.options     = {
+            data:getComboOptions(findTableId)
+        };
+
+    } else if (type == "bool"){
+        element.options = [
+            {id:1, value: "Да"},
+            {id:2, value: "Нет"}
+        ];
+    }
+
+    return element;
+}
+
+function createDatepicker() {
+    const element       = createFieldTemplate();
+    element.view        = "datepicker";
+    element.placeholder = "дд.мм.гг";
+    element.editable    = true,
+    element.format      = "%d.%m.%Y %H:%i:%s";
+    element.timepicker  = true;
+    element.on    = {
+        onChange:function(){
+            activeState();
+        }
+    };
+
+    return element;
+}
+
+function createField(){
+ 
+    if (typeField=="text"){
+        return createText("text");
+
+    } else if (typeField=="combo"){
+        return createCombo("default");
+
+    } else if (typeField=="boolean"){
+        return createCombo("bool");
+
+    } else if (typeField=="date"){
+        return createDatepicker();
+
+    } else if (typeField=="integer"){
+        return createText("int");
+
+    }
+
+}
+
+
+function field_field (id, type, element){
+    uniqueId = id;
+    if (!uniqueId){ // parent input
+        partId = "_filter";
+    } else {
+        partId = "_filter-child-" + uniqueId;
+    }
+
+
+    field_el        = element;
+    typeField = type;
+
+    return createField();
+}
+
+
+;// CONCATENATED MODULE: ./src/js/blocks/notifications.js
+function popupExec (titleText) { 
+
+    return webix.confirm({
+        width:300,
+        ok: 'Да',
+        cancel: 'Отмена',
+        title:titleText,
+        text:"Вы уверены, что хотите продолжить?"
+    });
+}
+
+
+function modalBox (title, text, btns){
+
+    if(!title && !text && !btns){
+        return webix.modalbox({
+            title   : "Данные не сохранены",
+            css     : "webix_modal-custom-save",
+            buttons : ["Отмена", "Не сохранять", "Сохранить"],
+            width   : 500,
+            text    : "Выберите действие перед тем как продолжить"
+
+        });
+    } else {
+        return webix.modalbox({
+            title   : title,
+            css     : "webix_modal-custom-save",
+            buttons : btns,
+            width   : 500,
+            text    : text
+
+        });
+    }
+
+}
 
 ;// CONCATENATED MODULE: ./src/js/components/table/filterForm/createElements/buttons/contextBtn.js
 
@@ -9426,6 +9450,7 @@ function clickContextBtnParent (id, el){
         Filter.removeItemChild(el.id, thisInput);
 
         showEmptyTemplate   ();
+        Filter.setStateToStorage();
         setLogValue         ("success", "Поле удалено"); 
 
     }
@@ -9436,7 +9461,7 @@ function clickContextBtnParent (id, el){
  
         hideSegmentBtn ("add", el.id, idChild);
         Action.showItem(segmentBtn);
-     
+        Filter.setStateToStorage();
     }
 
 
@@ -9507,6 +9532,7 @@ function addChild(){
     const idChild = createChildFields (contextBtn_element, childPosition);
     hideSegmentBtn  ("add", contextBtn_element.id, idChild);
     Action.showItem (segmentBtn);
+    Filter.setStateToStorage();
 }
 
 
@@ -9515,7 +9541,7 @@ function removeInput(){
     Filter.removeItemChild  (contextBtn_element.id, thisInput);
     Action.removeItem       ( $$(thisContainer));
     showEmptyTemplate       ();
-
+    Filter.setStateToStorage();
     setLogValue             ("success", "Поле удалено"); 
 
 }
@@ -9577,6 +9603,7 @@ function createContextBtn (el, id, isChild){
                 } else {
                     clickContextBtnParent(idClick, el); 
                 }
+                
                
             },
          
@@ -9733,6 +9760,7 @@ function createOperationBtn(typeField, elemId){
 
 
 function createBtns(element, typeField, isChild, uniqueId = null){
+
     let id;
     let hideAttribute = false;
 
@@ -9742,7 +9770,6 @@ function createBtns(element, typeField, isChild, uniqueId = null){
         id =  element.id + "_filter";
         hideAttribute = true;
     }
-
 
     return {
         id      : id + "_container-btns",
@@ -9927,7 +9954,6 @@ function createChildFields (el, customPosition) {
     getTypeField(el);
 
     addInput    ();
-    Filter.setStateToStorage();
 
     return getIdCreatedField();
 }
@@ -9983,6 +10009,8 @@ function createChildField(el){
     setBtnsValue(values);
 
     setValue    ($$(idField), el.value);
+
+
 }
 
 
@@ -10136,16 +10164,20 @@ function isDataExists(data){
     }
 }
 
+
 function isFormFill(){
-    const formValues = $$("filterTableForm").getValues();
-    const values = Object.values(formValues);
+ 
+    const inputs = Filter.getAllChilds(true);
 
-    let check = true;
+    let check    = true;
 
-    values.forEach(function(val){
-        if (!val && check){
+    inputs.forEach(function(input){
+        const value = $$(input).getValue();
+
+        if (!value){
             check = false;
         }
+
     });
 
     return check;
@@ -10179,7 +10211,9 @@ function returnLostFilter(id){
         Action.hideItem($$("table-editForm"));
         $$("table-filterId").callEvent("clickEvent", [ "" ]);
         Filter.setActiveTemplate(data.activeTemplate); // option in popup library
+
         if (isDataExists(data) && id == data.id){
+
             createWorkspace(data.values.values);
 
             hideHtmlContainers();
@@ -10188,10 +10222,10 @@ function returnLostFilter(id){
             }
        
         }
-
+       
     }
 
-
+   
 
 }
 
@@ -13220,6 +13254,7 @@ function toolbarVisibleColsBtn(idTable){
 
 
 
+
 const parentFilter_logNameFile = "tableFilter => createElements => parentFilter";
 
 let parentElement;
@@ -13227,142 +13262,40 @@ let viewPosition;
 
 let inputTemplate;
 
-function createInputTemplate (el){
-    const id = el.id + "_filter";
- 
-    inputTemplate = { 
-        id              : id,
-        name            : id, 
-        hidden          : true,
-        label           : el.label, 
-        labelPosition   : "top",
-        columnName      : el.id,
-        on:{
-            onItemClick:function(){
-                $$(parentElement).clearValidation();
-                $$("btnFilterSubmit").enable();
-            }
-        }
-    };
-}
-
-
-
-function parentFilter_createDatepicker(){
-    const elem       = inputTemplate;
-    elem.view        = "datepicker";
-    elem.editable    = true,
-    elem.format      = "%d.%m.%Y %H:%i:%s";
-    elem.placeholder = "дд.мм.гг";
-    elem.timepicker  = true;
-    elem.on    = {
-        onChange:function(){
-            Filter.setStateToStorage();
-        }
-    };
-    return elem;
-}
-
-
-function parentFilter_createCombo(findTableId){
-    const elem       = inputTemplate;
-    elem.view        = "combo";
-    elem.placeholder = "Выберите вариант";
-    elem.options     = {
-        data:getComboOptions(findTableId)
-    };
-    elem.on    = {
-        onChange:function(){
-            Filter.setStateToStorage();
-        }
-    };
-    return elem;
-}
-
-function createBoolCombo (){
-    const elem       = inputTemplate;
-    elem.view        = "combo";
-    elem.placeholder = "Выберите вариант";
-    elem.options     = [
-        {id:1, value: "Да"},
-        {id:2, value: "Нет"}
-    ];
-    elem.on    = {
-        onChange:function(){
-            Filter.setStateToStorage();
-        }
-    };
-
-
-    
-    return elem;
-}
-
-function parentFilter_createText (type){
- 
-    const elem = inputTemplate;
-    elem.view  = "text";
-
-    elem.css   = {"passing-bottom":"5px!important"};
-    elem.keyPressTimeout = 1000;
-    elem.on    = {
-        onTimedKeypress:function(){
-            Filter.setStateToStorage();
-        }
-    };
-
-
-    if        (type == "text"){
-        elem.placeholder = "Введите текст";
-
-    } else if (type == "int"){
-        elem.placeholder     = "Введите число";
-        elem.invalidMessage  = 
-        "Поле поддерживает только числовой формат";
-        elem.validate        = function (val) {
-            return !isNaN(val*1);
-        };
-    }
-    
-    return elem;
-}
-
 
 function parentFilter_returnFilter(el){
-
+ 
     if (el.type == "datetime"){
         return [
-            parentFilter_createDatepicker (), 
+            field_field(false, "date", el),
             createBtns(el, "date"),  
         ];
 
     } 
     else if (el.type.includes("reference")) {
-        let findTableId = el.type.slice(10);
-
         return [
-            parentFilter_createCombo(findTableId),
+            field_field(false, "combo", el),
             createBtns(el, "combo"), 
         ];
  
     } 
     else if (el.type.includes("boolean")) {
         return [
-            createBoolCombo(),
+            field_field(false, "boolean", el),
             createBtns(el, "combo")
         ];
     
     } 
     else if (el.type.includes("integer")) {
         return [
-            parentFilter_createText ("int"),
+            field_field(false, "integer", el),
             createBtns(el, "integer"), 
         ];
     }
     else{
 
         return [ 
-            parentFilter_createText ("text"),
+            field_field(false, "text", el),
             createBtns(el, "text"), 
         ];
     }
@@ -13376,12 +13309,10 @@ function generateElements(){
         columnsData.forEach((el) => {
             const id = el.id;
 
-            createInputTemplate (el);
-
             const idFullContainer  = id + "_filter_rows";
             const idInnerContainer = id + "_filter-container";
             const cssContainer     = id + " webix_filter-inputs";
-        
+         
             const filter  =  {   
                 id  : idFullContainer,
                 idCol:id,
@@ -13402,7 +13333,6 @@ function generateElements(){
             };
 
             inputsArray.push (filter);
-
 
         });
 
@@ -13467,16 +13397,16 @@ function clearFormValidation(){
     }
 }
 
-function enableDelBtn(){
-    const delBtn = $$("table-delBtnId");
-    try{
-        if(parentElement == "table-editForm" && delBtn ){
-            delBtn.enable();
-        }
-    } catch (err){ 
-        errors_setFunctionError(err,parentFilter_logNameFile,"enableDelBtn");
-    }
-}
+// function enableDelBtn(){
+//     const delBtn = $$("table-delBtnId");
+//     try{
+//         if(parentElement == "table-editForm" && delBtn ){
+//             delBtn.enable();
+//         }
+//     } catch (err){ 
+//         setFunctionError(err,logNameFile,"enableDelBtn");
+//     }
+// }
 
 function createParentFilter (parentElem, positon = 1) {
     parentElement      = parentElem;
@@ -13496,7 +13426,7 @@ function createParentFilter (parentElem, positon = 1) {
         Action.showItem($$("inputsFilter"));
     }
 
-    enableDelBtn();
+    //enableDelBtn();
     
 }
 
@@ -14844,7 +14774,7 @@ const backBtn = new Button({
 
 
 
-;// CONCATENATED MODULE: ./src/js/components/table/filterForm/popup/buttons.js
+;// CONCATENATED MODULE: ./src/js/components/table/filterForm/popup/submitBtn.js
 
 
 
@@ -14860,8 +14790,7 @@ const backBtn = new Button({
 
 
 
-
-const buttons_logNameFile = "tableFilter => popup => buttons";
+const submitBtn_logNameFile = "filterTable => popup => submitBtn";
 
 
 function returnCollection(value){
@@ -14870,7 +14799,7 @@ function returnCollection(value){
 }
 
 function visibleSegmentBtn(selectAll, selectValues){
-
+ 
     const selectLength = selectValues.length;
 
     selectValues.forEach(function(value, i){
@@ -14904,7 +14833,7 @@ function createWorkspaceCheckbox (){
     try{
         const keys    = Object.keys(values); 
         let selectAll = false;
-
+     
         keys.forEach(function(el){
             const isChecked = values[el];
 
@@ -14924,7 +14853,7 @@ function createWorkspaceCheckbox (){
     } catch(err){
         errors_setFunctionError(
             err,
-            buttons_logNameFile,
+            submitBtn_logNameFile,
             "createWorkspaceCheckbox"
         );
     }
@@ -14946,7 +14875,7 @@ function visibleCounter(){
     } catch(err){
         errors_setFunctionError(
             err,
-            buttons_logNameFile,
+            submitBtn_logNameFile,
             "visibleCounter"
         );
     }
@@ -14970,8 +14899,10 @@ function setDisableTabState(){
     } 
 }
 
+
+
 function getCheckboxData(){
-      
+
     Action.enableItem($$("filterLibrarySaveBtn"));
     createWorkspaceCheckbox ();
 
@@ -14987,7 +14918,7 @@ function getCheckboxData(){
     );
 }
 
-function buttons_showEmptyTemplate(){
+function submitBtn_showEmptyTemplate(){
     const keys = Filter.lengthPull();
     if ( !keys ){
         Action.showItem($$("filterEmptyTempalte"));
@@ -15013,38 +14944,72 @@ function popupSubmitBtn (){
     } catch (err) {
         errors_setFunctionError( 
             err ,
-            buttons_logNameFile, 
+            submitBtn_logNameFile, 
             "popupSubmitBtn"
         );
 
         Action.destructItem($$("popupFilterEdit"));
     }
 
-    buttons_showEmptyTemplate();
+    submitBtn_showEmptyTemplate();
 
 }
 
 
 
-let buttons_lib;
+
+const submitBtn_submitBtn = new Button({
+    
+    config   : {
+        id       : "popupFilterSubmitBtn",
+        hotkey   : "Shift+Space",
+        disabled : true, 
+        value    : "Применить", 
+        click    : popupSubmitBtn
+    },
+    titleAttribute : "Выбранные фильтры будут" +
+    "добавлены в рабочее поле, остальные скрыты"
+
+}).maxView("primary");
+
+
+
+;// CONCATENATED MODULE: ./src/js/components/table/filterForm/popup/removeBtn.js
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const removeBtn_logNameFile = "filterTable => popup => removeBtn";
+
+let removeBtn_lib;
 let radioValue;
 
 function removeOptionState (){
     const id      = radioValue.id;
-    const options = buttons_lib.config.options;
+    const options = removeBtn_lib.config.options;
     try{
         options.forEach(function(el){
             if (el.id == id){
                 el.value = el.value + " (шаблон удалён)";
-                buttons_lib.refresh();
-                buttons_lib.disableOption(buttons_lib.getValue());
-                buttons_lib.setValue("");
+                removeBtn_lib.refresh();
+                removeBtn_lib.disableOption(removeBtn_lib.getValue());
+                removeBtn_lib.setValue("");
             }
         });
     } catch (err){
         errors_setFunctionError(
             err, 
-            buttons_logNameFile, 
+            removeBtn_logNameFile, 
             "removeOptionState"
         );
     }
@@ -15068,10 +15033,14 @@ function deleteElement(){
                 "Шаблон « " + value + " » удален"
             );
             removeOptionState ();
+            Filter.clearFilter();
+            Filter.setStateToStorage();
+            Action.showItem($$("filterEmptyTempalte"));
+            
         } else {
             errors_setFunctionError(
                 data.err, 
-                buttons_logNameFile, 
+                removeBtn_logNameFile, 
                 "userprefsData"
             );
         }
@@ -15081,30 +15050,35 @@ function deleteElement(){
     deleteTemplate.fail(function(err){
         setAjaxError(
             err, 
-            buttons_logNameFile,
+            removeBtn_logNameFile,
             "getLibraryData"
         );
     });
 }
 
+
+function removeBtn_resetLibSelectOption(){
+    Filter.setActiveTemplate(null);
+}
+
+
 async function userprefsData (){ 
 
-    buttons_lib = $$("filterEditLib");
-    const libValue = buttons_lib.getValue();
-    radioValue = buttons_lib.getOption(libValue);
+    removeBtn_lib = $$("filterEditLib");
+    const libValue = removeBtn_lib.getValue();
+    radioValue = removeBtn_lib.getOption(libValue);
 
     const idPrefs = radioValue.prefs.id;
 
     if (idPrefs){
-        deleteElement       (radioValue, buttons_lib);
-        resetLibSelectOption();
+        deleteElement       (radioValue, removeBtn_lib);
+        removeBtn_resetLibSelectOption();
         Action.disableItem  ($$("editFormPopupLibRemoveBtn"));
     }
 
     
 
 }
-
 
 function removeBtnClick (){
 
@@ -15119,21 +15093,6 @@ function removeBtnClick (){
         }
     });
 }
-
-
-const buttons_submitBtn = new Button({
-    
-    config   : {
-        id       : "popupFilterSubmitBtn",
-        hotkey   : "Shift+Space",
-        disabled : true, 
-        value    : "Применить", 
-        click    : popupSubmitBtn
-    },
-    titleAttribute : "Выбранные фильтры будут" +
-    "добавлены в рабочее поле, остальные скрыты"
-
-}).maxView("primary");
 
 
 const removeBtn = new Button({
@@ -15154,9 +15113,15 @@ const removeBtn = new Button({
 }).minView("delete");
 
 
+;// CONCATENATED MODULE: ./src/js/components/table/filterForm/popup/_layoutButtons.js
+
+
+
+
+
 const btnLayout = {
     cols   : [
-        buttons_submitBtn,
+        submitBtn_submitBtn,
         {width : 5},
         removeBtn,
     ]
@@ -15937,7 +15902,7 @@ const editBtn = new Button({
 
 
  
-const submitBtn_logNameFile   = "tableFilter => buttons => submitBtn";
+const buttons_submitBtn_logNameFile   = "tableFilter => buttons => submitBtn";
 
 
 function setLogicValue(value){
@@ -16037,22 +16002,9 @@ function segmentBtnValue(input) {
     return value;
 }
 
-function concatInputs(){
-    // объединить все inputs в один массив 
-
-    const items      = Filter.getAllChilds ();
-
-    function concat(arr) {
-        return [].concat(...arr);
-    }
-
-    return concat(items);
-}
-
-
 function createValuesArray(){
     const valuesArr  = [];
-    const inputs     = concatInputs();
+    const inputs     = Filter.getAllChilds(true);
 
     inputs.forEach(function(input){
         
@@ -16139,7 +16091,7 @@ function setData(currTableView, data){
     } catch (err){
         errors_setFunctionError(
             err, 
-            submitBtn_logNameFile, 
+            buttons_submitBtn_logNameFile, 
             "setData"
         );
     }
@@ -16152,7 +16104,7 @@ function setCounterValue (reccount){
     } catch (err){
         errors_setFunctionError(
             err, 
-            submitBtn_logNameFile, 
+            buttons_submitBtn_logNameFile, 
             "setCounterVal"
         );
     }
@@ -16200,7 +16152,7 @@ function filterSubmitBtn (){
         queryData.fail(function (err){
             setAjaxError(
                 err, 
-                submitBtn_logNameFile, 
+                buttons_submitBtn_logNameFile, 
                 "createGetData"
             );
         });
@@ -16216,7 +16168,7 @@ function filterSubmitBtn (){
 }
 
 
-const submitBtn_submitBtn = new Button({
+const buttons_submitBtn_submitBtn = new Button({
 
     config   : {
         id       : "btnFilterSubmit",
@@ -16336,7 +16288,9 @@ function hideInputsContainer(){
 
 
 
-function resetTable(){
+
+
+async function resetTable(){
     const itemTreeId = getItemId ();
     const table      = getTable  ();
     const query      = [
@@ -16345,36 +16299,20 @@ function resetTable(){
         `
     ];
    
-
     const path       = "/init/default/api/smarts?" + query;
     const queryData  = webix.ajax(path);
 
      
-    queryData.then(function(data){
+    return await queryData.then(function(data){
         const dataErr =  data.json();
       
         data = data.json().content;
 
         if (dataErr.err_type == "i"){
             try{
-                setDataTable        (data, table);
-                setFilterCounterVal (table);
-                resetBtn_removeChilds        ();
-            
-                clearFilterValues   ();
-                hideInputsContainer ();
-
-                Filter.clearFilter  ();
-
-                Action.hideItem   ($$("tableFilterPopup"    ));
-
-                Action.disableItem($$("filterLibrarySaveBtn"));
-                Action.disableItem($$("resetFilterBtn"      ));
-
-                Action.showItem   ($$("filterEmptyTempalte" ));
-
-                Filter.clearAll(); // clear inputs storage
-
+                setDataTable (data, table);
+                setLogValue("success", "Фильтры очищены");
+                return true;
             } catch (err){
                 errors_setFunctionError(
                     err,
@@ -16382,8 +16320,7 @@ function resetTable(){
                     "resetFilterBtn"
                 );
             }
-        
-            setLogValue("success", "Фильтры очищены");
+
         } else {
             setLogValue(
                 "error", 
@@ -16391,9 +16328,7 @@ function resetTable(){
                 dataErr.err
             );
         }
-    });
-
-    queryData.fail(function(err){
+    }).fail(function(err){
         setAjaxError(
             err, 
             resetBtn_logNameFile,
@@ -16402,6 +16337,30 @@ function resetTable(){
     });
 }
 
+
+function clearInputSpace(){
+    const table = getTable  ();
+    setFilterCounterVal (table);
+    resetBtn_removeChilds        ();
+
+    clearFilterValues   ();
+    hideInputsContainer ();
+
+    Filter.clearFilter  ();
+
+    Action.hideItem   ($$("tableFilterPopup"    ));
+
+    Action.disableItem($$("filterLibrarySaveBtn"));
+    Action.disableItem($$("resetFilterBtn"      ));
+
+    Action.showItem   ($$("filterEmptyTempalte" ));
+
+    Filter.setActiveTemplate(null);
+
+
+    Filter.clearAll(); // clear inputs storage
+    Filter.setStateToStorage();
+}
 
 function resetFilterBtnClick (){
     const table = getTable();
@@ -16413,8 +16372,14 @@ function resetFilterBtnClick (){
         )
         .then(function (result){
             if (result == 1){
-                resetTable();
+                resetTable().then(function(result){
+                    if (result){
+                        clearInputSpace();
+                    }
+                   
+                });
                 table.config.filter = null;
+               
             }
 
         });
@@ -16440,7 +16405,7 @@ const resetBtn = new Button({
         disabled : true,
         icon     : "icon-trash", 
         click    : function(){
-             resetFilterBtnClick();
+            resetFilterBtnClick();
         }
     },
     titleAttribute : "Сбросить фильтры",
@@ -16448,7 +16413,11 @@ const resetBtn = new Button({
         resetFilter:function(){
             const table = getTable();
             table.config.filter = null;
-            resetTable();
+            resetTable().then(function(result){
+                if (result){
+                    clearInputSpace();
+                }
+            });
         }
     }
 
@@ -16467,7 +16436,7 @@ function buttonsFormFilter (name) {
     if ( name == "formResetBtn" ) {
         return resetBtn;
     } else if ( name == "formBtnSubmit" ){
-        return submitBtn_submitBtn;
+        return buttons_submitBtn_submitBtn;
     } else if ( name == "formEditBtn" ){
         return editBtn;
     } else if ( name == "filterBackTableBtn" ){
@@ -16756,7 +16725,7 @@ function inputItterate(name, count){
     return val;
 }
 
-function setDataToStorage(elem, value){
+function calendar_setDataToStorage(elem, value){
     const prop   = $$("editTableFormProperty");
     const editor = prop.getItem(elem.id);
 
@@ -16785,7 +16754,7 @@ function calendar_submitClick (elem){
  
     form.setDirty(true);
 
-    setDataToStorage(elem, sentVal);
+    calendar_setDataToStorage(elem, sentVal);
 
     return errors.length;
 }
@@ -20653,39 +20622,12 @@ const logBlockRadio = {
     }
 };
 
-const loginActionSelect = {   
-    view          : "select", 
-    name          : "LoginActionOpt",
-    label         : "Действие после входа в систему", 
-    labelPosition : "top",
-    value         : 2, 
-    options       : [
-    { "id" : 1, "value" : "Перейти на главную страницу"            },
-    { "id" : 2, "value" : "Перейти на последнюю открытую страницу" },
-    ],
-    on:{
-        onAfterRender: function () {
-            this.getInputNode().setAttribute(
-                "title",
-                "Показывать/не показывать " + 
-                "всплывающее окно при загрузке приложения"
-            );
-        },
-
-    }
-};
-
 
 function formWorkspace_returnForm(){
     const elems = [
         { rows : [  
             logBlockRadio,
             {height : 15},
-            
-            {cols : [
-                loginActionSelect,
-                {}
-            ]}
 
         ]},
     ]; 
@@ -20728,7 +20670,7 @@ const defaultValue = {
 
 
 
-const tabbar_buttons_logNameFile   = "settings => tabbar => buttons";
+const buttons_logNameFile   = "settings => tabbar => buttons";
 
 let buttons_tabbar;
 let tabbarVal;
@@ -20738,12 +20680,16 @@ let buttons_values;
 let buttons_sentObj;
 
 function buttons_putPrefs(el){
+ 
     const path    = "/init/default/api/userprefs/" + el.id;
     const putData = webix.ajax().put(path, buttons_sentObj);
 
     return putData.then(function(data){
+
         data = data.json();
+
         if (data.err_type == "i"){
+
             const formVals = JSON.stringify(buttons_values);
             setStorageData (tabbarVal, formVals);
 
@@ -20765,7 +20711,7 @@ function buttons_putPrefs(el){
     }).fail(function(err){
         setAjaxError(
             err, 
-            tabbar_buttons_logNameFile, 
+            buttons_logNameFile, 
             "putPrefs"
         );
         return false;
@@ -20789,7 +20735,7 @@ function findExistsData(data){
     } catch (err){
         errors_setFunctionError(
             err, 
-            tabbar_buttons_logNameFile, 
+            buttons_logNameFile, 
             "findExistsData"
         );
     }
@@ -20830,7 +20776,7 @@ function buttons_postPrefs(){
     }).fail(function(err){
         setAjaxError(
             err, 
-            tabbar_buttons_logNameFile, 
+            buttons_logNameFile, 
             "postPrefs"
         );
 
@@ -20854,12 +20800,14 @@ async function savePrefs(){
         data = data.json().content;
 
         buttons_values = buttons_form.getValues();
-
+ 
         buttons_sentObj = {
             name  : tabbarVal,
             owner : ownerId.id,
             prefs : buttons_values,
         };
+
+   
 
         const result          = findExistsData(data);
         const isExistsSetting = result.exists;
@@ -20874,7 +20822,7 @@ async function savePrefs(){
     }).fail(function(err){
         setAjaxError(
             err, 
-            tabbar_buttons_logNameFile, 
+            buttons_logNameFile, 
             "savePrefs"
         );
     });
@@ -20906,9 +20854,10 @@ function clearSettings (){
     const form      = $$(tabbarVal);
 
     if (tabbarVal === "userprefsWorkspaceForm"){
+    
         form.setValues({
             logBlockOpt    : '1', 
-            LoginActionOpt : '1'
+        //    LoginActionOpt : '1'
         });
 
     } else if (tabbarVal === "userprefsOtherForm"){
@@ -20938,7 +20887,7 @@ const clearBtn = new Button({
    
 }).maxView();
 
-const tabbar_buttons_submitBtn = new Button({
+const buttons_submitBtn = new Button({
     
     config   : {
         id       : "userprefsSaveBtn",
@@ -20959,7 +20908,7 @@ const buttons =  {
         {   responsive : "adaptiveUserprefs",
             cols:[
                 clearBtn,
-                tabbar_buttons_submitBtn,
+                buttons_submitBtn,
             ]
         }
     ]
@@ -24109,7 +24058,7 @@ function setRouterStart(){
 
 
 ;// CONCATENATED MODULE: ./src/js/app.js
-console.log("expa 1.0.64"); 
+console.log("expa 1.0.65"); 
 
 
 

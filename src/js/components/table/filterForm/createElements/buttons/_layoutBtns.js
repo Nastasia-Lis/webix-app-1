@@ -2,6 +2,7 @@ import { createContextBtn }    from "./contextBtn.js";
 import { createOperationBtn }  from "./operationBtn.js";
 
 function createBtns(element, typeField, isChild, uniqueId = null){
+
     let id;
     let hideAttribute = false;
 
@@ -11,7 +12,6 @@ function createBtns(element, typeField, isChild, uniqueId = null){
         id =  element.id + "_filter";
         hideAttribute = true;
     }
-
 
     return {
         id      : id + "_container-btns",

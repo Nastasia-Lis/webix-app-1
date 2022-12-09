@@ -216,10 +216,17 @@ function getUserDataStorage(){
 }
 
 async function pushUserDataStorage(){
-    const userprefsGetData = webix.ajax("/init/default/api/whoami");
-    await userprefsGetData.then(function(data){
-        data      = data.json().content;
+ 
+    const path = "/init/default/api/whoami";
+    const userprefsGetData = webix.ajax(path).fail(function(err){
+        setAjaxError(err, "commonFunctions", "getUserData");
+        return false;
+    });
 
+    userprefsGetData.then(function(data){
+
+        data      = data.json().content;
+ 
         const userData = {};
     
         userData.id       = data.id;
@@ -230,9 +237,9 @@ async function pushUserDataStorage(){
 
     
     });
-    userprefsGetData.fail(function(err){
-        setAjaxError(err, "commonFunctions", "getUserData");
-    });
+
+ 
+   
 }
 
 

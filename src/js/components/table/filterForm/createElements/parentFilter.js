@@ -5,6 +5,7 @@ import { setFunctionError }         from "../../../../blocks/errors.js";
 import { createBtns }               from "./buttons/_layoutBtns.js";
 import { segmentBtn }               from "./segmentBtn.js";
 import { Filter }                   from "../actions/_FilterActions.js";
+import { field }                    from "../createElements/field.js";
 
 const logNameFile = "tableFilter => createElements => parentFilter";
 
@@ -13,142 +14,40 @@ let viewPosition;
 
 let inputTemplate;
 
-function createInputTemplate (el){
-    const id = el.id + "_filter";
- 
-    inputTemplate = { 
-        id              : id,
-        name            : id, 
-        hidden          : true,
-        label           : el.label, 
-        labelPosition   : "top",
-        columnName      : el.id,
-        on:{
-            onItemClick:function(){
-                $$(parentElement).clearValidation();
-                $$("btnFilterSubmit").enable();
-            }
-        }
-    };
-}
-
-
-
-function createDatepicker(){
-    const elem       = inputTemplate;
-    elem.view        = "datepicker";
-    elem.editable    = true,
-    elem.format      = "%d.%m.%Y %H:%i:%s";
-    elem.placeholder = "дд.мм.гг";
-    elem.timepicker  = true;
-    elem.on    = {
-        onChange:function(){
-            Filter.setStateToStorage();
-        }
-    };
-    return elem;
-}
-
-
-function createCombo(findTableId){
-    const elem       = inputTemplate;
-    elem.view        = "combo";
-    elem.placeholder = "Выберите вариант";
-    elem.options     = {
-        data:getComboOptions(findTableId)
-    };
-    elem.on    = {
-        onChange:function(){
-            Filter.setStateToStorage();
-        }
-    };
-    return elem;
-}
-
-function createBoolCombo (){
-    const elem       = inputTemplate;
-    elem.view        = "combo";
-    elem.placeholder = "Выберите вариант";
-    elem.options     = [
-        {id:1, value: "Да"},
-        {id:2, value: "Нет"}
-    ];
-    elem.on    = {
-        onChange:function(){
-            Filter.setStateToStorage();
-        }
-    };
-
-
-    
-    return elem;
-}
-
-function createText (type){
- 
-    const elem = inputTemplate;
-    elem.view  = "text";
-
-    elem.css   = {"passing-bottom":"5px!important"};
-    elem.keyPressTimeout = 1000;
-    elem.on    = {
-        onTimedKeypress:function(){
-            Filter.setStateToStorage();
-        }
-    };
-
-
-    if        (type == "text"){
-        elem.placeholder = "Введите текст";
-
-    } else if (type == "int"){
-        elem.placeholder     = "Введите число";
-        elem.invalidMessage  = 
-        "Поле поддерживает только числовой формат";
-        elem.validate        = function (val) {
-            return !isNaN(val*1);
-        };
-    }
-    
-    return elem;
-}
-
 
 function returnFilter(el){
-
+ 
     if (el.type == "datetime"){
         return [
-            createDatepicker (), 
+            field(false, "date", el),
             createBtns(el, "date"),  
         ];
 
     } 
     else if (el.type.includes("reference")) {
-        let findTableId = el.type.slice(10);
-
         return [
-            createCombo(findTableId),
+            field(false, "combo", el),
             createBtns(el, "combo"), 
         ];
  
     } 
     else if (el.type.includes("boolean")) {
         return [
-            createBoolCombo(),
+            field(false, "boolean", el),
             createBtns(el, "combo")
         ];
     
     } 
     else if (el.type.includes("integer")) {
         return [
-            createText ("int"),
+            field(false, "integer", el),
             createBtns(el, "integer"), 
         ];
     }
     else{
 
         return [ 
-            createText ("text"),
+            field(false, "text", el),
             createBtns(el, "text"), 
         ];
     }
@@ -162,12 +61,10 @@ function generateElements(){
         columnsData.forEach((el) => {
             const id = el.id;
 
-            createInputTemplate (el);
-
             const idFullContainer  = id + "_filter_rows";
             const idInnerContainer = id + "_filter-container";
             const cssContainer     = id + " webix_filter-inputs";
-        
+         
             const filter  =  {   
                 id  : idFullContainer,
                 idCol:id,
@@ -188,7 +85,6 @@ function generateElements(){
             };
 
             inputsArray.push (filter);
-
 
         });
 
@@ -253,16 +149,16 @@ function clearFormValidation(){
     }
 }
 
-function enableDelBtn(){
-    const delBtn = $$("table-delBtnId");
-    try{
-        if(parentElement == "table-editForm" && delBtn ){
-            delBtn.enable();
-        }
-    } catch (err){ 
-        setFunctionError(err,logNameFile,"enableDelBtn");
-    }
-}
+// function enableDelBtn(){
+//     const delBtn = $$("table-delBtnId");
+//     try{
+//         if(parentElement == "table-editForm" && delBtn ){
+//             delBtn.enable();
+//         }
+//     } catch (err){ 
+//         setFunctionError(err,logNameFile,"enableDelBtn");
+//     }
+// }
 
 function createParentFilter (parentElem, positon = 1) {
     parentElement      = parentElem;
@@ -282,7 +178,7 @@ function createParentFilter (parentElem, positon = 1) {
         Action.showItem($$("inputsFilter"));
     }
 
-    enableDelBtn();
+    //enableDelBtn();
     
 }
 

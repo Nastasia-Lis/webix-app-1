@@ -5,7 +5,7 @@ import { mediator }           from "../../../../blocks/_mediator.js";
 const logNameFile = "table => createSpace => userContext";
 
 let prefs;
-let tableId;
+//let tableId;
 
 function returnParameter(el, parameter){
     const prefs = JSON.parse(el.prefs)[parameter];
@@ -64,7 +64,7 @@ async function getDataPrefs(urlParameter){
         
         if (item){
             prefs        = returnParameter(item, "params");
-            tableId      = returnParameter(item, "field");
+          //  tableId      = returnParameter(item, "field");
             removePref(item);
         }
     
@@ -79,11 +79,18 @@ async function getDataPrefs(urlParameter){
     });
 }
 
+// function clearFilterBtn(){
+//     const btn = {
+//         view:"button", 
+//         id:"my_button", 
+//         value:"Button",
+//     } ;
+// }
 
 async function getUserPrefsContext(urlParameter, parameter){
  
     await getDataPrefs(urlParameter);
-
+ 
     if (prefs){
         return prefs[parameter];
     }

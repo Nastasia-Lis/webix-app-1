@@ -111,22 +111,9 @@ function segmentBtnValue(input) {
     return value;
 }
 
-function concatInputs(){
-    // объединить все inputs в один массив 
-
-    const items      = Filter.getAllChilds ();
-
-    function concat(arr) {
-        return [].concat(...arr);
-    }
-
-    return concat(items);
-}
-
-
 function createValuesArray(){
     const valuesArr  = [];
-    const inputs     = concatInputs();
+    const inputs     = Filter.getAllChilds(true);
 
     inputs.forEach(function(input){
         

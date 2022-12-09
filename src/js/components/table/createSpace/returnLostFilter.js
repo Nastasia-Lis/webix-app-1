@@ -9,16 +9,20 @@ function isDataExists(data){
     }
 }
 
+
 function isFormFill(){
-    const formValues = $$("filterTableForm").getValues();
-    const values = Object.values(formValues);
+ 
+    const inputs = Filter.getAllChilds(true);
 
-    let check = true;
+    let check    = true;
 
-    values.forEach(function(val){
-        if (!val && check){
+    inputs.forEach(function(input){
+        const value = $$(input).getValue();
+
+        if (!value){
             check = false;
         }
+
     });
 
     return check;
@@ -52,7 +56,9 @@ function returnLostFilter(id){
         Action.hideItem($$("table-editForm"));
         $$("table-filterId").callEvent("clickEvent", [ "" ]);
         Filter.setActiveTemplate(data.activeTemplate); // option in popup library
+
         if (isDataExists(data) && id == data.id){
+
             createWorkspace(data.values.values);
 
             hideHtmlContainers();
@@ -61,10 +67,10 @@ function returnLostFilter(id){
             }
        
         }
-
+       
     }
 
-
+   
 
 }
 

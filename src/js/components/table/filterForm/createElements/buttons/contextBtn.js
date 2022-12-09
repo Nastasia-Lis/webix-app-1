@@ -226,6 +226,7 @@ function clickContextBtnParent (id, el){
         Filter.removeItemChild(el.id, thisInput);
 
         showEmptyTemplate   ();
+        Filter.setStateToStorage();
         setLogValue         ("success", "Поле удалено"); 
 
     }
@@ -236,7 +237,7 @@ function clickContextBtnParent (id, el){
  
         hideSegmentBtn ("add", el.id, idChild);
         Action.showItem(segmentBtn);
-     
+        Filter.setStateToStorage();
     }
 
 
@@ -307,6 +308,7 @@ function addChild(){
     const idChild = createChildFields (element, childPosition);
     hideSegmentBtn  ("add", element.id, idChild);
     Action.showItem (segmentBtn);
+    Filter.setStateToStorage();
 }
 
 
@@ -315,7 +317,7 @@ function removeInput(){
     Filter.removeItemChild  (element.id, thisInput);
     Action.removeItem       ( $$(thisContainer));
     showEmptyTemplate       ();
-
+    Filter.setStateToStorage();
     setLogValue             ("success", "Поле удалено"); 
 
 }
@@ -377,6 +379,7 @@ function createContextBtn (el, id, isChild){
                 } else {
                     clickContextBtnParent(idClick, el); 
                 }
+                
                
             },
          

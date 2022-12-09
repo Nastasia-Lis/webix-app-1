@@ -48,39 +48,12 @@ const logBlockRadio = {
     }
 };
 
-const loginActionSelect = {   
-    view          : "select", 
-    name          : "LoginActionOpt",
-    label         : "Действие после входа в систему", 
-    labelPosition : "top",
-    value         : 2, 
-    options       : [
-    { "id" : 1, "value" : "Перейти на главную страницу"            },
-    { "id" : 2, "value" : "Перейти на последнюю открытую страницу" },
-    ],
-    on:{
-        onAfterRender: function () {
-            this.getInputNode().setAttribute(
-                "title",
-                "Показывать/не показывать " + 
-                "всплывающее окно при загрузке приложения"
-            );
-        },
-
-    }
-};
-
 
 function returnForm(){
     const elems = [
         { rows : [  
             logBlockRadio,
             {height : 15},
-            
-            {cols : [
-                loginActionSelect,
-                {}
-            ]}
 
         ]},
     ]; 

@@ -1,4 +1,7 @@
 import { setAjaxError, setFunctionError } from "./errors.js";
+import { pushUserDataStorage, 
+    getUserDataStorage }                  from "./commonFunctions.js";
+
 
 function setStorageData (name, value){
     if (typeof(Storage) !== 'undefined') {
@@ -6,64 +9,48 @@ function setStorageData (name, value){
     } 
 }
 
-function setLoginActionPref(userLocation, userprefsWorkspace){
-    function replaceUser(){
-        console.log(userLocation,  userLocation.href, window.location.href)
-        if (userLocation       && 
-            userLocation.href  && 
-            userLocation.href !== window.location.href ){
-        
-            window.location.replace(userLocation.href);
-        }
-    }
-    try{
-    
-        if (userprefsWorkspace){
-            if (userprefsWorkspace.LoginActionOpt == 2){
-                replaceUser();
-            }
-        } else {
-            replaceUser();
-        }
-    } catch(err){
-        setFunctionError(
-            err,
-            "storageSettings",
-            "setLoginActionPref"
-        );
+function isLocationParam(userLocation){
+    if (userLocation       && 
+        userLocation.href  && 
+        userLocation.href !== window.location.href )
+    {
+        return true;
     }
 }
 
 
+function setLoginActionPref(userLocation){
+    if (isLocationParam(userLocation)){
+        window.location.replace(userLocation.href);
+    }
+}
+
+function setLink(data){
+    const url          = new URL( data.href );
+    const isLogoutPath = url.pathname.includes("logout");
+    const origin       = window.location.origin;
+
+    if (url.origin == origin && !isLogoutPath) {
+        setLoginActionPref(data);
+    }
+}
 
 function moveUser(){
 
     const localPath = "/index.html/content";
     const expaPath  = "/init/default/spaw/content";
 
-
-
-    if ( window.location.pathname == localPath || window.location.pathname == expaPath ){
+    const path = window.location.pathname;
+    if ( path == localPath || path == expaPath ){
   
-        const userprefsWorkspace = webix.storage.local.get("userprefsWorkspaceForm");
-        const userLocation       = webix.storage.local.get("userLocationHref");
-        const outsideHref        = webix.storage.local.get("outsideHref");
+        const userLocation = webix.storage.local.get("userLocationHref");
+        const outsideHref  = webix.storage.local.get("outsideHref");
 
+   
         if (outsideHref){
-            const url = new URL( outsideHref.href );
-            
-            if ( url.origin == window.location.origin && !(url.pathname.includes("logout"))) {
-                setLoginActionPref( outsideHref, userprefsWorkspace );
-            }
-
+            setLink(outsideHref);
         } else {
-            const url = new URL( userLocation.href );
-            if ( userprefsWorkspace && userprefsWorkspace.LoginActionOpt || !userprefsWorkspace ){
-
-                if ( url.origin == window.location.origin && !(url.pathname.includes("logout"))) {
-                    setLoginActionPref( userLocation, userprefsWorkspace );
-                }
-            }
+            setLink(userLocation);
         }
 
     }
@@ -82,170 +69,158 @@ function setRestoreToStorage(name, value){
 function restoreData(){
     restore = webix.storage.local.get("userRestoreData");
 
-    const path = "/init/default/api/userprefs/" + restorePref.id;
+    if (restore){
+        const path = "/init/default/api/userprefs/" + restorePref.id;
 
-    const delData = webix.ajax().del(path, restorePref);
+        const delData = webix.ajax().del(path, restorePref);
 
-    delData.then(function(data){
-        data = data.json();
+        delData.then(function(data){
+            data = data.json();
 
-        if (data.err_type !== "i"){
-            setFunctionError(
-                data.err, 
+            if (data.err_type !== "i"){
+                setFunctionError(
+                    data.err, 
+                    "storageSettings", 
+                    "restoreData"
+                );
+            }
+        });
+
+        delData.fail(function(err){
+            setAjaxError(
+                err, 
                 "storageSettings", 
                 "restoreData"
             );
-        }
-    });
-
-    delData.fail(function(err){
-        setAjaxError(
-            err, 
-            "storageSettings", 
-            "restoreData"
-        );
-    });
- 
- 
-  
-    setRestoreToStorage("editFormTempData", restore.editProp);
-    setRestoreToStorage("currFilterState",  restore.filter  );
- 
+        });
     
+    
+        setRestoreToStorage(
+            "editFormTempData", 
+            restore.editProp
+        );
+
+        setRestoreToStorage(
+            "currFilterState",  
+            restore.filter  
+        );
+ 
+    }
+}
+
+function setLogState(value){
+    const logLayout          = $$("logLayout");
+    const logBtn             = $$("webix_log-btn");
+    
+    let height;
+    let icon;
+
+    if (value == 1){
+        height = 5;
+        icon = "icon-eye";
+    } else {
+        height = 90;
+        icon = "icon-eye-slash";
+    }
+
+    logLayout.config.height = height;
+    logBtn.config.icon      = icon;
+
+    logBtn.setValue(value);
+
+    logLayout.resize ();
+    logBtn   .refresh();
 }
 
 
 function setLogPref(){
-    const userprefsWorkspace = webix.storage.local.get("userprefsWorkspaceForm");
-    const logLayout          = $$("logLayout");
-    const logBtn             = $$("webix_log-btn");
+  
+    const form = "userprefsWorkspaceForm";
 
-    function hideLog(){
-        logLayout.config.height = 5;
-        logBtn.config.icon ="icon-eye";
-        logBtn.setValue(1);
-    }
-
-    function showLog(){
-        logLayout.config.height = 90;
-        logBtn.config.icon ="icon-eye-slash";
-        logBtn.setValue(2);
-    }
-    
-    try{
-        if (userprefsWorkspace){
+    const userprefsWorkspace = webix.storage.local.get(form);
  
-            if (userprefsWorkspace.logBlockOpt !== undefined ){
+    if (userprefsWorkspace){
+        const option = userprefsWorkspace.logBlockOpt;
 
-                if (userprefsWorkspace.logBlockOpt == "2"){
-                    hideLog();
+        if (option){
+            if (option == "2"){
+                setLogState(1);
 
-                } else if(userprefsWorkspace.logBlockOpt == "1"){
-                    showLog();
-                }
-
-                logLayout.resize();
-                logBtn.refresh();
+            } else if(option == "1"){
+                setLogState(2);
             }
 
-
         }
+
+    }
+   
+}
+
+
+function setDataToStorage(data, user){
+ 
+    try{
+        data.forEach(function(el){
+            const owner = el.owner;
+            const name  = el.name;
+
+            const isFavPref = name.includes("fav-link_");
+
+            if (owner == user.id && !isFavPref){
+                setStorageData (el.name, el.prefs);
+
+                if (name == "userRestoreData"){
+                    restorePref = el;
+                }
+            }
+
+        });
     } catch(err){
         setFunctionError(
             err,
             "storageSettings",
-            "userprefsWorkspace"
+            "setDataToStorage"
         );
     }
 }
 
 
 
-function setUserPrefs (userData){
+async function setUserPrefs (userData){
+    
+    let user = getUserDataStorage();
+
+    if (!user){
+        await pushUserDataStorage(); 
+        user = getUserDataStorage();
+    }
  
-    const userprefsData = webix.ajax("/init/default/api/userprefs/");
-   
+    const path = "/init/default/api/userprefs/";
+    const userprefsData = webix.ajax(path);
+
     userprefsData.then( function (data) {
         let user = webix.storage.local.get("user");
-        data       = data.json().content;
+        data     = data.json().content;
 
         if (userData){
             user = userData;
         }
-        
-        function setDataToStorage(){
- 
-            try{
-                data.forEach(function(el){
-                    if (el.owner == user.id && !(el.name.includes("fav-link_"))){
-                        setStorageData (el.name, el.prefs);
-                    }
-
-
-                    if (el.owner == user.id && el.name == "userRestoreData"){
-                        restorePref = el;
-
-                    }
-
-                    
-               
-                });
-            } catch(err){
-                setFunctionError(
-                    err,
-                    "storageSettings",
-                    "setDataToStorage"
-                );
-            }
-        }
-
-        
-        function setPrefs(){
    
-            if (!user){
-                const userprefsGetData = webix.ajax("/init/default/api/whoami");
-                userprefsGetData.then(function(data){
-                    data = data.json().content;
-                
-                    let userData = {};
-                
-                    userData.id       = data.id;
-                    userData.name     = data.first_name;
-                    userData.username = data.username;
-           
-                    setStorageData("user", JSON.stringify(userData));
-                });
-                userprefsGetData.then(function(data){
-                    user = webix.storage.local.get("user");
-                    setDataToStorage ();
-                    moveUser         ();
-                    setLogPref       ();
+        setDataToStorage(data, user);
+     
+        moveUser        ();
 
-                    restoreData();
-                });
-
-                userprefsGetData.fail(function(err){
-                    setAjaxError(err, "favsLink", "btnSaveLpostContentinkClick => getUserData");
-                });
-    
-            } else {
- 
-                setDataToStorage();
-                moveUser        ();
-
-                restoreData();
-            }
-
-        
-          
-        }
-        setPrefs();
-    }).then(function(){
-        setLogPref();
+        restoreData();
+     
+        setLogPref ();
+   
     });
+
     userprefsData.fail(function(err){
         console.log(err);
-        console.log("storageSettings function setUserPrefs");
+        console.log(
+            "storageSettings function setUserPrefs"
+        );
     });
 
 }

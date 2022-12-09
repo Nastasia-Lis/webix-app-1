@@ -133,7 +133,6 @@ function createChildFields (el, customPosition) {
     getTypeField(el);
 
     addInput    ();
-    Filter.setStateToStorage();
 
     return getIdCreatedField();
 }

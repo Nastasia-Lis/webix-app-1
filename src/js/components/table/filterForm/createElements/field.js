@@ -3,17 +3,22 @@
 import { getComboOptions, 
         Action }            from "../../../../blocks/commonFunctions.js";
 
-
+import { Filter }           from "../actions/_FilterActions.js";
+    
+    
 let el ;
-let uniqueId;
 let typeField;
+let uniqueId;
+let partId;
 
-
+function enableSubmitBtn(){
+    Action.enableItem($$("btnFilterSubmit"));
+}
 
 function createFieldTemplate(){
 
     const elemId  = el.id;
-    const fieldId = elemId + "_filter-child-" + uniqueId;
+    const fieldId = elemId + partId;
 
     const fieldTemplate = {
         id        : fieldId, 
@@ -21,25 +26,29 @@ function createFieldTemplate(){
         label     : el.label,
         columnName: elemId,
         labelPosition:"top",
-        on        :{
-            onKeyPress:function(){
-               
-                $$("filterTableForm").clearValidation();
-       
-                const btn = $$("btnFilterSubmit");
-                Action.enableItem(btn);
-            },
-        }
     };
+
+    if (!uniqueId) fieldTemplate.hidden = true;
 
     return fieldTemplate;
 }
 
+function activeState(){
+    enableSubmitBtn();
+    Filter.setStateToStorage();
+    $$("filterTableForm").clearValidation();
+}
 
 function createText(type){
     const element = createFieldTemplate();
     element.view  = "text";
  
+    element.on    = {
+        onTimedKeypress:function(){
+            activeState();
+        }
+    };
+
     if(type == "text"){
         element.placeholder = "Введите текст";
     } else if (type == "int"){
@@ -52,7 +61,7 @@ function createText(type){
     }
 
 
-   
+    
 
     return element;
 }
@@ -70,6 +79,12 @@ function createCombo(type){
 
     element.view        = "combo";
     element.placeholder = "Выберите вариант";
+
+    element.on    = {
+        onChange:function(){
+            activeState();
+        }
+    };
 
     if (type == "default"){
         element.options     = {
@@ -93,7 +108,12 @@ function createDatepicker() {
     element.editable    = true,
     element.format      = "%d.%m.%Y %H:%i:%s";
     element.timepicker  = true;
-  
+    element.on    = {
+        onChange:function(){
+            activeState();
+        }
+    };
+
     return element;
 }
 
@@ -120,10 +140,16 @@ function createField(){
 
 
 function field (id, type, element){
-  
-    uniqueId    = id;
-    el          = element;
-    typeField   = type;
+    uniqueId = id;
+    if (!uniqueId){ // parent input
+        partId = "_filter";
+    } else {
+        partId = "_filter-child-" + uniqueId;
+    }
+
+
+    el        = element;
+    typeField = type;
 
     return createField();
 }

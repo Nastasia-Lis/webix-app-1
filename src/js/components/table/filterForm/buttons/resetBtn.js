@@ -102,7 +102,9 @@ function hideInputsContainer(){
 
 
 
-function resetTable(){
+
+
+async function resetTable(){
     const itemTreeId = getItemId ();
     const table      = getTable  ();
     const query      = [
@@ -111,36 +113,20 @@ function resetTable(){
         `
     ];
    
-
     const path       = "/init/default/api/smarts?" + query;
     const queryData  = webix.ajax(path);
 
      
-    queryData.then(function(data){
+    return await queryData.then(function(data){
         const dataErr =  data.json();
       
         data = data.json().content;
 
         if (dataErr.err_type == "i"){
             try{
-                setDataTable        (data, table);
-                setFilterCounterVal (table);
-                removeChilds        ();
-            
-                clearFilterValues   ();
-                hideInputsContainer ();
-
-                Filter.clearFilter  ();
-
-                Action.hideItem   ($$("tableFilterPopup"    ));
-
-                Action.disableItem($$("filterLibrarySaveBtn"));
-                Action.disableItem($$("resetFilterBtn"      ));
-
-                Action.showItem   ($$("filterEmptyTempalte" ));
-
-                Filter.clearAll(); // clear inputs storage
-
+                setDataTable (data, table);
+                setLogValue("success", "Фильтры очищены");
+                return true;
             } catch (err){
                 setFunctionError(
                     err,
@@ -148,8 +134,7 @@ function resetTable(){
                     "resetFilterBtn"
                 );
             }
-        
-            setLogValue("success", "Фильтры очищены");
+
         } else {
             setLogValue(
                 "error", 
@@ -157,9 +142,7 @@ function resetTable(){
                 dataErr.err
             );
         }
-    });
-
-    queryData.fail(function(err){
+    }).fail(function(err){
         setAjaxError(
             err, 
             logNameFile,
@@ -168,6 +151,30 @@ function resetTable(){
     });
 }
 
+
+function clearInputSpace(){
+    const table = getTable  ();
+    setFilterCounterVal (table);
+    removeChilds        ();
+
+    clearFilterValues   ();
+    hideInputsContainer ();
+
+    Filter.clearFilter  ();
+
+    Action.hideItem   ($$("tableFilterPopup"    ));
+
+    Action.disableItem($$("filterLibrarySaveBtn"));
+    Action.disableItem($$("resetFilterBtn"      ));
+
+    Action.showItem   ($$("filterEmptyTempalte" ));
+
+    Filter.setActiveTemplate(null);
+
+
+    Filter.clearAll(); // clear inputs storage
+    Filter.setStateToStorage();
+}
 
 function resetFilterBtnClick (){
     const table = getTable();
@@ -179,8 +186,14 @@ function resetFilterBtnClick (){
         )
         .then(function (result){
             if (result == 1){
-                resetTable();
+                resetTable().then(function(result){
+                    if (result){
+                        clearInputSpace();
+                    }
+                   
+                });
                 table.config.filter = null;
+               
             }
 
         });
@@ -206,7 +219,7 @@ const resetBtn = new Button({
         disabled : true,
         icon     : "icon-trash", 
         click    : function(){
-             resetFilterBtnClick();
+            resetFilterBtnClick();
         }
     },
     titleAttribute : "Сбросить фильтры",
@@ -214,7 +227,11 @@ const resetBtn = new Button({
         resetFilter:function(){
             const table = getTable();
             table.config.filter = null;
-            resetTable();
+            resetTable().then(function(result){
+                if (result){
+                    clearInputSpace();
+                }
+            });
         }
     }
 

@@ -47,6 +47,8 @@ function createChildField(el){
     setBtnsValue(values);
 
     setValue    ($$(idField), el.value);
+
+
 }
 
 

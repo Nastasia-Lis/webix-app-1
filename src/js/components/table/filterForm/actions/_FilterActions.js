@@ -24,9 +24,22 @@ class FilterPull {
         return visibleInputs[key];
     }
 
-    static getAllChilds (){
-        return Object.values(visibleInputs);
+    static getAllChilds (isConcat){
+        const values =  Object.values(visibleInputs);
+        
+        function concat(arr) {
+            return [].concat(...arr);
+        }
+
+        if (isConcat){
+            return concat(values);
+        } else{
+            return values;
+        }
+   
     }
+
+   
 
     static getIndexFilters(){
         const container = $$("inputsFilter");

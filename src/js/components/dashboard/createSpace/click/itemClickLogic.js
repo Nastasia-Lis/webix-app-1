@@ -18,7 +18,7 @@ const action = {
 };
 
 const action2 = {
-    navigate: false,
+    navigate: true,
     field   : "auth_group",
     context : false,
     params  :{

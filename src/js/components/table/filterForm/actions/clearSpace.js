@@ -32,6 +32,8 @@ function clearSpace(){
             hideElements(el);
         }
     });
+
+    Action.disableItem($$("btnFilterSubmit"));
 }
 
 export {

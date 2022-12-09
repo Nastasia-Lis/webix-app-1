@@ -2,7 +2,7 @@
 import { Popup }                from "../../../../viewTemplates/popup.js";
 import { createEmptyTemplate }  from "../../../../viewTemplates/emptyTemplate.js";
 
-import { btnLayout }            from "./buttons.js";
+import { btnLayout }            from "./_layoutButtons.js";
 import { layoutTab }            from "./tabbar/_layoutTab.js";
 
 const editFormPopup = {
