@@ -234,7 +234,7 @@ function filterSubmitBtn (){
 
         const path = "/init/default/api/smarts?query=" + query;
         const queryData = webix.ajax(path);
-
+ 
         queryData.then(function(data){
             data             = data.json();
             const reccount   = data.reccount;
@@ -243,7 +243,7 @@ function filterSubmitBtn (){
             data             = data.content;
          
             if (notifyType == "i"){
-
+                Filter.showApplyNotify();
                 setData         (currTableView, data);
                 setCounterValue (reccount);
                 Action.hideItem ($$("tableFilterPopup"));
@@ -254,6 +254,7 @@ function filterSubmitBtn (){
                 );
             
             } else {
+                Filter.showApplyNotify(false);
                 setLogValue("error", notifyMsg);
             } 
         });

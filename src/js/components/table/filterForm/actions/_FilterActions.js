@@ -1,7 +1,8 @@
-import { visibleField }   from "./visibleField.js";
-import { clearSpace }     from "./clearSpace.js";
-import { getFilterState } from "./getFilterState.js";
-import { setState }       from "./setStateToStorage.js";
+import { visibleField }     from "./visibleField.js";
+import { clearSpace }       from "./clearSpace.js";
+import { getFilterState }   from "./getFilterState.js";
+import { setState }         from "./setStateToStorage.js";
+import { Action, getTable } from "../../../../blocks/commonFunctions.js";
 
 const visibleInputs = {};
 
@@ -116,8 +117,8 @@ class Filter extends FilterPull {
         }
     }
 
-    static setFieldState(visible, cssClass, element){
-        visibleField (visible, cssClass, element);
+    static setFieldState(visible, cssClass){
+        visibleField (visible, cssClass);
     }
 
     static clearFilter(){
@@ -138,6 +139,19 @@ class Filter extends FilterPull {
     
     static getActiveTemplate(){
         return $$("filterTableForm").config.activeTemplate;
+    }
+
+    static showApplyNotify(show = true){
+  
+        const tableId = getTable().config.id;
+        const item    = $$(tableId + "_applyNotify");
+ 
+        if (show){
+            Action.showItem(item); 
+        } else {
+            Action.hideItem(item); 
+        }
+    
     }
     
     

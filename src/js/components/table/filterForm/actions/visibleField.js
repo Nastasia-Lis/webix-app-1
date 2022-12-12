@@ -27,7 +27,7 @@ function checkChild(elementClass){
 
 
 function editStorage(){
-    if (condition && el !== "selectAll"){
+    if (condition){
        
         const item = Filter.getItem(elementClass);
 
@@ -44,7 +44,7 @@ function editStorage(){
         }
      
 
-    } else if (el !== "selectAll") {
+    } else {
         Filter.clearItem(elementClass);
     }
 
@@ -139,16 +139,16 @@ function removeChilds(){
 function isChildExists(){
     let checkChilds = false;
 
-    if (el && el !== "selectAll"){
-        const container = $$(el + "_rows");
-     
-        const childs    = container.getChildViews();
 
-        if (childs.length > 1){
-            checkChilds = true;
-        }
-     
+    const container = $$(el + "_rows");
+
+    const childs    = container.getChildViews();
+
+    if (childs.length > 1){
+        checkChilds = true;
     }
+    
+    
 
     return checkChilds;
 }
@@ -164,43 +164,45 @@ function showInput(){
 
 function hideInput(){
    
-    if (el !== "selectAll"){
-        if ($$(el).isVisible()){
-            setHtmlState(hideClass, showClass);
-        }
-
-    
-
-        if($$(el + "_rows")){
-            removeChilds();
-        }
-
-        setDefStateInputs();
-        setDefStateBtns  ();
+   
+    if ($$(el).isVisible()){
+        setHtmlState(hideClass, showClass);
     }
+
+
+
+    if($$(el + "_rows")){
+        removeChilds();
+    }
+
+    setDefStateInputs();
+    setDefStateBtns  ();
+    
 }
 
 
-function visibleField (visible, cssClass, element){
+function visibleField (visible, cssClass){
 
-    condition    = visible;
-    elementClass = cssClass;
-    el           = element;
+    if (cssClass !== "selectAll" && cssClass){
+      
+        condition    = visible;
+        elementClass = cssClass;
+        el           = cssClass + "_filter";
 
-    segmentBtn   = $$( el + "_segmentBtn");
+        segmentBtn   = $$( el + "_segmentBtn");
+        
+        editStorage();
     
-    editStorage();
-   
-    if (!isChildExists()){
-        if (condition){
-            showInput();
-        } else {
-            hideInput();
+        if (!isChildExists()){
+            if (condition){
+                showInput();
+            } else {
+                hideInput();
+            }
+        } else if (!condition){
+            hideInput(); 
         }
-    } else if (!condition){
-        hideInput(); 
     }
-
 
 }
 

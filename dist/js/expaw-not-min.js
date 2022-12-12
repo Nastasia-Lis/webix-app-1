@@ -414,9 +414,11 @@ class Popup {
             width   : 25,
             icon    : 'wxi-close',
             click   : function(){
-
-                if ( options.closeClick){
-                    options.closeClick();
+ 
+                if (options.closeClick){
+                    const config =  options.closeConfig;
+                    const elem = config ? config.currElem : null;
+                    options.closeClick(elem);
                 } else {
                     const popup = $$(options.config.id);
                     if (popup){
@@ -989,7 +991,7 @@ async function createLogMessage(srcTable) {
     let name;
 
     if (srcTable == "version"){
-        name = 'Expa v1.0.65';
+        name = 'Expa v1.0.66';
 
     } else if (srcTable == "cp"){
         name = 'Смена пароля';
@@ -6055,6 +6057,7 @@ function updateSpace(chartAction){
 
 ;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/click/navigate.js
 
+         
 
 
 
@@ -6077,7 +6080,7 @@ function createSentObj(prefs){
 
 function navigate_navigate(field, id){
     if (id){
-        const path = "tree/" + field + "?" + "prefs=" + id;
+        const path = "tree/" + field + "?view=filter&prefs=" + id;
         Backbone.history.navigate(path, { trigger : true });
         window.location.reload();   
     } 
@@ -6148,10 +6151,10 @@ const action = {
 const action2 = {
     navigate: true,
     field   : "auth_group",
-    context : false,
+  //  context : true,
     params  :{
-        filter : "auth_group.id = 3" 
-    //filter : "auth_group.id != '1' or auth_group.id != '3' and auth_group.role contains 'р' or auth_group.role = 'а'" 
+       // filter : "auth_group.id = 3" 
+     filter : "auth_group.id != '1' or auth_group.id != '3' and auth_group.role contains 'р' or auth_group.role = 'а'" 
     } 
 };
 
@@ -6196,7 +6199,7 @@ function cursorPointer(self, elem){
 
 async function findField(chartAction){
     await LoadServerData.content("fields");
-    const keys   = GetFields.keys;
+    const keys = GetFields.keys;
 
     let field = chartAction;
 
@@ -6797,19 +6800,87 @@ function chartsLayout_returnHeadline (titleTemplate){
         template    : titleTemplate,
         borderless  : true,
         height      : 35,
-        css         : {  
-            "font-weight" : "400 !important", 
-            "font-size"   : "17px!important"
-        }, 
+        css         : "dash-HeadlineBlock",
     };
  
     return headline;
 }
+const chartsLayout_action = {
+    navigate: true,
+    field   : "auth_group",
+  //  context : true,
+    params  :{
+       // filter : "auth_group.id = 3" 
+     filter : "auth_group.id != '1' or auth_group.id != '3' and auth_group.role contains 'р' or auth_group.role = 'а'" 
+    } 
+};
 
 function createChart(dataCharts){
     const layout = [];
   
     try{
+
+        const labels =  [
+          { "view":"label", "label":"Больше 15 минут: 10"   ,"minWidth":200,"action":chartsLayout_action,"css":{"background-color":"#FFAAAA","text-align":"center"}},
+          { "view":"label", "label":"Без комментария:  3"   ,"minWidth":200,"action":chartsLayout_action,"css":{"background-color":"#FFAAAA","text-align":"center"}},
+          { "view":"label", "label":"За сегодня всего: 20"  ,"minWidth":200,"action":chartsLayout_action,"css":{"background-color":"#AAFFAA","text-align":"center"}},
+          { "view":"label", "label":"За сегодня закрыто: 15","minWidth":200,"action":chartsLayout_action,"css":{"background-color":"#AAFFAA","text-align":"center"}},
+          { "view":"label", "label":"За сегодня в работе: 5","minWidth":200,"action":chartsLayout_action,"css":{"background-color":"#AAFFFF","text-align":"center"}},
+          { "view":"label", "label":"Всего не закрыто: 130" ,"minWidth":200,"action":chartsLayout_action,"css":{"background-color":"#AAFFFF","text-align":"center"}},
+          { "view":"label", "label":"Без цвета: ???"        ,"minWidth":200,"action":chartsLayout_action,"css":{"text-align":"center"}},
+        ]
+
+        const res =  
+            {
+                "title"  :"Статусы заявок",
+                "margin" :10,
+                "height" :300,
+                "padding":10,
+                "rows"   :[
+                  { "view":"scrollview", 
+                    "body":{    
+                        "view":"flexlayout",
+                        "height" :200,
+                        "margin":10, 
+                        "padding":0,
+                        "cols":labels
+                    },
+                  }
+                ]  
+            }
+
+            // {
+            //     "title":"Монитор заявок по стадиям (открытых: %d)",
+            //     "view":"chart",
+            //     "type":"bar",
+            //     "value":"#count#",
+            //     "label":"#count#",
+            //     "barWidth":30,
+            //     "radius":0,
+            //     "height":250,
+            //     "tooltip":{
+            //         "template":"#stage# - #count#"
+            //     },
+            //     "yAxis":{
+            //         "title":"Количество"
+            //     },
+            //     "xAxis":{
+            //         "template":"#stage#",
+            //         "title":"Стадия"
+            //     },
+            //     "data":stages_data
+            // },
+
+            // {
+            //     "title":"Монитор заявок (открытых: %d)" % len(data),
+            //     "view":"datatable",
+            //     "id":"btx_deals",
+            //     "height":1000,
+            //     "scroll":"xy",
+            //     "columns":columns,
+            //     "data":data,
+            // },
+
         // const table = {
         //     "view": "datatable",
         //     "id"  : "auth_group",
@@ -6859,6 +6930,8 @@ function createChart(dataCharts){
         // };
      
       //  dataCharts.push(table)
+      //dataCharts.push(res)
+      
         dataCharts.forEach(function(el){
           
             if (el.cols || el.rows){
@@ -6907,6 +6980,7 @@ async function setDashName(idsParam) {
                 if (el.id == itemTreeId){
                     const template  = $$("dash-template");
                     const value     = el.name.toString();
+                   
                     template.setValues(value);
                 }
             });
@@ -8548,7 +8622,7 @@ function checkChild(elementClass){
 
 
 function editStorage(){
-    if (condition && el !== "selectAll"){
+    if (condition){
        
         const item = Filter.getItem(elementClass);
 
@@ -8565,7 +8639,7 @@ function editStorage(){
         }
      
 
-    } else if (el !== "selectAll") {
+    } else {
         Filter.clearItem(elementClass);
     }
 
@@ -8660,16 +8734,16 @@ function removeChilds(){
 function isChildExists(){
     let checkChilds = false;
 
-    if (el && el !== "selectAll"){
-        const container = $$(el + "_rows");
-     
-        const childs    = container.getChildViews();
 
-        if (childs.length > 1){
-            checkChilds = true;
-        }
-     
+    const container = $$(el + "_rows");
+
+    const childs    = container.getChildViews();
+
+    if (childs.length > 1){
+        checkChilds = true;
     }
+    
+    
 
     return checkChilds;
 }
@@ -8685,43 +8759,45 @@ function showInput(){
 
 function hideInput(){
    
-    if (el !== "selectAll"){
-        if ($$(el).isVisible()){
-            setHtmlState(hideClass, showClass);
-        }
-
-    
-
-        if($$(el + "_rows")){
-            removeChilds();
-        }
-
-        setDefStateInputs();
-        setDefStateBtns  ();
+   
+    if ($$(el).isVisible()){
+        setHtmlState(hideClass, showClass);
     }
+
+
+
+    if($$(el + "_rows")){
+        removeChilds();
+    }
+
+    setDefStateInputs();
+    setDefStateBtns  ();
+    
 }
 
 
-function visibleField (visible, cssClass, element){
+function visibleField (visible, cssClass){
 
-    condition    = visible;
-    elementClass = cssClass;
-    el           = element;
+    if (cssClass !== "selectAll" && cssClass){
+      
+        condition    = visible;
+        elementClass = cssClass;
+        el           = cssClass + "_filter";
 
-    segmentBtn   = $$( el + "_segmentBtn");
+        segmentBtn   = $$( el + "_segmentBtn");
+        
+        editStorage();
     
-    editStorage();
-   
-    if (!isChildExists()){
-        if (condition){
-            showInput();
-        } else {
-            hideInput();
+        if (!isChildExists()){
+            if (condition){
+                showInput();
+            } else {
+                hideInput();
+            }
+        } else if (!condition){
+            hideInput(); 
         }
-    } else if (!condition){
-        hideInput(); 
     }
-
 
 }
 
@@ -8784,10 +8860,7 @@ function isParent(el){
 
     if (parent !== id){
         check = name;
-    } else {
-
     }
-
     return check;
 }
 
@@ -8795,43 +8868,47 @@ function pushValues(id, logic, index){
 
     const btn = $$(id + "-btnFilterOperations");
 
-    const operation = btn.getValue();
-    const value     = $$(id).getValue();
-    const parent    = isParent($$(id));
+    if (btn){
+        const operation = btn.getValue();
+        const value     = $$(id).getValue();
+        const parent    = isParent($$(id));
 
-    template.values.push({
-        id          : id, 
-        value       : value,
-        operation   : operation,
-        logic       : logic,
-        parent      : parent,
-        index       : index
-    });
-
+        template.values.push({
+            id          : id, 
+            value       : value,
+            operation   : operation,
+            logic       : logic,
+            parent      : parent,
+            index       : index
+        });
+    }
 }
 
 function setOperation(arr){
     arr.forEach(function(el, i){
    
-        
-        try{
-            const segmentBtn = $$( el + "_segmentBtn" );
+        const segmentBtn = $$( el + "_segmentBtn" );
 
+        if(segmentBtn){
+            try{
             let logic = null;
 
             if (segmentBtn.isVisible()){
                 logic = segmentBtn.getValue();
             }
- 
+
             pushValues(el, logic,  i);
 
-        } catch(err){
-            errors_setFunctionError(
-                err,
-                getFilterState_logNameFile,
-                "setOperation"
-            );
-        }
+            } catch(err){
+                errors_setFunctionError(
+                    err,
+                    getFilterState_logNameFile,
+                    "setOperation"
+                );
+            }
+            
+        }  
+     
     });
 }
 
@@ -8881,6 +8958,7 @@ function setState () {
 
 
 ;// CONCATENATED MODULE: ./src/js/components/table/filterForm/actions/_FilterActions.js
+
 
 
 
@@ -8999,8 +9077,8 @@ class Filter extends FilterPull {
         }
     }
 
-    static setFieldState(visible, cssClass, element){
-        visibleField (visible, cssClass, element);
+    static setFieldState(visible, cssClass){
+        visibleField (visible, cssClass);
     }
 
     static clearFilter(){
@@ -9021,6 +9099,19 @@ class Filter extends FilterPull {
     
     static getActiveTemplate(){
         return $$("filterTableForm").config.activeTemplate;
+    }
+
+    static showApplyNotify(show = true){
+  
+        const tableId = getTable().config.id;
+        const item    = $$(tableId + "_applyNotify");
+ 
+        if (show){
+            Action.showItem(item); 
+        } else {
+            Action.hideItem(item); 
+        }
+    
     }
     
     
@@ -9740,7 +9831,11 @@ function createOperationBtn(typeField, elemId){
             popup    : popup,
             inputHeight:38,
             on:{
-                onChange:function(){
+                onChange:function(value){
+           
+                    if (value == "contains"){
+                        this.setValue("⊆");
+                    }
                     Filter.setStateToStorage();
                 }
             }
@@ -9944,6 +10039,7 @@ function getIdCreatedField(){
 }
 
 function createChildFields (el, customPosition) {
+  
     childFilter_element  = el;
     elemId   = el.id;
     childFilter_uniqueId = webix.uid();
@@ -10204,33 +10300,230 @@ function returnLostFilter(id){
     const params    = new URLSearchParams(url);
     const viewParam = params.get("view"); 
 
+    
 
-    if (viewParam && viewParam == "filter"){
+
+    if (viewParam == "filter"){
         const data = webix.storage.local.get("currFilterState");
 
         Action.hideItem($$("table-editForm"));
+
         $$("table-filterId").callEvent("clickEvent", [ "" ]);
-        Filter.setActiveTemplate(data.activeTemplate); // option in popup library
 
-        if (isDataExists(data) && id == data.id){
-
-            createWorkspace(data.values.values);
-
-            hideHtmlContainers();
-            if (isFormFill()){
-                Action.enableItem($$("btnFilterSubmit"));
+        if (data){
+      
+            Filter.setActiveTemplate(data.activeTemplate); // option in popup library
+     
+            if (isDataExists(data) && id == data.id){
+ 
+                createWorkspace(data.values.values);
+         
+                hideHtmlContainers();
+                if (isFormFill()){
+                    Action.enableItem($$("btnFilterSubmit"));
+                }
+        
             }
-       
+
+
+            Filter.setStateToStorage();
+   
         }
-       
     }
 
-   
+
 
 }
 
 
+;// CONCATENATED MODULE: ./src/js/components/table/createSpace/returnDashboardFilter.js
+
+
+
+
+
+
+let conditions;
+
+function returnInputId(id){
+    const index = id.lastIndexOf(".");
+    return id.slice(index + 1);
+}
+
+function returnDashboardFilter_setOperation(id, value){
+    if (value){
+        const operationBtn = $$(id + "-btnFilterOperations");
+        operationBtn.setValue(value);  
+    }
+   
+}
+
+function setSegmentBtn(id, value){
+    if (value && value == "or"){
+        const segmentBtn = $$(id + "_segmentBtn");
+        const orId       = 2;
+        segmentBtn.setValue(orId);  
+    }
+}
+
+function setInputValue(id, value){
+    if (value){
+        const trueValue = value.replace(/['"]+/g, '');
+        $$(id).setValue(trueValue);
+    }
+  
+}
+
+function returnDashboardFilter_setBtnsValue(id, array){
+    returnDashboardFilter_setOperation (id, array[2]); // array[2] - operation
+    setInputValue(id, array[3]); // array[2] - value
+    setSegmentBtn(id, array[4]); // array[4] - and/or
+}
+
+function checkCondition(array){
+    const id = returnInputId(array[1]); //[1] - id
+
+    let inputId       = id + "_filter"; 
+    const parentInput = $$(inputId);
+
+    if (!parentInput.isVisible()){
+        Filter.setFieldState(1, id);
+
+    } else {
+        const table = getTable();
+        const col   = table.getColumnConfig(id);
+        inputId     = createChildFields(col);
+
+    }
+
+    returnDashboardFilter_setBtnsValue(inputId, array);
+
+}
+   
+// array[1] - id
+// array[2] - operation   -- setValue
+// array[3] - value  
+// array[4] - and/or
+
+
+function iterateConditions(){
+    conditions.forEach(function(el, i){
+        const arr = el.split(' ');
+        checkCondition(arr);
+    });
+
+}
+
+
+function returnConditions(filter){
+    const array = filter.split(' ');
+
+    const conditions = [];
+    let r            = "";
+    let counter      = 0;
+
+    array.forEach(function(el, i){
+        const length = array.length;
+
+        if (length - 1 === i){
+            r += " " + el;
+            counter ++;
+        }
+
+        if (counter >= 4 || length - 1 === i){
+            conditions.push(r);
+            r       = "";
+            counter = 0;
+        }
+
+        if (counter < 4){
+            r += " " + el;
+            counter ++;
+        }
+
+        
+    });
+
+    return conditions;
+}
+
+function inputIsVisible(inputs, el){
+    return inputs.find(
+        element => element == el
+    );
+} 
+
+function lastItem(result){
+    return Math.max.apply(Math, result);
+}
+
+function returnCurrIndexes(indexes){
+ 
+    const inputs  = Filter.getItems();
+    const result = [];
+    Object.keys(indexes).forEach(function(el){
+
+        if (inputIsVisible(inputs, el)){
+            result.push(indexes[el]);
+        }
+      
+    });
+
+    return result;
+
+}
+
+
+function findLastCollection(indexes, item){
+    let lastItemId;
+
+    Object.values(indexes).find(function(el, i){
+
+        if(el == item) {
+
+            lastItemId = Object.keys(indexes)[i]
+        }
+    });
+
+    return lastItemId;
+}
+
+function findLastId(lastItemId){
+    const collection = Filter.getItem (lastItemId);
+
+    const index  = collection.length - 1;
+    return collection[index];
+}
+
+function hideLastSegmentBtn(){
+    const indexes     = Filter.getIndexFilters();
+
+    const currIndexes = returnCurrIndexes (indexes);
+
+    const item        = lastItem          (currIndexes);
+    const lastItemId  = findLastCollection(indexes, item);
+    const lastId      = findLastId        (lastItemId);
+
+    Action.hideItem($$(lastId + "_segmentBtn"));
+
+}
+
+function returnDashboardFilter(filter){
+    Filter.clearFilter();
+    Filter.clearAll();
+
+    conditions = returnConditions(filter);
+    iterateConditions();
+    hideLastSegmentBtn();
+
+    Action.enableItem($$("btnFilterSubmit"));
+
+    Filter.setStateToStorage();
+}
+
+
 ;// CONCATENATED MODULE: ./src/js/components/table/createSpace/rows/loadRows.js
+
 
 
 
@@ -10298,13 +10591,13 @@ function checkNotUnique(idAddRow){
 
 
 function changeFullTable(data){
-
+    const overlay = "Ничего не найдено";
     if (data.length !== 0){
-        loadRows_idCurrView.hideOverlay("Ничего не найдено");
+        loadRows_idCurrView.hideOverlay(overlay);
         loadRows_idCurrView.parse      (data);
 
     } else {
-        loadRows_idCurrView.showOverlay("Ничего не найдено");
+        loadRows_idCurrView.showOverlay(overlay);
         loadRows_idCurrView.clearAll   ();
     }
 
@@ -10314,7 +10607,7 @@ function changeFullTable(data){
 }
 
 function changePart(data){
-    data.forEach(function(el,i){
+    data.forEach(function(el){
         checkNotUnique(el.id);
         loadRows_idCurrView.add(el);
     });
@@ -10348,7 +10641,11 @@ function setCounterVal (data){
         $$(idFindElem).setValues(prevCountRows);
 
     } catch (err){
-        errors_setFunctionError(err, loadRows_logNameFile, "setCounterVal");
+        errors_setFunctionError(
+            err, 
+            loadRows_logNameFile, 
+            "setCounterVal"
+        );
     }
 }
 
@@ -10368,23 +10665,27 @@ async function returnFilter(tableElem){
     const filterString = tableElem.config.filter;
     const urlParameter = filterParam();
 
-    let filter;
+    const result = {
+        prefs : true
+    };
 
     if (urlParameter){
-        filter = await getUserPrefsContext(urlParameter, "filter");
+        result.filter = await getUserPrefsContext(urlParameter, "filter");
+        Filter.showApplyNotify();
     }
 
-    if (!filter){
+    if (!result.filter){
+        result.prefs = false;
         if (filterString && filterString.table === itemTreeId){
-            filter = filterString.query;
+            result.filter = filterString.query;
 
         } else {
-            filter = itemTreeId +'.id+%3E%3D+0';
+            result.filter = itemTreeId +'.id+%3E%3D+0';
           
         }
     }
 
-    return filter;
+    return result;
 }
 
 
@@ -10470,7 +10771,9 @@ async function loadTableData(table, id, idsParam, offset){
 
     idFindElem  = idCurrTable + "-findElements";
 
-    const filter    = await returnFilter(tableElem);
+    const resultFilter = await returnFilter(tableElem);
+    const isPrefs      = resultFilter.prefs;
+    const filter       = resultFilter.filter;
 
     if (!offsetParam){
         returnSortData ();
@@ -10500,6 +10803,11 @@ async function loadTableData(table, id, idsParam, offset){
 
                 
                 setConfigTable(tableElem, data, limitLoad);
+                const type = data.err_type;
+
+                if (type && type =="i"){
+
+               
 
                 data  = data.content;
  
@@ -10528,13 +10836,22 @@ async function loadTableData(table, id, idsParam, offset){
         
 
                 if (!offsetParam){
-                
-                    createContextSpace_selectContextId ();  
-                    returnLostData  ();
-                    returnLostFilter(itemTreeId);
+                 
+                    createContextSpace_selectContextId      ();  
+                    returnLostData       ();
+                    returnLostFilter     (itemTreeId);
+                    if (isPrefs){
+                        returnDashboardFilter(filter);
+                    }
                 }
             
-
+                } else {
+                    errors_setFunctionError(
+                        data.err, 
+                        "loadRows", 
+                        "getData"
+                    );
+                }
             });
             
             getData.fail(function(err){
@@ -10545,7 +10862,7 @@ async function loadTableData(table, id, idsParam, offset){
                     popupNotAuth_popupNotAuth();
                 } 
 
-                setAjaxError(err, "getInfoTable", "getData");
+                setAjaxError(err, "loadRows", "getData");
             });
 
         }
@@ -13501,7 +13818,7 @@ function setSecondaryState(){
 function toolbarBtnLogic(filter){
     toolbarBtnClick_btnClass = document.querySelector(".webix_btn-filter");
     const isPrimaryClass = toolbarBtnClick_btnClass.classList.contains(toolbarBtnClick_primaryBtnClass);
-    
+   
     if(!isPrimaryClass){
         setPrimaryState(filter);
         mediator.linkParam(true, {"view": "filter"});
@@ -13521,20 +13838,20 @@ function filterMaxAdaptive(filter, idTable){
 
 
 function toolbarBtnClick_filterBtnClick (idTable){
-
+   
     Filter.clearAll(); // clear inputs storage
-    
+  
     const filter    = $$("filterTableForm");
     const container = $$("container");
 
     filterMaxAdaptive(filter, idTable);
-    
+
     const width    = container.$width;
     const minWidth = 850;
 
     if (width < minWidth){
         Action.hideItem($$("tree"));
-
+  
         if (width < minWidth ){
             filterMinAdaptive();
         }
@@ -13545,7 +13862,7 @@ function toolbarBtnClick_filterBtnClick (idTable){
         filter.resize();
     }
 
-
+ 
    
 }
 
@@ -13796,6 +14113,20 @@ function createTemplateCounter(idEl, text){
 }
 
 
+;// CONCATENATED MODULE: ./src/js/components/table/toolbar/applyFilterNotify.js
+function applyNotify(id){
+    return {
+        template   : "Фильтры применены",
+        id         : id + "_applyNotify",
+        hidden     : true,
+        css        : "applyNotify",
+        inputHeigth: 20,
+        width      : 160,
+        borderless : true,    
+    };
+}
+
+
 ;// CONCATENATED MODULE: ./src/js/components/table/toolbar/_layout.js
 
 
@@ -13819,6 +14150,7 @@ function tableToolbar (idTable, visible = false) {
             createHeadline(idHeadline),
             {
                 css     : "webix_filterBar",
+                id      : idTable + "_toolbarBtns",
                 padding : {
                     bottom : 4,
                 }, 
@@ -13826,9 +14158,11 @@ function tableToolbar (idTable, visible = false) {
                 cols    : [
                     toolbarFilterBtn      (idTable, visible),
                     toolbarEditButton     (idTable, visible),
+                    applyNotify           (idTable),
                     {},
                     toolbarVisibleColsBtn (idTable),
-                    toolbarDownloadButton (idTable, visible)
+                    toolbarDownloadButton (idTable, visible),
+                    {width : 25},
                 ],
             },
 
@@ -14171,10 +14505,10 @@ const propertyRefBtns = {
 const propertyLayout = {   
     scroll:"y", 
     cols:[
-        propertyRefBtns,
         {width:4},
         propertyEditForm,
-        {width:4}
+        {width:4},
+        propertyRefBtns,
     ]
 };
 
@@ -14391,10 +14725,6 @@ const editFormBtns = {
     margin    : 5, 
     rows:[
         {cols:[
-            {   id      : "tablePropBtnsSpace",
-                width   : 35, 
-                hidden  : true
-            },
             {rows:[
                 {
                     margin : 5,
@@ -14427,7 +14757,11 @@ const editFormBtns = {
                     ]
                 },
              
-            ]}
+            ]},
+            {   id      : "tablePropBtnsSpace",
+                width   : 35, 
+                hidden  : true
+            },
         ]}
    
      
@@ -16125,7 +16459,7 @@ function filterSubmitBtn (){
 
         const path = "/init/default/api/smarts?query=" + query;
         const queryData = webix.ajax(path);
-
+ 
         queryData.then(function(data){
             data             = data.json();
             const reccount   = data.reccount;
@@ -16134,7 +16468,7 @@ function filterSubmitBtn (){
             data             = data.content;
          
             if (notifyType == "i"){
-
+                Filter.showApplyNotify();
                 setData         (currTableView, data);
                 setCounterValue (reccount);
                 Action.hideItem ($$("tableFilterPopup"));
@@ -16145,6 +16479,7 @@ function filterSubmitBtn (){
                 );
             
             } else {
+                Filter.showApplyNotify(false);
                 setLogValue("error", notifyMsg);
             } 
         });
@@ -16342,10 +16677,10 @@ function clearInputSpace(){
     const table = getTable  ();
     setFilterCounterVal (table);
     resetBtn_removeChilds        ();
-
+  
     clearFilterValues   ();
     hideInputsContainer ();
-
+ 
     Filter.clearFilter  ();
 
     Action.hideItem   ($$("tableFilterPopup"    ));
@@ -16357,9 +16692,11 @@ function clearInputSpace(){
 
     Filter.setActiveTemplate(null);
 
-
+  
     Filter.clearAll(); // clear inputs storage
+ 
     Filter.setStateToStorage();
+
 }
 
 function resetFilterBtnClick (){
@@ -16375,6 +16712,7 @@ function resetFilterBtnClick (){
                 resetTable().then(function(result){
                     if (result){
                         clearInputSpace();
+                        Filter.showApplyNotify(false);
                     }
                    
                 });
@@ -16416,6 +16754,7 @@ const resetBtn = new Button({
             resetTable().then(function(result){
                 if (result){
                     clearInputSpace();
+                    Filter.showApplyNotify(false);
                 }
             });
         }
@@ -16483,6 +16822,8 @@ function _layout_returnBtns(){
 
     return btns;
 }
+
+
 
 const filterTableForm = {
     view        : "form", 
@@ -16656,13 +16997,17 @@ function setPropValues(elem){
         unsetDirtyPropInputs(calendar);
 
     } catch (err){
-        errors_setFunctionError(err, calendar_logNameFile, "setValuesDate");
+        errors_setFunctionError(
+            err, 
+            calendar_logNameFile, 
+            "setValuesDate"
+        );
     }
     
 }
 
 function returnTimeValue(h, m, s){
-    return h + ":" + m+":" + s;;
+    return h + ":" + m+":" + s;
 }
 
 function returnSentValue(date, time){
@@ -16704,18 +17049,29 @@ function validTime(item, count, idEl){
 function setValToProperty(sentVal, elem){
     const propId  = property.getValues().id;
     try{
-        if ( !(errors, errors.length) ){
-            property.setValues({ [elem.id] : sentVal}, true);
+
+        if (!errors.length){
+       
+            property.setValues({ 
+                [elem.id] : sentVal
+            }, true);
 
             if(propId){
-                property.setValues({ id : propId}, true);
+                property.setValues({ 
+                    id : propId
+                }, true);
 
             }
+            calendar_setDataToStorage(elem, sentVal);
 
             Action.destructItem($$("editTablePopupCalendar"));
         }
     } catch (err){
-        errors_setFunctionError(err, calendar_logNameFile, "setValToProperty");
+        errors_setFunctionError(
+            err, 
+            calendar_logNameFile, 
+            "setValToProperty"
+        );
     }
 }
 
@@ -16728,7 +17084,6 @@ function inputItterate(name, count){
 function calendar_setDataToStorage(elem, value){
     const prop   = $$("editTableFormProperty");
     const editor = prop.getItem(elem.id);
-
     prop.callEvent("onNewValues", [value, editor]);
 }
 
@@ -16754,15 +17109,15 @@ function calendar_submitClick (elem){
  
     form.setDirty(true);
 
-    calendar_setDataToStorage(elem, sentVal);
-
     return errors.length;
 }
 
 function isDirty(){
-    let check      = false;
-    function checkDirty(elem){
-        if ( elem.config.dirtyProp && !check ){
+
+    let check = false;
+
+    function checkDirty(el){
+        if (el.config.dirtyProp && !check){
             check = true;
         }
     }
@@ -16775,30 +17130,30 @@ function isDirty(){
     return check;
 }
 
-
-const closePopupClick = function (elem){
+function closePopupClick (elem){
     const calendar = $$("editTablePopupCalendar");
 
-    if (isDirty()){
-  
-        modalBox().then(function(result){
+    if (calendar){
+        
+        if (isDirty(calendar)){
+    
+            modalBox().then(function(result){
 
-            if (result == 1){
-                Action.destructItem(calendar);
-            }
+                if (result == 1){
+                    Action.destructItem(calendar);
+                }
 
-            if (result == 2 && !calendar_submitClick(elem)){
+                if (result == 2 && !calendar_submitClick(elem)){
 
-                Action.destructItem(calendar);
+                    Action.destructItem(calendar);
 
-            }
-        });
-    } else {
-        Action.destructItem(calendar);
+                }
+            });
+        } else {
+            Action.destructItem(calendar);
+        }
     }
-
-};
-
+}
 
 function returnCalendar(){
     const calendar = {
@@ -16931,7 +17286,10 @@ function popupEdit(elem){
             width     : 400,
             minHeight : 300,
         },
-        closeClick : closePopupClick,
+        closeConfig: {
+            currElem : elem
+        },
+        closeClick : closePopupClick ,
         elements : {
             rows : [
                 returnDateEditor(),
@@ -16994,32 +17352,32 @@ function createDatePopup(el){
 
 
 
-const textarea_logNameFile = "tableEditForm => propBtns => textarea";
+const textarea_logNameFile = "editForm => propBtns => textarea";
 
 let textarea_property;
-let elem;
 
-function setPropValue(value){
+function setPropValue(el, value){ 
     textarea_property.setValues({ 
-        [elem.id]:[value] 
+        [el.id]:[value] 
     }, true);
 }
 
-function textarea_setDataToStorage(value){
+function textarea_setDataToStorage(el, value){
     const prop   = $$("editTableFormProperty");
-    const editor = prop.getItem(elem.id);
+    const editor = prop.getItem(el.id);
 
     prop.callEvent("onNewValues", [value, editor]);
 }
 
-function textarea_submitClick (){
+function textarea_submitClick (el){
     try{
         const value = $$("editPropTextarea").getValue();
-        setPropValue(value);
+      
+        setPropValue(el, value);
  
         $$("table-editForm").setDirty(true);
 
-        textarea_setDataToStorage(value);
+        textarea_setDataToStorage(el, value);
      
     } catch (err){
         errors_setFunctionError(
@@ -17028,13 +17386,14 @@ function textarea_submitClick (){
             "submitClick"
         );
     }
+
     Action.destructItem($$("editTablePopupText"));
 }
 
-function setTextareaVal(){
+function setTextareaVal(el){
     try{
         const area = $$("editPropTextarea");
-        const val  = elem.value;
+        const val  = el.value;
         if (val){
             area.setValue(val);
         }
@@ -17047,8 +17406,8 @@ function setTextareaVal(){
     }
 }
 
-function createModalBox(area){
-   
+function createModalBox(el, area){
+
     const value = area.getValue();
     const popup = $$("editTablePopupText");
 
@@ -17057,7 +17416,7 @@ function createModalBox(area){
 
             if (result == 1 || result == 2){
                 if (result == 2){
-                    setPropValue(value);
+                    setPropValue(el, value);
                 }
                 Action.destructItem(popup);
             }
@@ -17067,15 +17426,19 @@ function createModalBox(area){
     } 
 }
 
-
-const textarea_closePopupClick = function (){
+function textarea_closePopupClick(el){
+  
     const area  = $$("editPropTextarea");
 
     if (area){
-        createModalBox(area);
+        createModalBox(el, area);
     }
-   
-};
+
+    return textarea_closePopupClick;
+}
+
+
+
 
 function returnTextArea(){
 
@@ -17086,6 +17449,13 @@ function returnTextArea(){
         dirtyValue  : false,
         placeholder : "Введите текст",
         on          : {
+            onAfterRender: webix.once(function(){
+                const k     = 0.8;
+                const width = $$("editTablePopupText").$width;
+
+                this.config.width = width * k;        
+                this.resize();    
+            }),
             onKeyPress:function(){
                 Action.enableItem($$("editPropSubmitBtn"));
 
@@ -17097,7 +17467,7 @@ function returnTextArea(){
     return textarea;
 }
 
-function textarea_returnSubmitBtn(){
+function textarea_returnSubmitBtn(el){
     const btn = new Button({
 
         config   : {
@@ -17106,7 +17476,7 @@ function textarea_returnSubmitBtn(){
             hotkey   : "Ctrl+Space",
             value    : "Добавить значение", 
             click    : function(){
-                textarea_submitClick();
+                textarea_submitClick(el);
             },
         },
         titleAttribute : "Добавить значение в запись таблицы"
@@ -17116,8 +17486,10 @@ function textarea_returnSubmitBtn(){
 
     return btn;
 }
-function textarea_popupEdit(){
-    const headline = "Редактор поля  «" + elem.label + "»";
+
+
+function textarea_popupEdit(el){
+    const headline = "Редактор поля  «" + el.label + "»";
 
     const popup = new Popup({
         headline : headline,
@@ -17128,7 +17500,11 @@ function textarea_popupEdit(){
     
         },
 
-        closeClick :  textarea_closePopupClick,
+        closeConfig: {
+            currElem : el,
+        },
+
+        closeClick :  textarea_closePopupClick(el),
     
         elements   : {
             padding:{
@@ -17138,7 +17514,7 @@ function textarea_popupEdit(){
             rows   : [
                 returnTextArea(),
                 {height : 15},
-                textarea_returnSubmitBtn(),
+                textarea_returnSubmitBtn(el),
             ]
           
         }
@@ -17147,17 +17523,12 @@ function textarea_popupEdit(){
     popup.createView ();
     popup.showPopup  ();
 
-    setTextareaVal();
+    setTextareaVal(el);
 
     $$("editPropTextarea").focus();
 }
 
-function btnClick (){
-    textarea_popupEdit();
-}
-
-
-function createBtnTextEditor(){
+function createBtnTextEditor(el){
     const btn = new Button({
 
         config   : {
@@ -17165,7 +17536,7 @@ function createBtnTextEditor(){
             height   : 29,
             icon     : "icon-window-restore", 
             click    : function(){
-                btnClick ();
+                textarea_popupEdit(el);
             },
         },
         titleAttribute : "Открыть большой редактор текста"
@@ -17184,9 +17555,8 @@ function createBtnTextEditor(){
 
 function createPopupOpenBtn(el){
     textarea_property = $$("editTableFormProperty");
-    elem     = el;
 
-    createBtnTextEditor();
+    createBtnTextEditor(el);
     Action.showItem($$("tablePropBtnsSpace"));
 }
 
@@ -17296,7 +17666,7 @@ function findIdPost(editor){
     return item.value;
 }
 
-function reference_btnClick (idBtn){
+function btnClick (idBtn){
     const config      = $$(idBtn).config;
     const srcTable    = config.srcTable;
     const isDirtyForm = $$("table-editForm").isDirty();
@@ -17320,7 +17690,7 @@ function reference_btnLayout(idEditor){
             icon     : "icon-share-square-o", 
             srcTable : selectBtn,
             click    : function(id){
-                reference_btnClick (id);
+                btnClick (id);
             },
         },
         titleAttribute : "Перейти в родительскую таблицу"
@@ -17409,7 +17779,7 @@ function setToolBtns(){
             createBtnsContainer(refBtns);
         }
 
-        propertyElems.forEach(function(el,i){
+        propertyElems.forEach(function(el){
             if (el.type == "combo"){
                 createRefBtn(el.id);
 
@@ -17534,6 +17904,8 @@ function returnPropElem(el){
 
     return propElem;
 }
+
+
 function createProperty (parentElement) {
 
     const property         = $$(parentElement);
@@ -24058,7 +24430,7 @@ function setRouterStart(){
 
 
 ;// CONCATENATED MODULE: ./src/js/app.js
-console.log("expa 1.0.65"); 
+console.log("expa 1.0.66"); 
 
 
 

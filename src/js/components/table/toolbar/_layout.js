@@ -5,7 +5,7 @@ import { toolbarFilterBtn }         from "./filterBtn.js";
 import { toolbarEditButton }        from "./editFormBtn.js";
 import { toolbarDownloadButton }    from "./exportBtn.js";
 import { createTemplateCounter }    from "./counter.js";
-
+import { applyNotify }              from "./applyFilterNotify.js";
 
 function tableToolbar (idTable, visible = false) {
 
@@ -20,6 +20,7 @@ function tableToolbar (idTable, visible = false) {
             createHeadline(idHeadline),
             {
                 css     : "webix_filterBar",
+                id      : idTable + "_toolbarBtns",
                 padding : {
                     bottom : 4,
                 }, 
@@ -27,9 +28,11 @@ function tableToolbar (idTable, visible = false) {
                 cols    : [
                     toolbarFilterBtn      (idTable, visible),
                     toolbarEditButton     (idTable, visible),
+                    applyNotify           (idTable),
                     {},
                     toolbarVisibleColsBtn (idTable),
-                    toolbarDownloadButton (idTable, visible)
+                    toolbarDownloadButton (idTable, visible),
+                    {width : 25},
                 ],
             },
 

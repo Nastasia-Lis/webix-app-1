@@ -11,19 +11,87 @@ function returnHeadline (titleTemplate){
         template    : titleTemplate,
         borderless  : true,
         height      : 35,
-        css         : {  
-            "font-weight" : "400 !important", 
-            "font-size"   : "17px!important"
-        }, 
+        css         : "dash-HeadlineBlock",
     };
  
     return headline;
 }
+const action = {
+    navigate: true,
+    field   : "auth_group",
+  //  context : true,
+    params  :{
+       // filter : "auth_group.id = 3" 
+     filter : "auth_group.id != '1' or auth_group.id != '3' and auth_group.role contains 'р' or auth_group.role = 'а'" 
+    } 
+};
 
 function createChart(dataCharts){
     const layout = [];
   
     try{
+
+        const labels =  [
+          { "view":"label", "label":"Больше 15 минут: 10"   ,"minWidth":200,"action":action,"css":{"background-color":"#FFAAAA","text-align":"center"}},
+          { "view":"label", "label":"Без комментария:  3"   ,"minWidth":200,"action":action,"css":{"background-color":"#FFAAAA","text-align":"center"}},
+          { "view":"label", "label":"За сегодня всего: 20"  ,"minWidth":200,"action":action,"css":{"background-color":"#AAFFAA","text-align":"center"}},
+          { "view":"label", "label":"За сегодня закрыто: 15","minWidth":200,"action":action,"css":{"background-color":"#AAFFAA","text-align":"center"}},
+          { "view":"label", "label":"За сегодня в работе: 5","minWidth":200,"action":action,"css":{"background-color":"#AAFFFF","text-align":"center"}},
+          { "view":"label", "label":"Всего не закрыто: 130" ,"minWidth":200,"action":action,"css":{"background-color":"#AAFFFF","text-align":"center"}},
+          { "view":"label", "label":"Без цвета: ???"        ,"minWidth":200,"action":action,"css":{"text-align":"center"}},
+        ]
+
+        const res =  
+            {
+                "title"  :"Статусы заявок",
+                "margin" :10,
+                "height" :300,
+                "padding":10,
+                "rows"   :[
+                  { "view":"scrollview", 
+                    "body":{    
+                        "view":"flexlayout",
+                        "height" :200,
+                        "margin":10, 
+                        "padding":0,
+                        "cols":labels
+                    },
+                  }
+                ]  
+            }
+
+            // {
+            //     "title":"Монитор заявок по стадиям (открытых: %d)",
+            //     "view":"chart",
+            //     "type":"bar",
+            //     "value":"#count#",
+            //     "label":"#count#",
+            //     "barWidth":30,
+            //     "radius":0,
+            //     "height":250,
+            //     "tooltip":{
+            //         "template":"#stage# - #count#"
+            //     },
+            //     "yAxis":{
+            //         "title":"Количество"
+            //     },
+            //     "xAxis":{
+            //         "template":"#stage#",
+            //         "title":"Стадия"
+            //     },
+            //     "data":stages_data
+            // },
+
+            // {
+            //     "title":"Монитор заявок (открытых: %d)" % len(data),
+            //     "view":"datatable",
+            //     "id":"btx_deals",
+            //     "height":1000,
+            //     "scroll":"xy",
+            //     "columns":columns,
+            //     "data":data,
+            // },
+
         // const table = {
         //     "view": "datatable",
         //     "id"  : "auth_group",
@@ -73,6 +141,8 @@ function createChart(dataCharts){
         // };
      
       //  dataCharts.push(table)
+      //dataCharts.push(res)
+      
         dataCharts.forEach(function(el){
           
             if (el.cols || el.rows){
@@ -121,6 +191,7 @@ async function setDashName(idsParam) {
                 if (el.id == itemTreeId){
                     const template  = $$("dash-template");
                     const value     = el.name.toString();
+                   
                     template.setValues(value);
                 }
             });

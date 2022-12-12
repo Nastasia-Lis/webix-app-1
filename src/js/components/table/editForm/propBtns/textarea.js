@@ -5,32 +5,32 @@ import { Action }           from "../../../../blocks/commonFunctions.js";
 import { Popup }            from "../../../../viewTemplates/popup.js";
 import { Button }           from "../../../../viewTemplates/buttons.js";
 
-const logNameFile = "tableEditForm => propBtns => textarea";
+const logNameFile = "editForm => propBtns => textarea";
 
 let property;
-let elem;
 
-function setPropValue(value){
+function setPropValue(el, value){ 
     property.setValues({ 
-        [elem.id]:[value] 
+        [el.id]:[value] 
     }, true);
 }
 
-function setDataToStorage(value){
+function setDataToStorage(el, value){
     const prop   = $$("editTableFormProperty");
-    const editor = prop.getItem(elem.id);
+    const editor = prop.getItem(el.id);
 
     prop.callEvent("onNewValues", [value, editor]);
 }
 
-function submitClick (){
+function submitClick (el){
     try{
         const value = $$("editPropTextarea").getValue();
-        setPropValue(value);
+      
+        setPropValue(el, value);
  
         $$("table-editForm").setDirty(true);
 
-        setDataToStorage(value);
+        setDataToStorage(el, value);
      
     } catch (err){
         setFunctionError(
@@ -39,13 +39,14 @@ function submitClick (){
             "submitClick"
         );
     }
+
     Action.destructItem($$("editTablePopupText"));
 }
 
-function setTextareaVal(){
+function setTextareaVal(el){
     try{
         const area = $$("editPropTextarea");
-        const val  = elem.value;
+        const val  = el.value;
         if (val){
             area.setValue(val);
         }
@@ -58,8 +59,8 @@ function setTextareaVal(){
     }
 }
 
-function createModalBox(area){
-   
+function createModalBox(el, area){
+
     const value = area.getValue();
     const popup = $$("editTablePopupText");
 
@@ -68,7 +69,7 @@ function createModalBox(area){
 
             if (result == 1 || result == 2){
                 if (result == 2){
-                    setPropValue(value);
+                    setPropValue(el, value);
                 }
                 Action.destructItem(popup);
             }
@@ -78,15 +79,19 @@ function createModalBox(area){
     } 
 }
 
-
-const closePopupClick = function (){
+function closePopupClick(el){
+  
     const area  = $$("editPropTextarea");
 
     if (area){
-        createModalBox(area);
+        createModalBox(el, area);
     }
-   
-};
+
+    return closePopupClick;
+}
+
+
+
 
 function returnTextArea(){
 
@@ -97,6 +102,13 @@ function returnTextArea(){
         dirtyValue  : false,
         placeholder : "Введите текст",
         on          : {
+            onAfterRender: webix.once(function(){
+                const k     = 0.8;
+                const width = $$("editTablePopupText").$width;
+
+                this.config.width = width * k;        
+                this.resize();    
+            }),
             onKeyPress:function(){
                 Action.enableItem($$("editPropSubmitBtn"));
 
@@ -108,7 +120,7 @@ function returnTextArea(){
     return textarea;
 }
 
-function returnSubmitBtn(){
+function returnSubmitBtn(el){
     const btn = new Button({
 
         config   : {
@@ -117,7 +129,7 @@ function returnSubmitBtn(){
             hotkey   : "Ctrl+Space",
             value    : "Добавить значение", 
             click    : function(){
-                submitClick();
+                submitClick(el);
             },
         },
         titleAttribute : "Добавить значение в запись таблицы"
@@ -127,8 +139,10 @@ function returnSubmitBtn(){
 
     return btn;
 }
-function popupEdit(){
-    const headline = "Редактор поля  «" + elem.label + "»";
+
+
+function popupEdit(el){
+    const headline = "Редактор поля  «" + el.label + "»";
 
     const popup = new Popup({
         headline : headline,
@@ -139,7 +153,11 @@ function popupEdit(){
     
         },
 
-        closeClick :  closePopupClick,
+        closeConfig: {
+            currElem : el,
+        },
+
+        closeClick :  closePopupClick(el),
     
         elements   : {
             padding:{
@@ -149,7 +167,7 @@ function popupEdit(){
             rows   : [
                 returnTextArea(),
                 {height : 15},
-                returnSubmitBtn(),
+                returnSubmitBtn(el),
             ]
           
         }
@@ -158,17 +176,12 @@ function popupEdit(){
     popup.createView ();
     popup.showPopup  ();
 
-    setTextareaVal();
+    setTextareaVal(el);
 
     $$("editPropTextarea").focus();
 }
 
-function btnClick (){
-    popupEdit();
-}
-
-
-function createBtnTextEditor(){
+function createBtnTextEditor(el){
     const btn = new Button({
 
         config   : {
@@ -176,7 +189,7 @@ function createBtnTextEditor(){
             height   : 29,
             icon     : "icon-window-restore", 
             click    : function(){
-                btnClick ();
+                popupEdit(el);
             },
         },
         titleAttribute : "Открыть большой редактор текста"
@@ -195,9 +208,8 @@ function createBtnTextEditor(){
 
 function createPopupOpenBtn(el){
     property = $$("editTableFormProperty");
-    elem     = el;
 
-    createBtnTextEditor();
+    createBtnTextEditor(el);
     Action.showItem($$("tablePropBtnsSpace"));
 }
 

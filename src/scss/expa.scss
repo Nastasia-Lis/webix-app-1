@@ -209,9 +209,12 @@ html, body {
 .webix_view.webix_control.webix_el_checkbox.webix_checkbox-style .webix_inp_label {
     width: 20px!important;
 }
-.webix_dash-charts-flex .webix_view.webix_layout_line div:nth-child(1){
+
+.dash-HeadlineBlock{
     margin: 0 !important;
     text-align: center;
+    font-size:17px!important;
+    font-weight:400 !important;
 }
 
 .webix_filter-inputs{
@@ -1196,6 +1199,22 @@ label, button{
     color:var(--primary)!important
 }
 
+
+
+
+///// table filter
+.applyNotify{
+    padding : 3px 10px!important;
+}
+
+.applyNotify .webix_template{
+    padding         : 3px 12px !important;
+    height          : 30px!important;
+    font-size       : 13px!important;
+    color           : var(--gray-dark)!important;
+    background-color: #ebfff3!important;
+    border-radius   : 4px !important;
+}
 
 
 

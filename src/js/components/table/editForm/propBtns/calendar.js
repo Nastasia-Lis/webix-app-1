@@ -58,13 +58,17 @@ function setPropValues(elem){
         unsetDirtyPropInputs(calendar);
 
     } catch (err){
-        setFunctionError(err, logNameFile, "setValuesDate");
+        setFunctionError(
+            err, 
+            logNameFile, 
+            "setValuesDate"
+        );
     }
     
 }
 
 function returnTimeValue(h, m, s){
-    return h + ":" + m+":" + s;;
+    return h + ":" + m+":" + s;
 }
 
 function returnSentValue(date, time){
@@ -106,18 +110,29 @@ function validTime(item, count, idEl){
 function setValToProperty(sentVal, elem){
     const propId  = property.getValues().id;
     try{
-        if ( !(errors, errors.length) ){
-            property.setValues({ [elem.id] : sentVal}, true);
+
+        if (!errors.length){
+       
+            property.setValues({ 
+                [elem.id] : sentVal
+            }, true);
 
             if(propId){
-                property.setValues({ id : propId}, true);
+                property.setValues({ 
+                    id : propId
+                }, true);
 
             }
+            setDataToStorage(elem, sentVal);
 
             Action.destructItem($$("editTablePopupCalendar"));
         }
     } catch (err){
-        setFunctionError(err, logNameFile, "setValToProperty");
+        setFunctionError(
+            err, 
+            logNameFile, 
+            "setValToProperty"
+        );
     }
 }
 
@@ -130,7 +145,6 @@ function inputItterate(name, count){
 function setDataToStorage(elem, value){
     const prop   = $$("editTableFormProperty");
     const editor = prop.getItem(elem.id);
-
     prop.callEvent("onNewValues", [value, editor]);
 }
 
@@ -156,15 +170,15 @@ function submitClick (elem){
  
     form.setDirty(true);
 
-    setDataToStorage(elem, sentVal);
-
     return errors.length;
 }
 
 function isDirty(){
-    let check      = false;
-    function checkDirty(elem){
-        if ( elem.config.dirtyProp && !check ){
+
+    let check = false;
+
+    function checkDirty(el){
+        if (el.config.dirtyProp && !check){
             check = true;
         }
     }
@@ -177,30 +191,30 @@ function isDirty(){
     return check;
 }
 
-
-const closePopupClick = function (elem){
+function closePopupClick (elem){
     const calendar = $$("editTablePopupCalendar");
 
-    if (isDirty()){
-  
-        modalBox().then(function(result){
+    if (calendar){
+        
+        if (isDirty(calendar)){
+    
+            modalBox().then(function(result){
 
-            if (result == 1){
-                Action.destructItem(calendar);
-            }
+                if (result == 1){
+                    Action.destructItem(calendar);
+                }
 
-            if (result == 2 && !submitClick(elem)){
+                if (result == 2 && !submitClick(elem)){
 
-                Action.destructItem(calendar);
+                    Action.destructItem(calendar);
 
-            }
-        });
-    } else {
-        Action.destructItem(calendar);
+                }
+            });
+        } else {
+            Action.destructItem(calendar);
+        }
     }
-
-};
-
+}
 
 function returnCalendar(){
     const calendar = {
@@ -333,7 +347,10 @@ function popupEdit(elem){
             width     : 400,
             minHeight : 300,
         },
-        closeClick : closePopupClick,
+        closeConfig: {
+            currElem : elem
+        },
+        closeClick : closePopupClick ,
         elements : {
             rows : [
                 returnDateEditor(),

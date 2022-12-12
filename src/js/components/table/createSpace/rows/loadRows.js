@@ -12,8 +12,9 @@ import { selectContextId }                  from '../createContextSpace.js';
 import { returnLostData }                   from '../returnLostData.js';
 import { returnSortData }                   from '../returnSortData.js';
 import { returnLostFilter }                 from '../returnLostFilter.js';
+import { returnDashboardFilter }            from '../returnDashboardFilter.js';
 
-
+import { Filter }                           from '../../filterForm/actions/_FilterActions.js';
 
 const logNameFile = "table => createSpace => loadData";
 
@@ -66,13 +67,13 @@ function checkNotUnique(idAddRow){
 
 
 function changeFullTable(data){
-
+    const overlay = "Ничего не найдено";
     if (data.length !== 0){
-        idCurrView.hideOverlay("Ничего не найдено");
+        idCurrView.hideOverlay(overlay);
         idCurrView.parse      (data);
 
     } else {
-        idCurrView.showOverlay("Ничего не найдено");
+        idCurrView.showOverlay(overlay);
         idCurrView.clearAll   ();
     }
 
@@ -82,7 +83,7 @@ function changeFullTable(data){
 }
 
 function changePart(data){
-    data.forEach(function(el,i){
+    data.forEach(function(el){
         checkNotUnique(el.id);
         idCurrView.add(el);
     });
@@ -116,7 +117,11 @@ function setCounterVal (data){
         $$(idFindElem).setValues(prevCountRows);
 
     } catch (err){
-        setFunctionError(err, logNameFile, "setCounterVal");
+        setFunctionError(
+            err, 
+            logNameFile, 
+            "setCounterVal"
+        );
     }
 }
 
@@ -136,23 +141,27 @@ async function returnFilter(tableElem){
     const filterString = tableElem.config.filter;
     const urlParameter = filterParam();
 
-    let filter;
+    const result = {
+        prefs : true
+    };
 
     if (urlParameter){
-        filter = await getUserPrefsContext(urlParameter, "filter");
+        result.filter = await getUserPrefsContext(urlParameter, "filter");
+        Filter.showApplyNotify();
     }
 
-    if (!filter){
+    if (!result.filter){
+        result.prefs = false;
         if (filterString && filterString.table === itemTreeId){
-            filter = filterString.query;
+            result.filter = filterString.query;
 
         } else {
-            filter = itemTreeId +'.id+%3E%3D+0';
+            result.filter = itemTreeId +'.id+%3E%3D+0';
           
         }
     }
 
-    return filter;
+    return result;
 }
 
 
@@ -238,7 +247,9 @@ async function loadTableData(table, id, idsParam, offset){
 
     idFindElem  = idCurrTable + "-findElements";
 
-    const filter    = await returnFilter(tableElem);
+    const resultFilter = await returnFilter(tableElem);
+    const isPrefs      = resultFilter.prefs;
+    const filter       = resultFilter.filter;
 
     if (!offsetParam){
         returnSortData ();
@@ -268,6 +279,11 @@ async function loadTableData(table, id, idsParam, offset){
 
                 
                 setConfigTable(tableElem, data, limitLoad);
+                const type = data.err_type;
+
+                if (type && type =="i"){
+
+               
 
                 data  = data.content;
  
@@ -296,13 +312,22 @@ async function loadTableData(table, id, idsParam, offset){
         
 
                 if (!offsetParam){
-                
-                    selectContextId ();  
-                    returnLostData  ();
-                    returnLostFilter(itemTreeId);
+                 
+                    selectContextId      ();  
+                    returnLostData       ();
+                    returnLostFilter     (itemTreeId);
+                    if (isPrefs){
+                        returnDashboardFilter(filter);
+                    }
                 }
             
-
+                } else {
+                    setFunctionError(
+                        data.err, 
+                        "loadRows", 
+                        "getData"
+                    );
+                }
             });
             
             getData.fail(function(err){
@@ -313,7 +338,7 @@ async function loadTableData(table, id, idsParam, offset){
                     popupNotAuth();
                 } 
 
-                setAjaxError(err, "getInfoTable", "getData");
+                setAjaxError(err, "loadRows", "getData");
             });
 
         }

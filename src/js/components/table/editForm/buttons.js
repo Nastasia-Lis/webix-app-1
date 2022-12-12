@@ -209,10 +209,6 @@ const editFormBtns = {
     margin    : 5, 
     rows:[
         {cols:[
-            {   id      : "tablePropBtnsSpace",
-                width   : 35, 
-                hidden  : true
-            },
             {rows:[
                 {
                     margin : 5,
@@ -245,7 +241,11 @@ const editFormBtns = {
                     ]
                 },
              
-            ]}
+            ]},
+            {   id      : "tablePropBtnsSpace",
+                width   : 35, 
+                hidden  : true
+            },
         ]}
    
      

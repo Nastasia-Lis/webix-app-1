@@ -223,10 +223,10 @@ const propertyRefBtns = {
 const propertyLayout = {   
     scroll:"y", 
     cols:[
-        propertyRefBtns,
         {width:4},
         propertyEditForm,
-        {width:4}
+        {width:4},
+        propertyRefBtns,
     ]
 };
 

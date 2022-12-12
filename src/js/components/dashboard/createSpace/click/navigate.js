@@ -1,5 +1,6 @@
 import { setAjaxError, 
          setFunctionError }     from "../../../../blocks/errors.js";
+         
 import { setLogValue }          from "../../../logBlock.js";
 
 
@@ -22,7 +23,7 @@ function createSentObj(prefs){
 
 function navigate(field, id){
     if (id){
-        const path = "tree/" + field + "?" + "prefs=" + id;
+        const path = "tree/" + field + "?view=filter&prefs=" + id;
         Backbone.history.navigate(path, { trigger : true });
         window.location.reload();   
     } 

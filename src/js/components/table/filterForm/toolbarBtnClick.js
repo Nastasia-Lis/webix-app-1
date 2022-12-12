@@ -66,7 +66,7 @@ function setSecondaryState(){
 function toolbarBtnLogic(filter){
     btnClass = document.querySelector(".webix_btn-filter");
     const isPrimaryClass = btnClass.classList.contains(primaryBtnClass);
-    
+   
     if(!isPrimaryClass){
         setPrimaryState(filter);
         mediator.linkParam(true, {"view": "filter"});
@@ -86,20 +86,20 @@ function filterMaxAdaptive(filter, idTable){
 
 
 function filterBtnClick (idTable){
-
+   
     Filter.clearAll(); // clear inputs storage
-    
+  
     const filter    = $$("filterTableForm");
     const container = $$("container");
 
     filterMaxAdaptive(filter, idTable);
-    
+
     const width    = container.$width;
     const minWidth = 850;
 
     if (width < minWidth){
         Action.hideItem($$("tree"));
-
+  
         if (width < minWidth ){
             filterMinAdaptive();
         }
@@ -110,7 +110,7 @@ function filterBtnClick (idTable){
         filter.resize();
     }
 
-
+ 
    
 }
 

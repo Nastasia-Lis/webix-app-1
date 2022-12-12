@@ -15,10 +15,7 @@ function isParent(el){
 
     if (parent !== id){
         check = name;
-    } else {
-
     }
-
     return check;
 }
 
@@ -26,43 +23,47 @@ function pushValues(id, logic, index){
 
     const btn = $$(id + "-btnFilterOperations");
 
-    const operation = btn.getValue();
-    const value     = $$(id).getValue();
-    const parent    = isParent($$(id));
+    if (btn){
+        const operation = btn.getValue();
+        const value     = $$(id).getValue();
+        const parent    = isParent($$(id));
 
-    template.values.push({
-        id          : id, 
-        value       : value,
-        operation   : operation,
-        logic       : logic,
-        parent      : parent,
-        index       : index
-    });
-
+        template.values.push({
+            id          : id, 
+            value       : value,
+            operation   : operation,
+            logic       : logic,
+            parent      : parent,
+            index       : index
+        });
+    }
 }
 
 function setOperation(arr){
     arr.forEach(function(el, i){
    
-        
-        try{
-            const segmentBtn = $$( el + "_segmentBtn" );
+        const segmentBtn = $$( el + "_segmentBtn" );
 
+        if(segmentBtn){
+            try{
             let logic = null;
 
             if (segmentBtn.isVisible()){
                 logic = segmentBtn.getValue();
             }
- 
+
             pushValues(el, logic,  i);
 
-        } catch(err){
-            setFunctionError(
-                err,
-                logNameFile,
-                "setOperation"
-            );
-        }
+            } catch(err){
+                setFunctionError(
+                    err,
+                    logNameFile,
+                    "setOperation"
+                );
+            }
+            
+        }  
+     
     });
 }
 

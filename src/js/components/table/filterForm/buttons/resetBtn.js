@@ -156,10 +156,10 @@ function clearInputSpace(){
     const table = getTable  ();
     setFilterCounterVal (table);
     removeChilds        ();
-
+  
     clearFilterValues   ();
     hideInputsContainer ();
-
+ 
     Filter.clearFilter  ();
 
     Action.hideItem   ($$("tableFilterPopup"    ));
@@ -171,9 +171,11 @@ function clearInputSpace(){
 
     Filter.setActiveTemplate(null);
 
-
+  
     Filter.clearAll(); // clear inputs storage
+ 
     Filter.setStateToStorage();
+
 }
 
 function resetFilterBtnClick (){
@@ -189,6 +191,7 @@ function resetFilterBtnClick (){
                 resetTable().then(function(result){
                     if (result){
                         clearInputSpace();
+                        Filter.showApplyNotify(false);
                     }
                    
                 });
@@ -230,6 +233,7 @@ const resetBtn = new Button({
             resetTable().then(function(result){
                 if (result){
                     clearInputSpace();
+                    Filter.showApplyNotify(false);
                 }
             });
         }

@@ -123,6 +123,7 @@ function getIdCreatedField(){
 }
 
 function createChildFields (el, customPosition) {
+  
     element  = el;
     elemId   = el.id;
     uniqueId = webix.uid();

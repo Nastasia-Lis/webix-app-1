@@ -32,6 +32,8 @@ function returnBtns(){
     return btns;
 }
 
+
+
 const filterTableForm = {
     view        : "form", 
     hidden      : true,

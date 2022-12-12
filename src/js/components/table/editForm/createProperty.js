@@ -63,7 +63,7 @@ function setToolBtns(){
             createBtnsContainer(refBtns);
         }
 
-        propertyElems.forEach(function(el,i){
+        propertyElems.forEach(function(el){
             if (el.type == "combo"){
                 createRefBtn(el.id);
 
@@ -188,6 +188,8 @@ function returnPropElem(el){
 
     return propElem;
 }
+
+
 function createProperty (parentElement) {
 
     const property         = $$(parentElement);

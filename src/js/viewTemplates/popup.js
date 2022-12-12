@@ -23,9 +23,11 @@ class Popup {
             width   : 25,
             icon    : 'wxi-close',
             click   : function(){
-
-                if ( options.closeClick){
-                    options.closeClick();
+ 
+                if (options.closeClick){
+                    const config =  options.closeConfig;
+                    const elem = config ? config.currElem : null;
+                    options.closeClick(elem);
                 } else {
                     const popup = $$(options.config.id);
                     if (popup){

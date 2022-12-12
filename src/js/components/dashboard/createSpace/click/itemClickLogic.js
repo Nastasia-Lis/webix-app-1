@@ -20,10 +20,10 @@ const action = {
 const action2 = {
     navigate: true,
     field   : "auth_group",
-    context : false,
+  //  context : true,
     params  :{
-        filter : "auth_group.id = 3" 
-    //filter : "auth_group.id != '1' or auth_group.id != '3' and auth_group.role contains 'р' or auth_group.role = 'а'" 
+       // filter : "auth_group.id = 3" 
+     filter : "auth_group.id != '1' or auth_group.id != '3' and auth_group.role contains 'р' or auth_group.role = 'а'" 
     } 
 };
 
@@ -68,7 +68,7 @@ function cursorPointer(self, elem){
 
 async function findField(chartAction){
     await LoadServerData.content("fields");
-    const keys   = GetFields.keys;
+    const keys = GetFields.keys;
 
     let field = chartAction;
 

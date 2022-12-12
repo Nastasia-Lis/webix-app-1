@@ -106,7 +106,11 @@ function createOperationBtn(typeField, elemId){
             popup    : popup,
             inputHeight:38,
             on:{
-                onChange:function(){
+                onChange:function(value){
+           
+                    if (value == "contains"){
+                        this.setValue("⊆");
+                    }
                     Filter.setStateToStorage();
                 }
             }

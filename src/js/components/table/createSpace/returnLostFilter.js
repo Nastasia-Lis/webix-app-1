@@ -49,28 +49,38 @@ function returnLostFilter(id){
     const params    = new URLSearchParams(url);
     const viewParam = params.get("view"); 
 
+    
 
-    if (viewParam && viewParam == "filter"){
+
+    if (viewParam == "filter"){
         const data = webix.storage.local.get("currFilterState");
 
         Action.hideItem($$("table-editForm"));
+
         $$("table-filterId").callEvent("clickEvent", [ "" ]);
-        Filter.setActiveTemplate(data.activeTemplate); // option in popup library
 
-        if (isDataExists(data) && id == data.id){
-
-            createWorkspace(data.values.values);
-
-            hideHtmlContainers();
-            if (isFormFill()){
-                Action.enableItem($$("btnFilterSubmit"));
+        if (data){
+      
+            Filter.setActiveTemplate(data.activeTemplate); // option in popup library
+     
+            if (isDataExists(data) && id == data.id){
+ 
+                createWorkspace(data.values.values);
+         
+                hideHtmlContainers();
+                if (isFormFill()){
+                    Action.enableItem($$("btnFilterSubmit"));
+                }
+        
             }
-       
+
+
+            Filter.setStateToStorage();
+   
         }
-       
     }
 
-   
+
 
 }
 
