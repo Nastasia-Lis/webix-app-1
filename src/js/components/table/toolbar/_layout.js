@@ -32,7 +32,6 @@ function tableToolbar (idTable, visible = false) {
                     {},
                     toolbarVisibleColsBtn (idTable),
                     toolbarDownloadButton (idTable, visible),
-                    {width : 25},
                 ],
             },
 

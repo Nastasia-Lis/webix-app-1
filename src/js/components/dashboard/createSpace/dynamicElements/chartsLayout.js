@@ -1,8 +1,6 @@
 import { setFunctionError }             from "../../../../blocks/errors.js";
 import { returnEl, setAttributes }      from '../click/itemClickLogic.js';
-import { createHeadline }               from '../../../viewHeadline/_layout.js';
 import { getDashId }                    from '../common.js';
-import { LoadServerData, GetFields }    from "../../../../blocks/globalStorage.js";
 
 const logNameFile = "dashboards => createSpace => dynamicElements => chartsLayout";
 
@@ -42,23 +40,30 @@ function createChart(dataCharts){
         ]
 
         const res =  
-            {
-                "title"  :"Статусы заявок",
-                "margin" :10,
-                "height" :300,
-                "padding":10,
-                "rows"   :[
-                  { "view":"scrollview", 
-                    "body":{    
-                        "view":"flexlayout",
-                        "height" :200,
-                        "margin":10, 
-                        "padding":0,
-                        "cols":labels
-                    },
-                  }
-                ]  
-            }
+            // {
+            //     "title"  :"Статусы заявок",
+            //     "margin" :10,
+            //     "height" :300,
+            //     "padding":10,
+            //     "rows"   :[
+            //       { "view":"scrollview", 
+            //         "body":{    
+            //             "view":"flexlayout",
+            //             "height" :200,
+            //             "margin":10, 
+            //             "padding":0,
+            //             "cols":labels
+            //         },
+            //       }
+            //     ]  
+            // }
+
+            {   title  :"Статусы заявок",
+                cols : labels
+            };
+                
+                
+            // };
 
             // {
             //     "title":"Монитор заявок по стадиям (открытых: %d)",
@@ -130,7 +135,7 @@ function createChart(dataCharts){
         //         {
         //             "id": 1,
         //             "role": "222",
-        //             "description": "333"
+        //             "description": "333",
         //         },
                 
         //     ],
@@ -140,26 +145,44 @@ function createChart(dataCharts){
         //     "onDblClick": {}
         // };
      
-      //  dataCharts.push(table)
-      //dataCharts.push(res)
+       // dataCharts.push(table)
+        //dataCharts.push(res)
       
         dataCharts.forEach(function(el){
           
             if (el.cols || el.rows){
                 returnEl(el, el.action);
+                el.view   = "flexlayout";
+                el.margin = 10;
+                el.padding= 0;
             } else {
                 el = setAttributes(el);
             }
+
         
             const titleTemplate = el.title;
 
             delete el.title;
-        
+         
             layout.push({
                 css : "webix_dash-chart",
+             
                 rows: [ 
+                    {template:' ', height:20, css:"dash-delim"},
                     returnHeadline (titleTemplate),
-                    el
+                    {   margin     : 10,
+                        height     : 300,
+                        padding    : 10,
+                        borderless : true,
+                        rows       : [
+                            {   
+                                view : "scrollview", 
+                                body : el,
+                            },
+                        ] 
+               
+                    }
+  
                 ]
             });
 
@@ -178,34 +201,6 @@ function createChart(dataCharts){
     return layout;
 }
 
-async function setDashName(idsParam) {
-    const itemTreeId = getDashId (idsParam);
-    try{
-        await LoadServerData.content("fields");
-
-        const names = GetFields.names;
-
-        if (names){
-
-            names.forEach(function(el){
-                if (el.id == itemTreeId){
-                    const template  = $$("dash-template");
-                    const value     = el.name.toString();
-                   
-                    template.setValues(value);
-                }
-            });
-        }
-     
-        
-    } catch (err){  
-        setFunctionError(
-            err, 
-            logNameFile, 
-            "setDashName"
-        );
-    }
-}
 
 function setIdAttribute(idsParam){
     const container = $$("dashboardContainer");
@@ -217,10 +212,11 @@ function setIdAttribute(idsParam){
 
 function createDashLayout(dataCharts){
     const layout = createChart(dataCharts);
-
+ 
     const dashLayout = [
-        {   type : "wide",
+        {  
             rows : layout
+            
         }
     ];
  
@@ -254,14 +250,13 @@ function createScrollContent(dataCharts){
 
 function createDashboardCharts(idsParam, dataCharts){
 
-    const template  = createHeadline("dash-template");
     const container = $$("dashboardInfoContainer");
 
     const inner =  {   
         id  : "dashboardInfoContainerInner",
         rows: [
-            template,
             createScrollContent(dataCharts)
+            
         ]
     };
 
@@ -275,7 +270,6 @@ function createDashboardCharts(idsParam, dataCharts){
         );
     } 
 
-    setDashName( idsParam );
     setIdAttribute(idsParam);
 }
 

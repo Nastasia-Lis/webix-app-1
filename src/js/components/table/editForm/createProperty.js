@@ -64,6 +64,7 @@ function setToolBtns(){
         }
 
         propertyElems.forEach(function(el){
+          
             if (el.type == "combo"){
                 createRefBtn(el.id);
 

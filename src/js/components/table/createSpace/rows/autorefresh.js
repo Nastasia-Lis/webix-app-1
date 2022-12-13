@@ -1,7 +1,8 @@
 import { getItemData }  from './createRows.js';
 
+let interval;
 function setIntervalConfig(type, counter){
-    setInterval(function(){
+    interval = setInterval(function(){
         if( type == "dbtable" ){
             getItemData ("table");
         } else if ( type == "tform" ){
@@ -11,6 +12,7 @@ function setIntervalConfig(type, counter){
 }
 
 function autorefresh (data){
+ 
     if (data.autorefresh){
 
         const userprefsOther = webix.storage.local.get("userprefsOtherForm");
@@ -28,7 +30,9 @@ function autorefresh (data){
                 setIntervalConfig(data.type, 120000);
             }
         }
-    } 
+    } else {
+        clearInterval(interval);
+    }
 }
 
 

@@ -1,10 +1,12 @@
 import { setLogValue }                    from '../../../logBlock.js';
 import { setAjaxError, setFunctionError } from "../../../../blocks/errors.js";
 import { Action }                         from '../../../../blocks/commonFunctions.js';
-
+import { createHeadline }                 from '../../../viewHeadline/_layout.js';
 import { createFilterLayout }             from '../filter/filterLayout.js';
 import { createDashboardCharts }          from './chartsLayout.js';
 import { createOverlayTemplate }          from '../../../../viewTemplates/loadTemplate.js';
+import { LoadServerData, GetFields }      from "../../../../blocks/globalStorage.js";
+import { getDashId }                      from '../common.js';
 
 const logNameFile = "dashboards => createSpace => dynamicElems";
 
@@ -15,7 +17,7 @@ let url;
 
 function removeCharts(){
     Action.removeItem ($$("dashboardInfoContainerInner"));
-    Action.removeItem ($$("dash-template"              ));
+    //Action.removeItem ($$("dash-template"              ));
 }
 
 function removeFilter(){
@@ -51,25 +53,63 @@ function setScrollHeight(){
    
 }
 
-function addSuccessView (dataCharts){
+async function setDashName(idsParam) {
+    const itemTreeId = getDashId (idsParam);
+    try{
+        await LoadServerData.content("fields");
 
+        const names = GetFields.names;
+
+        if (names){
+
+            names.forEach(function(el){
+                if (el.id == itemTreeId){
+                    const template  = $$("dash-template");
+                    const value     = el.name.toString();
+                   
+                    template.setValues(value);
+                }
+            });
+        }
+     
+        
+    } catch (err){  
+        setFunctionError(
+            err, 
+            logNameFile, 
+            "setDashName"
+        );
+    }
+}
+function createDashHeadline(){
+    $$("dashboardInfoContainer").addView(
+        {id:"dash-headline-container", cols:[createHeadline("dash-template")]}
+        
+    );
+    setDashName(idsParam);
+}
+
+function addSuccessView (dataCharts){
+  
     if (!action){
-    
+        Action.removeItem      ($$("dash-headline-container"));
+        createDashHeadline     ();
         createDashboardCharts  (idsParam, dataCharts);
         createFilterLayout     (inputsArray);
        
     } else {
         Action.removeItem       ($$("dashboardInfoContainerInner"));
-        Action.removeItem       ($$("dash-template"              ));
         createDashboardCharts   (idsParam, dataCharts);
-
     }
     
 }
 
 function setUpdate(dataCharts){
     if (dataCharts == undefined){
-        setLogValue   ("error", "Ошибка при загрузке данных");
+        setLogValue   (
+            "error", 
+            "Ошибка при загрузке данных"
+        );
     } else {
         addSuccessView(dataCharts);
     }
@@ -93,7 +133,6 @@ function addLoadElem(){
         Action.removeItem($$("dashLoadErr"));
 
         const view = createOverlayTemplate(id);
-
         $$("dashboardInfoContainer").addView(view);
     }   
 }
@@ -155,7 +194,7 @@ function createDynamicElems ( path, array, ids, btnPress = false ) {
     idsParam    = ids;
     action      = btnPress;
     url         = path;
-    
+ 
     getChartsLayout();
 
 }

@@ -83,7 +83,7 @@ const onFuncTable = {
         }
 
     },
-    
+
     onBeforeSelect:function(selection){
         const table     = $$("table");
         const nextItem   = selection.id;
@@ -140,13 +140,13 @@ const onFuncTable = {
                 );
             }
         }
-        
-        const isDirtyForm = $$("table-editForm").isDirty();
+        const name = "table-editForm";
+        const isDirtyForm = $$(name).isDirty();
         if (isDirtyForm){
             modalBoxTable ();
             return false;
         } else {
-            createProperty("table-editForm");
+            createProperty(name);
             toEditForm(nextItem);
         }
     },

@@ -991,7 +991,7 @@ async function createLogMessage(srcTable) {
     let name;
 
     if (srcTable == "version"){
-        name = 'Expa v1.0.66';
+        name = 'Expa v1.0.67';
 
     } else if (srcTable == "cp"){
         name = 'Смена пароля';
@@ -5608,717 +5608,6 @@ function dashboardLayout () {
 }
 
 
-;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/filter/filterLayout.js
-
-
-
-const filterLayout_logNameFile = "dashboard => createSpace => dynamicElements => filterLayout";
-
-
-
-function backBtnClick (){
-    Action.hideItem ($$( "dashboardTool"));
-    Action.showItem ($$( "dashboardInfoContainer"));
-}
-
-
-function createMainView(inputsArray){
-
-    const headline = {  
-        template    : "Фильтр",
-        height      : 30, 
-        css         : "webix_dash-filter-headline",
-        borderless  : true
-    };
-
-    const filterBackBtn = new Button({
-    
-        config   : {
-            id       : "dash-backDashBtn",
-            hotkey   : "Esc",
-            hidden   : true,  
-            icon     : "icon-arrow-right", 
-            click   : function(){
-                backBtnClick();
-            },
-        },
-        titleAttribute : "Вернуться к дашбордам"
-    
-       
-    }).minView();
-    
- 
-    const mainView = {
-        id      : "dashboard-tool-main",
-        padding : 20,
-        hidden  : true,
-        minWidth: 250,
-        rows    : [
-            {   id  : "dashboardToolHeadContainer",
-                cols: [
-                    headline,
-                    filterBackBtn,
-                ]
-            },
-            
-            { rows : inputsArray }
-        ], 
-    };
-
-    try{
-      
-        $$("dashboardTool").addView( mainView );
-    } catch (err){  
-        errors_setFunctionError(err, filterLayout_logNameFile, "createMainView");
-    }
-}
-
-
-function filterBtnClick (){
-    const dashTool      = $$("dashboard-tool-main");
-    const container     = $$("dashboardContainer" );
-    const tree          = $$("tree");
-    const backBtn       = $$("dash-backDashBtn");
-    const tools         = $$("dashboardTool");
-    const infoContainer = $$("dashboardInfoContainer");
-
-    function filterMinAdaptive(){
-
-        Action.hideItem (tree);
-        Action.hideItem (infoContainer);
-        Action.showItem (tools);
-        Action.showItem (backBtn);
-
-        tools.config.width = window.innerWidth - 45;
-        tools.resize();
-    }
-
-    function filterMaxAdaptive(){
-        Action.removeItem($$("dashContextLayout"));
-        Action.hideItem  ($$("dashboardContext" ));
-        if (dashTool.isVisible()){
-            Action.hideItem (tools);
-
-        } else {
-            Action.showItem (tools);
-            Action.showItem (dashTool);
-        }
-    }
-
-    filterMaxAdaptive();
-
-
-    if (container.$width < 850){
-        Action.hideItem(tree);
-
-        if (container.$width  < 850 ){
-            filterMinAdaptive();
-        }
-
-    } else {
-        Action.hideItem(backBtn);      
-    }
-
-
-}
-
-
-function addViewToContainer(filterBtn){
- 
-    const container     = $$("dash-template").getParentView();
-    const containerView = $$(container.config.id);
-  
-    if (!$$("dashFilterBtn")){
-      
-        containerView.addView(
-            {   id  : "dashboard-tool-btn",
-                cols: [
-                    filterBtn
-                ]
-            }
-        ,2);
-    }
-}
-
-
-function createFilterBtn(){
-
-    const filterBtn = new Button({
-        config   : {
-            id       : "dashFilterBtn",
-            hotkey   : "Ctrl+Shift+F",
-            icon     : "icon-filter", 
-            click   : function(){
-                filterBtnClick();
-            },
-        },
-        titleAttribute : "Показать/скрыть фильтры"
-    
-       
-    }).transparentView();
-
-  
-    addViewToContainer(filterBtn);
-  
-}
-
-
-
-function createFilterLayout(inputsArray){
-
-    createMainView (inputsArray);
-    createFilterBtn();
-}
-
-
-;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/contextWindow.js
-
-
-
-
-
-
-let container;
-let item;
-let field;
-
-const contextWindow_headline  = {
-    template    : "<div class='no-wrap-headline'>Подробности</div>", 
-    css         : "webix_popup-headline", 
-    borderless  : true, 
-    height      : 40 
-};
-
-function closeBtnClick(){
-    Action.removeItem($$("dashContextLayout"));
-    Action.hideItem  (container);
-    Action.showItem  ($$("dashboardInfoContainer"));
-
-    mediator.linkParam(false, "id");
-    mediator.linkParam(false, "src");
-}
-
-const closeBtn  = new Button({
-    config   : {
-        id     : "dashContexCloseBtn",
-        hotkey : "Esc",
-        icon   : "icon-arrow-right", 
-        click  : function (){
-            closeBtnClick();
-        }
-    },
-    css            : "webix-transparent-btn",
-    titleAttribute : "Скрыть конекстное окно"
-
-   
-}).minView();
-
-async function findLabels(){
-    await LoadServerData.content("fields");
-
-    const tableData = GetFields.item(field);
-    const fields    = Object.values (tableData.fields);
-    const labels    = [];
-    fields.forEach(function(el){
-        labels.push(el.label);
-    });
-
-    return labels;
-}
-
-async function createPropElements(){
-
-    const data = [];
-        if (item){
-        const values = Object.values(item);
-        const labels = await findLabels();
-
-        values.forEach(function(val, i){
-            data.push({
-                label : labels[i], 
-                value :  val
-            });
-        });
-    }
-
-
-    return data;
-}
-
-async function returnProperty(){
-    const property  = {
-        view    : "property",  
-        id      : "dashContextProperty", 
-        minHeight:100,
-        elements: await createPropElements(),
-    };
-
-    const propertyLayout = {   
-        scroll     : "y", 
-        rows       : [
-            property,
-            {height : 20}
-        ]
-    };
-
-    return propertyLayout;
-}
-
-
-function goToTableBtnClick(){
-    const id = item.id;
-
-    if (item && item.id){
-        const path   = "tree/" + field;
-        const params = "?id=" + id;
-        Backbone.history.navigate(path + params, { trigger:true });
-        window.location.reload();
-    }
- 
-}
-
-const goToTableBtn = new Button({
-    
-    config   : {
-        id       : "goToTableBtn",
-        hotkey   : "Ctrl+Shift+Space",
-        value    : "Редактировать", 
-        click    : function (){
-            goToTableBtnClick();
-        }
-    },
-    titleAttribute : "Перейти в таблицу для редактирования записи"
-
-   
-}).maxView("primary");
-
-
-
-async function createLayout(){
- 
-    const layout = {
-        id      : "dashContextLayout",
-        padding : 15,
-        rows    : [
-            {cols: [
-                contextWindow_headline,
-                {},
-                closeBtn 
-            ]},
-            await returnProperty(),
-           // {height : 20},
-            goToTableBtn,
-            {}
-        ]
-      
-    };
-
-    return layout;
-}
-
-async function createSpace(){
-    const content = $$("dashContextLayout");
-    if (content){
-        Action.removeItem(content);
-    }
-
-    if (container){
-        container.addView(await createLayout());
-    }
-   
-}
-
-
-function setLinkParams(){
-    const params = {
-        src : field, 
-        id  : item.id
-    };
-    
-    mediator.linkParam(true, params);
-}
-
-function createContextProperty(data, idTable){
-    item  = data;
-    field = idTable;
-
-    const filters = $$("dashboardTool");
-    Action.hideItem(filters);
-    
-    container = $$("dashboardContext");
-    Action.showItem(container);
-    if (window.innerWidth < 850){
-
-        container.config.width = window.innerWidth - 45;
-        console.log(container.config.width)
-        container.resize();
-        Action.hideItem($$("dashboardInfoContainer"));
-    }
-
-    setLinkParams();
-    createSpace();
-}
-
-
-;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/click/updateSpace.js
-
-
-
-
-const updateSpace_logNameFile = "table => createSpace => click => updateSpace";
-
-function createQuery(filter, sorts){
- 
-    const query = [ 
-        "query=" + filter , 
-        "sorts=" + sorts  , 
-        "limit=" + 80, 
-        "offset="+ 0
-    ];
-
-    return query;
-}
-
-
-function scrollToTable(tableElem){
-    const node = tableElem.getNode();
-    node.scrollIntoView();
-}
-
-function setDataToTable(table, data){
-
-    const tableElem = $$(table);
-
-    if (tableElem){
-        tableElem.clearAll();
-        tableElem.parse(data);
-
-    } else {    
-        errors_setFunctionError(
-            "Таблица с id «" + table + 
-            "» не найдена на странице", 
-            updateSpace_logNameFile, 
-            "setDataToTable"
-        );
-    }
-
-    scrollToTable(tableElem);
-}
-
-function getTableData(tableId, query, onlySelect){
-
-    const fullQuery = query.join("&");
-    const path      = "/init/default/api/smarts?";
-    const queryData = webix.ajax(path + fullQuery);
-
-    queryData.then(function(data){
-        data             = data.json();
-        const notifyType = data.err_type;
-        const notifyMsg  = data.err;
-        const content    = data.content;
-        const item       = content[0];
-
-        if (!onlySelect){
-            setDataToTable (tableId, content);
-        } else if (item){
-            createContextProperty (item, tableId);
-        }
-       
-
-        if (notifyType !== "i"){
-            setLogValue("error", notifyMsg);
-        }  
-    });
-    queryData.fail(function(err){
-        setAjaxError(
-            err, 
-            updateSpace_logNameFile, 
-            "getTableData"
-        );
-    });
-}
-
-function updateSpace(chartAction){
-    const tableId     = chartAction.field;
-
-    const filter      = chartAction.params.filter;
-    const filterParam = filter || tableId + ".id > 0" ;
-
-    const sorts     = chartAction.params.sorts;
-    const sortParam = sorts || tableId + ".id" ;
-    const query     = createQuery(filterParam, sortParam);
-
-    const onlySelect= chartAction.context;
-
-    getTableData(tableId, query, onlySelect);
-    
-}
-
-
-;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/click/navigate.js
-
-         
-
-
-
-const navigate_logNameFile = "table => createSpace => click => navigate";
-
-function createSentObj(prefs){
-    const sentObj = {
-        name    : "dashboards_context-prefs",
-        prefs   : prefs,
-    };
-
-    const ownerId = webix.storage.local.get("user").id;
-
-    if (ownerId){
-        sentObj.owner = ownerId;
-    }
-
-    return sentObj;
-}
-
-function navigate_navigate(field, id){
-    if (id){
-        const path = "tree/" + field + "?view=filter&prefs=" + id;
-        Backbone.history.navigate(path, { trigger : true });
-        window.location.reload();   
-    } 
-}
-
-function postPrefs(chartAction){
-    const sentObj       = createSentObj(chartAction);
-    const path          = "/init/default/api/userprefs/";
-    const userprefsPost = webix.ajax().post(path, sentObj);
-                    
-    userprefsPost.then(function(data){
-        data = data.json();
-   
-        if (data.err_type == "i"){
-            const id = data.content.id;
-            if (id){
-                navigate_navigate(chartAction.field, id);
-            } else {
-                const errs   = data.content.errors;
-                const values = Object.values(errs);
-                const keys   = Object.keys  (errs);
-
-                values.forEach(function(err, i){
-                    errors_setFunctionError(
-                        err + " - " + keys[i] , 
-                        navigate_logNameFile, 
-                        "postPrefs"
-                    );
-                });
-               
-            }
-          
-
-        } else {
-            setLogValue("error", data.error);
-        }
-    });
-
-    userprefsPost.fail(function(err){
-        setAjaxError(
-            err, 
-            navigate_logNameFile,
-            "postPrefs"
-        );
-    });
-}
-
-
-;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/click/itemClickLogic.js
-
-
-
-
-
-
-
-const action = {
-    navigate: "true - переход на другую страницу, false - обновление в данном дашборде",
-    context : "true - открыть окно с записью таблицы, false - обновить таблицу",
-    field   : "название из fields (id таблицы должен быть идентичным, если navigate = false)",
-    params  :{
-        // sorts
-        filter : "auth_group.id > 3", 
-    }
-   
-};
-
-const action2 = {
-    navigate: true,
-    field   : "auth_group",
-  //  context : true,
-    params  :{
-       // filter : "auth_group.id = 3" 
-     filter : "auth_group.id != '1' or auth_group.id != '3' and auth_group.role contains 'р' or auth_group.role = 'а'" 
-    } 
-};
-
-function setCursorPointer(areas, fullElems, idElem){
-
-    areas.forEach(function(el){
-        if (el.tagName){
-            const attr = el.getAttribute("webix_area_id");
-
-            if (attr == idElem || fullElems){
-                el.style.cursor = "pointer";
-            }
-            
-        }
-    });
-
-}
-
-function cursorPointer(self, elem){
-    const chart          = self.getNode();
-    const htmlCollection = chart.getElementsByTagName('map');
-    const mapTag         = htmlCollection.item(0);
-    if (mapTag){
-        const areas          = mapTag.childNodes;
-
-        if (elem.action){
-            setCursorPointer(areas, true);
-        } else if (elem.data){
-            elem.data.forEach(function(el, i){
-
-                // if (i == 1 || i == 4 ){
-                //     el.action = action2; 
-                // }
-            
-                if (el.action){
-                    setCursorPointer(areas, false, el.id);
-                }
-            });
-        }
-    }
-}
-
-async function findField(chartAction){
-    await LoadServerData.content("fields");
-    const keys = GetFields.keys;
-
-    let field = chartAction;
-
-    if (chartAction && chartAction.field){
-        field = chartAction.field;
-    }
-
-    keys.forEach(function(key){
-   
-        if ( key == field ){
-            if (chartAction.navigate){
-                postPrefs(chartAction);
-            } else {
-                updateSpace(chartAction);
-            } 
-        
-        }
-    });
-}
-
-function findInnerChartField(elem, idEl){
-    // найти выбранный элемент в data
-    const collection = elem.data;
-        
-    let selectElement;
-
-    collection.forEach( function (el){
-        if (el.id == idEl){
-            selectElement = el;
-        }
-    });
-
-    const chartAction = selectElement.action;
-
-    if (chartAction){
-        findField(chartAction);
-
-    } 
-}
-
-function setAttributes(elem, topAction){
-    if (topAction){
-        elem.action = topAction;
-    }
-  //  elem.action = action2;
-    elem.borderless = true;
-    elem.minWidth   = 250;
-    elem.on         = {
-        onAfterRender: function(){
-            cursorPointer(this, elem);
-        },
-
-        onItemClick  : function(idEl){
-            console.log("пример: ", action);
-    
-            if (elem.action){ // action всего элемента
-                findField(elem.action);
-                
-            } else {          // action в data
-                findInnerChartField(elem, idEl);
-            }
-            
-        },
-
-    };
-     
-    return elem;
-}
-
-
-function iterateArr(container, topAction){
-    let res;
-    const elements = [];
-
-    function loop(container){
-        if (typeof(container) !== 'undefined') {
-            container.forEach(function(el){
-            
-                const nextContainer = el.rows || el.cols;
-        
-                if (!el.rows && !el.cols){
-                    if (el.view && el.view == "chart"){
-                        el = setAttributes(el, topAction);
-                    }
-                    
-                    elements.push(el);
-                } else {
-                    loop(nextContainer);
-                }
-            });
-        }
-    }
-
-    loop (container);
-
-    if (elements.length){
-        res = elements;
-    }
-
-    return res;
-}
-
-
-
-function returnEl(element, topAction){
-    const container = element.rows || element.cols;
-   
-    let resultElem;
-    
-    container.forEach(function(el){
-        const nextContainer = el.rows || el.cols;
-        resultElem = iterateArr(nextContainer, topAction);
-
-    });
-
-    return resultElem;
-}
-
-
 ;// CONCATENATED MODULE: ./src/js/components/viewHeadline/title.js
 
 
@@ -6771,6 +6060,733 @@ function createHeadline(idTemplate, title = null){
 
 
 
+;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/filter/filterLayout.js
+
+
+
+const filterLayout_logNameFile = "dashboard => createSpace => dynamicElements => filterLayout";
+
+
+
+function backBtnClick (){
+    Action.hideItem ($$( "dashboardTool"));
+    Action.showItem ($$( "dashboardInfoContainer"));
+}
+
+
+function createMainView(inputsArray){
+
+    const headline = {  
+        template    : "Фильтр",
+        height      : 30, 
+        css         : "webix_dash-filter-headline",
+        borderless  : true
+    };
+
+    const filterBackBtn = new Button({
+    
+        config   : {
+            id       : "dash-backDashBtn",
+            hotkey   : "Esc",
+            hidden   : true,  
+            icon     : "icon-arrow-right", 
+            click   : function(){
+                backBtnClick();
+            },
+        },
+        titleAttribute : "Вернуться к дашбордам"
+    
+       
+    }).minView();
+    
+ 
+    const mainView = {
+        id      : "dashboard-tool-main",
+        padding : 20,
+        hidden  : true,
+        minWidth: 250,
+        rows    : [
+            {   id  : "dashboardToolHeadContainer",
+                cols: [
+                    headline,
+                    filterBackBtn,
+                ]
+            },
+            
+            { rows : inputsArray }
+        ], 
+    };
+
+    try{
+      
+        $$("dashboardTool").addView( mainView );
+    } catch (err){  
+        errors_setFunctionError(err, filterLayout_logNameFile, "createMainView");
+    }
+}
+
+
+function filterBtnClick (){
+    const dashTool      = $$("dashboard-tool-main");
+    const container     = $$("dashboardContainer" );
+    const tree          = $$("tree");
+    const backBtn       = $$("dash-backDashBtn");
+    const tools         = $$("dashboardTool");
+    const infoContainer = $$("dashboardInfoContainer");
+
+    function filterMinAdaptive(){
+
+        Action.hideItem (tree);
+        Action.hideItem (infoContainer);
+        Action.showItem (tools);
+        Action.showItem (backBtn);
+
+        tools.config.width = window.innerWidth - 45;
+        tools.resize();
+    }
+
+    function filterMaxAdaptive(){
+        Action.removeItem($$("dashContextLayout"));
+        Action.hideItem  ($$("dashboardContext" ));
+        if (dashTool.isVisible()){
+            Action.hideItem (tools);
+
+        } else {
+            Action.showItem (tools);
+            Action.showItem (dashTool);
+        }
+    }
+
+    filterMaxAdaptive();
+
+
+    if (container.$width < 850){
+        Action.hideItem(tree);
+
+        if (container.$width  < 850 ){
+            filterMinAdaptive();
+        }
+
+    } else {
+        Action.hideItem(backBtn);      
+    }
+
+
+}
+
+
+function addViewToContainer(filterBtn){
+ 
+    const container     = $$("dash-template").getParentView();
+    const containerView = $$(container.config.id);
+  
+    if (!$$("dashFilterBtn")){
+      
+        containerView.addView(
+            {   id  : "dashboard-tool-btn",
+                cols: [
+                    filterBtn
+                ]
+            }
+        ,2);
+    }
+}
+
+
+function createFilterBtn(){
+
+    const filterBtn = new Button({
+        config   : {
+            id       : "dashFilterBtn",
+            hotkey   : "Ctrl+Shift+F",
+            icon     : "icon-filter", 
+            click   : function(){
+                filterBtnClick();
+            },
+        },
+        titleAttribute : "Показать/скрыть фильтры"
+    
+       
+    }).transparentView();
+  
+  
+    addViewToContainer(filterBtn);
+  
+}
+
+
+
+function createFilterLayout(inputsArray){
+
+    createMainView (inputsArray);
+    createFilterBtn();
+}
+
+
+;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/contextWindow.js
+
+
+
+
+
+
+let container;
+let item;
+let field;
+
+const contextWindow_headline  = {
+    template    : "<div class='no-wrap-headline'>Подробности</div>", 
+    css         : "webix_popup-headline", 
+    borderless  : true, 
+    height      : 40 
+};
+
+function closeBtnClick(){
+    Action.removeItem($$("dashContextLayout"));
+    Action.hideItem  (container);
+    Action.showItem  ($$("dashboardInfoContainer"));
+
+    mediator.linkParam(false, "id");
+    mediator.linkParam(false, "src");
+}
+
+const closeBtn  = new Button({
+    config   : {
+        id     : "dashContexCloseBtn",
+        hotkey : "Esc",
+        icon   : "icon-arrow-right", 
+        click  : function (){
+            closeBtnClick();
+        }
+    },
+    css            : "webix-transparent-btn",
+    titleAttribute : "Скрыть конекстное окно"
+
+   
+}).minView();
+
+async function findLabels(){
+    await LoadServerData.content("fields");
+
+    const tableData = GetFields.item(field);
+    const fields    = Object.values (tableData.fields);
+    const labels    = [];
+    fields.forEach(function(el){
+        labels.push(el.label);
+    });
+
+    return labels;
+}
+
+async function createPropElements(){
+
+    const data = [];
+        if (item){
+        const values = Object.values(item);
+        const labels = await findLabels();
+
+        values.forEach(function(val, i){
+            data.push({
+                label : labels[i], 
+                value :  val
+            });
+        });
+    }
+
+
+    return data;
+}
+
+async function returnProperty(){
+    const property  = {
+        view    : "property",  
+        id      : "dashContextProperty", 
+        minHeight:100,
+        elements: await createPropElements(),
+    };
+
+    const propertyLayout = {   
+        scroll     : "y", 
+        rows       : [
+            property,
+            {height : 20}
+        ]
+    };
+
+    return propertyLayout;
+}
+
+
+function goToTableBtnClick(){
+    const id = item.id;
+
+    if (item && item.id){
+        const path   = "tree/" + field;
+        const params = "?id=" + id;
+        Backbone.history.navigate(path + params, { trigger:true });
+        window.location.reload();
+    }
+ 
+}
+
+const goToTableBtn = new Button({
+    
+    config   : {
+        id       : "goToTableBtn",
+        hotkey   : "Ctrl+Shift+Space",
+        value    : "Редактировать", 
+        click    : function (){
+            goToTableBtnClick();
+        }
+    },
+    titleAttribute : "Перейти в таблицу для редактирования записи"
+
+   
+}).maxView("primary");
+
+
+
+async function createLayout(){
+ 
+    const layout = {
+        id      : "dashContextLayout",
+        padding : 15,
+        rows    : [
+            {cols: [
+                contextWindow_headline,
+                {},
+                closeBtn 
+            ]},
+            await returnProperty(),
+           // {height : 20},
+            goToTableBtn,
+            {}
+        ]
+      
+    };
+
+    return layout;
+}
+
+async function createSpace(){
+    const content = $$("dashContextLayout");
+    if (content){
+        Action.removeItem(content);
+    }
+
+    if (container){
+        container.addView(await createLayout());
+    }
+   
+}
+
+
+function setLinkParams(){
+    const params = {
+        src : field, 
+        id  : item.id
+    };
+    
+    mediator.linkParam(true, params);
+}
+
+function createContextProperty(data, idTable){
+    item  = data;
+    field = idTable;
+
+    const filters = $$("dashboardTool");
+    Action.hideItem(filters);
+    
+    container = $$("dashboardContext");
+    Action.showItem(container);
+    if (window.innerWidth < 850){
+
+        container.config.width = window.innerWidth - 45;
+        console.log(container.config.width)
+        container.resize();
+        Action.hideItem($$("dashboardInfoContainer"));
+    }
+
+    setLinkParams();
+    createSpace();
+}
+
+
+;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/click/updateSpace.js
+
+
+
+
+const updateSpace_logNameFile = "table => createSpace => click => updateSpace";
+
+function createQuery(filter, sorts){
+ 
+    const query = [ 
+        "query=" + filter , 
+        "sorts=" + sorts  , 
+        "limit=" + 80, 
+        "offset="+ 0
+    ];
+
+    return query;
+}
+
+
+function scrollToTable(tableElem){
+    const node = tableElem.getNode();
+    node.scrollIntoView();
+}
+
+function setDataToTable(table, data){
+
+    const tableElem = $$(table);
+
+    if (tableElem){
+        tableElem.clearAll();
+        tableElem.parse(data);
+
+    } else {    
+        errors_setFunctionError(
+            "Таблица с id «" + table + 
+            "» не найдена на странице", 
+            updateSpace_logNameFile, 
+            "setDataToTable"
+        );
+    }
+
+    scrollToTable(tableElem);
+}
+
+function getTableData(tableId, query, onlySelect){
+
+    const fullQuery = query.join("&");
+    const path      = "/init/default/api/smarts?";
+    const queryData = webix.ajax(path + fullQuery);
+
+    queryData.then(function(data){
+        data             = data.json();
+        const notifyType = data.err_type;
+        const notifyMsg  = data.err;
+        const content    = data.content;
+        const item       = content[0];
+
+        if (!onlySelect){
+            setDataToTable (tableId, content);
+        } else if (item){
+            createContextProperty (item, tableId);
+        }
+       
+
+        if (notifyType !== "i"){
+            setLogValue("error", notifyMsg);
+        }  
+    });
+    queryData.fail(function(err){
+        setAjaxError(
+            err, 
+            updateSpace_logNameFile, 
+            "getTableData"
+        );
+    });
+}
+
+function updateSpace(chartAction){
+    const tableId     = chartAction.field;
+
+    const filter      = chartAction.params.filter;
+    const filterParam = filter || tableId + ".id > 0" ;
+
+    const sorts     = chartAction.params.sorts;
+    const sortParam = sorts || tableId + ".id" ;
+    const query     = createQuery(filterParam, sortParam);
+
+    const onlySelect= chartAction.context;
+
+    getTableData(tableId, query, onlySelect);
+    
+}
+
+
+;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/click/navigate.js
+
+         
+
+
+
+const navigate_logNameFile = "table => createSpace => click => navigate";
+
+function createSentObj(prefs){
+    const sentObj = {
+        name    : "dashboards_context-prefs",
+        prefs   : prefs,
+    };
+
+    const ownerId = webix.storage.local.get("user").id;
+
+    if (ownerId){
+        sentObj.owner = ownerId;
+    }
+
+    return sentObj;
+}
+
+function navigate_navigate(field, id){
+    if (id){
+        const path = "tree/" + field + "?view=filter&prefs=" + id;
+        Backbone.history.navigate(path, { trigger : true });
+        window.location.reload();   
+    } 
+}
+
+function postPrefs(chartAction){
+    const sentObj       = createSentObj(chartAction);
+    const path          = "/init/default/api/userprefs/";
+    const userprefsPost = webix.ajax().post(path, sentObj);
+                    
+    userprefsPost.then(function(data){
+        data = data.json();
+   
+        if (data.err_type == "i"){
+            const id = data.content.id;
+            if (id){
+                navigate_navigate(chartAction.field, id);
+            } else {
+                const errs   = data.content.errors;
+                const values = Object.values(errs);
+                const keys   = Object.keys  (errs);
+
+                values.forEach(function(err, i){
+                    errors_setFunctionError(
+                        err + " - " + keys[i] , 
+                        navigate_logNameFile, 
+                        "postPrefs"
+                    );
+                });
+               
+            }
+          
+
+        } else {
+            setLogValue("error", data.error);
+        }
+    });
+
+    userprefsPost.fail(function(err){
+        setAjaxError(
+            err, 
+            navigate_logNameFile,
+            "postPrefs"
+        );
+    });
+}
+
+
+;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/click/itemClickLogic.js
+
+
+
+
+
+
+
+const action = {
+    navigate: "true - переход на другую страницу, false - обновление в данном дашборде",
+    context : "true - открыть окно с записью таблицы, false - обновить таблицу",
+    field   : "название из fields (id таблицы должен быть идентичным, если navigate = false)",
+    params  :{
+        // sorts
+        filter : "auth_group.id > 3", 
+    }
+   
+};
+
+const action2 = {
+    navigate: true,
+    field   : "auth_group",
+  //  context : true,
+    params  :{
+       // filter : "auth_group.id = 3" 
+     filter : "auth_group.id != '1' or auth_group.id != '3' and auth_group.role contains 'р' or auth_group.role = 'а'" 
+    } 
+};
+
+function setCursorPointer(areas, fullElems, idElem){
+
+    areas.forEach(function(el){
+        if (el.tagName){
+            const attr = el.getAttribute("webix_area_id");
+
+            if (attr == idElem || fullElems){
+                el.style.cursor = "pointer";
+            }
+            
+        }
+    });
+
+}
+
+function cursorPointer(self, elem){
+
+    const node           = self.getNode();
+    const htmlCollection = node.getElementsByTagName('map');
+    const mapTag         = htmlCollection.item(0);
+
+    if (mapTag){
+        const areas      = mapTag.childNodes;
+    
+        if (elem.action){
+            setCursorPointer(areas, true);
+        } else if (elem.data){
+            elem.data.forEach(function(el, i){
+
+                // if (i == 1 || i == 4 ){
+                //     el.action = action2; 
+                // }
+            
+                if (el.action){
+                    setCursorPointer(areas, false, el.id);
+                }
+            });
+        }
+    } else if (node){
+        node.style.cursor = "pointer";
+    }
+}
+
+async function findField(chartAction){
+    await LoadServerData.content("fields");
+    const keys = GetFields.keys;
+
+    let field = chartAction;
+
+    if (chartAction && chartAction.field){
+        field = chartAction.field;
+    }
+
+    keys.forEach(function(key){
+   
+        if ( key == field ){
+            if (chartAction.navigate){
+                postPrefs(chartAction);
+            } else {
+                updateSpace(chartAction);
+            } 
+        
+        }
+    });
+}
+
+function findInnerChartField(elem, idEl){
+    // найти выбранный элемент в data
+    const collection = elem.data;
+        
+    let selectElement;
+
+    collection.forEach( function (el){
+        if (el.id == idEl){
+            selectElement = el;
+        }
+    });
+
+    const chartAction = selectElement.action;
+
+    if (chartAction){
+        findField(chartAction);
+
+    } 
+}
+
+function setAttributes(elem, topAction){
+    if (topAction){
+        elem.action = topAction;
+    }
+  //  elem.action = action2;
+    elem.borderless = true;
+    elem.minWidth   = 250;
+    elem.on         = {
+        onAfterRender: function(){
+            cursorPointer(this, elem);
+        },
+
+        onItemClick  : function(idEl){
+            console.log(idEl)
+            console.log("пример: ", action);
+    
+            if (elem.action){ // action всего элемента
+                findField(elem.action);
+                
+            } else {          // action в data
+                findInnerChartField(elem, idEl);
+            }
+            
+        },
+
+    };
+     
+    return elem;
+}
+
+
+function iterateArr(container, topAction){
+    let res;
+    const elements = [];
+
+    function loop(container){
+
+        if (container) {
+            container.forEach(function(el){
+              
+                if (el){
+                    const nextContainer = el.rows || el.cols || [el.body];
+            
+                    if (!el.rows && !el.cols){
+                     
+                        if (el.view && el.view !=="scrollview" && el.view !== "flexlayout"){
+                            el = setAttributes(el, topAction);
+                        }
+                        
+                        elements.push(el);
+                    } else {
+                        loop(nextContainer);
+                    }
+                }
+            });
+        }
+    }
+
+    loop (container);
+
+    if (elements.length){
+        res = elements;
+    }
+
+    return res;
+}
+
+
+
+function returnEl(element, topAction){
+
+    const container = element.rows || element.cols || [element.body];
+   
+  
+    let resultElem;
+    
+    container.forEach(function(el){
+        const nextContainer = el.rows || el.cols || [el.body];
+     
+        if (nextContainer[0]){
+            resultElem = iterateArr(nextContainer, topAction);
+        } else {
+            resultElem = setAttributes(el, topAction);
+        }
+
+    });
+
+    return resultElem;
+}
+
+
 ;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/common.js
 function getDashId ( idsParam ){
     const tree = $$("tree");
@@ -6787,8 +6803,6 @@ function getDashId ( idsParam ){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/dynamicElements/chartsLayout.js
-
-
 
 
 
@@ -6831,23 +6845,30 @@ function createChart(dataCharts){
         ]
 
         const res =  
-            {
-                "title"  :"Статусы заявок",
-                "margin" :10,
-                "height" :300,
-                "padding":10,
-                "rows"   :[
-                  { "view":"scrollview", 
-                    "body":{    
-                        "view":"flexlayout",
-                        "height" :200,
-                        "margin":10, 
-                        "padding":0,
-                        "cols":labels
-                    },
-                  }
-                ]  
-            }
+            // {
+            //     "title"  :"Статусы заявок",
+            //     "margin" :10,
+            //     "height" :300,
+            //     "padding":10,
+            //     "rows"   :[
+            //       { "view":"scrollview", 
+            //         "body":{    
+            //             "view":"flexlayout",
+            //             "height" :200,
+            //             "margin":10, 
+            //             "padding":0,
+            //             "cols":labels
+            //         },
+            //       }
+            //     ]  
+            // }
+
+            {   title  :"Статусы заявок",
+                cols : labels
+            };
+                
+                
+            // };
 
             // {
             //     "title":"Монитор заявок по стадиям (открытых: %d)",
@@ -6919,7 +6940,7 @@ function createChart(dataCharts){
         //         {
         //             "id": 1,
         //             "role": "222",
-        //             "description": "333"
+        //             "description": "333",
         //         },
                 
         //     ],
@@ -6929,26 +6950,44 @@ function createChart(dataCharts){
         //     "onDblClick": {}
         // };
      
-      //  dataCharts.push(table)
-      //dataCharts.push(res)
+       // dataCharts.push(table)
+        //dataCharts.push(res)
       
         dataCharts.forEach(function(el){
           
             if (el.cols || el.rows){
                 returnEl(el, el.action);
+                el.view   = "flexlayout";
+                el.margin = 10;
+                el.padding= 0;
             } else {
                 el = setAttributes(el);
             }
+
         
             const titleTemplate = el.title;
 
             delete el.title;
-        
+         
             layout.push({
                 css : "webix_dash-chart",
+             
                 rows: [ 
+                    {template:' ', height:20, css:"dash-delim"},
                     chartsLayout_returnHeadline (titleTemplate),
-                    el
+                    {   margin     : 10,
+                        height     : 300,
+                        padding    : 10,
+                        borderless : true,
+                        rows       : [
+                            {   
+                                view : "scrollview", 
+                                body : el,
+                            },
+                        ] 
+               
+                    }
+  
                 ]
             });
 
@@ -6967,34 +7006,6 @@ function createChart(dataCharts){
     return layout;
 }
 
-async function setDashName(idsParam) {
-    const itemTreeId = getDashId (idsParam);
-    try{
-        await LoadServerData.content("fields");
-
-        const names = GetFields.names;
-
-        if (names){
-
-            names.forEach(function(el){
-                if (el.id == itemTreeId){
-                    const template  = $$("dash-template");
-                    const value     = el.name.toString();
-                   
-                    template.setValues(value);
-                }
-            });
-        }
-     
-        
-    } catch (err){  
-        errors_setFunctionError(
-            err, 
-            chartsLayout_logNameFile, 
-            "setDashName"
-        );
-    }
-}
 
 function setIdAttribute(idsParam){
     const container = $$("dashboardContainer");
@@ -7006,10 +7017,11 @@ function setIdAttribute(idsParam){
 
 function createDashLayout(dataCharts){
     const layout = createChart(dataCharts);
-
+ 
     const dashLayout = [
-        {   type : "wide",
+        {  
             rows : layout
+            
         }
     ];
  
@@ -7043,14 +7055,13 @@ function createScrollContent(dataCharts){
 
 function createDashboardCharts(idsParam, dataCharts){
 
-    const template  = createHeadline("dash-template");
     const container = $$("dashboardInfoContainer");
 
     const inner =  {   
         id  : "dashboardInfoContainerInner",
         rows: [
-            template,
             createScrollContent(dataCharts)
+            
         ]
     };
 
@@ -7064,7 +7075,6 @@ function createDashboardCharts(idsParam, dataCharts){
         );
     } 
 
-    setDashName( idsParam );
     setIdAttribute(idsParam);
 }
 
@@ -7107,6 +7117,8 @@ function createOverlayTemplate(id, text = "Загрузка...", hidden = false)
 
 
 
+
+
 const _layout_logNameFile = "dashboards => createSpace => dynamicElems";
 
 let inputsArray;
@@ -7116,7 +7128,7 @@ let url;
 
 function removeCharts(){
     Action.removeItem ($$("dashboardInfoContainerInner"));
-    Action.removeItem ($$("dash-template"              ));
+    //Action.removeItem ($$("dash-template"              ));
 }
 
 function removeFilter(){
@@ -7152,25 +7164,63 @@ function setScrollHeight(){
    
 }
 
-function addSuccessView (dataCharts){
+async function setDashName(idsParam) {
+    const itemTreeId = getDashId (idsParam);
+    try{
+        await LoadServerData.content("fields");
 
+        const names = GetFields.names;
+
+        if (names){
+
+            names.forEach(function(el){
+                if (el.id == itemTreeId){
+                    const template  = $$("dash-template");
+                    const value     = el.name.toString();
+                   
+                    template.setValues(value);
+                }
+            });
+        }
+     
+        
+    } catch (err){  
+        errors_setFunctionError(
+            err, 
+            _layout_logNameFile, 
+            "setDashName"
+        );
+    }
+}
+function createDashHeadline(){
+    $$("dashboardInfoContainer").addView(
+        {id:"dash-headline-container", cols:[createHeadline("dash-template")]}
+        
+    );
+    setDashName(idsParam);
+}
+
+function addSuccessView (dataCharts){
+  
     if (!_layout_action){
-    
+        Action.removeItem      ($$("dash-headline-container"));
+        createDashHeadline     ();
         createDashboardCharts  (idsParam, dataCharts);
         createFilterLayout     (inputsArray);
        
     } else {
         Action.removeItem       ($$("dashboardInfoContainerInner"));
-        Action.removeItem       ($$("dash-template"              ));
         createDashboardCharts   (idsParam, dataCharts);
-
     }
     
 }
 
 function setUpdate(dataCharts){
     if (dataCharts == undefined){
-        setLogValue   ("error", "Ошибка при загрузке данных");
+        setLogValue   (
+            "error", 
+            "Ошибка при загрузке данных"
+        );
     } else {
         addSuccessView(dataCharts);
     }
@@ -7194,7 +7244,6 @@ function addLoadElem(){
         Action.removeItem($$("dashLoadErr"));
 
         const view = createOverlayTemplate(id);
-
         $$("dashboardInfoContainer").addView(view);
     }   
 }
@@ -7256,7 +7305,7 @@ function createDynamicElems ( path, array, ids, btnPress = false ) {
     idsParam    = ids;
     _layout_action      = btnPress;
     url         = path;
-    
+ 
     getChartsLayout();
 
 }
@@ -7996,8 +8045,9 @@ class Dashboards {
 ;// CONCATENATED MODULE: ./src/js/components/table/createSpace/rows/autorefresh.js
 
 
+let interval;
 function autorefresh_setIntervalConfig(type, counter){
-    setInterval(function(){
+    interval = setInterval(function(){
         if( type == "dbtable" ){
             getItemData ("table");
         } else if ( type == "tform" ){
@@ -8007,6 +8057,7 @@ function autorefresh_setIntervalConfig(type, counter){
 }
 
 function autorefresh_autorefresh (data){
+ 
     if (data.autorefresh){
 
         const userprefsOther = webix.storage.local.get("userprefsOtherForm");
@@ -8024,7 +8075,9 @@ function autorefresh_autorefresh (data){
                 autorefresh_setIntervalConfig(data.type, 120000);
             }
         }
-    } 
+    } else {
+        clearInterval(interval);
+    }
 }
 
 
@@ -10823,7 +10876,7 @@ async function loadTableData(table, id, idsParam, offset){
                 //     {
                 //        // "created_on": "2021-02-13 20:33:03",
                 //         "id": 3,
-                //         //"renew": true,
+                //         "renew": true,
                 //         "service": "22233323",
                 //         "ticket": "fffffff",
                 //         "user_id": 2,
@@ -13939,6 +13992,16 @@ function editBtnClick() {
     const tree      = $$("tree");
     const container = $$("container");
 
+    
+    // $$("table").config.width = 977;
+    // $$("table").resize()
+    console.log(window.innerWidth - $$("tree").$width)
+    $$("flexlayoutTable").getChildViews().forEach(function(el){
+        console.log(el.config.id, el.$width)
+    });
+
+
+
 
     function maxView () {
         const editContainer   = $$("editTableBarContainer");
@@ -13978,7 +14041,7 @@ function editBtnClick() {
         editForm.resize();
     }
 
-    maxView ();
+   // maxView ();
 
     if (container.$width < 850 ){
         Action.hideItem(tree);
@@ -13989,9 +14052,9 @@ function editBtnClick() {
         }
       
     } else {
-        Action.hideItem(backBtn);
-        editForm.config.width = 350;
-        editForm.resize();
+        // Action.hideItem(backBtn);
+        // editForm.config.width = 350;
+        // editForm.resize();
     }
 }
 
@@ -14115,14 +14178,20 @@ function createTemplateCounter(idEl, text){
 
 ;// CONCATENATED MODULE: ./src/js/components/table/toolbar/applyFilterNotify.js
 function applyNotify(id){
-    return {
-        template   : "Фильтры применены",
-        id         : id + "_applyNotify",
-        hidden     : true,
-        css        : "applyNotify",
-        inputHeigth: 20,
-        width      : 160,
-        borderless : true,    
+  
+    return   {
+        cols:[
+            {
+                template   : "Фильтры применены",
+                id         : id + "_applyNotify",
+                hidden     : true,
+                css        : "applyNotify",
+                inputHeigth: 20,
+                width      : 160,
+                borderless : true,    
+            },
+             {}
+        ]
     };
 }
 
@@ -14162,7 +14231,6 @@ function tableToolbar (idTable, visible = false) {
                     {},
                     toolbarVisibleColsBtn (idTable),
                     toolbarDownloadButton (idTable, visible),
-                    {width : 25},
                 ],
             },
 
@@ -17780,6 +17848,7 @@ function setToolBtns(){
         }
 
         propertyElems.forEach(function(el){
+          
             if (el.type == "combo"){
                 createRefBtn(el.id);
 
@@ -18943,7 +19012,7 @@ const onFuncTable = {
         }
 
     },
-    
+
     onBeforeSelect:function(selection){
         const table     = $$("table");
         const nextItem   = selection.id;
@@ -19000,13 +19069,13 @@ const onFuncTable = {
                 );
             }
         }
-        
-        const isDirtyForm = $$("table-editForm").isDirty();
+        const name = "table-editForm";
+        const isDirtyForm = $$(name).isDirty();
         if (isDirtyForm){
             modalBoxTable ();
             return false;
         } else {
-            createProperty("table-editForm");
+            createProperty(name);
             toEditForm(nextItem);
         }
     },
@@ -24430,7 +24499,7 @@ function setRouterStart(){
 
 
 ;// CONCATENATED MODULE: ./src/js/app.js
-console.log("expa 1.0.66"); 
+console.log("expa 1.0.67"); 
 
 
 

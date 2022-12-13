@@ -43,12 +43,14 @@ function setCursorPointer(areas, fullElems, idElem){
 }
 
 function cursorPointer(self, elem){
-    const chart          = self.getNode();
-    const htmlCollection = chart.getElementsByTagName('map');
-    const mapTag         = htmlCollection.item(0);
-    if (mapTag){
-        const areas          = mapTag.childNodes;
 
+    const node           = self.getNode();
+    const htmlCollection = node.getElementsByTagName('map');
+    const mapTag         = htmlCollection.item(0);
+
+    if (mapTag){
+        const areas      = mapTag.childNodes;
+    
         if (elem.action){
             setCursorPointer(areas, true);
         } else if (elem.data){
@@ -63,6 +65,8 @@ function cursorPointer(self, elem){
                 }
             });
         }
+    } else if (node){
+        node.style.cursor = "pointer";
     }
 }
 
@@ -122,6 +126,7 @@ function setAttributes(elem, topAction){
         },
 
         onItemClick  : function(idEl){
+            console.log(idEl)
             console.log("пример: ", action);
     
             if (elem.action){ // action всего элемента
@@ -144,19 +149,23 @@ function iterateArr(container, topAction){
     const elements = [];
 
     function loop(container){
-        if (typeof(container) !== 'undefined') {
+
+        if (container) {
             container.forEach(function(el){
+              
+                if (el){
+                    const nextContainer = el.rows || el.cols || [el.body];
             
-                const nextContainer = el.rows || el.cols;
-        
-                if (!el.rows && !el.cols){
-                    if (el.view && el.view == "chart"){
-                        el = setAttributes(el, topAction);
+                    if (!el.rows && !el.cols){
+                     
+                        if (el.view && el.view !=="scrollview" && el.view !== "flexlayout"){
+                            el = setAttributes(el, topAction);
+                        }
+                        
+                        elements.push(el);
+                    } else {
+                        loop(nextContainer);
                     }
-                    
-                    elements.push(el);
-                } else {
-                    loop(nextContainer);
                 }
             });
         }
@@ -174,13 +183,20 @@ function iterateArr(container, topAction){
 
 
 function returnEl(element, topAction){
-    const container = element.rows || element.cols;
+
+    const container = element.rows || element.cols || [element.body];
    
+  
     let resultElem;
     
     container.forEach(function(el){
-        const nextContainer = el.rows || el.cols;
-        resultElem = iterateArr(nextContainer, topAction);
+        const nextContainer = el.rows || el.cols || [el.body];
+     
+        if (nextContainer[0]){
+            resultElem = iterateArr(nextContainer, topAction);
+        } else {
+            resultElem = setAttributes(el, topAction);
+        }
 
     });
 

@@ -34,6 +34,16 @@ function editBtnClick() {
     const tree      = $$("tree");
     const container = $$("container");
 
+    
+    // $$("table").config.width = 977;
+    // $$("table").resize()
+    console.log(window.innerWidth - $$("tree").$width)
+    $$("flexlayoutTable").getChildViews().forEach(function(el){
+        console.log(el.config.id, el.$width)
+    });
+
+
+
 
     function maxView () {
         const editContainer   = $$("editTableBarContainer");
@@ -73,7 +83,7 @@ function editBtnClick() {
         editForm.resize();
     }
 
-    maxView ();
+   // maxView ();
 
     if (container.$width < 850 ){
         Action.hideItem(tree);
@@ -84,9 +94,9 @@ function editBtnClick() {
         }
       
     } else {
-        Action.hideItem(backBtn);
-        editForm.config.width = 350;
-        editForm.resize();
+        // Action.hideItem(backBtn);
+        // editForm.config.width = 350;
+        // editForm.resize();
     }
 }
 

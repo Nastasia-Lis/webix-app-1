@@ -1532,6 +1532,10 @@ button {
   border-color: var(--danger) !important;
 }
 
+.dash-delim {
+  background-color: var(--bg) !important;
+}
+
 .btn-edit-icon-toolbar {
   font-size: 13px !important;
   color: var(--primary) !important;

@@ -145,7 +145,7 @@ function createFilterBtn(){
     
        
     }).transparentView();
-
+  
   
     addViewToContainer(filterBtn);
   
