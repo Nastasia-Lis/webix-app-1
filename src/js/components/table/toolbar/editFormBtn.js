@@ -83,7 +83,7 @@ function editBtnClick() {
         editForm.resize();
     }
 
-   // maxView ();
+ maxView ();
 
     if (container.$width < 850 ){
         Action.hideItem(tree);
