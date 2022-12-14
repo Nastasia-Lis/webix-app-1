@@ -70,10 +70,10 @@ function setPropertyWidth(prop){
     if (prop && !(prop.isVisible())){
         prop.show();
 
-        if (window.innerWidth > 850){
-            form.config.width = 350;   
-            form.resize();
-        }
+        // if (window.innerWidth > 850){
+        //    // form.config.width = 350;   
+        //    // form.resize();
+        // }
     }
 
 }

@@ -8,7 +8,7 @@
 // icons
 @import "src/scss/icons/icomoon";
 
-
+@import "src/scss/tabs";
 
 html, body {
     scrollbar-width: 9px!important;  
@@ -354,7 +354,6 @@ label, button{
 
     &_tree.webix_tree-main{
         background-color: var(--bg)!important;
-        border-width:0px!important;
     }
 
     &_header-style{
@@ -1123,6 +1122,11 @@ label, button{
 /// 
 .webix_property{
     border-radius: 5px!important;
+}
+
+// edit form
+.webix_form-edit{
+    margin-left: 0px!important;
 }
 
 

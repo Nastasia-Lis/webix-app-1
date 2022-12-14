@@ -6,8 +6,16 @@ import { editTableDefState,
 import { putTable, postTable,
         removeTableItem }         from "./formAcitions.js";
 
-        
+import { editTableBar }           from "../_layout.js";  
+import { Action }                 from "../../../../blocks/commonFunctions.js";
+
+
 class EditForm {
+    static createForm (){
+        $$("flexlayoutTable").addView(editTableBar());
+        Action.enableItem($$("table-newAddBtnId"));
+    }
+
     static defaultState (){
         editTableDefState();
     }

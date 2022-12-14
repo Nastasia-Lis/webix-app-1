@@ -22,13 +22,13 @@ function createDetailAction (columnsData, idsParam, idCurrTable){
         if (checkAction){
             const columns = table.config.columns;
             columns.splice(0, 0, { 
-                id      :"action-first" + idCol, 
-                maxWidth:130, 
-                src     :urlFieldAction, 
-                css     :"action-column",
-                label   :"Подробнее",
-                header  :"Подробнее", 
-                template:"<span class='webix_icon wxi-angle-down'></span> "
+                id      : "action-first" + idCol, 
+                maxWidth: 130, 
+                src     : urlFieldAction, 
+                css     : "action-column",
+                label   : "Подробнее",
+                header  : "Подробнее", 
+                template: "<span class='webix_icon wxi-angle-down'></span> "
             });
 
             table.refreshColumns();

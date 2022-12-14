@@ -5,7 +5,7 @@ function returnTemplate(id){
         minWidth: 200,
         width   : 350,
         hidden  : true,
-        rows    : [],
+        rows    : [{}],
         on:{
             onViewShow:function(){
                 if (window.innerWidth > 850){
@@ -22,25 +22,30 @@ const dashboardContext = returnTemplate("Context");
 
 function dashboardLayout () {
         return [
-            {   view : "scrollview", 
-                id   : "dashScroll",  
-                body: 
-                    {   
-                        view: "flexlayout",
+            {  // view : "scrollview", 
+                //id   : "dashScroll",  
+               // body: 
+               
+                  //  {   
+                       // view: "flexlayout",
                         id  : "dashboardContainer",
                 
-                        cols: [
-                            {   id      : "dashboardInfoContainer",
-                                minWidth: 250, 
-                                rows    : [] 
-                            },
-                            {view: "resizer"},
-                            dashboardTool,
-                            dashboardContext
+                        rows: [
+
+                            {cols:[
+                                {   id      : "dashboardInfoContainer",
+                                    minWidth: 250, 
+                                    rows    : [] 
+                                },
+                                {view: "resizer"},
+                                dashboardTool,
+                                dashboardContext
+                            ]},
+                        
                           
                         
                         ]
-                    } 
+                    //} 
             }
         ];
 }

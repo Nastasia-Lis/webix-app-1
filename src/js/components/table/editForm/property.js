@@ -210,6 +210,7 @@ const propertyEditForm = {
 };
 
 const propertyRefBtns = {  
+    id:"propertyContainer",
     cols:[
         {   id:"propertyRefbtns",  
             rows:[]

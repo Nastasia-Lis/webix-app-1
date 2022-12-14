@@ -150,7 +150,7 @@ async function createSpace(){
     }
 
     if (container){
-        container.addView(await createLayout());
+        container.addView(await createLayout(), 0);
     }
    
 }

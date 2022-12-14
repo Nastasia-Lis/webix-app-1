@@ -2,8 +2,11 @@ import { setFunctionError } from "./errors.js";
 import { Action }           from "./commonFunctions.js";
 
 
+
 function resizeSidebar(){
-    const tree = $$("tree");
+    const tree          = $$("tree");
+    const resizer       = $$("sideMenuResizer");
+    const treeContainer = $$("sidebarContainer");
 
     function resizeTree(){
         try{
@@ -20,14 +23,20 @@ function resizeSidebar(){
         }
     } 
 
+
     
     if (window.innerWidth < 850){
-        Action.hideItem(tree);
-    }
+        Action.hideItem(tree   );
+        Action.hideItem(resizer);
+        Action.hideItem(treeContainer);
+        tree.config.adaptiveState = true;
 
-    if (!tree.isVisible()  && 
-        window.innerWidth <= 800 ){
-        Action.hideItem($$("sideMenuResizer"));
+    } else if (tree.config.adaptiveState){
+        Action.showItem(tree   );
+        Action.showItem(resizer);
+        Action.showItem(treeContainer);
+        tree.config.adaptiveState = false;
+
     }
 
     if (window.innerWidth > 850 && $$("tree")){
@@ -40,7 +49,6 @@ function setMinView(element, container, backBtn){
     if (element.isVisible()){
         element.config.width = window.innerWidth - 45;
         element.resize();
-        Action.hideItem($$("tree"));
         Action.hideItem(container);
         Action.showItem(backBtn);
     }
@@ -236,7 +244,7 @@ function adaptivePoints (){
 
     function hideTree(){
         if (window.innerWidth < 850 && tree){
-            tree.hide();
+          //  tree.hide();
         }
     }
 

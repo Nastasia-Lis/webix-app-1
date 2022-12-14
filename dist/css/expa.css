@@ -424,6 +424,38 @@
   content: "\e901";
 }
 
+.global-tabbar .webix_all_tabs .webix_item_tab {
+  -moz-text-align-last: left;
+       text-align-last: left;
+  padding-left: 15px !important;
+  -webkit-box-shadow: none !important;
+          box-shadow: none !important;
+  color: var(--gray-dark) !important;
+  font-size: 13px !important;
+}
+
+.global-tabbar .webix_all_tabs .webix_item_tab:hover {
+  background-color: var(--bg) !important;
+}
+
+.global-tabbar .webix_all_tabs .webix_item_tab .webix_tab_close {
+  color: var(--gray-dark) !important;
+  font-size: 16px !important;
+  padding-top: 2px !important;
+}
+
+.global-tabbar .webix_all_tabs .webix_item_tab .webix_tab_close:hover {
+  color: var(--primary-light) !important;
+}
+
+.global-tabbar .webix_all_tabs .webix_item_tab .webix_tab_close:active {
+  color: var(--primary-dark) !important;
+}
+
+.global-tabbar .webix_item_tab.webix_selected {
+  background-color: var(--bg);
+}
+
 html,
 body {
   scrollbar-width: 9px !important;
@@ -778,7 +810,6 @@ button {
 
 .webix_tree.webix_tree-main {
   background-color: var(--bg) !important;
-  border-width: 0px !important;
 }
 
 .webix_header-style {
@@ -1488,6 +1519,10 @@ button {
 
 .webix_property {
   border-radius: 5px !important;
+}
+
+.webix_form-edit {
+  margin-left: 0px !important;
 }
 
 .webix_view.webix_form.webix_layout_space {

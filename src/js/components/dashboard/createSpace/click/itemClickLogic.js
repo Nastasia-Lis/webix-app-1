@@ -18,9 +18,9 @@ const action = {
 };
 
 const action2 = {
-    navigate: true,
+    navigate: false,
     field   : "auth_group",
-  //  context : true,
+    context : true,
     params  :{
        // filter : "auth_group.id = 3" 
      filter : "auth_group.id != '1' or auth_group.id != '3' and auth_group.role contains 'р' or auth_group.role = 'а'" 
@@ -126,7 +126,7 @@ function setAttributes(elem, topAction){
         },
 
         onItemClick  : function(idEl){
-            console.log(idEl)
+
             console.log("пример: ", action);
     
             if (elem.action){ // action всего элемента

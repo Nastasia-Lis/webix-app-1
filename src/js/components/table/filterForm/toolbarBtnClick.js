@@ -81,7 +81,7 @@ function filterMaxAdaptive(filter, idTable){
     $$(idTable).clearSelection();
 
     toolbarBtnLogic(filter);
-    resizeContainer(350);
+    //resizeContainer(350);
 }
 
 

@@ -29,39 +29,34 @@ function isIdParamExists(){
 }
 
 function editBtnClick() {
+
     const editForm  = $$("table-editForm");
     const backBtn   = $$("table-backTableBtn");
     const tree      = $$("tree");
     const container = $$("container");
 
-    
-    // $$("table").config.width = 977;
-    // $$("table").resize()
-    console.log(window.innerWidth - $$("tree").$width)
-    $$("flexlayoutTable").getChildViews().forEach(function(el){
-        console.log(el.config.id, el.$width)
-    });
-
-
-
-
     function maxView () {
         const editContainer   = $$("editTableBarContainer");
         const filterContainer = $$("filterTableBarContainer");
-
         const filterForm      = $$("filterTableForm");
+       
+        const isVisible       = editForm.isVisible();
+    
         Action.hideItem   (filterContainer);
         Action.hideItem   (filterForm);
     
         setSecondaryState ();
 
-        if (editForm && editForm.isVisible()){
-            Action.hideItem (editForm);
-            Action.hideItem (editContainer);
+        if (editForm && isVisible){
+        
+            Action.hideItem   (editForm);
+            Action.hideItem   (editContainer);
             mediator.linkParam(false, "view");
-        }else if (editForm && !(editForm.isVisible())) {
+   
+        } else if (editForm && !isVisible) {
             Action.showItem (editForm);
             Action.showItem (editContainer);
+
             Action.hideItem ($$("tablePropBtnsSpace"));
 
             if(!isIdParamExists()){
@@ -81,8 +76,9 @@ function editBtnClick() {
         const padding = 45;
         editForm.config.width = window.innerWidth - padding;
         editForm.resize();
-    }
 
+    }
+    
     maxView ();
 
     if (container.$width < 850 ){
@@ -95,8 +91,6 @@ function editBtnClick() {
       
     } else {
         Action.hideItem(backBtn);
-        editForm.config.width = 350;
-        editForm.resize();
     }
 }
 

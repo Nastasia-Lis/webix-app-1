@@ -151,6 +151,8 @@ const onFuncTable = {
         }
     },
     onAfterSelect:function(row){
+       
+       // mediator.tables.setSize();
         mediator.linkParam(true, {id: row.id});
     },
 
@@ -174,6 +176,7 @@ const onFuncTable = {
     },  
 
     onAfterDelete: function() {
+        
         function setOverlayState(){
             const id    = getTable().config.id;
             const table = $$(id);
@@ -193,6 +196,7 @@ const onFuncTable = {
     onAfterAdd: function() {
         this.hideOverlay();
     },
+
 
 };
 

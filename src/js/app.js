@@ -1,4 +1,4 @@
-console.log("expa 1.0.67"); 
+console.log("expa 1.0.68"); 
 
 import { textInputClean }                     from "./blocks/commonFunctions.js";
 import { auth }                               from "./components/login.js";
@@ -18,8 +18,7 @@ import { webixGlobalPrefs, protoUIEdittree,
          
 import { setRouterStart }                     from "./components/routerConfig/routerStart.js";
 
-import { createOverlayTemplate }                 from "./viewTemplates/loadTemplate.js";
-
+import { createOverlayTemplate }              from "./viewTemplates/loadTemplate.js";
 
 const emptySpace = {
     view    : "align", 
@@ -61,6 +60,39 @@ const logResizer = {
     id : "log-resizer"
 };
 
+const tabbar = {
+    view    : "tabbar",
+    id      : "globalTabbar",
+    css     : "global-tabbar",
+    value   : "container",
+    tooltip : "#value#",
+    optionWidth: 300,
+    multiview  : true, 
+    options : [
+        { 
+            id    : "container", 
+            value : "Имя вкладки", 
+            close : true
+        },
+        { 
+            id    : "temp", 
+            value : "Имя вкладки", 
+            close : true
+        },
+    ],
+    on:{
+        onItemClick:function(){
+            webix.message({
+                text:"Блок находится в разработке",
+                type:"debug", 
+                expire: 10000,
+            });
+        }
+    }
+ 
+};
+
+
 const mainLayout = {   
     hidden  : true, 
     id      : "mainLayout",
@@ -72,17 +104,27 @@ const mainLayout = {
             cols: [
                 { rows  : [
                     mediator.header.create(),
+         
                     adaptive,
                 
                     {cols : [
-                        {   id:"sidebarContainer",
+                        {   id   : "sidebarContainer",
                             rows : [
                             createOverlayTemplate("loadTreeOverlay"),
                             mediator.sidebar.create(),
                            
                         ]},
                         sideMenuResizer,
-                        container,
+                        {rows:[
+                            tabbar,
+                            {   cells:[  
+                                    container,
+                                    {template:'1',id:"temp"}
+                                ]
+                            }
+                        ]}
+                   
+                        //container,
                     ]}
                 ]}, 
 
@@ -119,7 +161,7 @@ try{
         });
 
 
-
+      
 
         setUserPrefs            ();
         resizeAdaptive          ();

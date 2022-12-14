@@ -1,8 +1,8 @@
 
-import {popupExec}                              from "../../blocks/notifications.js";
-import {setLogValue}                            from '../logBlock.js';
-import {setAjaxError,setFunctionError}          from "../../blocks/errors.js";
-import {Action, getItemId}            from "../../blocks/commonFunctions.js";
+import { popupExec }                     from "../../blocks/notifications.js";
+import { setLogValue }                   from '../logBlock.js';
+import { setAjaxError,setFunctionError } from "../../blocks/errors.js";
+import { Action, getItemId }             from "../../blocks/commonFunctions.js";
 
 const logNameFile = "table => btnsIntable";
 
@@ -54,98 +54,128 @@ function trashBtn(config,idTable){
     });
 }
 
+
+
+function hideViewTools(){
+    const btnClass          = document.querySelector(".webix_btn-filter");
+    const primaryBtnClass   = "webix-transparent-btn--primary";
+    const secondaryBtnClass = "webix-transparent-btn";
+
+    Action.hideItem($$("formsTools"));
+
+    if (btnClass.classList.contains(primaryBtnClass)){
+        btnClass.classList.add   (secondaryBtnClass);
+        btnClass.classList.remove(primaryBtnClass);
+    }
+}
+
+function createUrl(cell){
+    let url;
+    try{
+        const id      = cell.row;
+        const columns = $$("table-view").getColumns();
+
+
+        columns.forEach(function(el,i){
+            if (el.id == cell.column){
+                url           = el.src;
+                let urlArgEnd = url.search("{");
+                url           = url.slice(0,urlArgEnd) + id + ".json"; 
+            }
+        });  
+    } catch (err){
+        setFunctionError(err, logNameFile, "createUrl");
+    }
+    return url;
+}
+
+
+function setProps(propertyElem, data){
+    const arrayProperty = [];
+
+    try{
+        data.forEach(function(el, i){
+            arrayProperty.push({
+                type    : "text", 
+                id      : i+1,
+                label   : el.name, 
+                value   : el.value
+            });
+        });
+
+        propertyElem.define("elements", arrayProperty);
+    } catch (err){
+        setFunctionError(
+            err, 
+            logNameFile, 
+            "setProps"
+        );
+    }
+}
+
+
+function initSpace(propertyElem){
+    hideViewTools();
+    Action.showItem(propertyElem);
+}
+
+
+function resizeProp(propertyElem){
+    try{
+        if (propertyElem.config.width < 200){
+            propertyElem.config.width = 200;
+            propertyElem.resize();
+        }
+    } catch (err){
+        setFunctionError(
+            err,
+            logNameFile,
+            "resizeProp"
+        );
+    }
+}
+
+
+function getProp(propertyElem, cell){
+    const url       = createUrl(cell);
+    const getData   = webix.ajax(url);
+
+    getData.then(function(data){
+
+        data = data.json().content;
+
+        if (data.length){
+            setProps    (propertyElem, data);
+            initSpace   (propertyElem);
+            resizeProp  (propertyElem);
+
+        } else {
+            setFunctionError(
+                "Данные отсутствуют", 
+                logNameFile, 
+                "getProp"
+            );
+        }
+       
+
+    });
+
+    getData.fail(function(err){
+        setAjaxError(
+            err, 
+            logNameFile,
+            "getProp"
+        );
+    });
+}
+
+
 function showPropBtn (cell){
     const propertyElem = $$("propTableView");
+    const isVisible    = propertyElem.isVisible();
 
-    function hideViewTools(){
-        const btnClass          = document.querySelector(".webix_btn-filter");
-        const primaryBtnClass   = "webix-transparent-btn--primary";
-        const secondaryBtnClass = "webix-transparent-btn";
-        Action.hideItem($$("formsTools"));
-
-        if (btnClass.classList.contains(primaryBtnClass)){
-            btnClass.classList.add(secondaryBtnClass);
-            btnClass.classList.remove(primaryBtnClass);
-        }
-    }
-
-    function createUrl(){
-        let url;
-        try{
-            const id      = cell.row;
-            const columns = $$("table-view").getColumns();
-
-
-            columns.forEach(function(el,i){
-                if (el.id == cell.column){
-                    url           = el.src;
-                    let urlArgEnd = url.search("{");
-                    url           = url.slice(0,urlArgEnd)+id+".json"; 
-                }
-            });  
-        } catch (err){
-            setFunctionError(err,logNameFile,"wxi-angle-down => createUrl");
-        }
-        return url;
-    }
-
-    function getProp(){
-        const url       = createUrl();
-        const getData   = webix.ajax(url);
-
-        getData.then(function(data){
-
-            data = data.json().content;
-            
-            function setProps(){
-                const arrayProperty = [];
-      
-                try{
-                    data.forEach(function(el,i){
-                        arrayProperty.push({
-                            type    :"text", 
-                            id      :i+1,
-                            label   :el.name, 
-                            value   :el.value
-                        });
-                    });
-
-                    propertyElem.define("elements", arrayProperty);
-                } catch (err){
-                    setFunctionError(err,logNameFile,"wxi-angle-down => setProps");
-                }
-            }
-            
-            function initSpace(){
-                hideViewTools();
-                Action.showItem(propertyElem);
-            }
-
-
-            function resizeProp(){
-                try{
-                    if (propertyElem.config.width < 200){
-                        propertyElem.config.width = 200;
-                        propertyElem.resize();
-                    }
-                } catch (err){
-                    setFunctionError(err,logNameFile,"wxi-angle-down => resizeProp");
-                }
-            }
-
-            setProps();
-            initSpace();
-            resizeProp();
-
-        });
-
-        getData.fail(function(err){
-            setAjaxError(err, logNameFile,"wxi-angle-down => getProp");
-        });
-    }
-
-    if (!(propertyElem.isVisible()))   {
-        getProp();
+    if (!isVisible){
+        getProp        (propertyElem, cell);
     } else {
         Action.hideItem(propertyElem);
     }

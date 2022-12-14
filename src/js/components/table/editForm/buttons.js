@@ -205,11 +205,13 @@ const backTableBtn = new Button({
 
 const editFormBtns = {
     minHeight : 48,
+    id:"editBtnsContainer",
     css       : "webix_form-adaptive", 
     margin    : 5, 
     rows:[
         {cols:[
-            {rows:[
+            {   
+                rows:[
                 {
                     margin : 5,
                     rows   : [

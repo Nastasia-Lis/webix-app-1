@@ -33,6 +33,8 @@ class Tables {
                     returnLayoutTables(this.name),
                 5);
 
+              //  this.editForm.createForm();
+
                 const tableElem = $$("table");
                 sortTable          (tableElem);
                 onResizeTable      (tableElem);
@@ -72,6 +74,34 @@ class Tables {
         }
   
        
+    }
+
+    setSize(full){
+        const containerWidth = $$("flexlayoutTable").$width;
+        const table          = $$("table");
+        const emptySpace     = 30;
+    
+        if (full){
+            const width        = containerWidth - emptySpace;
+            table.config.width = width;
+
+            table.resize();
+            console.log(table.$width,width)
+        } else {
+
+            const formWidth  = $$("table-editForm").$width;
+            const tableWidth = table.$width;
+       
+            const difference = containerWidth - formWidth - emptySpace;
+            
+            if (tableWidth > difference){
+                table.config.width = difference;
+                table.resize();
+    
+            }
+            
+        }
+      
     }
 
 }

@@ -15,6 +15,7 @@ const editForm = {
     elements    : [
         editFormBtns,
         propertyLayout,  
+    
     ],
     on:{
         onViewShow: webix.once(function(){
@@ -38,6 +39,7 @@ const editForm = {
 
 function editTableBar (){
     return editForm;
+      
 }
 
 

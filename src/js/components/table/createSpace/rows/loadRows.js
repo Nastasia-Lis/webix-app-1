@@ -280,46 +280,46 @@ async function loadTableData(table, id, idsParam, offset){
                 
                 setConfigTable(tableElem, data, limitLoad);
                 const type = data.err_type;
+   
+                if (type && type =="i" || !type){
 
-                if (type && type =="i"){
+              
 
-               
-
-                data  = data.content;
- 
-                // data = [
-                //     {
-                //         "created_on": "2022-11-23 17:33:03",
-                //         "id": 2,
-                //         "renew": true,
-                //         "service": "fffs",
-                //         "ticket": "ddddafa",
-                //         "user_id": 1,
-                //     },
-                //     {
-                //        // "created_on": "2021-02-13 20:33:03",
-                //         "id": 3,
-                //         "renew": true,
-                //         "service": "22233323",
-                //         "ticket": "fffffff",
-                //         "user_id": 2,
-                //     }
-                // ]
+                    data  = data.content;
+    
+                    // data = [
+                    //     {
+                    //         "created_on": "2022-11-23 17:33:03",
+                    //         "id": 2,
+                    //         "renew": true,
+                    //         "service": "fffs",
+                    //         "ticket": "ddddafa",
+                    //         "user_id": 1,
+                    //     },
+                    //     {
+                    //        // "created_on": "2021-02-13 20:33:03",
+                    //         "id": 3,
+                    //         "renew": true,
+                    //         "service": "22233323",
+                    //         "ticket": "fffffff",
+                    //         "user_id": 2,
+                    //     }
+                    // ]
         
    
-                setTableState(table);
-                parseRowData (data);
-        
+                    setTableState(table);
+                    parseRowData (data);
+            
 
-                if (!offsetParam){
-                 
-                    selectContextId      ();  
-                    returnLostData       ();
-                    returnLostFilter     (itemTreeId);
-                    if (isPrefs){
-                        returnDashboardFilter(filter);
+                    if (!offsetParam){
+                    
+                        selectContextId      ();  
+                        returnLostData       ();
+                        returnLostFilter     (itemTreeId);
+                        if (isPrefs){
+                            returnDashboardFilter(filter);
+                        }
                     }
-                }
             
                 } else {
                     setFunctionError(

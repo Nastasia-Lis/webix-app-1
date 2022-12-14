@@ -26,11 +26,11 @@ function table (idTable, onFunc, editableParam = false) {
         offsetAttr  : limitLoad,
         on          : onFunc,
         onClick     :{
-            "wxi-trash":function(event,config,html){
+            "wxi-trash"     :function (event, config, html){
                 trashBtn(config,idTable);
             },
 
-            "wxi-angle-down":function(event, cell, target){
+            "wxi-angle-down":function (event, cell, target){
                 showPropBtn (cell);
             },
             
@@ -62,16 +62,21 @@ function returnLayoutTables(id){
             view  : "flexlayout",
             id    : "flexlayoutTable", 
             cols  : [
-                                        
-                tableContainer,
 
-                {   view  : "resizer",
-                    class : "webix_resizers", 
-                    id    : "tableBarResizer" 
-                },
-          
-                editTableBar(),
-                filterForm(),
+
+                {cols : [
+                    tableContainer,
+
+                    {   view  : "resizer",
+                        class : "webix_resizers", 
+                        id    : "tableBarResizer" 
+                    },
+              
+                    editTableBar(),
+                    filterForm(),
+                ]}
+                                        
+         
                 
             ]
         }

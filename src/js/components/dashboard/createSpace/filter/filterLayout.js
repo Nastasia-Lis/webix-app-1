@@ -56,9 +56,13 @@ function createMainView(inputsArray){
 
     try{
       
-        $$("dashboardTool").addView( mainView );
+        $$("dashboardTool").addView( mainView, 0);
     } catch (err){  
-        setFunctionError(err, logNameFile, "createMainView");
+        setFunctionError(
+            err, 
+            logNameFile, 
+            "createMainView"
+        );
     }
 }
 
