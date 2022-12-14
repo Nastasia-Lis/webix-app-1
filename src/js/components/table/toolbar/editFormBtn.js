@@ -83,7 +83,7 @@ function editBtnClick() {
         editForm.resize();
     }
 
- maxView ();
+    maxView ();
 
     if (container.$width < 850 ){
         Action.hideItem(tree);
@@ -94,9 +94,9 @@ function editBtnClick() {
         }
       
     } else {
-        // Action.hideItem(backBtn);
-        // editForm.config.width = 350;
-        // editForm.resize();
+        Action.hideItem(backBtn);
+        editForm.config.width = 350;
+        editForm.resize();
     }
 }
 
