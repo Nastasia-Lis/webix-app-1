@@ -17,9 +17,10 @@ function createTemplateCounter(idEl, text){
               
                 const obj = JSON.parse(values);
 
+          
                 const full    = obj.full    ? obj.full    : table.config.reccount;
                 const visible = obj.visible ? obj.visible : table.count();
-
+       
                 const counter = visible +  " / " + full;
 
                 return "<div style='color:#999898;'>" + 

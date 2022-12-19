@@ -36,7 +36,7 @@ function listActions(type){
    
         otherList.add   (selectedItem);
         currList .remove(selectedId);
-
+ 
         if (type == "available"){
             const pullLength = findPullLength(otherList);
             if (!pullLength){
@@ -46,8 +46,11 @@ function listActions(type){
             }
         } else {
             const pullLength = findPullLength(currList);
+    
             if (!pullLength){
                 Action.disableItem(btn);
+            } else {
+                Action.enableItem (btn);
             }
         }
 

@@ -44,8 +44,9 @@ function createTableRows (id, idsParam, offset = 0){
     offsetParam = offset;      
     itemTreeId  = idsParam;
 
+
     setDataRows         (data.type);
-    autorefresh         (data);
+    autorefresh         (idsParam, data);
           
 }
 

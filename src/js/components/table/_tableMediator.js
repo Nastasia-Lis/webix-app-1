@@ -1,14 +1,18 @@
-import { Action }                     from "../../blocks/commonFunctions.js";
+import { Action, getTable }           from "../../blocks/commonFunctions.js";
 import { createTable }                from "./createSpace/generateTable.js";
 import { returnLayoutForms, 
         returnLayoutTables }          from "./_layout.js";
 import { sortTable, scrollTableLoad } from "./lazyLoad.js";
 import { onResizeTable }              from "./onResize.js";
 import { columnResize }               from "./onColumnResize.js";
-import { setColsWidthStorage }        from "./columnsSettings/columnsWidth.js"
+import { setColsWidthStorage }        from "./columnsSettings/columnsWidth.js";
+import { dropColsSettings }           from "./columnsSettings/onAfterColumnDrop.js";
 import { setFunctionError }           from "../../blocks/errors.js";
 
+
 import { EditForm }                   from "./editForm/editFormMediator/editFormClass.js";
+import { Filter }                     from "./filterForm/actions/_FilterActions.js";
+
 import { filterFormDefState }         from "./filterForm/setDefaultState.js";
 import { toolsDefState }              from "./formTools/setDefaultState.js";
 
@@ -43,6 +47,7 @@ class Tables {
                 scrollTableLoad    (tableElem);
                 setColsWidthStorage(tableElem);
                 columnResize       (tableElem);
+                dropColsSettings   (tableElem);
             }
         } catch (err){
             setFunctionError(
@@ -57,12 +62,22 @@ class Tables {
         Action.showItem($$(this.name));   
     }
 
+    showExists(id){
+        const table = getTable().config.id;
+        createTable(table, id, true);
+    }
+
     load(id){
+       // const table = getTable().config.id;
         createTable("table", id);
     }
 
     get editForm (){
         return EditForm;
+    }
+
+    get filter (){
+        return Filter;
     }
   
     defaultState(type){
@@ -126,7 +141,7 @@ class Forms {
                 onResizeTable      (tableElem);
                 setColsWidthStorage(tableElem);
                 columnResize       (tableElem);
-           
+                dropColsSettings   (tableElem);
             }
         } catch (err){
             setFunctionError(

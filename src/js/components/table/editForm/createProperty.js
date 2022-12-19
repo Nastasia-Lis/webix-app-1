@@ -1,6 +1,6 @@
 
 import { setFunctionError }        from "../../../blocks/errors.js";
-import { getComboOptions }         from "../../../blocks/commonFunctions.js";
+import { getComboOptions, Action } from "../../../blocks/commonFunctions.js";
 
 import { createDatePopup }         from "./propBtns/calendar.js";
 import { createPopupOpenBtn }      from "./propBtns/textarea.js";
@@ -9,16 +9,20 @@ import { createRefBtn }            from "./propBtns/reference.js";
 import { returnDefaultValue }      from "../defaultValues.js";
 
 
-const logNameFile = "tableEditForm => createProperty";
+const logNameFile = "editForm => createProperty";
+
+
+const containerId = "propertyRefbtnsContainer";
+
 
 function createDateEditor(){
     webix.editors.$popup = {
         date:{
            view : "popup",
            body : {
-            view        :"calendar",
-            weekHeader  :true,
-            events      :webix.Date.isHoliday,
+            view        : "calendar",
+            weekHeader  : true,
+            events      : webix.Date.isHoliday,
             timepicker  : true,
             icons       : true,
            }
@@ -29,7 +33,7 @@ function createDateEditor(){
 
 
 function createEmptySpace(){
-    $$("propertyRefbtnsContainer").addView({
+    $$(containerId).addView({
         height : 29,
         width  : 1
     });
@@ -39,7 +43,7 @@ function createEmptySpace(){
 function createBtnsContainer(refBtns){
     try{
         refBtns.addView({
-            id   : "propertyRefbtnsContainer",
+            id   : containerId,
             rows : []
         });
     } catch (err){
@@ -56,30 +60,29 @@ function setToolBtns(){
     const refBtns       = $$("propertyRefbtns");
     const propertyElems = property.config.elements;
 
+    Action.removeItem($$(containerId));
 
-    if (!(refBtns._cells.length)){
+    createBtnsContainer(refBtns);
 
-        if (!$$("propertyRefbtnsContainer")){
-            createBtnsContainer(refBtns);
-        }
-
+    if (propertyElems){
         propertyElems.forEach(function(el){
-          
+        
             if (el.type == "combo"){
                 createRefBtn(el.id);
-
+    
             } else if (el.customType == "popup"){
                 createPopupOpenBtn(el);
                 
             } else if (el.type == "customDate") {
                 createDatePopup(el);
-
+    
             } else {    
                 createEmptySpace();
-
+    
             }
         });
     }
+
 }
 
 function addEditInputs(arr){
@@ -192,14 +195,15 @@ function returnPropElem(el){
 
 
 function createProperty (parentElement) {
-
+ 
     const property         = $$(parentElement);
     const columnsData      = $$("table").getColumns(true);
     const elems            = property.elements;
     const propertyLength   = Object.keys(elems).length;
 
     try {
-        
+
+     
         if ( !propertyLength ){
             const propElems = [];
 

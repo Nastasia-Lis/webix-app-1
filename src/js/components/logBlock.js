@@ -104,7 +104,7 @@ async function createLogMessage(srcTable) {
     let name;
 
     if (srcTable == "version"){
-        name = 'Expa v1.0.69';
+        name = 'Expa v1.0.70';
 
     } else if (srcTable == "cp"){
         name = 'Смена пароля';

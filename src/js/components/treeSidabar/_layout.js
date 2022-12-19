@@ -26,15 +26,17 @@ function treeSidebar () {
         clipboard   : true,
         data        : [],
         on          : {
+
             onAfterLoad:function(){
                 Action.hideItem($$("treeErrOverlay"));
             },
+
             onLoadError:function(xhr){
                 setErrLoad(xhr);
             },
 
             onItemClick: function(id) {
-             
+       
                 if (!isBranch(id)){
                     mediator.getGlobalModalBox()
                     .then(function(result){
@@ -45,17 +47,21 @@ function treeSidebar () {
                     });
                     return false;
                 }
-                
+    
             },
 
             onBeforeSelect: function(id) {
+       
+                if (!this.config.isTabSelect){  // !(tree select by tab click)
+                    const item = this.getItem(id);
 
-                const item = this.getItem(id);
-
-                if (!isBranch(id) || item.webix_kids){
-                    this.open(id);
+                    if (!isBranch(id) || item.webix_kids){
+                        this.open(id);
+                    }
+                    preparationView(id);
+                } else {
+                    mediator.forms.defaultState();
                 }
-                preparationView(id);
             },
 
             onBeforeOpen:function (id, selectItem){
@@ -63,9 +69,15 @@ function treeSidebar () {
             },
 
             onAfterSelect:function(id){
-                mediator.tabs.changeTabName(id);
-                getFields (id);
-                setAdaptiveState();
+
+                if (!this.config.isTabSelect){ // !(tree select by tab click)
+                    mediator.tabs.changeTabName(id);
+                    getFields (id);
+                    setAdaptiveState();
+                } else {
+                    this.config.isTabSelect = false;
+                }
+     
             },
 
         },

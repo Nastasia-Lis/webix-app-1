@@ -33,7 +33,7 @@ function addItem () {
 
     const isDirtyForm = $$("table-editForm").isDirty();
  
-
+    
     if (isDirtyForm){
         modalBoxAddItem();
     } else {

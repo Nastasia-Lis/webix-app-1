@@ -111,6 +111,7 @@ function parseRowData (data){
 
 
 function setCounterVal (data, idTable){
+
     const table = $$(idTable)
     try{
         const prevCountRows = {full : data, visible : table.count()};
@@ -210,13 +211,11 @@ function setConfigTable(tableElem, data, limitLoad){
         tableElem.config.reccount  = data.reccount;
         tableElem.config.idTable   = itemTreeId;
         tableElem.config.limitLoad = limitLoad;
-      //  setCounterVal (data.reccount.toString(), "table");
     }
 
     if( tableType == "table-view" ){
         tableElem.config.idTable   = itemTreeId;
-        tableElem.config.reccount  = data.reccount;
-       // setCounterVal (data.content.length.toString(), "table-view");
+        tableElem.config.reccount  = data.content ? data.content.length : null;
     }
 }
 
@@ -245,6 +244,7 @@ function tableErrorState (){
 
 
 async function loadTableData(table, id, idsParam, offset){
+
     const tableElem = $$(table);
     const limitLoad = 80;
 
@@ -284,7 +284,8 @@ async function loadTableData(table, id, idsParam, offset){
             getData.then(function(data){
                 data = data.json();
 
-                const reccount = data.reccount;
+                const reccount = data.reccount ? data.reccount : data.content.length;
+            
 
                 setConfigTable(tableElem, data, limitLoad);
 

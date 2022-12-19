@@ -1,21 +1,58 @@
-import { getItemData }  from './createRows.js';
+import { getItemData }           from './createRows.js';
+import { getItemId, getTable }   from '../../../../blocks/commonFunctions.js';
 
 let interval;
+
+function clear(){
+    clearInterval(interval); 
+}
 function setIntervalConfig(type, counter){
-    interval = setInterval(function(){
-        if( type == "dbtable" ){
-            getItemData ("table");
-        } else if ( type == "tform" ){
-            getItemData ("table-view");
-        }
-    }, counter );
+    const interval = setInterval(
+        () => {
+        
+            const table         = getTable();
+            const isAutoRefresh = table.config.autorefresh;
+          //  console.log(isAutoRefresh, "isAutoRefresh")
+            if (isAutoRefresh){
+                if( type == "dbtable" ){
+                    getItemData ("table");
+                } else if ( type == "tform" ){
+                    getItemData ("table-view");
+                }
+            } else {
+                clearInterval(interval);
+            }
+        },
+        counter
+    );
+    
+
+
+    // interval = setInterval(function(){
+       
+    //     const table         = getTable();
+    //     const isAutoRefresh = table.config.autorefresh;
+    //     console.log(isAutoRefresh, "isAutoRefresh")
+    //     if (isAutoRefresh){
+    //         if( type == "dbtable" ){
+    //             getItemData ("table");
+    //         } else if ( type == "tform" ){
+    //             getItemData ("table-view");
+    //         }
+    //     }
+   
+    // }, counter );
 }
 
-function autorefresh (data){
- 
-    if (data.autorefresh){
+function autorefresh (id, data){
 
-        const userprefsOther = webix.storage.local.get("userprefsOtherForm");
+    const table = getTable();
+
+
+    if (data.autorefresh){
+       // console.log('data')
+        table.config.autorefresh = true;
+        const userprefsOther     = webix.storage.local.get("userprefsOtherForm");
         let counter;
 
         if (userprefsOther){
@@ -30,9 +67,18 @@ function autorefresh (data){
                 setIntervalConfig(data.type, 120000);
             }
         }
+
+       
     } else {
-        clearInterval(interval);
+        table.config.autorefresh = false;
+        
     }
+
+
+    if (!table.config.autorefresh){
+    //    clearInterval(interval);
+    }
+ 
 }
 
 

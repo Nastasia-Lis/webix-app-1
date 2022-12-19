@@ -22,6 +22,8 @@ function createSpace(){
             }
 
         });
+
+ 
         return check;
     }
 
@@ -30,9 +32,8 @@ function createSpace(){
 
         try{
             listPull.forEach(function(el){
-            
                 if (findRemoveEl(el.column)){
-                list.remove(el.id);
+                    list.remove(el.id);
                 }
 
             });
@@ -68,7 +69,8 @@ function createSpace(){
         } 
     }
 
-    if (listPull.length !== cols.length){
+  //  if (listPull.length !== cols.length){
+    if (listPull.length){
         removeListItem();
         addListSelectedItem();
     }
@@ -80,16 +82,16 @@ function createSpace(){
 function createListItems(idTable){
 
     const currTable  = $$(idTable);
-    let columns      = $$(idTable).getColumns(true);
+    let columns      = currTable.getColumns(true);
 
     try{
-        columns = currTable.getColumns(true);
+        columns        = currTable.getColumns(true);
         const sortCols = _.sortBy(columns, "label");
 
         sortCols.forEach(function(col){
             
             if(col.css !== "action-column" && !col.hiddenCustomAttr ){
-                
+      
                 $$("visibleList").add({
                     column  :col.id,
                     label   :col.label,

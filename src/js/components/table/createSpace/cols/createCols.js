@@ -152,7 +152,7 @@ function createField(type){
 }
 
 function createTableCols (idsParam, idCurrTable){
-  
+ 
     const data          = GetFields.item(idsParam);
     const dataFields    = data.fields;
     const colsName      = Object.keys(data.fields);

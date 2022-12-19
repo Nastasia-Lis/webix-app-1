@@ -162,11 +162,13 @@ function editTableDefState(){
 
     Action.enableItem ($$("table-newAddBtnId" ));
 
+    Action.disableItem($$("table-delBtnId"   ));
+
     Action.removeItem ($$("propertyRefbtnsContainer"));
 
-    defPropertyState();
-     
-    setStatusProperty(null);
+    defPropertyState  ();
+
+    setStatusProperty (null);
 }
 
 export {

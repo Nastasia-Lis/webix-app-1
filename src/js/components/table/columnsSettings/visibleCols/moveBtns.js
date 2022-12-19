@@ -25,7 +25,7 @@ function createMsg(){
 function colsMove(action){
     const list        = $$("visibleListSelected");
     const listElement = list.getSelectedId();
-
+    
     if( listElement ){
         if (action == "up"){
             list.moveUp(listElement,1);

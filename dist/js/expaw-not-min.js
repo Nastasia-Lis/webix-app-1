@@ -880,7 +880,7 @@ async function createLogMessage(srcTable) {
     let name;
 
     if (srcTable == "version"){
-        name = 'Expa v1.0.69';
+        name = 'Expa v1.0.70';
 
     } else if (srcTable == "cp"){
         name = 'Смена пароля';
@@ -8091,22 +8091,59 @@ class Dashboards {
 ;// CONCATENATED MODULE: ./src/js/components/table/createSpace/rows/autorefresh.js
 
 
+
 let interval;
+
+function clear(){
+    clearInterval(interval); 
+}
 function autorefresh_setIntervalConfig(type, counter){
-    interval = setInterval(function(){
-        if( type == "dbtable" ){
-            getItemData ("table");
-        } else if ( type == "tform" ){
-            getItemData ("table-view");
-        }
-    }, counter );
+    const interval = setInterval(
+        () => {
+        
+            const table         = getTable();
+            const isAutoRefresh = table.config.autorefresh;
+          //  console.log(isAutoRefresh, "isAutoRefresh")
+            if (isAutoRefresh){
+                if( type == "dbtable" ){
+                    getItemData ("table");
+                } else if ( type == "tform" ){
+                    getItemData ("table-view");
+                }
+            } else {
+                clearInterval(interval);
+            }
+        },
+        counter
+    );
+    
+
+
+    // interval = setInterval(function(){
+       
+    //     const table         = getTable();
+    //     const isAutoRefresh = table.config.autorefresh;
+    //     console.log(isAutoRefresh, "isAutoRefresh")
+    //     if (isAutoRefresh){
+    //         if( type == "dbtable" ){
+    //             getItemData ("table");
+    //         } else if ( type == "tform" ){
+    //             getItemData ("table-view");
+    //         }
+    //     }
+   
+    // }, counter );
 }
 
-function autorefresh_autorefresh (data){
- 
-    if (data.autorefresh){
+function autorefresh_autorefresh (id, data){
 
-        const userprefsOther = webix.storage.local.get("userprefsOtherForm");
+    const table = getTable();
+
+
+    if (data.autorefresh){
+       // console.log('data')
+        table.config.autorefresh = true;
+        const userprefsOther     = webix.storage.local.get("userprefsOtherForm");
         let counter;
 
         if (userprefsOther){
@@ -8121,9 +8158,18 @@ function autorefresh_autorefresh (data){
                 autorefresh_setIntervalConfig(data.type, 120000);
             }
         }
+
+       
     } else {
-        clearInterval(interval);
+        table.config.autorefresh = false;
+        
     }
+
+
+    if (!table.config.autorefresh){
+    //    clearInterval(interval);
+    }
+ 
 }
 
 
@@ -8927,15 +8973,30 @@ function getFilterState(){
 
 
 
+
+function setTabInfo(id, sentVals){
+    const tabData =  mediator.tabs.getInfo();
+    console.log(id, tabData)
+    if (tabData){
+        if (!tabData.temp){
+            tabData.temp = {};
+        }
+        tabData.temp.filter = sentVals;
+    }
+}
+
 function setState () {
     const result   = Filter.getFilter();
     const template = Filter.getActiveTemplate();
-    
+    const id       = getItemId();
+ 
     const sentObj  = {
-        id             : getItemId(),
+        id             : id,
         activeTemplate : template,
         values         : result
     };
+
+    setTabInfo(id, sentObj);
 
     webix.storage.local.put(
         "currFilterState", 
@@ -10845,6 +10906,7 @@ function parseRowData (data){
 
 
 function setCounterVal (data, idTable){
+
     const table = $$(idTable)
     try{
         const prevCountRows = {full : data, visible : table.count()};
@@ -10944,13 +11006,11 @@ function setConfigTable(tableElem, data, limitLoad){
         tableElem.config.reccount  = data.reccount;
         tableElem.config.idTable   = itemTreeId;
         tableElem.config.limitLoad = limitLoad;
-      //  setCounterVal (data.reccount.toString(), "table");
     }
 
     if( tableType == "table-view" ){
         tableElem.config.idTable   = itemTreeId;
-        tableElem.config.reccount  = data.reccount;
-       // setCounterVal (data.content.length.toString(), "table-view");
+        tableElem.config.reccount  = data.content ? data.content.length : null;
     }
 }
 
@@ -10979,6 +11039,7 @@ function tableErrorState (){
 
 
 async function loadTableData(table, id, idsParam, offset){
+
     const tableElem = $$(table);
     const limitLoad = 80;
 
@@ -11018,7 +11079,8 @@ async function loadTableData(table, id, idsParam, offset){
             getData.then(function(data){
                 data = data.json();
 
-                const reccount = data.reccount;
+                const reccount = data.reccount ? data.reccount : data.content.length;
+            
 
                 setConfigTable(tableElem, data, limitLoad);
 
@@ -11140,8 +11202,9 @@ function createTableRows (id, idsParam, offset = 0){
     createRows_offsetParam = offset;      
     createRows_itemTreeId  = idsParam;
 
+
     setDataRows         (data.type);
-    autorefresh_autorefresh         (data);
+    autorefresh_autorefresh         (idsParam, data);
           
 }
 
@@ -11463,7 +11526,7 @@ function createCols_createField(type){
 }
 
 function createTableCols (idsParam, idCurrTable){
-  
+ 
     const data          = GetFields.item(idsParam);
     const dataFields    = data.fields;
     const colsName      = Object.keys(data.fields);
@@ -12273,7 +12336,8 @@ let primaryBtnClass   = "webix-transparent-btn--primary";
 
 
 function maxInputsSize (customInputs){
-
+   
+    Action.removeItem($$("customInputs"));
     const inpObj = {
         id      : "customInputs",
         css     : "webix_custom-inp", 
@@ -12495,20 +12559,24 @@ function preparationTable (){
 }
 
 
-function setTabInfo(data){
+function generateTable_setTabInfo(data){
     const info = mediator.tabs.getInfo();
     if (info && info.tree){
         info.tree.data = data;
     }
 
     mediator.tabs.setInfo(info);
-
-    console.log(mediator.tabs.getInfo());
+ 
 }
-async function generateTable (){ 
 
-    await LoadServerData.content("fields");
-    setTabInfo(GetFields.item(generateTable_idsParam));
+
+async function generateTable (showExists){ 
+ 
+    if (!showExists){
+        await LoadServerData.content("fields");
+    }
+
+    generateTable_setTabInfo(GetFields.item(generateTable_idsParam));
 
     const keys = GetFields.keys;
 
@@ -12520,14 +12588,15 @@ async function generateTable (){
         createElements_createDynamicElems  (generateTable_idCurrTable, generateTable_idsParam);
 
         createTableRows     (generateTable_idCurrTable, generateTable_idsParam);
-       
+  
         setTableName        (generateTable_idCurrTable, generateTable_idsParam);
+
     }
    
 } 
 
 
-function createTable (id, ids) {
+function createTable (id, ids, showExists) {
   
     generateTable_idCurrTable = id;
     generateTable_idsParam    = ids;
@@ -12538,7 +12607,7 @@ function createTable (id, ids) {
         setLogValue("error","Данные не найдены");
     } else {
         preparationTable ();
-        generateTable ();
+        generateTable (showExists);
     } 
 
  
@@ -12738,60 +12807,63 @@ function showPropBtn (cell){
 
 
 
-const userprefsPost_logNameFile = "table => columnsSettings => visibleCols => userprefsPost";
+const userprefsPost_logNameFile = "table => columnsSettings => userprefsPost";
+let setUpdates;
+
+function userprefsPost_findUniqueCols(sentVals, col){
+    let result = false;
+
+    sentVals.values.forEach(function(el){
+        if (el.column == col){
+            result = true;
+        }
+        
+    });
+
+    return result;
+}
+
+
+function setVisibleState(sentVals, table){
+    const columns = table.getColumns(true);
+    try{
+        columns.forEach(function(el){
+            
+            if (userprefsPost_findUniqueCols(sentVals, el.id)){
+                if( !( table.isColumnVisible(el.id) ) ){
+                    table.showColumn(el.id);
+                }
+             
+            } else {
+                const colIndex = table.getColumnIndex(el.id);
+                if(table.isColumnVisible(el.id) && colIndex !== -1){
+                    table.hideColumn(el.id);
+                }
+            }
+        });
+
+
+    } catch(err){
+        errors_setFunctionError(
+            err,
+            userprefsPost_logNameFile,
+            "setVisibleState"
+        );
+    }
+}
+
+
+function moveListItem(sentVals, table){
+    sentVals.values.forEach(function(el){
+        table.moveColumn(el.column, el.position);
+    });  
+}
 
 function setUpdateCols(sentVals){
     const table   = getTable();
-    const columns = table.getColumns(true);
-    
-    function findUniqueCols(col){
-        let result = false;
 
-        sentVals.values.forEach(function(el){
-            if (el.column == col){
-                result = true;
-            }
-            
-        });
-
-        return result;
-    }
-
-    function setVisibleState(){
-        try{
-            columns.forEach(function(el,i){
-                
-                if (findUniqueCols(el.id)){
-                    if( !( table.isColumnVisible(el.id) ) ){
-                        table.showColumn(el.id);
-                    }
-                 
-                } else {
-                    const colIndex = table.getColumnIndex(el.id);
-                    if(table.isColumnVisible(el.id) && colIndex !== -1){
-                        table.hideColumn(el.id);
-                    }
-                }
-            });
-
- 
-        } catch(err){
-            errors_setFunctionError(
-                err,
-                userprefsPost_logNameFile,
-                "setUpdateCols => setVisibleState"
-            );
-        }
-    }
-
-    function moveListItem(){
-        sentVals.values.forEach(function(el){
-            table.moveColumn(el.column, el.position);
-        });  
-    }
-
-    setVisibleState ();
-    moveListItem    ();
+    setVisibleState (sentVals, table);
+    moveListItem    (sentVals, table);
 
 }
 
@@ -12802,20 +12874,178 @@ function setSize(sentVals){
         table.eachColumn( 
             function (columnId){ 
                 if (el.column == columnId){
-                    table.setColumnWidth(columnId,el.width);
+                    table.setColumnWidth(columnId, el.width);
                 }
             },true
         );
     }
 
-    sentVals.values.forEach(function(el,i){
-
+    sentVals.values.forEach(function(el){
         setColWidth(el);
     });
 }
 
-async function postPrefsValues(values, visCol = false){
 
+
+function saveExistsTemplate(sentObj, idPutData, visCol){
+    const url     = "/init/default/api/userprefs/" + idPutData;
+    const putData = webix.ajax().put(url, sentObj);
+
+    const prefs   = sentObj.prefs;
+    const id      = getItemId();
+
+    putData.then(function(data){
+        data = data.json();
+         
+        if (data.err_type !== "i"){
+            setLogValue(
+                "error",
+                "toolbarTable function saveExistsTemplate putData: "+ 
+                data.err
+            );
+        } else {
+            setLogValue   (
+                "success",
+                "Рабочая область таблицы обновлена"
+            );
+            setStorageData(
+                "visibleColsPrefs_" + 
+                id, 
+                JSON.stringify(sentObj.prefs)
+            );
+        
+            if (setUpdates){
+                setUpdateCols (prefs);
+            }
+          
+
+            if (visCol){
+                setSize(prefs);
+            }
+    
+          
+        }
+
+       
+    });
+
+    putData.fail(function(err){
+        setAjaxError(
+            err, 
+            userprefsPost_logNameFile,
+            "saveExistsTemplate => putUserprefsData"
+        );
+    });
+
+    Action.destructItem($$("popupVisibleCols"));
+} 
+
+
+ 
+function saveNewTemplate(sentObj){
+    const prefs  = sentObj.prefs;
+    const id     = getItemId();
+
+    const url    = "/init/default/api/userprefs/";
+    
+    const userprefsPost = webix.ajax().post(url, sentObj);
+    
+    userprefsPost.then(function(data){
+        data = data.json();
+
+        if (data.err_type !== "i"){
+
+            errors_setFunctionError(
+                data.err,
+                userprefsPost_logNameFile,
+                "saveNewTemplate"
+            );
+
+        } else {
+            setLogValue   (
+                "success", 
+                "Рабочая область таблицы обновлена"
+            );
+            setStorageData(
+                "visibleColsPrefs_" + 
+                id, 
+                JSON.stringify(sentObj.prefs)
+            );
+
+            if (setUpdates){
+                setUpdateCols (prefs);
+            }
+
+        }
+    });
+
+    userprefsPost.fail(function(err){
+        setAjaxError(
+            err, 
+            userprefsPost_logNameFile, 
+            "saveTemplate"
+        );
+    });
+
+    Action.destructItem($$("popupVisibleCols"));
+}
+
+function getUserprefsData(sentObj, visCol){
+    const id      = getItemId();
+    const path    = "/init/default/api/userprefs";
+    const getData = webix.ajax().get(path);
+    
+    let settingExists = false;
+    let idPutData;
+
+    getData.then(function(data){
+        data = data.json().content;
+     
+        try{
+            data.forEach(function(el){
+                
+                if (el.name == "visibleColsPrefs_" + id && !settingExists){
+                    idPutData     = el.id;
+                    settingExists = true;
+            
+                }
+            });
+
+        } catch (err){
+            errors_setFunctionError(
+                err,
+                userprefsPost_logNameFile,
+                "getUserprefsData getData"
+            );
+        }
+    });
+
+    getData.then(function(){
+ 
+        if (!settingExists){
+            saveNewTemplate(sentObj);
+        } else {
+  
+            saveExistsTemplate(sentObj, idPutData, visCol);
+        }
+    });
+
+
+    getData.fail(function(err){
+        setAjaxError(
+            err, 
+            userprefsPost_logNameFile, 
+            "getUserprefsData"
+        );
+    });
+
+    return settingExists;
+
+}
+
+
+async function postPrefsValues(values, visCol = false, updates = true){
+    setUpdates   = updates;
     let userData = getUserDataStorage();
     
     if (!userData){
@@ -12823,7 +13053,8 @@ async function postPrefsValues(values, visCol = false){
         userData = getUserDataStorage();
     }
    
-    const id            = getItemId();
+    const id = getItemId();
+    
     const sentVals      = {
         values       : values, 
         tableIdPrefs : id
@@ -12835,114 +13066,8 @@ async function postPrefsValues(values, visCol = false){
         prefs : sentVals,
     };
 
-    function saveExistsTemplate(sentObj,idPutData){
-        const url     = "/init/default/api/userprefs/"+idPutData;
-        const putData = webix.ajax().put(url, sentObj);
 
-        putData.then(function(data){
-            data = data.json();
-             
-            if (data.err_type !== "i"){
-                setLogValue("error","toolbarTable function saveExistsTemplate putData: "+ data.err);
-            } else {
-                setLogValue   ("success","Рабочая область таблицы обновлена");
-                setStorageData("visibleColsPrefs_"+id, JSON.stringify(sentObj.prefs));
-                setUpdateCols (sentVals);
-
-                if (visCol){
-                    setSize(sentVals);
-                }
-        
-              
-            }
-
-           
-        });
-
-        putData.fail(function(err){
-            setAjaxError(
-                err, 
-                userprefsPost_logNameFile,
-                "saveExistsTemplate => putUserprefsData"
-            );
-        });
-
-        Action.destructItem($$("popupVisibleCols"));
-    } 
-
-    function saveNewTemplate(){
-      
-        const url     = "/init/default/api/userprefs/";
-        
-        const userprefsPost = webix.ajax().post(url, sentObj);
-        
-        userprefsPost.then(function(data){
-            data = data.json();
- 
-            if (data.err_type !== "i"){
-                errors_setFunctionError(
-                    data.err,
-                    userprefsPost_logNameFile,
-                    "saveNewTemplate"
-                );
-            } else {
-                setLogValue   ("success", "Рабочая область таблицы обновлена");
-                setStorageData("visibleColsPrefs_" + id, JSON.stringify(sentObj.prefs));
-                setUpdateCols (sentVals);
-            }
-        });
-
-        userprefsPost.fail(function(err){
-            setAjaxError(err, userprefsPost_logNameFile,"saveTemplate");
-        });
-
-        Action.destructItem($$("popupVisibleCols"));
-    }
-
-    function getUserprefsData(){
-      
-        const getData = webix.ajax().get("/init/default/api/userprefs");
-        let settingExists = false;
-        let idPutData;
-    
-        getData.then(function(data){
-            data = data.json().content;
-            try{
-                data.forEach(function(el){
-                    
-                    if (el.name == "visibleColsPrefs_" + id && !settingExists){
-                        idPutData = el.id
-                        settingExists = true;
-                
-                    }
-                });
-            } catch (err){
-                errors_setFunctionError(
-                    err,
-                    userprefsPost_logNameFile,
-                    "getUserprefsData getData"
-                );
-            }
-        });
-
-        getData.then(function(){
-     
-            if (!settingExists){
-                saveNewTemplate();
-            } else {
-                saveExistsTemplate(sentObj,idPutData);
-            }
-        });
-
-
-        getData.fail(function(err){
-            setAjaxError(err, userprefsPost_logNameFile,"getUserprefsData");
-        });
-
-        return settingExists;
-
-    }
-    getUserprefsData();
+    getUserprefsData(sentObj, visCol);
 
 }
 
@@ -13115,7 +13240,7 @@ function createMsg(){
 function colsMove(action){
     const list        = $$("visibleListSelected");
     const listElement = list.getSelectedId();
-
+    
     if( listElement ){
         if (action == "up"){
             list.moveUp(listElement,1);
@@ -13276,7 +13401,7 @@ function listActions(type){
    
         otherList.add   (selectedItem);
         currList .remove(selectedId);
-
+ 
         if (type == "available"){
             const pullLength = findPullLength(otherList);
             if (!pullLength){
@@ -13286,8 +13411,11 @@ function listActions(type){
             }
         } else {
             const pullLength = findPullLength(currList);
+    
             if (!pullLength){
                 Action.disableItem(btn);
+            } else {
+                Action.enableItem (btn);
             }
         }
 
@@ -13362,7 +13490,7 @@ function returnListBtns(){
 const saveBtn_logNameFile = "table => columnsSettings => visibleCols => saveBtn";
 
 function visibleColsSubmitClick (){
-
+ 
     const list      = $$("visibleListSelected");
     const listPull  = list.data.pull;
     const listItems = Object.values(listPull);
@@ -13379,7 +13507,7 @@ function visibleColsSubmitClick (){
     }
 
     function setLastColWidth(lastColumn,widthCols){
-        const sumWidth       = widthCols.reduce((a, b) => a + b, 0);
+        const sumWidth     = widthCols.reduce((a, b) => a + b, 0);
 
 
         let widthLastCol   =  containerWidth - sumWidth;
@@ -13399,7 +13527,7 @@ function visibleColsSubmitClick (){
         const lastColumn = {};
  
         
-        listItems.forEach(function(el,i){
+        listItems.forEach(function(el){
             const positionElem = list.getIndexById(el.id);
             const lastCol      = list.getLastId();
          
@@ -13436,8 +13564,8 @@ function visibleColsSubmitClick (){
             "visibleColsSubmitClick"
         );
     }
-
-    postPrefsValues(values,true);
+ 
+    postPrefsValues(values, true);
 
 }
 
@@ -13709,6 +13837,8 @@ function visibleColsBtn_createSpace(){
             }
 
         });
+
+ 
         return check;
     }
 
@@ -13717,9 +13847,8 @@ function visibleColsBtn_createSpace(){
 
         try{
             listPull.forEach(function(el){
-            
                 if (findRemoveEl(el.column)){
-                list.remove(el.id);
+                    list.remove(el.id);
                 }
 
             });
@@ -13755,7 +13884,8 @@ function visibleColsBtn_createSpace(){
         } 
     }
 
-    if (listPull.length !== cols.length){
+  //  if (listPull.length !== cols.length){
+    if (listPull.length){
         removeListItem();
         addListSelectedItem();
     }
@@ -13767,16 +13897,16 @@ function visibleColsBtn_createSpace(){
 function createListItems(idTable){
 
     const currTable  = $$(idTable);
-    let columns      = $$(idTable).getColumns(true);
+    let columns      = currTable.getColumns(true);
 
     try{
-        columns = currTable.getColumns(true);
+        columns        = currTable.getColumns(true);
         const sortCols = _.sortBy(columns, "label");
 
         sortCols.forEach(function(col){
             
             if(col.css !== "action-column" && !col.hiddenCustomAttr ){
-                
+      
                 $$("visibleList").add({
                     column  :col.id,
                     label   :col.label,
@@ -14206,6 +14336,7 @@ function editBtnClick() {
     const editForm  = $$("table-editForm");
     const backBtn   = $$("table-backTableBtn");
     const tree      = $$("tree");
+    const table     = $$("table");
     const container = $$("container");
 
     function maxView () {
@@ -14217,15 +14348,19 @@ function editBtnClick() {
     
         Action.hideItem   (filterContainer);
         Action.hideItem   (filterForm);
-    
+      
         editFormBtn_setSecondaryState ();
 
         if (editForm && isVisible){
-        
+            mediator.tables.editForm.defaultState();
+
             Action.hideItem   (editForm);
             Action.hideItem   (editContainer);
+
             mediator.linkParam(false, "view");
-   
+            mediator.linkParam(false, "id"  );
+
+            table.unselectAll ();
         } else if (editForm && !isVisible) {
             Action.showItem (editForm);
             Action.showItem (editContainer);
@@ -14233,7 +14368,7 @@ function editBtnClick() {
             Action.hideItem ($$("tablePropBtnsSpace"));
 
             if(!isIdParamExists()){
-                mediator.linkParam(true, {"view": "edit"});
+                mediator.linkParam(true, {"view" : "edit"});
             }
         
         }
@@ -14377,9 +14512,10 @@ function createTemplateCounter(idEl, text){
               
                 const obj = JSON.parse(values);
 
+          
                 const full    = obj.full    ? obj.full    : table.config.reccount;
                 const visible = obj.visible ? obj.visible : table.count();
-
+       
                 const counter = visible +  " / " + full;
 
                 return "<div style='color:#999898;'>" + 
@@ -14682,6 +14818,17 @@ function isEqual(obj1, obj2) {
     return true;
 }
 
+function property_setTabInfo(sentVals){
+    const tabData =  mediator.tabs.getInfo();
+
+    if (tabData){
+        if (!tabData.temp){
+            tabData.temp = {};
+        }
+        tabData.temp.edit = sentVals;
+    }
+}
+
 function createTempData(self){
     if (!self.config.tempData){
         self.config.tempData = true;
@@ -14695,19 +14842,21 @@ function createTempData(self){
    
     const storageName = "editFormTempData";
 
-    if ( !isEqual(tableValue, values) ){
-        const sentVals= {
+    if (!isEqual(tableValue, values)){
+        const sentVals = {
             table : id,
             status: status,
             values: values
         };
+
+        property_setTabInfo(sentVals);
 
         webix.storage.local.put(
             storageName, 
             sentVals
         );
     } else {
-        webix.storage.local.remove(storageName);
+       // webix.storage.local.remove(storageName);
     }
 }
 
@@ -14839,7 +14988,7 @@ function addItem () {
 
     const isDirtyForm = $$("table-editForm").isDirty();
  
-
+    
     if (isDirtyForm){
         modalBoxAddItem();
     } else {
@@ -15198,7 +15347,7 @@ function putUserprefsTemplate(id){
     });
 }
 
-async function saveExistsTemplate(id){
+async function libSaveBtn_saveExistsTemplate(id){
     modalBox(   "Шаблон с таким именем существует", 
                 "После сохранения предыдущие данные будут стёрты", 
                 ["Отмена", "Сохранить изменения"]
@@ -15214,7 +15363,7 @@ async function saveExistsTemplate(id){
 
  
 
-function saveNewTemplate(){
+function libSaveBtn_saveNewTemplate(){
   
     const path = "/init/default/api/userprefs/";
 
@@ -15289,9 +15438,9 @@ async function saveTemplate (result){
 
     if (isExists){
         const id = existsInfo.id;
-        saveExistsTemplate(id);  
+        libSaveBtn_saveExistsTemplate(id);  
     } else {
-        saveNewTemplate();
+        libSaveBtn_saveNewTemplate();
     }
 
 }
@@ -18164,16 +18313,20 @@ function createRefBtn(btn){
 
 
 
-const createProperty_logNameFile = "tableEditForm => createProperty";
+const createProperty_logNameFile = "editForm => createProperty";
+
+
+const containerId = "propertyRefbtnsContainer";
+
 
 function createDateEditor(){
     webix.editors.$popup = {
         date:{
            view : "popup",
            body : {
-            view        :"calendar",
-            weekHeader  :true,
-            events      :webix.Date.isHoliday,
+            view        : "calendar",
+            weekHeader  : true,
+            events      : webix.Date.isHoliday,
             timepicker  : true,
             icons       : true,
            }
@@ -18184,7 +18337,7 @@ function createDateEditor(){
 
 
 function createEmptySpace(){
-    $$("propertyRefbtnsContainer").addView({
+    $$(containerId).addView({
         height : 29,
         width  : 1
     });
@@ -18194,7 +18347,7 @@ function createEmptySpace(){
 function createBtnsContainer(refBtns){
     try{
         refBtns.addView({
-            id   : "propertyRefbtnsContainer",
+            id   : containerId,
             rows : []
         });
     } catch (err){
@@ -18211,30 +18364,29 @@ function setToolBtns(){
     const refBtns       = $$("propertyRefbtns");
     const propertyElems = property.config.elements;
 
+    Action.removeItem($$(containerId));
 
-    if (!(refBtns._cells.length)){
+    createBtnsContainer(refBtns);
 
-        if (!$$("propertyRefbtnsContainer")){
-            createBtnsContainer(refBtns);
-        }
-
+    if (propertyElems){
         propertyElems.forEach(function(el){
-          
+        
             if (el.type == "combo"){
                 createRefBtn(el.id);
-
+    
             } else if (el.customType == "popup"){
                 createPopupOpenBtn(el);
                 
             } else if (el.type == "customDate") {
                 createDatePopup(el);
-
+    
             } else {    
                 createEmptySpace();
-
+    
             }
         });
     }
+
 }
 
 function addEditInputs(arr){
@@ -18347,14 +18499,15 @@ function returnPropElem(el){
 
 
 function createProperty (parentElement) {
-
+ 
     const property         = $$(parentElement);
     const columnsData      = $$("table").getColumns(true);
     const elems            = property.elements;
     const propertyLength   = Object.keys(elems).length;
 
     try {
-        
+
+     
         if ( !propertyLength ){
             const propElems = [];
 
@@ -18554,11 +18707,13 @@ function editTableDefState(){
 
     Action.enableItem ($$("table-newAddBtnId" ));
 
+    Action.disableItem($$("table-delBtnId"   ));
+
     Action.removeItem ($$("propertyRefbtnsContainer"));
 
-    defPropertyState();
-     
-    setStatusProperty(null);
+    defPropertyState  ();
+
+    setStatusProperty (null);
 }
 
 
@@ -19533,8 +19688,9 @@ const onFuncTable = {
 
 
 
-const limitLoad   = 80; 
 
+
+const limitLoad   = 80; 
 
 function _layout_table (idTable, onFunc, editableParam = false) {
     return {
@@ -19545,6 +19701,7 @@ function _layout_table (idTable, onFunc, editableParam = false) {
         editable    : editableParam,
         editaction  :"dblclick",
         minHeight   : 350,
+        dragColumn  : true,
     //   height:200,
         footer      : true,
         select      : true,
@@ -19554,7 +19711,7 @@ function _layout_table (idTable, onFunc, editableParam = false) {
         on          : onFunc,
         onClick     :{
             "wxi-trash"     :function (event, config, html){
-                trashBtn(config,idTable);
+                trashBtn(config, idTable);
             },
 
             "wxi-angle-down":function (event, cell, target){
@@ -19846,6 +20003,36 @@ function setColsWidthStorage(table){
 }
 
 
+;// CONCATENATED MODULE: ./src/js/components/table/columnsSettings/onAfterColumnDrop.js
+
+
+ 
+function createValues(table){
+    const cols = table.getColumns();
+    const values = [];
+
+    cols.forEach(function(col, i){
+        values.push({
+            column   : col.id, 
+            position : i,
+            width    : Number(col.width)
+        });
+    });
+
+ 
+    return values;
+}
+
+function dropColsSettings(table){
+ 
+    table.attachEvent("onAfterColumnDrop", function(){
+        const values = createValues(table);
+        postPrefsValues(values, false, false);
+       
+    });
+}
+
+
 ;// CONCATENATED MODULE: ./src/js/components/table/filterForm/setDefaultState.js
 
 
@@ -19907,6 +20094,10 @@ function toolsDefState(){
 
 
 
+
+
+
+
 const _tableMediator_logNameFile = "table => _tableMediator";
 
 class Tables {
@@ -19936,6 +20127,7 @@ class Tables {
                 scrollTableLoad    (tableElem);
                 setColsWidthStorage(tableElem);
                 columnResize       (tableElem);
+                dropColsSettings   (tableElem);
             }
         } catch (err){
             errors_setFunctionError(
@@ -19950,12 +20142,22 @@ class Tables {
         Action.showItem($$(this.name));   
     }
 
+    showExists(id){
+        const table = getTable().config.id;
+        createTable(table, id, true);
+    }
+
     load(id){
+       // const table = getTable().config.id;
         createTable("table", id);
     }
 
     get editForm (){
         return EditForm;
+    }
+
+    get filter (){
+        return Filter;
     }
   
     defaultState(type){
@@ -20019,7 +20221,7 @@ class Forms {
                 onResizeTable      (tableElem);
                 setColsWidthStorage(tableElem);
                 columnResize       (tableElem);
-           
+                dropColsSettings   (tableElem);
             }
         } catch (err){
             errors_setFunctionError(
@@ -22406,15 +22608,17 @@ function treeSidebar () {
         clipboard   : true,
         data        : [],
         on          : {
+
             onAfterLoad:function(){
                 Action.hideItem($$("treeErrOverlay"));
             },
+
             onLoadError:function(xhr){
                 setErrLoad(xhr);
             },
 
             onItemClick: function(id) {
-             
+       
                 if (!isBranch(id)){
                     mediator.getGlobalModalBox()
                     .then(function(result){
@@ -22425,17 +22629,21 @@ function treeSidebar () {
                     });
                     return false;
                 }
-                
+    
             },
 
             onBeforeSelect: function(id) {
+       
+                if (!this.config.isTabSelect){  // !(tree select by tab click)
+                    const item = this.getItem(id);
 
-                const item = this.getItem(id);
-
-                if (!isBranch(id) || item.webix_kids){
-                    this.open(id);
+                    if (!isBranch(id) || item.webix_kids){
+                        this.open(id);
+                    }
+                    preparationView(id);
+                } else {
+                    mediator.forms.defaultState();
                 }
-                preparationView(id);
             },
 
             onBeforeOpen:function (id, selectItem){
@@ -22443,9 +22651,15 @@ function treeSidebar () {
             },
 
             onAfterSelect:function(id){
-                mediator.tabs.changeTabName(id);
-                getFields (id);
-                setAdaptiveState();
+
+                if (!this.config.isTabSelect){ // !(tree select by tab click)
+                    mediator.tabs.changeTabName(id);
+                    getFields (id);
+                    setAdaptiveState();
+                } else {
+                    this.config.isTabSelect = false;
+                }
+     
             },
 
         },
@@ -25072,14 +25286,62 @@ function createAddBtn(){
 
 
 
-;// CONCATENATED MODULE: ./src/js/components/tabs/tabbar.js
+;// CONCATENATED MODULE: ./src/js/components/tabs/_layout.js
+
 
 
 
 function showTreeItem(config){
-    console.log(config)
-    // показать элемент но не загружать с сервера
-    //mediator.sidebar.selectItem(config.field);
+    const id   = config.field;
+    const type = config.type;
+
+
+    const visiualElements = mediator.getViews();
+ 
+    let selectElem;
+    if (type == "dbtable"){
+        selectElem = "tables";
+
+    } else if(type == "tform"){
+        selectElem = "forms";
+
+    } else if(type == "dashboard"){
+        selectElem = "dashboards";
+       // Action.hideItem($$("propTableView"));
+
+    } 
+
+    visiualElements.forEach(function(elem){
+        if (elem !== selectElem){
+            Action.hideItem($$(elem));
+        } 
+
+        if (elem == id){
+            Action.removeItem($$("webix__null-content"));
+            Action.showItem  ($$("webix__none-content"));
+        }
+    });
+
+
+    Action.showItem($$(selectElem));
+
+
+    const tree = $$("tree");
+    
+    if (id){
+        if (selectElem == "tables" || selectElem == "forms"){
+            mediator.tables.showExists(id);
+        }
+        Backbone.history.navigate("tree/" + id, { trigger : true });
+    }
+
+    tree.config.isTabSelect = true;
+    tree.select(id);
+
+}
+
+function restoreTempData(tempConfig){
+    console.log(tempConfig)
 }
 
 function createTabbar(){
@@ -25108,13 +25370,26 @@ function createTabbar(){
                 });
             },
             onBeforeTabClick:function(id){
+        
+
+              
+          
+                mediator.tables.filter.clearAll();
+
                 const option = this.getOption(id);
 
                 const treeConfig = option.info.tree;
+                const tempConfig = option.info.temp;
+
                 if (treeConfig){
                     showTreeItem(treeConfig);
                 }
-            }
+
+                if (tempConfig){
+                    restoreTempData(tempConfig);
+                }
+            },
+
         }
      
     };
@@ -25131,7 +25406,7 @@ function createTabbar(){
 
 
 ;// CONCATENATED MODULE: ./src/js/app.js
-console.log("expa 1.0.69"); 
+console.log("expa 1.0.70"); 
 
 
 

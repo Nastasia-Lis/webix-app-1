@@ -33,6 +33,7 @@ function editBtnClick() {
     const editForm  = $$("table-editForm");
     const backBtn   = $$("table-backTableBtn");
     const tree      = $$("tree");
+    const table     = $$("table");
     const container = $$("container");
 
     function maxView () {
@@ -44,15 +45,19 @@ function editBtnClick() {
     
         Action.hideItem   (filterContainer);
         Action.hideItem   (filterForm);
-    
+      
         setSecondaryState ();
 
         if (editForm && isVisible){
-        
+            mediator.tables.editForm.defaultState();
+
             Action.hideItem   (editForm);
             Action.hideItem   (editContainer);
+
             mediator.linkParam(false, "view");
-   
+            mediator.linkParam(false, "id"  );
+
+            table.unselectAll ();
         } else if (editForm && !isVisible) {
             Action.showItem (editForm);
             Action.showItem (editContainer);
@@ -60,7 +65,7 @@ function editBtnClick() {
             Action.hideItem ($$("tablePropBtnsSpace"));
 
             if(!isIdParamExists()){
-                mediator.linkParam(true, {"view": "edit"});
+                mediator.linkParam(true, {"view" : "edit"});
             }
         
         }

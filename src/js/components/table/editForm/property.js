@@ -1,6 +1,6 @@
 import { setFunctionError }   from "../../../blocks/errors.js";
 import { Action, getItemId }  from "../../../blocks/commonFunctions.js";
-
+import { mediator }           from "../../../blocks/_mediator.js";
 const logNameFile = "tableEditForm => property";
 
 function editingEnd (editor, value){
@@ -111,6 +111,17 @@ function isEqual(obj1, obj2) {
     return true;
 }
 
+function setTabInfo(sentVals){
+    const tabData =  mediator.tabs.getInfo();
+
+    if (tabData){
+        if (!tabData.temp){
+            tabData.temp = {};
+        }
+        tabData.temp.edit = sentVals;
+    }
+}
+
 function createTempData(self){
     if (!self.config.tempData){
         self.config.tempData = true;
@@ -124,19 +135,21 @@ function createTempData(self){
    
     const storageName = "editFormTempData";
 
-    if ( !isEqual(tableValue, values) ){
-        const sentVals= {
+    if (!isEqual(tableValue, values)){
+        const sentVals = {
             table : id,
             status: status,
             values: values
         };
+
+        setTabInfo(sentVals);
 
         webix.storage.local.put(
             storageName, 
             sentVals
         );
     } else {
-        webix.storage.local.remove(storageName);
+       // webix.storage.local.remove(storageName);
     }
 }
 

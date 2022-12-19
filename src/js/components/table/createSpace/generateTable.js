@@ -79,12 +79,16 @@ function setTabInfo(data){
     }
 
     mediator.tabs.setInfo(info);
-
-    console.log(mediator.tabs.getInfo());
+ 
 }
-async function generateTable (){ 
 
-    await LoadServerData.content("fields");
+
+async function generateTable (showExists){ 
+ 
+    if (!showExists){
+        await LoadServerData.content("fields");
+    }
+
     setTabInfo(GetFields.item(idsParam));
 
     const keys = GetFields.keys;
@@ -97,14 +101,15 @@ async function generateTable (){
         createDynamicElems  (idCurrTable, idsParam);
 
         createTableRows     (idCurrTable, idsParam);
-       
+  
         setTableName        (idCurrTable, idsParam);
+
     }
    
 } 
 
 
-function createTable (id, ids) {
+function createTable (id, ids, showExists) {
   
     idCurrTable = id;
     idsParam    = ids;
@@ -115,7 +120,7 @@ function createTable (id, ids) {
         setLogValue("error","Данные не найдены");
     } else {
         preparationTable ();
-        generateTable ();
+        generateTable (showExists);
     } 
 
  

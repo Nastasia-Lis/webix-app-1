@@ -6,7 +6,7 @@ import { getTable }         from "../../../../blocks/commonFunctions.js";
 const logNameFile = "table => columnsSettings => visibleCols => saveBtn";
 
 function visibleColsSubmitClick (){
-
+ 
     const list      = $$("visibleListSelected");
     const listPull  = list.data.pull;
     const listItems = Object.values(listPull);
@@ -23,7 +23,7 @@ function visibleColsSubmitClick (){
     }
 
     function setLastColWidth(lastColumn,widthCols){
-        const sumWidth       = widthCols.reduce((a, b) => a + b, 0);
+        const sumWidth     = widthCols.reduce((a, b) => a + b, 0);
 
 
         let widthLastCol   =  containerWidth - sumWidth;
@@ -43,7 +43,7 @@ function visibleColsSubmitClick (){
         const lastColumn = {};
  
         
-        listItems.forEach(function(el,i){
+        listItems.forEach(function(el){
             const positionElem = list.getIndexById(el.id);
             const lastCol      = list.getLastId();
          
@@ -80,8 +80,8 @@ function visibleColsSubmitClick (){
             "visibleColsSubmitClick"
         );
     }
-
-    postPrefsValues(values,true);
+ 
+    postPrefsValues(values, true);
 
 }
 

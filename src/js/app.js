@@ -1,4 +1,4 @@
-console.log("expa 1.0.69"); 
+console.log("expa 1.0.70"); 
 
 import { textInputClean }                     from "./blocks/commonFunctions.js";
 import { auth }                               from "./components/login.js";
@@ -20,7 +20,7 @@ import { setRouterStart }                     from "./components/routerConfig/ro
 
 import { createOverlayTemplate }              from "./viewTemplates/loadTemplate.js";
 
-import { createTabbar }                       from "./components/tabs/tabbar.js";
+import { createTabbar }                       from "./components/tabs/_layout.js";
 
 
 const emptySpace = {

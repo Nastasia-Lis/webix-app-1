@@ -22,7 +22,8 @@ let primaryBtnClass   = "webix-transparent-btn--primary";
 
 
 function maxInputsSize (customInputs){
-
+   
+    Action.removeItem($$("customInputs"));
     const inpObj = {
         id      : "customInputs",
         css     : "webix_custom-inp", 

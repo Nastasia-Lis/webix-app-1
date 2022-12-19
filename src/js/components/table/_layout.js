@@ -6,8 +6,9 @@ import { viewTools }                  from "./formTools/viewTools.js";
 import { editTableBar }               from "./editForm/_layout.js";
 import { filterForm }                 from "./filterForm/_layout.js"
 import { onFuncTable }                from "./onFuncs.js";
-const limitLoad   = 80; 
 
+
+const limitLoad   = 80; 
 
 function table (idTable, onFunc, editableParam = false) {
     return {
@@ -18,6 +19,7 @@ function table (idTable, onFunc, editableParam = false) {
         editable    : editableParam,
         editaction  :"dblclick",
         minHeight   : 350,
+        dragColumn  : true,
     //   height:200,
         footer      : true,
         select      : true,
@@ -27,7 +29,7 @@ function table (idTable, onFunc, editableParam = false) {
         on          : onFunc,
         onClick     :{
             "wxi-trash"     :function (event, config, html){
-                trashBtn(config,idTable);
+                trashBtn(config, idTable);
             },
 
             "wxi-angle-down":function (event, cell, target){
