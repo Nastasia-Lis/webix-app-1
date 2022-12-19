@@ -163,12 +163,8 @@ function showInput(){
 }
 
 function hideInput(){
-   
-   
-    if ($$(el).isVisible()){
-        setHtmlState(hideClass, showClass);
-    }
 
+    setHtmlState(hideClass, showClass);
 
 
     if($$(el + "_rows")){
@@ -183,8 +179,9 @@ function hideInput(){
 
 function visibleField (visible, cssClass){
 
+ 
     if (cssClass !== "selectAll" && cssClass){
-      
+
         condition    = visible;
         elementClass = cssClass;
         el           = cssClass + "_filter";

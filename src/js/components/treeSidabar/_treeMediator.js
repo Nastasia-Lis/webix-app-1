@@ -1,10 +1,8 @@
 import { Action }               from "../../blocks/commonFunctions.js";
-import { setFunctionError }     from "../../blocks/errors.js";
 import { treeSidebar }          from "./_layout.js";
 import { generateMenuTree }     from "./loadMenu.js";
 import { selectElem }           from "./selectVisualElem.js";
 
-const logNameFile = "treeSidebar => treeMediator";
 
 class Tree {
     constructor (){

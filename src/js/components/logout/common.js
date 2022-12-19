@@ -225,8 +225,9 @@ function checkNotAuth (err){
             setStorageData ("outsideHref", JSON.stringify(prefs) );
         }
    
-
-        Backbone.history.navigate("/", { trigger:true});
+   
+    //Backbone.history.navigate("/", { trigger:true});
+    //window.location.reload();
 
     }
 
@@ -236,5 +237,4 @@ function checkNotAuth (err){
 export {
     logout,
     checkNotAuth,
-    popupNotAuth
 };

@@ -136,13 +136,8 @@ function createFiltersByTemplate(data) {
                 createWorkspace(prefs.values);
 
                 Action.destructItem($$("popupFilterEdit"));
-                Action.enableItem  ($$("btnFilterSubmit"));
                 Filter.setActiveTemplate(radioValue);
             }
-
- 
-            
-     
 
         });
     } catch(err){
@@ -154,24 +149,31 @@ function createFiltersByTemplate(data) {
     }
 }
 
+
 function showHtmlContainers(){
     const keys = Filter.getItems();
- 
+
     keys.forEach(function(el){
-        const htmlElement = document.querySelector("." + el );
+        const htmlElement = document.querySelector("." + el ); 
         Filter.addClass   (htmlElement, "webix_show-content");
         Filter.removeClass(htmlElement, "webix_hide-content");
     });
+
+    Filter.hideInputsContainers(keys); // hidden inputs
 }
+
+
 
 function getLibraryData(){
 
     const userprefsData = webix.ajax("/init/default/api/userprefs/");
 
     userprefsData.then(function(data){
-        createFiltersByTemplate (data);
-        showHtmlContainers      ();
-        Filter.setStateToStorage();
+        createFiltersByTemplate  (data);
+        showHtmlContainers       ();
+        Filter.setStateToStorage ();
+        Filter.enableSubmitButton();
+        Action.hideItem($$("templateInfo"));
         setLogValue(
             "success", 
             "Рабочая область фильтра обновлена"

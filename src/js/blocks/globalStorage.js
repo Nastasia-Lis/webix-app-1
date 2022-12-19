@@ -1,5 +1,5 @@
-import { setFunctionError }             from "./errors.js";
-import { checkNotAuth, popupNotAuth }   from "../components/logout/common.js";
+import { setFunctionError } from "./errors.js";
+import { checkNotAuth }     from "../components/logout/common.js";
 
 const STORAGE = {};
 
@@ -61,7 +61,7 @@ class LoadServerData {
             })
             .fail(function (err){
                 if (checkNotAuth (err)){
-                    popupNotAuth();
+                   // Backbone.history.navigate("/", { trigger:true});
                 } else {
                     $$("tree").callEvent("onLoadError", [err]);
                     return false;

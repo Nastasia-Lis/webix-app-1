@@ -2,6 +2,8 @@ import { visibleField }     from "./visibleField.js";
 import { clearSpace }       from "./clearSpace.js";
 import { getFilterState }   from "./getFilterState.js";
 import { setState }         from "./setStateToStorage.js";
+import { resetTable }       from "./resetTable.js";
+
 import { Action, getTable } from "../../../../blocks/commonFunctions.js";
 
 const visibleInputs = {};
@@ -142,16 +144,60 @@ class Filter extends FilterPull {
     }
 
     static showApplyNotify(show = true){
-  
-        const tableId = getTable().config.id;
-        const item    = $$(tableId + "_applyNotify");
- 
-        if (show){
-            Action.showItem(item); 
-        } else {
-            Action.hideItem(item); 
+        const table   = getTable();
+
+        if (table){
+            const tableId = table.config.id;
+            const item    = $$(tableId + "_applyNotify");
+     
+            if (show){
+                Action.showItem(item); 
+            } else {
+                Action.hideItem(item); 
+            }
         }
+      
     
+    }
+
+    static async resetTable(){
+        return await resetTable();
+    }
+
+    static hideInputsContainers(visibleInputs){
+        const table = getTable();
+        const cols  = table.getColumns();
+        cols.forEach(function(col){
+            const found = visibleInputs.find(element => element == col.id);
+    
+            if (!found){
+                const htmlElement = document.querySelector("." + col.id ); 
+                Filter.addClass   (htmlElement, "webix_hide-content");
+                Filter.removeClass(htmlElement, "webix_show-content");
+            }
+        });
+    }
+
+    static enableSubmitButton(){
+        const btn = $$("btnFilterSubmit");
+   
+        const inputs   = this.getAllChilds (true);
+        let fullValues = true;
+    
+        if (inputs){
+            inputs.forEach(function(input){
+                const isValue = $$(input).getValue();
+                if (!isValue && fullValues){
+                    fullValues = false;
+                }
+            });
+    
+            if (fullValues){
+                Action.enableItem (btn);
+            } else {
+                Action.disableItem(btn);
+            }
+        }
     }
     
     

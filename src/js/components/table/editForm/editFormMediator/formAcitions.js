@@ -184,14 +184,27 @@ function removeNullFields(arr){
     return sentObj;
 }
 
-function setCounterVal (){
+function setCounterVal (remove){
     try{
-        const counter = $$("table-findElements");
-        
-        const oldVal  = counter.getValues();
-        const newVal  = +oldVal + 1;
+        const counter  = $$("table-findElements");
+      
+        const reccount = $$("table").config.reccount;
 
-        counter.setValues(newVal.toString());
+        let full;
+
+        if (remove){
+            full = reccount - 1;
+
+        } else {
+            full = reccount + 1;
+
+        }
+
+        $$("table").config.reccount = full;
+
+        const count = {full : full};
+
+        counter.setValues(JSON.stringify(count));
     } catch (err){
         setFunctionError(
             err, 
@@ -329,12 +342,13 @@ function removeTableItem(form){
                     form.defaultState();
 
                     unsetDirtyProp();
-
+         
                     setLogValue(
                         "success",
                         "Данные успешно удалены"
                     );
                     removeRow();
+                    setCounterVal (true);
                 } else {
                     setLogValue(
                         "error",

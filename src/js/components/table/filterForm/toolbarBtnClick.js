@@ -87,7 +87,7 @@ function filterMaxAdaptive(filter, idTable){
 
 function filterBtnClick (idTable){
    
-    Filter.clearAll(); // clear inputs storage
+   // Filter.clearAll(); // clear inputs storage
   
     const filter    = $$("filterTableForm");
     const container = $$("container");

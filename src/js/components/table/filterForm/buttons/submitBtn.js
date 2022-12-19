@@ -208,8 +208,13 @@ function setData(currTableView, data){
 
 function setCounterValue (reccount){
     try{
-        const counter = $$("table-idFilterElements");
-        counter.setValues(reccount.toString());
+        const table   = getTable();
+        const id      = table.config.id;
+        const counter = $$(id+"-findElements");
+
+       // counter.setValues(reccount.toString());
+       const res = {visible:reccount}
+       counter.setValues(JSON.stringify(res));
     } catch (err){
         setFunctionError(
             err, 

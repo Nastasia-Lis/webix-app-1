@@ -10,24 +10,6 @@ function isDataExists(data){
 }
 
 
-function isFormFill(){
- 
-    const inputs = Filter.getAllChilds(true);
-
-    let check    = true;
-
-    inputs.forEach(function(input){
-        const value = $$(input).getValue();
-
-        if (!value){
-            check = false;
-        }
-
-    });
-
-    return check;
-}
-
 function hideHtmlContainers(){
     const container = $$("inputsFilter").getChildViews();
 
@@ -61,19 +43,23 @@ function returnLostFilter(id){
 
         if (data){
       
-            Filter.setActiveTemplate(data.activeTemplate); // option in popup library
-     
+            const activeTemplate = data.activeTemplate;
+            Filter.setActiveTemplate(activeTemplate); // option in popup library
+        
+          
             if (isDataExists(data) && id == data.id){
  
                 createWorkspace(data.values.values);
          
                 hideHtmlContainers();
-                if (isFormFill()){
-                    Action.enableItem($$("btnFilterSubmit"));
-                }
+
+                Filter.enableSubmitButton();
         
             }
 
+            if (activeTemplate){
+                Action.hideItem($$("templateInfo"));
+            }
 
             Filter.setStateToStorage();
    

@@ -1,3 +1,5 @@
+import { getTable }       from '../../../blocks/commonFunctions.js';
+
 function createTemplateCounter(idEl, text){
     const view = {   
         view    : "template",
@@ -9,9 +11,19 @@ function createTemplateCounter(idEl, text){
             const values = $$(idEl).getValues();
             const keys   = Object.keys(values);
 
+
             if (keys.length){
+                const table = getTable();
+              
+                const obj = JSON.parse(values);
+
+                const full    = obj.full    ? obj.full    : table.config.reccount;
+                const visible = obj.visible ? obj.visible : table.count();
+
+                const counter = visible +  " / " + full;
+
                 return "<div style='color:#999898;'>" + 
-                        text + ": " + values + 
+                        text + ": " + counter + 
                         " </div>"
                 ;
                 

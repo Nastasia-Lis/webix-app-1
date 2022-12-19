@@ -25,7 +25,7 @@ function clearSpace(){
     clearTableFilter();
 
     const values = Filter.getAllChilds ();
-
+ 
     values.forEach(function(el){
     
         if (el.length){

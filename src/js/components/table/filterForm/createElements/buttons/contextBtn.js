@@ -39,6 +39,11 @@ function getVisibleInfo(lastIndex = false){
  
 }
 
+function showTemplateInfo(){
+    if (Filter.getActiveTemplate()){
+        Action.showItem($$("templateInfo"));
+    }
+}
 
 
 function isLastInput(lastInput, thisInput){
@@ -52,21 +57,7 @@ function isLastInput(lastInput, thisInput){
     return check;
 }
 
-function isLastKey(inputsKey, keys) {
- 
-    const result = {check : false};
 
-    keys.forEach(function(input, i){
-        const lastIndex = getVisibleInfo(true);
-
-        if ( i === lastIndex && input == inputsKey ){
-            result.check = true;
-            result.index = i;
-        }  
-    });
-
-    return result;
-}
 
 function prevArray(keys, currKey){
 
@@ -103,6 +94,58 @@ function showEmptyTemplate(){
 
 }
 
+
+function returnLastItem(array){
+    const indexes       = Filter.getIndexFilters();
+    const selectIndexes = [];
+
+    if (array){
+
+        array.forEach(function(el){
+            selectIndexes.push(indexes[el]);
+        });
+
+ 
+        let lastIndex = 0;
+
+        for (let i = 0; i < selectIndexes.length; i++){
+
+            if (selectIndexes[i] > lastIndex) {
+                lastIndex = selectIndexes[i];
+            }
+        }
+
+        const keys = Object.keys(indexes);
+
+        const lastInput = 
+        keys.find(key => indexes[key] === lastIndex);
+
+  
+        return lastInput;
+    }
+
+}
+
+function isLastKey(inputsKey, keys) {
+    const currInputs = [];
+    keys.forEach(function(key){
+        const item = Filter.getItem(key);
+        if (item.length){
+            currInputs.push(key)
+        }    
+    });
+
+
+    const lastKey = returnLastItem(currInputs);
+  
+    if (inputsKey == lastKey){
+        return true;
+    }
+ 
+   
+}
+
+
 function findInputs(id, keys){
 
     const result    = {};
@@ -114,21 +157,29 @@ function findInputs(id, keys){
     result.prevIndex = inputs.length - 2;
     result.lastIndex = inputs.length - 1;
     result.lastInput = inputs[result.lastIndex]; 
+
  
     if (result.prevIndex < 0){ // удален последний элемент из коллекции
         inputs = prevArray(keys, id); // найти не пустую коллекцию
      
+        
         if (!inputs){
             isLastCollection = true;  // то была последняя коллекция в пулле
         } else {
             result.prevIndex = inputs.length - 1;
         }
     }
-
+   
 
     if (!isLastCollection){
         result.prevInput = inputs[result.prevIndex];
+
     } else {
+ 
+        if (Filter.getActiveTemplate()){
+            Filter.setActiveTemplate(null);
+        }
+        Action.hideItem($$("templateInfo"));
         showEmptyTemplate();
     }
 
@@ -144,19 +195,23 @@ function hideBtn(input){
 function hideSegmentBtn (action, inputsKey, thisInput){
  
     const keys      = Filter.getItems();
+   
     const checkKey  = isLastKey(inputsKey, keys);
-  
-    if (action === "add" && checkKey.check){
  
+    // при удалении приходит удаляющийся
+
+    if (action === "add" && checkKey){
+
         const inputs     = findInputs (inputsKey, keys);
         const checkInput = isLastInput(inputs.lastInput, thisInput);
     
         if (checkInput){
+            
             hideBtn( inputs.lastInput );
         }
- 
+        
 
-    } else if (action === "remove" && checkKey.check){
+    } else if (action === "remove" && checkKey){
  
         const inputs     = findInputs (inputsKey, keys);
         const checkInput = isLastInput(inputs.lastInput, thisInput);
@@ -221,12 +276,13 @@ function clickContextBtnParent (id, el){
 
         hideHtmlEl          (el.id);
 
+  
         hideSegmentBtn      ("remove", el.id, thisInput);
 
         Filter.removeItemChild(el.id, thisInput);
 
-        showEmptyTemplate   ();
-        Filter.setStateToStorage();
+        showEmptyTemplate        ();
+        Filter.setStateToStorage ();
         setLogValue         ("success", "Поле удалено"); 
 
     }
@@ -243,13 +299,17 @@ function clickContextBtnParent (id, el){
 
     if ( id === "add" ){
         addInput();
+        Filter.enableSubmitButton();
+        showTemplateInfo();
         
     } else if (id === "remove"){
 
         popupExec("Поле фильтра будет удалено").then(
             function(){
                 removeInput ();
+                Filter.enableSubmitButton();
                 Action.hideItem(segmentBtn);
+                showTemplateInfo();
                 
             }
         );
@@ -313,13 +373,12 @@ function addChild(){
 
 
 function removeInput(){
-    hideSegmentBtn          ("remove", element.id    ,thisInput);
-    Filter.removeItemChild  (element.id, thisInput);
-    Action.removeItem       ( $$(thisContainer));
-    showEmptyTemplate       ();
-    Filter.setStateToStorage();
-    setLogValue             ("success", "Поле удалено"); 
-
+    hideSegmentBtn           ("remove", element.id    ,thisInput);
+    Filter.removeItemChild   (element.id, thisInput);
+    Action.removeItem        ( $$(thisContainer));
+    showEmptyTemplate        ();
+    Filter.setStateToStorage ();
+    setLogValue              ("success", "Поле удалено"); 
 }
 
 
@@ -333,6 +392,8 @@ function clickContextBtnChild(id, el, thisElem){
     if ( id == "add" ){
 
         addChild();
+        Filter.enableSubmitButton();
+        showTemplateInfo();
      
     } else if (id === "remove"){
      
@@ -341,6 +402,8 @@ function clickContextBtnChild(id, el, thisElem){
   
                 if(res){
                     removeInput();
+                    Filter.enableSubmitButton();
+                    showTemplateInfo();
                 }
 
             }

@@ -18,12 +18,13 @@ const action = {
 };
 
 const action2 = {
-    navigate: false,
-    field   : "auth_group",
+    navigate: true,
+    field   : "auth_group", 
     context : true,
     params  :{
-       // filter : "auth_group.id = 3" 
-     filter : "auth_group.id != '1' or auth_group.id != '3' and auth_group.role contains 'р' or auth_group.role = 'а'" 
+       filter : "auth_group.id = 1" 
+    // filter : "auth_group.id != '1' or auth_group.id != '3' and auth_group.role contains 'р' or auth_group.role = 'а'" 
+       // filter:"auth_user.registration_key != '3dg' and auth_user.registration_id = 'dfgg'"
     } 
 };
 

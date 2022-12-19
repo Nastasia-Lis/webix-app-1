@@ -46,6 +46,7 @@ async function createContent (){
         await getData("whoami"); 
     }
 
+    
     if (STORAGE.whoami){
         Action.hideItem($$("userAuth"  ));
         Action.showItem($$("mainLayout"));
@@ -55,6 +56,9 @@ async function createContent (){
         createElements();
     
         getMenuTree();
+    } else {
+        Backbone.history.navigate("/", { trigger:true});
+        window.location.reload();
     }
 
 

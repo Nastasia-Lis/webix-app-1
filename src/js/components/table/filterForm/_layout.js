@@ -1,5 +1,6 @@
 import { buttonsFormFilter }    from "./buttons/_layoutBtn.js";
 import { createEmptyTemplate }  from "../../../viewTemplates/emptyTemplate.js";
+import { saveTemplateNotify }   from "./saveTemplateNotify.js";
 
 function returnBtns(){
     const btns = [
@@ -33,7 +34,6 @@ function returnBtns(){
 }
 
 
-
 const filterTableForm = {
     view        : "form", 
     hidden      : true,
@@ -51,7 +51,8 @@ const filterTableForm = {
                     "Добавьте фильтры из редактора"
                 )
             ],
-        }
+        },
+        saveTemplateNotify()
 
         
     ],

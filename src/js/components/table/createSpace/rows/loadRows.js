@@ -2,7 +2,6 @@ import { Action }                           from "../../../../blocks/commonFunct
 import { setAjaxError, setFunctionError }   from "../../../../blocks/errors.js";
 
 import { getUserPrefsContext }              from './userContext.js';
-import { popupNotAuth }                     from './popupNotAuth.js';
 import {  formattingBoolVals,
           formattingDateVals, }             from './formattingData.js';
 
@@ -25,7 +24,7 @@ let itemTreeId;
 
 let idFindElem;
 
-
+let firstError = false;
 function setTableState(table){
      
     if (table == "table"){
@@ -111,11 +110,12 @@ function parseRowData (data){
 }
 
 
-function setCounterVal (data){
+function setCounterVal (data, idTable){
+    const table = $$(idTable)
     try{
-        const prevCountRows = data;
-        $$(idFindElem).setValues(prevCountRows);
-
+        const prevCountRows = {full : data, visible : table.count()};
+        $$(idFindElem).setValues(JSON.stringify(prevCountRows));
+  
     } catch (err){
         setFunctionError(
             err, 
@@ -210,28 +210,35 @@ function setConfigTable(tableElem, data, limitLoad){
         tableElem.config.reccount  = data.reccount;
         tableElem.config.idTable   = itemTreeId;
         tableElem.config.limitLoad = limitLoad;
-        setCounterVal (data.reccount.toString());
+      //  setCounterVal (data.reccount.toString(), "table");
     }
 
     if( tableType == "table-view" ){
         tableElem.config.idTable   = itemTreeId;
-        setCounterVal (data.content.length.toString());
+        tableElem.config.reccount  = data.reccount;
+       // setCounterVal (data.content.length.toString(), "table-view");
     }
 }
 
 
 function tableErrorState (){
-    const prevCountRows = "-";
+  
+    const prevCountRows = {full : "-"};
     const value         = prevCountRows.toString();
     try {
-        $$(idFindElem).setValues(value);
+        $$(idCurrTable).showOverlay("Ничего не найдено");
+        $$(idFindElem) .setValues  (JSON.stringify(value));
         
         Action.disableItem($$("table-newAddBtnId"));
         Action.disableItem($$("table-filterId"));
         Action.disableItem($$("table-exportBtn"));
 
     } catch (err){
-        setFunctionError(err, logNameFile, "tableErrorState");
+        setFunctionError(
+            err, 
+            logNameFile, 
+            "tableErrorState"
+        );
 
     }
 }
@@ -277,8 +284,10 @@ async function loadTableData(table, id, idsParam, offset){
             getData.then(function(data){
                 data = data.json();
 
-                
+                const reccount = data.reccount;
+
                 setConfigTable(tableElem, data, limitLoad);
+
                 const type = data.err_type;
    
                 if (type && type =="i" || !type){
@@ -310,7 +319,6 @@ async function loadTableData(table, id, idsParam, offset){
                     setTableState(table);
                     parseRowData (data);
             
-
                     if (!offsetParam){
                     
                         selectContextId      ();  
@@ -320,22 +328,27 @@ async function loadTableData(table, id, idsParam, offset){
                             returnDashboardFilter(filter);
                         }
                     }
-            
+               
+                    setCounterVal (reccount, tableElem);
                 } else {
                     setFunctionError(
                         data.err, 
                         "loadRows", 
                         "getData"
                     );
+                    tableErrorState ();
+                    
                 }
             });
             
             getData.fail(function(err){
-
+          
                 tableErrorState ();
 
-                if (err.status == 401 && !($$("popupNotAuth"))){
-                    popupNotAuth();
+                if (err.status == 401 && !($$("popupNotAuth")) && !firstError){
+                    firstError = true;
+                    Backbone.history.navigate("/", { trigger:true});
+                    window.location.reload();
                 } 
 
                 setAjaxError(err, "loadRows", "getData");

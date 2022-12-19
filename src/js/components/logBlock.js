@@ -87,7 +87,7 @@ function returnName(srcTable){
     const names = GetFields.names;
     let name;
     try{
-        names.forEach(function(el,i){
+        names.forEach(function(el){
             if (el.id == srcTable){
                 name = el.name;
             }
@@ -104,7 +104,7 @@ async function createLogMessage(srcTable) {
     let name;
 
     if (srcTable == "version"){
-        name = 'Expa v1.0.68';
+        name = 'Expa v1.0.69';
 
     } else if (srcTable == "cp"){
         name = 'Смена пароля';

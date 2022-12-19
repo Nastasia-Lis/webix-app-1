@@ -5,7 +5,6 @@ import { loadTableData }                    from './loadRows.js';
 let idCurrTable;
 let offsetParam;
 let itemTreeId;
-let idFindElem;
 
 
 function getItemData (table){
@@ -44,7 +43,6 @@ function createTableRows (id, idsParam, offset = 0){
     idCurrTable = id;
     offsetParam = offset;      
     itemTreeId  = idsParam;
-    idFindElem  = idCurrTable + "-findElements";
 
     setDataRows         (data.type);
     autorefresh         (data);

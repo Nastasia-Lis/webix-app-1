@@ -6,7 +6,7 @@ import { viewTools }                  from "./formTools/viewTools.js";
 import { editTableBar }               from "./editForm/_layout.js";
 import { filterForm }                 from "./filterForm/_layout.js"
 import { onFuncTable }                from "./onFuncs.js";
-const limitLoad   = 80;
+const limitLoad   = 80; 
 
 
 function table (idTable, onFunc, editableParam = false) {
@@ -18,7 +18,7 @@ function table (idTable, onFunc, editableParam = false) {
         editable    : editableParam,
         editaction  :"dblclick",
         minHeight   : 350,
-       // height:200,
+    //   height:200,
         footer      : true,
         select      : true,
         resizeColumn: true,

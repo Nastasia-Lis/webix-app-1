@@ -41,11 +41,13 @@ function setBtnsValue(id, array){
     setSegmentBtn(id, array[4]); // array[4] - and/or
 }
 
+
 function checkCondition(array){
     const id = returnInputId(array[1]); //[1] - id
 
     let inputId       = id + "_filter"; 
     const parentInput = $$(inputId);
+
 
     if (!parentInput.isVisible()){
         Filter.setFieldState(1, id);
@@ -65,14 +67,29 @@ function checkCondition(array){
 // array[2] - operation   -- setValue
 // array[3] - value  
 // array[4] - and/or
+function returInputsId(ids){
+    const result = [];
+    ids.forEach(function(el, i){
+        const index = el.lastIndexOf(".") + 1;
+        result.push(el.slice(index));
+    });
+    
+    
+    return result;
+}
 
 
 function iterateConditions(){
-    conditions.forEach(function(el, i){
+    const ids = [];
+    conditions.forEach(function(el){
         const arr = el.split(' ');
         checkCondition(arr);
+        ids.push(arr[1]);
+     
     });
-
+    
+    const inputsId = returInputsId(ids);
+    Filter.hideInputsContainers(inputsId);
 }
 
 
@@ -104,6 +121,7 @@ function returnConditions(filter){
 
         
     });
+   
 
     return conditions;
 }

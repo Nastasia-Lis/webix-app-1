@@ -10,7 +10,7 @@ import { applyNotify }              from "./applyFilterNotify.js";
 function tableToolbar (idTable, visible = false) {
 
     const idFindElements   = idTable + "-findElements",
-          idFilterElements = idTable + "-idFilterElements",
+         // idFilterElements = idTable + "-idFilterElements",
           idHeadline       = idTable + "-templateHeadline"
     ;
 
@@ -38,13 +38,13 @@ function tableToolbar (idTable, visible = false) {
             { cols : [
                 createTemplateCounter (
                     idFindElements  , 
-                    "Общее количество записей"  
+                    "Количество записей"  
                 ),
 
-                createTemplateCounter (
-                    idFilterElements, 
-                    "Видимое количество записей"
-                ),
+                // createTemplateCounter (
+                //     idFilterElements, 
+                //     "Видимое количество записей"
+                // ),
             ]},
         ]
     };

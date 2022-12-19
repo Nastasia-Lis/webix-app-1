@@ -62,12 +62,17 @@ function setTableState(tableView, data){
 
 function setTableCounter(tableView){
     try{
+        const count = {full : tableView.count()};
         const findElementView = $$("table-view-findElements");
-        const prevCountRows   = tableView.count().toString();
+        const prevCountRows   = JSON.stringify(count);
 
         findElementView.setValues(prevCountRows);
     } catch (err){  
-        setFunctionError(err, logNameFile, "setTableCounter");
+        setFunctionError(
+            err, 
+            logNameFile, 
+            "setTableCounter"
+        );
     }
 }
 

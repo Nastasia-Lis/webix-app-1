@@ -1,5 +1,6 @@
 
-import { Filter }              from "../actions/_FilterActions.js";
+import { Filter }   from "../actions/_FilterActions.js";
+import { Action }   from "../../../../blocks/commonFunctions.js";
 
 function segmentBtn(element, isChild, uniqueId){
     let id;
@@ -26,6 +27,9 @@ function segmentBtn(element, isChild, uniqueId){
         on:{
             onChange:function(){
                 Filter.setStateToStorage();
+                if (Filter.getActiveTemplate()){
+                    Action.showItem($$("templateInfo"));
+                }
             }
         }
     };

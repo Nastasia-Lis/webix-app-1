@@ -1,5 +1,5 @@
 import { setFunctionError }           from "../../blocks/errors.js";
-
+import { mediator }           from "../../blocks/_mediator.js";
 const logNameFile = "viewHeadline => title";
 
 function returnHeadline(idTemplate, templateTitle){
@@ -30,8 +30,10 @@ function setHeadlineBlock ( idTemplate, title ){
             templateTitle = function(){
                 const value      = $$(idTemplate).getValues();
                 const valLength  = Object.keys(value).length;
-
-                if (valLength !==0){
+                
+                //changeTabName(id)
+                if (valLength !== 0){
+                   // mediator.tabs.changeTabName(null, value);
                     return returnDiv(title = value);
                 } else {
                     return returnDiv();

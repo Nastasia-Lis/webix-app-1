@@ -63,6 +63,7 @@ function treeSidebar () {
             },
 
             onAfterSelect:function(id){
+                mediator.tabs.changeTabName(id);
                 getFields (id);
                 setAdaptiveState();
             },

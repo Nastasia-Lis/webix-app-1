@@ -33,7 +33,9 @@ class Tables {
                     returnLayoutTables(this.name),
                 5);
 
-              //  this.editForm.createForm();
+                $$("filterEmptyTempalte").attachEvent("onViewShow",function(){
+                    Action.hideItem($$("templateInfo"));
+                });
 
                 const tableElem = $$("table");
                 sortTable          (tableElem);

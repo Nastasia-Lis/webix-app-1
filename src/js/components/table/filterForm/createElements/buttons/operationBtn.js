@@ -1,5 +1,6 @@
 
 import { setFunctionError }    from "../../../../../blocks/errors.js";
+import { Action }              from "../../../../../blocks/commonFunctions.js";
 import { Button }              from "../../../../../viewTemplates/buttons.js";
 import { Filter }              from "../../actions/_FilterActions.js";
 
@@ -107,10 +108,15 @@ function createOperationBtn(typeField, elemId){
             inputHeight:38,
             on:{
                 onChange:function(value){
-           
+                    
                     if (value == "contains"){
                         this.setValue("⊆");
                     }
+                  
+                    if (Filter.getActiveTemplate()){
+                        Action.showItem($$("templateInfo"));
+                    }
+                    
                     Filter.setStateToStorage();
                 }
             }

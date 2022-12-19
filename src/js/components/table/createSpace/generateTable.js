@@ -1,5 +1,7 @@
 import { setLogValue }                      from '../../logBlock.js';
 import { LoadServerData, GetFields }        from "../../../blocks/globalStorage.js";
+import { mediator }                         from "../../../blocks/_mediator.js";
+
 
 import { setFunctionError }                 from "../../../blocks/errors.js";
 import { createTableRows }                  from './rows/createRows.js';
@@ -70,10 +72,20 @@ function preparationTable (){
 }
 
 
+function setTabInfo(data){
+    const info = mediator.tabs.getInfo();
+    if (info && info.tree){
+        info.tree.data = data;
+    }
 
+    mediator.tabs.setInfo(info);
+
+    console.log(mediator.tabs.getInfo());
+}
 async function generateTable (){ 
 
     await LoadServerData.content("fields");
+    setTabInfo(GetFields.item(idsParam));
 
     const keys = GetFields.keys;
 

@@ -1,32 +1,27 @@
-import { Button }  from "../../viewTemplates/buttons.js";
-
-
-function setNewTab(){
-
-}
+import { Button }    from "../../viewTemplates/buttons.js";
+import { mediator }  from "../../blocks/_mediator.js";
 
 
 function createAddBtn(){
-    const visibleCols = new Button({
+    const btn = new Button({
     
         config   : {
             id       : "addTabBtn",
            // hotkey   : "Ctrl+Shift+A",
             icon     : "icon-plus", //wxi-plus
             click    : function(){
-                setNewTab();
+                mediator.tabs.addTab();
             },
         },
-        titleAttribute : "Показать/скрыть колонки"
+        titleAttribute : "Добавить вкладку"
     
        
     }).transparentView();
 
-    return visibleCols;
+    return btn;
 }
 
 
 export {
-    setNewTab,
     createAddBtn
 };

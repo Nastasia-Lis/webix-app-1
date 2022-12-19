@@ -44,7 +44,18 @@ function createUndefinedView(){
 function selectItemAction(type, id){
     const visiualElements = mediator.getViews();
     let selectElem;
- 
+
+    if (type){
+        const values = {
+            tree : {
+                type  : type, 
+                field : id
+            }
+        };
+
+        mediator.tabs.setInfo(values);
+    }
+  
     if (type == "dbtable"){
         selectElem = "tables";
         mediator.tables.load(id);
@@ -60,10 +71,6 @@ function selectItemAction(type, id){
 
     } 
 
-    const isBranch = $$("tree").isBranch(id);
-    if (!isBranch){
-
-    }
 
     visiualElements.forEach(function(elem){
         if (elem !== selectElem){

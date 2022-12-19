@@ -1224,6 +1224,22 @@ label, button{
     border-radius   : 4px !important;
 }
 
+.filter-template-info{
+    background-color: var(--bg)!important;
+    border-radius:4px !important;
+}
+
+.filter-template-info .webix_view {
+    background-color: transparent!important;
+
+}
+.filter-template-info .webix_template{
+    font-size: 13px!important;
+    background-color: transparent!important;
+    padding: 10px 0px 10px 15px!important;
+}
+
+
 
 
 

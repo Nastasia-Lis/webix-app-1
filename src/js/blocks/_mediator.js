@@ -7,6 +7,8 @@ import { Settings }      from "../components/settings/_settingsMediator.js";
 import { Tree }                from "../components/treeSidabar/_treeMediator.js";
 import { Header }              from "../components/header/_headerMediator.js";
 
+import { Tabs }                from "../components/tabs/_tabMediator.js";
+
 import { clickModalBox }       from "./globalModalBox.js";
 import { setParamToLink,
          removeParamFromLink } from "./setParamToLink.js";
@@ -43,6 +45,7 @@ const mediator = {
     treeEdit    : new TreeEdit  (),
     sidebar     : new Tree      (),
     header      : new Header    (),
+    tabs        : new Tabs      (),
 
     getViews(){
         return elems;

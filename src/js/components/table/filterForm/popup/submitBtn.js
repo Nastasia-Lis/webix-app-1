@@ -6,12 +6,13 @@ import { setFunctionError }     from "../../../../blocks/errors.js";
 
 import { getLibraryData }       from "../userTemplate.js";
 
-import { Action }               from "../../../../blocks/commonFunctions.js";
+import { Action, getTable }     from "../../../../blocks/commonFunctions.js";
 
 import { Button }               from "../../../../viewTemplates/buttons.js";
 
 import { Filter }               from "../actions/_FilterActions.js";
 
+import { modalBox }             from "../../../../blocks/notifications.js";
 
 const logNameFile = "filterTable => popup => submitBtn";
 
@@ -55,6 +56,7 @@ function createWorkspaceCheckbox (){
 
     try{
         const keys    = Object.keys(values); 
+     
         let selectAll = false;
      
         keys.forEach(function(el){
@@ -65,9 +67,11 @@ function createWorkspaceCheckbox (){
             } else if (el == "selectAll"){
                 selectAll = true;
             }
-
+      
             const columnName = $$(el).config.columnName;
-            Filter.setFieldState(values[el], columnName, el);
+
+       
+            Filter.setFieldState(values[el], columnName);
   
         });
 
@@ -107,9 +111,9 @@ function visibleCounter(){
 }
 
 
-function resetLibSelectOption(){
-    Filter.setActiveTemplate(null);
-}
+// function resetLibSelectOption(){
+//     Filter.setActiveTemplate(null);
+// }
 
 function setDisableTabState(){
     const visibleElements = visibleCounter();
@@ -123,9 +127,7 @@ function setDisableTabState(){
 }
 
 
-
-function getCheckboxData(){
-
+function createFilter(){
     Action.enableItem($$("filterLibrarySaveBtn"));
     createWorkspaceCheckbox ();
 
@@ -133,12 +135,92 @@ function getCheckboxData(){
 
     Action.destructItem($$("popupFilterEdit"));
 
-    resetLibSelectOption();
+    //resetLibSelectOption();
   
     setLogValue(
         "success",
         "Рабочая область фильтра обновлена"
     );
+}
+
+
+async function createModalBox(table){
+    return modalBox("С таблицы будет сброшен текущий фильтр", 
+        "Вы уверены?", 
+    ["Отмена", "Продолжить"]
+    )
+    .then(function (result){
+        if (result == 1){
+
+            return Filter.resetTable().then(function(result){
+                if (result){
+                    Filter.showApplyNotify(false);
+                    table.config.filter = null;
+                    
+                } 
+
+                return result;
+            });
+       
+        }
+
+    });
+}
+
+function showActiveTemplate(){
+    if (Filter.getActiveTemplate()){
+        Action.showItem($$("templateInfo"));
+    } 
+}
+
+function resultActions(){
+    createFilter();
+    Filter.setStateToStorage ();
+    Filter.enableSubmitButton();
+    showActiveTemplate();
+}
+
+function isUnselectAll(){
+    const checkboxContainer = $$("editFormPopupScrollContent");
+    const checkboxes        = checkboxContainer.getChildViews();
+
+    let isUnchecked = true;
+    
+    checkboxes.forEach(function(el){
+        const id       = el.config.id;
+        const checkbox = $$(id);
+
+        if (checkbox){
+
+            const value = checkbox.getValue();
+
+            if (value && isUnchecked && id !== "selectAll"){
+                isUnchecked = false;
+            }
+        }
+
+    });
+
+    return isUnchecked;
+
+}
+
+function getCheckboxData(){
+    const table          = getTable();
+    const isFilterExists = table.config.filter;
+
+    if (isUnselectAll() && isFilterExists){
+        createModalBox(table).then(function(result){
+            if (result){
+                resultActions();
+            }
+        });
+    } else {
+        resultActions();
+    }
+
+     
+ 
 }
 
 function showEmptyTemplate(){
@@ -148,14 +230,37 @@ function showEmptyTemplate(){
     }
 }
 
+function createLibraryInputs(){
+    Filter.clearFilter  ();
+    Filter.clearAll     ();
+    getLibraryData      ();
+}
+
 function popupSubmitBtn (){
     try {                                             
         const tabbarValue = $$("filterPopupTabbar").getValue();
 
         if (tabbarValue == "editFormPopupLib"){
-   
-            $$("resetFilterBtn").callEvent("resetFilter");
-            getLibraryData ();
+
+            const table          = getTable();
+            const isFilterExists = table.config.filter;
+         
+            if (isFilterExists){
+                createModalBox(table).then(function(result){
+                    if (result){
+
+                        Filter.resetTable().then(function(result){
+                            if (result){
+                                createLibraryInputs();
+                              
+                            } 
+                        });
+                    }
+                });
+            } else {
+                createLibraryInputs();
+          
+            }
 
         } else if (tabbarValue == "editFormScroll" ){
             getCheckboxData();
