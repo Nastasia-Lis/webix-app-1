@@ -46,7 +46,7 @@ function createTableRows (id, idsParam, offset = 0){
 
 
     setDataRows         (data.type);
-    autorefresh         (idsParam, data);
+    autorefresh         (data);
           
 }
 

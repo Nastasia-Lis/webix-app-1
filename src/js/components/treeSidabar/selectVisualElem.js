@@ -5,8 +5,13 @@ import { mediator }         from "../../blocks/_mediator.js";
 
 const logNameFile = "treeSidebar => selectVisualElem";
 
+function setNameToTab(){
+    mediator.tabs.changeTabName(false, false);
+}
+
 
 function createUndefinedView(){
+
     const id = "webix__null-content";
 
     const view = {
@@ -29,6 +34,7 @@ function createUndefinedView(){
     if ( !($$(id)) ){
         try{
             $$("container").addView(view, 2);
+            setNameToTab();
         } catch (err){ 
             setFunctionError(
                 err, 

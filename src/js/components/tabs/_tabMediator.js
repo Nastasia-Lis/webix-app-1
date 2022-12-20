@@ -15,8 +15,27 @@ class Tabs {
         const tabbar   = $$("globalTabbar");
         const tabId    = tabbar.getValue();
         const tabIndex = tabbar.optionIndex(tabId);
-        tabbar.config.options[tabIndex].info = values;
-        tabbar.refresh();
+
+        if (tabIndex > -1){
+
+            tabbar.config.options[tabIndex].info = values;
+            tabbar.refresh();
+
+            if (values && values.tree){
+                const id = values.tree.field;
+                this.changeTabName(id);
+            }
+
+        
+            const options = tabbar.config.options;
+            
+            const data = {
+                tabs   : options,
+                select : tabId
+            };
+
+            webix.storage.local.put("tabbar", data);
+        }
     }
 
     getInfo(){
@@ -28,26 +47,38 @@ class Tabs {
     }
     
     changeTabName(id, value){
+  
         let name;
-
-        if (id){
-            const field = GetFields.item(id);
-            if (field){
-                name = field.plural ? field.plural : field.singular;
+ 
+        if (!id && !value){
+            name = "Новая вкладка";
+        } else {
+            if (id){
+                const field = GetFields.item(id);
+                if (field){
+                    name = field.plural ? field.plural : field.singular;
+                } else {
+                    name = "Новая вкладка";
+                }
+          
+               
             } else {
-                name = "Новая вкладка";
+                name = value;
             }
       
-           
-        } else {
-            name = value;
         }
+      
         const tabbar   = $$("globalTabbar");
         const tabId    = tabbar.getValue   ();
+  
         const tabIndex = tabbar.optionIndex(tabId);
 
-        tabbar.config.options[tabIndex].value = name;
-        tabbar.refresh();
+   
+        if (tabIndex > -1){
+            tabbar.config.options[tabIndex].value = name;
+            tabbar.refresh();
+        }
+
     }
 }
 

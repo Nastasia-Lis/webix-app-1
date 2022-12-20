@@ -11,44 +11,38 @@ import { createContextProperty }          from './createSpace/contextWindow.js';
 const logNameFile = "dashboard => createDashboard";
 let idsParam;
 
-function getDashId ( idsParam ){
-    const tree = $$("tree");
-    let itemTreeId;
+// function getDashId ( idsParam ){
+//     const tree = $$("tree");
+//     let itemTreeId;
 
-    if (idsParam){
-        itemTreeId = idsParam;
-    } else if (tree.getSelectedItem()){
-        itemTreeId = tree.getSelectedItem().id;
-    }
+//     if (idsParam){
+//         itemTreeId = idsParam;
+//     } else if (tree.getSelectedItem()){
+//         itemTreeId = tree.getSelectedItem().id;
+//     }
 
-    return itemTreeId;
-}
+//     return itemTreeId;
+// }
 
 
 function createDashSpace (){
 
-    const keys   = GetFields.keys;
-    const values = GetFields.values;
+    const item = GetFields.item(idsParam);
 
-    const itemTreeId = getDashId(idsParam);
-  
-    values.forEach(function(el,i){
-
-        const fieldId = keys[i];
+    if (item){
+        const url    = item.actions.submit.url;
+        const inputs = createFilter (item.inputs, item, idsParam);
      
-        if (el.type == "dashboard" && fieldId == itemTreeId) {
-          
-            const url    = el.actions.submit.url;
-            const inputs = createFilter (el.inputs, el, idsParam);
-         
-            createDynamicElems(url, inputs,      idsParam);
-            autorefresh       (el,  idsParam);
-        }
-    });
+        createDynamicElems(url, inputs,      idsParam);
+        autorefresh       (item,  idsParam);
+    }
 }
 
-async function getFieldsData (){
-    await LoadServerData.content("fields");
+async function getFieldsData (isShowExists){
+    if (!isShowExists){
+        await LoadServerData.content("fields");
+    }
+
     createDashSpace ();
 }
 
@@ -112,13 +106,13 @@ function createContext(){
 }
 
 
-function createDashboard ( ids ){
+function createDashboard (ids, isShowExists){
     idsParam = ids;
 
     const scroll = $$("dashBodyScroll");
     Action.removeItem(scroll);
 
-    getFieldsData ();
+    getFieldsData (isShowExists);
   
     createContext();
 }

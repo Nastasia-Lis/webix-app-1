@@ -13,6 +13,8 @@ import { clickModalBox }       from "./globalModalBox.js";
 import { setParamToLink,
          removeParamFromLink } from "./setParamToLink.js";
 import { encodeQueryData }     from "./queryToString.js";
+
+import { Action }              from "./commonFunctions.js";
         
 const elems = [
     "dashboards",
@@ -73,7 +75,21 @@ const mediator = {
 
     createQuery(params){
         return encodeQueryData(params);
+    },
+
+    hideAllContent (){
+        const visiualElements = this.getViews();
+    
+        if (visiualElements){
+            visiualElements.forEach(function(elem){
+                Action.hideItem($$(elem));
+            });
+        }
+    
+        Action.hideItem ($$("webix__null-content"));
+        Action.showItem ($$("webix__none-content"));
     }
+    
 
 
 

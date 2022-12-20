@@ -51,7 +51,23 @@ function treeSidebar () {
             },
 
             onBeforeSelect: function(id) {
+                const tabbar       = $$("globalTabbar");
+                const isTabsExists = tabbar.config.options.length;
+
+                if (!isTabsExists){
+                    tabbar.addOption({
+                        id    : id, 
+                        value : "Новая вкладка", 
+                        info  : {
+                            tree:{
+                                none:true
+                            }
+                        },
+                        close : true, 
+                    }, true);
+                }
        
+              
                 if (!this.config.isTabSelect){  // !(tree select by tab click)
                     const item = this.getItem(id);
 
@@ -69,9 +85,9 @@ function treeSidebar () {
             },
 
             onAfterSelect:function(id){
-
+        
                 if (!this.config.isTabSelect){ // !(tree select by tab click)
-                    mediator.tabs.changeTabName(id);
+                  //  mediator.tabs.changeTabName(id);
                     getFields (id);
                     setAdaptiveState();
                 } else {

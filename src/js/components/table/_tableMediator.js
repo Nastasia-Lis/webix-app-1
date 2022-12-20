@@ -16,7 +16,7 @@ import { Filter }                     from "./filterForm/actions/_FilterActions.
 import { filterFormDefState }         from "./filterForm/setDefaultState.js";
 import { toolsDefState }              from "./formTools/setDefaultState.js";
 
-import { Button }                     from "../../viewTemplates/buttons.js";
+import { Button } from "../../viewTemplates/buttons.js";
 
 const logNameFile = "table => _tableMediator";
 

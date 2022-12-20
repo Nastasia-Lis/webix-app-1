@@ -880,7 +880,7 @@ async function createLogMessage(srcTable) {
     let name;
 
     if (srcTable == "version"){
-        name = 'Expa v1.0.70';
+        name = 'Expa v1.0.71';
 
     } else if (srcTable == "cp"){
         name = 'Смена пароля';
@@ -7935,44 +7935,38 @@ function autorefresh (el, ids) {
 const createDashboard_logNameFile = "dashboard => createDashboard";
 let createDashboard_idsParam;
 
-function createDashboard_getDashId ( idsParam ){
-    const tree = $$("tree");
-    let itemTreeId;
+// function getDashId ( idsParam ){
+//     const tree = $$("tree");
+//     let itemTreeId;
 
-    if (idsParam){
-        itemTreeId = idsParam;
-    } else if (tree.getSelectedItem()){
-        itemTreeId = tree.getSelectedItem().id;
-    }
+//     if (idsParam){
+//         itemTreeId = idsParam;
+//     } else if (tree.getSelectedItem()){
+//         itemTreeId = tree.getSelectedItem().id;
+//     }
 
-    return itemTreeId;
-}
+//     return itemTreeId;
+// }
 
 
 function createDashSpace (){
 
-    const keys   = GetFields.keys;
-    const values = GetFields.values;
+    const item = GetFields.item(createDashboard_idsParam);
 
-    const itemTreeId = createDashboard_getDashId(createDashboard_idsParam);
-  
-    values.forEach(function(el,i){
-
-        const fieldId = keys[i];
+    if (item){
+        const url    = item.actions.submit.url;
+        const inputs = createFilter (item.inputs, item, createDashboard_idsParam);
      
-        if (el.type == "dashboard" && fieldId == itemTreeId) {
-          
-            const url    = el.actions.submit.url;
-            const inputs = createFilter (el.inputs, el, createDashboard_idsParam);
-         
-            createDynamicElems(url, inputs,      createDashboard_idsParam);
-            autorefresh       (el,  createDashboard_idsParam);
-        }
-    });
+        createDynamicElems(url, inputs,      createDashboard_idsParam);
+        autorefresh       (item,  createDashboard_idsParam);
+    }
 }
 
-async function getFieldsData (){
-    await LoadServerData.content("fields");
+async function getFieldsData (isShowExists){
+    if (!isShowExists){
+        await LoadServerData.content("fields");
+    }
+
     createDashSpace ();
 }
 
@@ -8036,13 +8030,13 @@ function createContext(){
 }
 
 
-function createDashboard ( ids ){
+function createDashboard (ids, isShowExists){
     createDashboard_idsParam = ids;
 
     const scroll = $$("dashBodyScroll");
     Action.removeItem(scroll);
 
-    getFieldsData ();
+    getFieldsData (isShowExists);
   
     createContext();
 }
@@ -8075,6 +8069,9 @@ class Dashboards {
     showView(){
         Action.showItem($$(this.name));   
     }
+    showExists(id){
+        createDashboard(id, true);
+    }
 
     load(id){
         createDashboard(id);
@@ -8093,17 +8090,17 @@ class Dashboards {
 
 
 let interval;
-
+const intervals = [];
 function clear(){
     clearInterval(interval); 
 }
 function autorefresh_setIntervalConfig(type, counter){
-    const interval = setInterval(
+    interval = setInterval(
         () => {
         
             const table         = getTable();
             const isAutoRefresh = table.config.autorefresh;
-          //  console.log(isAutoRefresh, "isAutoRefresh")
+            console.log(isAutoRefresh, getItemId(), "isAutoRefresh")
             if (isAutoRefresh){
                 if( type == "dbtable" ){
                     getItemData ("table");
@@ -8116,6 +8113,9 @@ function autorefresh_setIntervalConfig(type, counter){
         },
         counter
     );
+
+
+    intervals.push(interval);
     
 
 
@@ -8135,15 +8135,27 @@ function autorefresh_setIntervalConfig(type, counter){
     // }, counter );
 }
 
-function autorefresh_autorefresh (id, data){
+function clearPastIntervals(){
+    if (intervals.length){
+        intervals.forEach(function(el, i){
+            clearInterval(el);
+            intervals.splice(i, 1);
+        });
+    }
+}
+
+function autorefresh_autorefresh (data){
+
+    clearPastIntervals();
 
     const table = getTable();
 
 
     if (data.autorefresh){
-       // console.log('data')
+
         table.config.autorefresh = true;
-        const userprefsOther     = webix.storage.local.get("userprefsOtherForm");
+        const name               = "userprefsOtherForm";
+        const userprefsOther     = webix.storage.local.get(name);
         let counter;
 
         if (userprefsOther){
@@ -8165,10 +8177,6 @@ function autorefresh_autorefresh (id, data){
         
     }
 
-
-    if (!table.config.autorefresh){
-    //    clearInterval(interval);
-    }
  
 }
 
@@ -11204,7 +11212,7 @@ function createTableRows (id, idsParam, offset = 0){
 
 
     setDataRows         (data.type);
-    autorefresh_autorefresh         (idsParam, data);
+    autorefresh_autorefresh         (data);
           
 }
 
@@ -12495,8 +12503,6 @@ function createElements_createDynamicElems (id, ids){
 
 
 
-
-
 const generateTable_logNameFile = "getContent => getInfoTable";
 
 let titem;
@@ -12559,16 +12565,6 @@ function preparationTable (){
 }
 
 
-function generateTable_setTabInfo(data){
-    const info = mediator.tabs.getInfo();
-    if (info && info.tree){
-        info.tree.data = data;
-    }
-
-    mediator.tabs.setInfo(info);
- 
-}
-
 
 async function generateTable (showExists){ 
  
@@ -12576,7 +12572,6 @@ async function generateTable (showExists){
         await LoadServerData.content("fields");
     }
 
-    generateTable_setTabInfo(GetFields.item(generateTable_idsParam));
 
     const keys = GetFields.keys;
 
@@ -12597,7 +12592,7 @@ async function generateTable (showExists){
 
 
 function createTable (id, ids, showExists) {
-  
+ 
     generateTable_idCurrTable = id;
     generateTable_idsParam    = ids;
 
@@ -22159,8 +22154,13 @@ class Settings {
 
 const selectVisualElem_logNameFile = "treeSidebar => selectVisualElem";
 
+function setNameToTab(){
+    mediator.tabs.changeTabName(false, false);
+}
+
 
 function createUndefinedView(){
+
     const id = "webix__null-content";
 
     const view = {
@@ -22183,6 +22183,7 @@ function createUndefinedView(){
     if ( !($$(id)) ){
         try{
             $$("container").addView(view, 2);
+            setNameToTab();
         } catch (err){ 
             errors_setFunctionError(
                 err, 
@@ -22633,7 +22634,23 @@ function treeSidebar () {
             },
 
             onBeforeSelect: function(id) {
+                const tabbar       = $$("globalTabbar");
+                const isTabsExists = tabbar.config.options.length;
+
+                if (!isTabsExists){
+                    tabbar.addOption({
+                        id    : id, 
+                        value : "Новая вкладка", 
+                        info  : {
+                            tree:{
+                                none:true
+                            }
+                        },
+                        close : true, 
+                    }, true);
+                }
        
+              
                 if (!this.config.isTabSelect){  // !(tree select by tab click)
                     const item = this.getItem(id);
 
@@ -22651,9 +22668,9 @@ function treeSidebar () {
             },
 
             onAfterSelect:function(id){
-
+        
                 if (!this.config.isTabSelect){ // !(tree select by tab click)
-                    mediator.tabs.changeTabName(id);
+                  //  mediator.tabs.changeTabName(id);
                     getFields (id);
                     setAdaptiveState();
                 } else {
@@ -23684,6 +23701,8 @@ class Header {
 
 ;// CONCATENATED MODULE: ./src/js/components/tabs/actions.js
 
+
+
 function add(){
     const tabbar = $$("globalTabbar");
     const id     = webix.uid();
@@ -23691,11 +23710,45 @@ function add(){
     tabbar.addOption({
         id    : id, 
         value : "Новая вкладка", 
-        info  : {},
+        info  : {
+            tree:{
+                none:true
+            }
+        },
         close : true, 
     }, true);
 
     tabbar.showOption(id);
+
+    const visiualElements = mediator.getViews();
+
+    
+    visiualElements.forEach(function(elem){
+
+        Action.hideItem($$(elem));
+
+    });
+
+
+    
+
+   const options = $$("globalTabbar").config.options;
+ 
+    if (options){
+
+        const data = {
+            tabs   : options,
+        };
+
+        webix.storage.local.put   ("tabbar", data);
+    } else {
+        webix.storage.local.remove("tabbar");
+    }
+    
+
+    Action.showItem ($$("webix__none-content"));
+    Action.hideItem ($$("webix__null-content"));
+    window.history.pushState('', '', "?new=true");
 }
 
 function remove(){
@@ -23721,8 +23774,27 @@ class Tabs {
         const tabbar   = $$("globalTabbar");
         const tabId    = tabbar.getValue();
         const tabIndex = tabbar.optionIndex(tabId);
-        tabbar.config.options[tabIndex].info = values;
-        tabbar.refresh();
+
+        if (tabIndex > -1){
+
+            tabbar.config.options[tabIndex].info = values;
+            tabbar.refresh();
+
+            if (values && values.tree){
+                const id = values.tree.field;
+                this.changeTabName(id);
+            }
+
+        
+            const options = tabbar.config.options;
+            
+            const data = {
+                tabs   : options,
+                select : tabId
+            };
+
+            webix.storage.local.put("tabbar", data);
+        }
     }
 
     getInfo(){
@@ -23734,26 +23806,38 @@ class Tabs {
     }
     
     changeTabName(id, value){
+  
         let name;
-
-        if (id){
-            const field = GetFields.item(id);
-            if (field){
-                name = field.plural ? field.plural : field.singular;
+ 
+        if (!id && !value){
+            name = "Новая вкладка";
+        } else {
+            if (id){
+                const field = GetFields.item(id);
+                if (field){
+                    name = field.plural ? field.plural : field.singular;
+                } else {
+                    name = "Новая вкладка";
+                }
+          
+               
             } else {
-                name = "Новая вкладка";
+                name = value;
             }
       
-           
-        } else {
-            name = value;
         }
+      
         const tabbar   = $$("globalTabbar");
         const tabId    = tabbar.getValue   ();
+  
         const tabIndex = tabbar.optionIndex(tabId);
 
-        tabbar.config.options[tabIndex].value = name;
-        tabbar.refresh();
+   
+        if (tabIndex > -1){
+            tabbar.config.options[tabIndex].value = name;
+            tabbar.refresh();
+        }
+
     }
 }
 
@@ -23966,6 +24050,8 @@ function encodeQueryData(data) {
 
 
 
+
+
         
 const elems = [
     "dashboards",
@@ -24026,7 +24112,21 @@ const mediator = {
 
     createQuery(params){
         return encodeQueryData(params);
+    },
+
+    hideAllContent (){
+        const visiualElements = this.getViews();
+    
+        if (visiualElements){
+            visiualElements.forEach(function(elem){
+                Action.hideItem($$(elem));
+            });
+        }
+    
+        Action.hideItem ($$("webix__null-content"));
+        Action.showItem ($$("webix__none-content"));
     }
+    
 
 
 
@@ -24224,11 +24324,12 @@ class RouterActions {
 
 
 
+
 const tree_logNameFile = "router => tree";
 
  
 let tree_id;
-
+let emptyTab = false;
 
 
 // function returnTopParent(){
@@ -24262,13 +24363,13 @@ async function tree_getTableData (){
 
 async function createTableSpace (){
     RouterActions.createContentSpace();
-
+   
     const isFieldsExists = GetFields.keys;
     try{   
         const tree = $$("tree");
         tree.attachEvent("onAfterLoad", 
         webix.once(function (){
-            if (!isFieldsExists) {
+            if (!isFieldsExists && !emptyTab) {
                 tree_getTableData ();
             } 
         }));         
@@ -24304,10 +24405,33 @@ async function checkTable(){
     }    
   
 }
-async function treeRouter(selectId){
-    tree_id = selectId;
 
-    checkTable();
+async function treeRouter(selectId){
+
+    const search = window.location.search;
+    const params    = new URLSearchParams(search);
+    const param = params.get("new"); 
+
+    // if (selectId == "tab"){
+    //     const search = window.location.search;
+    //     const params    = new URLSearchParams(search);
+    //     const param = params.get("new"); 
+
+        if (param){
+            emptyTab = true;
+        }
+   // }
+
+    //if (!emptyTab){
+        tree_id = selectId;
+        checkTable();
+    // } else {
+    //     Action.showItem ($$("webix__none-content"));
+
+    // }
+
+    
+  
 }
 
 
@@ -25286,19 +25410,41 @@ function createAddBtn(){
 
 
 
-;// CONCATENATED MODULE: ./src/js/components/tabs/_layout.js
+;// CONCATENATED MODULE: ./src/js/components/tabs/restoreTempData.js
 
 
 
-
-function showTreeItem(config){
-    const id   = config.field;
-    const type = config.type;
+///внести return fitler & edit в медиатор
 
 
-    const visiualElements = mediator.getViews();
- 
-    let selectElem;
+function restoreTempData(tempConfig, field){
+
+    const filter = tempConfig.filter;
+    const edit   = tempConfig.edit;
+
+    console.log(field)
+    if (filter){
+        webix.storage.local.put("currFilterState", filter);
+        returnLostFilter(field);
+    }
+      
+    if (edit){
+        webix.storage.local.put("editFormTempData", edit);
+    }
+
+
+   
+}
+
+
+;// CONCATENATED MODULE: ./src/js/components/tabs/showTreeItem.js
+
+
+
+function returnSelectElem(type){
+   
+    let selectElem; 
+        
     if (type == "dbtable"){
         selectElem = "tables";
 
@@ -25307,41 +25453,138 @@ function showTreeItem(config){
 
     } else if(type == "dashboard"){
         selectElem = "dashboards";
-       // Action.hideItem($$("propTableView"));
+    // Action.hideItem($$("propTableView"));
 
-    } 
+    }  
 
-    visiualElements.forEach(function(elem){
-        if (elem !== selectElem){
-            Action.hideItem($$(elem));
-        } 
+    return selectElem;
+}
 
-        if (elem == id){
-            Action.removeItem($$("webix__null-content"));
-            Action.showItem  ($$("webix__none-content"));
-        }
-    });
+function hideOtherElems(selectElem){
+    const visiualElements = mediator.getViews();
 
 
-    Action.showItem($$(selectElem));
-
-
-    const tree = $$("tree");
-    
-    if (id){
-        if (selectElem == "tables" || selectElem == "forms"){
-            mediator.tables.showExists(id);
-        }
-        Backbone.history.navigate("tree/" + id, { trigger : true });
+    if (visiualElements){
+        visiualElements.forEach(function(elem){
+            if (elem !== selectElem){
+                Action.hideItem($$(elem));
+            } 
+        });
     }
 
-    tree.config.isTabSelect = true;
-    tree.select(id);
+    Action.hideItem ($$("webix__null-content"));
+    Action.hideItem ($$("webix__none-content"));
 
 }
 
-function restoreTempData(tempConfig){
-    console.log(tempConfig)
+
+function showContent(selectElem, id){
+    if (selectElem == "tables" || selectElem == "forms"){
+        mediator.tables.showExists(id);
+    } else if (selectElem == "dashboards"){
+        mediator.dashboards.showExists(id);
+    }
+
+}
+
+function selectTree(id, isOtherTab){
+    const tree = $$("tree");
+    if ( tree.exists(id) && isOtherTab){
+        tree.config.isTabSelect = true;
+        tree.select(id);
+    }
+}
+
+function showTreeItem_setLink(id){
+    console.log(id)
+
+
+    const path = "tree/" + id;
+    Backbone.history.navigate(path, { trigger : true });
+    const search = window.location.search;
+    // if (search.length){
+    //     const link    = window.location.href;
+    //     const index   = link.lastIndexOf("?");
+    //     const newLink = link.slice(0, index);
+    //     console.log(newLink)
+      
+    // }
+
+
+  
+    // const params    = new URLSearchParams(search);
+    // const param = params.get("new"); 
+    // console.log(search)
+    // if (param){
+        
+    //     params.delete('new');
+    // }
+
+   
+}
+
+function setEmptyState(){
+    mediator.hideAllContent();
+    window.history.pushState('', '', "?new=true");
+  
+    Action.showItem ($$("webix__none-content"));
+}
+
+
+function showTreeItem(config, isOtherTab){
+    const id              = config.field;
+    const type            = config.type;
+ 
+    if (config.none){ //none-content
+        setEmptyState();
+
+    } else {
+        const selectElem = returnSelectElem(type);
+
+        hideOtherElems(selectElem);
+
+        Action.showItem ($$(selectElem));
+  
+
+        if (id){
+            showContent(selectElem, id);
+            showTreeItem_setLink    (id);
+            selectTree (id, isOtherTab);
+
+        }
+
+    }
+   
+
+}
+
+
+;// CONCATENATED MODULE: ./src/js/components/tabs/_layout.js
+
+
+
+
+
+
+let prevValue;
+
+
+
+function setStateToStorage(idTab){
+    const tabbar  = $$("globalTabbar");
+    const options = tabbar.config.options;
+    
+
+    const data = {
+        tabs   : options,
+        select : idTab
+    };
+
+    webix.storage.local.put("tabbar", data);
+}
+
+function setEmptyTabLink(){
+    Backbone.history.navigate("tree/tab?new=true", { trigger : true });
 }
 
 function createTabbar(){
@@ -25354,12 +25597,7 @@ function createTabbar(){
         optionWidth: 300,
         multiview  : true, 
         options : [
-            { 
-                id    : "container", 
-                value : "Имя вкладки", 
-                info  : {},
-                close : true
-            },
+           
         ],
         on:{
             onItemClick:function(){
@@ -25369,11 +25607,19 @@ function createTabbar(){
                     expire: 10000,
                 });
             },
+       
             onBeforeTabClick:function(id){
-        
+                mediator.tables.defaultState();
+                prevValue = this.getValue();
+            },
 
-              
-          
+            onAfterTabClick:function(id){
+                let isOtherTab = true;
+
+                if (id == prevValue){
+                    isOtherTab = false;
+                }
+
                 mediator.tables.filter.clearAll();
 
                 const option = this.getOption(id);
@@ -25382,14 +25628,110 @@ function createTabbar(){
                 const tempConfig = option.info.temp;
 
                 if (treeConfig){
-                    showTreeItem(treeConfig);
+                    showTreeItem(treeConfig, isOtherTab);
+
+             
+                    if (tempConfig){
+                        restoreTempData(tempConfig, treeConfig.field);
+                    }
                 }
 
-                if (tempConfig){
-                    restoreTempData(tempConfig);
-                }
+        
+             
+
+                setStateToStorage(id);
+
             },
 
+            onAfterRender:webix.once(function(id){
+                const data   = webix.storage.local.get("tabbar");
+                const tabbar = $$("globalTabbar");
+
+                if (data){
+                    const tabs   = data.tabs;
+                    const select = data.select;
+                 
+                    tabs.forEach(function(option, i){
+                        tabbar.addOption(option, false); 
+                    });
+
+                    
+                    if (select){
+                        tabbar.setValue(select);
+
+                    } else {
+                        const options = this.config.options;
+                        const index   = options.length - 1;
+                        const lastOpt = options[index]; 
+                        if (lastOpt){
+                            const id  = lastOpt.id;
+                            this.setValue(id);
+                        }
+                
+                   
+                    }
+                    
+                
+                } else {
+                    this.addOption( { 
+                        id    : "container", 
+                        value : "Имя вкладки", 
+                        info  : {},
+                        close : true
+                    }, true); 
+                }
+            }),
+            
+            // сделать параметр для единственной пустой вкладки
+
+            onOptionRemove:function(removedTab, lastTab){
+ 
+                const tabbar = this;
+
+                if (lastTab.length){
+              
+                    tabbar.setValue(lastTab);
+                    const options = tabbar.config.options;
+            
+                    let conutEmptyTabs = 0;
+                    options.forEach(function(el, i){
+                        if (el.info.tree.none){ // empty tab
+                            conutEmptyTabs ++;
+                        }
+                    });
+
+                     
+                    if (options.length == conutEmptyTabs){ // all tabs is empty
+                        setEmptyTabLink();
+                    }
+
+
+                    mediator.tables.filter.clearAll();
+
+                    const option = this.getOption(lastTab);
+    
+                    const treeConfig = option.info.tree;
+                    const tempConfig = option.info.temp;
+
+                  
+    
+                    if (treeConfig){
+                        showTreeItem(treeConfig, true);
+                    }
+    
+                    if (tempConfig){
+                        restoreTempData(tempConfig);
+                    }
+                } else {   
+                    setEmptyTabLink();
+                    mediator.hideAllContent();
+
+                }
+
+                setStateToStorage(lastTab);
+           
+            },
+          
         }
      
     };
@@ -25406,7 +25748,7 @@ function createTabbar(){
 
 
 ;// CONCATENATED MODULE: ./src/js/app.js
-console.log("expa 1.0.70"); 
+console.log("expa 1.0.71"); 
 
 
 

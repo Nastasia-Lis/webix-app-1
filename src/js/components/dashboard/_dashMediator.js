@@ -24,6 +24,9 @@ class Dashboards {
     showView(){
         Action.showItem($$(this.name));   
     }
+    showExists(id){
+        createDashboard(id, true);
+    }
 
     load(id){
         createDashboard(id);

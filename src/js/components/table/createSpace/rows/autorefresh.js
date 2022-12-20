@@ -2,17 +2,17 @@ import { getItemData }           from './createRows.js';
 import { getItemId, getTable }   from '../../../../blocks/commonFunctions.js';
 
 let interval;
-
+const intervals = [];
 function clear(){
     clearInterval(interval); 
 }
 function setIntervalConfig(type, counter){
-    const interval = setInterval(
+    interval = setInterval(
         () => {
         
             const table         = getTable();
             const isAutoRefresh = table.config.autorefresh;
-          //  console.log(isAutoRefresh, "isAutoRefresh")
+            console.log(isAutoRefresh, getItemId(), "isAutoRefresh")
             if (isAutoRefresh){
                 if( type == "dbtable" ){
                     getItemData ("table");
@@ -25,6 +25,9 @@ function setIntervalConfig(type, counter){
         },
         counter
     );
+
+
+    intervals.push(interval);
     
 
 
@@ -44,15 +47,27 @@ function setIntervalConfig(type, counter){
     // }, counter );
 }
 
-function autorefresh (id, data){
+function clearPastIntervals(){
+    if (intervals.length){
+        intervals.forEach(function(el, i){
+            clearInterval(el);
+            intervals.splice(i, 1);
+        });
+    }
+}
+
+function autorefresh (data){
+
+    clearPastIntervals();
 
     const table = getTable();
 
 
     if (data.autorefresh){
-       // console.log('data')
+
         table.config.autorefresh = true;
-        const userprefsOther     = webix.storage.local.get("userprefsOtherForm");
+        const name               = "userprefsOtherForm";
+        const userprefsOther     = webix.storage.local.get(name);
         let counter;
 
         if (userprefsOther){
@@ -74,10 +89,6 @@ function autorefresh (id, data){
         
     }
 
-
-    if (!table.config.autorefresh){
-    //    clearInterval(interval);
-    }
  
 }
 
