@@ -2,7 +2,7 @@
 import { setFunctionError }     from "../../../../blocks/errors.js";
 
 import { getTable, Action }     from "../../../../blocks/commonFunctions.js";
-
+import { mediator }             from "../../../../blocks/_mediator.js";
 import { Button }               from "../../../../viewTemplates/buttons.js";
 import { modalBox }             from "../../../../blocks/notifications.js";
 import { Filter }               from "../actions/_FilterActions.js";
@@ -92,6 +92,14 @@ function clearInputSpace(){
 
 }
 
+function setToTabStorage(){
+    const data = mediator.tabs.getInfo();
+
+    if (data.temp && data.temp.queryFilter){
+        data.temp.queryFilter = null;
+    }
+}
+
 function resetFilterBtnClick (){
     const table = getTable();
     try {
@@ -108,6 +116,7 @@ function resetFilterBtnClick (){
                         Filter.showApplyNotify(false);
                     }
                     table.config.filter = null;
+                    setToTabStorage()
                     Action.hideItem($$("templateInfo"));
                 });
               

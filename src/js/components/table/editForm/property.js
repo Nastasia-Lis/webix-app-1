@@ -112,13 +112,23 @@ function isEqual(obj1, obj2) {
 }
 
 function setTabInfo(sentVals){
+    
     const tabData =  mediator.tabs.getInfo();
+ 
+    const tableId = $$("table").getSelectedId();
+    let id;
+    if (tableId){
+        id = tableId.id;
+    }
 
     if (tabData){
         if (!tabData.temp){
             tabData.temp = {};
         }
-        tabData.temp.edit = sentVals;
+        tabData.temp.edit = {
+            values: sentVals,
+            selected: id
+        };
     }
 }
 

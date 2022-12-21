@@ -4,7 +4,7 @@ import { Filter }     from "./_FilterActions.js";
 
 function setTabInfo(id, sentVals){
     const tabData =  mediator.tabs.getInfo();
-    console.log(id, tabData)
+ 
     if (tabData){
         if (!tabData.temp){
             tabData.temp = {};

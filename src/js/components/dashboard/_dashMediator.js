@@ -33,6 +33,7 @@ class Dashboards {
     }
 
     defaultState(){
+      
         Action.hideItem($$("dashboardTool"));
         Action.showItem($$("dashboardInfoContainer"));
     }

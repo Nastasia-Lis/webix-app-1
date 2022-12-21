@@ -12,6 +12,8 @@ import { setFunctionError }           from "../../blocks/errors.js";
 
 import { EditForm }                   from "./editForm/editFormMediator/editFormClass.js";
 import { Filter }                     from "./filterForm/actions/_FilterActions.js";
+import { TableSpace }                 from "./createSpace/_tableSpaceMediator.js";
+
 
 import { filterFormDefState }         from "./filterForm/setDefaultState.js";
 import { toolsDefState }              from "./formTools/setDefaultState.js";
@@ -79,6 +81,10 @@ class Tables {
     get filter (){
         return Filter;
     }
+
+    get restore(){
+        return TableSpace;
+    }
   
     defaultState(type){
         if (type == "edit"){
@@ -120,6 +126,9 @@ class Tables {
         }
       
     }
+
+
+  
 
 }
 

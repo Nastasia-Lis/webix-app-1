@@ -2,6 +2,25 @@
 import { add, remove }  from "./actions.js";
 import { GetFields }    from "../../blocks/globalStorage.js";
 
+function isOtherViewTab(id){
+    const option = $$("globalTabbar").getOption (id);
+
+    if (option.isOtherView){
+        return true;
+    }
+
+}
+
+function createTab(){
+    $$("globalTabbar").addOption({
+        id    : webix.uid(), 
+        value : " ", 
+        info  : {
+        },
+        close : true, 
+    }, true);
+    
+}
 class Tabs {
     addTab(){
         add();
@@ -12,10 +31,17 @@ class Tabs {
     }
 
     setInfo(values){
-        const tabbar   = $$("globalTabbar");
-        const tabId    = tabbar.getValue();
-        const tabIndex = tabbar.optionIndex(tabId);
 
+        const tabbar = $$("globalTabbar");
+        let tabId = tabbar.getValue();
+
+        if ( isOtherViewTab(tabId)){
+            createTab();
+            tabId = tabbar.getValue();
+        }
+       
+        const tabIndex = tabbar.optionIndex(tabId);
+ 
         if (tabIndex > -1){
 
             tabbar.config.options[tabIndex].info = values;

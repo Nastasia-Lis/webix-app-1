@@ -1,6 +1,15 @@
 import { Action }           from "../../../blocks/commonFunctions.js";
 import { Filter }           from "./actions/_FilterActions.js";
 
+
+function setToolbarBtnState(){
+    const node = $$("table-filterId").getNode();
+
+    Filter.addClass   (node, "webix-transparent-btn");
+    Filter.removeClass(node, "webix-transparent-btn--primary");
+}
+
+
 function filterFormDefState(){
     const filterContainer = $$("filterTableBarContainer");
     const inputs          = $$("inputsFilter");
@@ -19,7 +28,8 @@ function filterFormDefState(){
     Action.removeItem(inputs);
 
     Action.showItem($$("filterEmptyTempalte"));
- 
+    
+    setToolbarBtnState();
 }
 
 export {

@@ -85,7 +85,7 @@ function treeSidebar () {
             },
 
             onAfterSelect:function(id){
-        
+                
                 if (!this.config.isTabSelect){ // !(tree select by tab click)
                   //  mediator.tabs.changeTabName(id);
                     getFields (id);

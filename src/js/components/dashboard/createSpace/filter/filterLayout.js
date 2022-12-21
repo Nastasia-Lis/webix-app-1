@@ -1,5 +1,6 @@
 import { setFunctionError }               from "../../../../blocks/errors.js";
 import { Action }                         from '../../../../blocks/commonFunctions.js';
+import { mediator }                       from '../../../../blocks/_mediator.js';
 import { Button }                         from '../../../../viewTemplates/buttons.js';
 const logNameFile = "dashboard => createSpace => dynamicElements => filterLayout";
 
@@ -91,10 +92,15 @@ function filterBtnClick (){
         Action.hideItem  ($$("dashboardContext" ));
         if (dashTool.isVisible()){
             Action.hideItem (tools);
+        
+          //  mediator.linkParam(false, "view");
+            webix.storage.local.remove("dashFilterState");
 
         } else {
             Action.showItem (tools);
             Action.showItem (dashTool);
+        
+           // mediator.linkParam(true, {"view": "filter"});
         }
     }
 
@@ -145,7 +151,12 @@ function createFilterBtn(){
                 filterBtnClick();
             },
         },
-        titleAttribute : "Показать/скрыть фильтры"
+        titleAttribute : "Показать/скрыть фильтры",
+        onFunc:{
+            clickEvent:function(){
+                filterBtnClick();
+            }
+        }
     
        
     }).transparentView();

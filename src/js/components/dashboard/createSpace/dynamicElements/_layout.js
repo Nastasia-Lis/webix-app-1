@@ -8,6 +8,9 @@ import { createOverlayTemplate }          from '../../../../viewTemplates/loadTe
 import { LoadServerData, GetFields }      from "../../../../blocks/globalStorage.js";
 import { getDashId }                      from '../common.js';
 
+import { returnLostFilter }               from '../returnLostFilter.js';
+
+
 const logNameFile = "dashboards => createSpace => dynamicElems";
 
 let inputsArray;
@@ -92,12 +95,14 @@ function createDashHeadline(){
 function addSuccessView (dataCharts){
   
     if (!action){
+   
         Action.removeItem      ($$("dash-headline-container"));
         createDashHeadline     ();
         createDashboardCharts  (idsParam, dataCharts);
         createFilterLayout     (inputsArray);
-       
-    } else {
+        returnLostFilter       (idsParam);
+
+    } else { // charts updated by click button
         Action.removeItem       ($$("dashboardInfoContainerInner"));
         createDashboardCharts   (idsParam, dataCharts);
     }
@@ -194,7 +199,7 @@ function createDynamicElems ( path, array, ids, btnPress = false ) {
     idsParam    = ids;
     action      = btnPress;
     url         = path;
- 
+
     getChartsLayout();
 
 }

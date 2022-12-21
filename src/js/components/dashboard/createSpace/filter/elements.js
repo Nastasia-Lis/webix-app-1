@@ -1,9 +1,56 @@
 import { setFunctionError }     from "../../../../blocks/errors.js";
+import { mediator }             from "../../../../blocks/_mediator.js";
+
 import { Button }               from '../../../../viewTemplates/buttons.js';
+
 import { clickBtn }             from './submitBtnClick.js';
 
 const logNameFile = "dashboard => createSpace => filter";
  
+
+
+function setTabInfo(sentVals){
+    
+    const tabData =  mediator.tabs.getInfo();
+
+    if (tabData){
+        if (!tabData.temp){
+            tabData.temp = {};
+        }
+        tabData.temp.filter = {
+            dashboards: true,
+            values    : sentVals,
+        };
+    }
+}
+
+function setToStorage(input){
+
+    const container = input.getParentView();
+    const childs    = container.getChildViews();
+    const newValues = [];
+
+    childs.forEach(function(el){
+
+        if (el.config.view == "datepicker"){
+            newValues.push({
+                id    : el.config.id,
+                value : el.config.value
+            });
+        }
+    });
+  
+    if (newValues.length){
+        const content = {
+            content : newValues
+        };
+        webix.storage.local.put("dashFilterState", content);
+
+        setTabInfo(newValues);
+    }
+
+   
+}
 
 const inputsArray = [];
 let   findAction;
@@ -44,6 +91,7 @@ function createDate(type, input){
         editable    : true,
         value       : new Date(),
         placeholder : input.label,
+        keyPressTimeout:900,
         height      : 42,
         on          : {
             onItemClick:function(){
@@ -56,6 +104,17 @@ function createDate(type, input){
                 );
 
                setAdaptiveWidth(this);
+            },
+
+            onChange:function(newV, oldV, config){
+                if(config){
+                    setToStorage(this);
+                }
+               
+            },
+
+            onTimedKeyPress:function(){
+                setToStorage(this);
             },
         }
     };
@@ -74,6 +133,8 @@ function createDate(type, input){
 
 }
 
+let isClicked = false;
+
 function createTime (type){
     const timeTemplate =  {   
         view        : "datepicker",
@@ -81,6 +142,7 @@ function createTime (type){
         placeholder : "Время",
         height      : 42,
         editable    : true,
+        keyPressTimeout:900,
         value       : "00:00:00",
         type        : "time",
         seconds     : true,
@@ -104,6 +166,7 @@ function createTime (type){
 
             onTimedKeyPress:function(){
                 setNullTimeValue(this);
+                setToStorage(this);
             },
             onAfterRender: function () {
                 this.getInputNode()
@@ -112,7 +175,12 @@ function createTime (type){
                     "Часы, минуты, секунды"
                 );
                 setAdaptiveWidth(this);
-            }
+            },
+            // onChange:function(newValue, oldValue, config){
+            //     console.log(newValue, oldValue, config)
+            //     setToStorage(this);
+            // },
+       
            
         }
     };
@@ -207,9 +275,10 @@ function createInputs( input ){
 }
 
 function createFilter (inputs, el, ids){
-    idsParam = ids;
+    idsParam           = ids;
     inputsArray.length = 0;
-    const values = Object.values(inputs);
+
+    const values       = Object.values(inputs);
 
     values.forEach(function(input, i){
 

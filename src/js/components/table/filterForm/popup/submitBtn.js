@@ -8,6 +8,8 @@ import { getLibraryData }       from "../userTemplate.js";
 
 import { Action, getTable }     from "../../../../blocks/commonFunctions.js";
 
+import { mediator }             from "../../../../blocks/_mediator.js";
+
 import { Button }               from "../../../../viewTemplates/buttons.js";
 
 import { Filter }               from "../actions/_FilterActions.js";
@@ -143,6 +145,13 @@ function createFilter(){
     );
 }
 
+function setToTabStorage(){
+    const data = mediator.tabs.getInfo();
+
+    if (data.temp && data.temp.queryFilter){
+        data.temp.queryFilter = null;
+    }
+}
 
 async function createModalBox(table){
     return modalBox("С таблицы будет сброшен текущий фильтр", 
@@ -156,6 +165,7 @@ async function createModalBox(table){
                 if (result){
                     Filter.showApplyNotify(false);
                     table.config.filter = null;
+                    setToTabStorage();
                     
                 } 
 
@@ -208,7 +218,7 @@ function isUnselectAll(){
 function getCheckboxData(){
     const table          = getTable();
     const isFilterExists = table.config.filter;
-
+ 
     if (isUnselectAll() && isFilterExists){
         createModalBox(table).then(function(result){
             if (result){

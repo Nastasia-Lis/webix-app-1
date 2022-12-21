@@ -44,7 +44,9 @@ function itemClickContext(id){
         clickMenu("cp", "/cp");
 
     } else if (id == "settings"){
-        clickMenu("settings", "/settings");
+       // clickMenu("settings", "/settings");
+       clearTree();
+       navigateTo ("/settings");
 
     } else if (id == "favs"){
         const popup = $$("popupFavsLink");

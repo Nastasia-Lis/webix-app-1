@@ -1,5 +1,6 @@
 import { Action }                           from "../../../../blocks/commonFunctions.js";
 import { setAjaxError, setFunctionError }   from "../../../../blocks/errors.js";
+import { mediator }                         from "../../../../blocks/_mediator.js";
 
 import { getUserPrefsContext }              from './userContext.js';
 import {  formattingBoolVals,
@@ -139,6 +140,7 @@ function filterParam(){
 
 
 async function returnFilter(tableElem){
+ 
     const filterString = tableElem.config.filter;
     const urlParameter = filterParam();
 
@@ -153,8 +155,12 @@ async function returnFilter(tableElem){
 
     if (!result.filter){
         result.prefs = false;
+    
+   
         if (filterString && filterString.table === itemTreeId){
             result.filter = filterString.query;
+            const id = tableElem.config.id + "_applyNotify";
+            Action.showItem($$(id));
 
         } else {
             result.filter = itemTreeId +'.id+%3E%3D+0';
@@ -316,20 +322,26 @@ async function loadTableData(table, id, idsParam, offset){
                     //     }
                     // ]
         
-   
                     setTableState(table);
                     parseRowData (data);
-            
+         
                     if (!offsetParam){
                     
                         selectContextId      ();  
-                        returnLostData       ();
-                        returnLostFilter     (itemTreeId);
+                      //  returnLostData       ();
+                        mediator.tables.restore.restoreEditForm();
+                        mediator.tables.restore.restoreFilter  (itemTreeId);
+                               
+            
+                      //  returnLostFilter     (itemTreeId);
                         if (isPrefs){
                             returnDashboardFilter(filter);
                         }
                     }
-               
+       
+          
+                 
+
                     setCounterVal (reccount, tableElem);
                 } else {
                     setFunctionError(
@@ -357,6 +369,7 @@ async function loadTableData(table, id, idsParam, offset){
 
         }
     });
+
 }
 
 export {

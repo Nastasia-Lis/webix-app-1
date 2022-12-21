@@ -880,7 +880,7 @@ async function createLogMessage(srcTable) {
     let name;
 
     if (srcTable == "version"){
-        name = 'Expa v1.0.71';
+        name = 'Expa v1.0.72';
 
     } else if (srcTable == "cp"){
         name = 'Смена пароля';
@@ -1113,7 +1113,7 @@ function getItemId (){
     return idTable;
 }
 
-function getTable(){
+function commonFunctions_getTable(){
     getItemId ();
     return visibleItem;
 }
@@ -6105,6 +6105,7 @@ function createHeadline(idTemplate, title = null){
 
 
 
+
 const filterLayout_logNameFile = "dashboard => createSpace => dynamicElements => filterLayout";
 
 
@@ -6195,10 +6196,15 @@ function filterBtnClick (){
         Action.hideItem  ($$("dashboardContext" ));
         if (dashTool.isVisible()){
             Action.hideItem (tools);
+        
+          //  mediator.linkParam(false, "view");
+            webix.storage.local.remove("dashFilterState");
 
         } else {
             Action.showItem (tools);
             Action.showItem (dashTool);
+        
+           // mediator.linkParam(true, {"view": "filter"});
         }
     }
 
@@ -6249,7 +6255,12 @@ function createFilterBtn(){
                 filterBtnClick();
             },
         },
-        titleAttribute : "Показать/скрыть фильтры"
+        titleAttribute : "Показать/скрыть фильтры",
+        onFunc:{
+            clickEvent:function(){
+                filterBtnClick();
+            }
+        }
     
        
     }).transparentView();
@@ -7100,7 +7111,7 @@ function createScrollContent(dataCharts){
 }
 
 function createDashboardCharts(idsParam, dataCharts){
-
+    
     const container = $$("dashboardInfoContainer");
 
     const inner =  {   
@@ -7154,7 +7165,49 @@ function createOverlayTemplate(id, text = "Загрузка...", hidden = false)
 }
 
 
+;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/returnLostFilter.js
+function returnLostFilter (id){
+    const url       = window.location.search;
+    const params    = new URLSearchParams(url);
+    const viewParam = params.get("view"); 
+
+    
+    if (viewParam == "filter"){
+        $$("dashFilterBtn").callEvent("clickEvent", [ "" ]);
+
+        const data = webix.storage.local.get("dashFilterState");
+  
+        if (data){
+            const content = data.content;
+          
+            if (content){
+                content.forEach(function(el, i){
+                    const input = $$(el.id);
+                    if (input){
+                        let value = el.value;
+
+                        if (input.config.id.includes("-time")){
+                            const formatting = webix.Date.dateToStr("%H:%i:%s");
+                            value = formatting(value);
+                        }
+                        
+                        
+                        input.setValue(value);
+                    }
+                });
+
+            }
+        
+        }
+      
+    }
+}
+
+
 ;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/dynamicElements/_layout.js
+
+
+
 
 
 
@@ -7249,12 +7302,14 @@ function createDashHeadline(){
 function addSuccessView (dataCharts){
   
     if (!_layout_action){
+   
         Action.removeItem      ($$("dash-headline-container"));
         createDashHeadline     ();
         createDashboardCharts  (idsParam, dataCharts);
         createFilterLayout     (inputsArray);
-       
-    } else {
+        returnLostFilter       (idsParam);
+
+    } else { // charts updated by click button
         Action.removeItem       ($$("dashboardInfoContainerInner"));
         createDashboardCharts   (idsParam, dataCharts);
     }
@@ -7351,7 +7406,7 @@ function createDynamicElems ( path, array, ids, btnPress = false ) {
     idsParam    = ids;
     _layout_action      = btnPress;
     url         = path;
- 
+
     getChartsLayout();
 
 }
@@ -7646,8 +7701,55 @@ function clickBtn(i, inputs, ids, action){
 
 
 
+
+
+
 const elements_logNameFile = "dashboard => createSpace => filter";
  
+
+
+function setTabInfo(sentVals){
+    
+    const tabData =  mediator.tabs.getInfo();
+
+    if (tabData){
+        if (!tabData.temp){
+            tabData.temp = {};
+        }
+        tabData.temp.filter = {
+            dashboards: true,
+            values    : sentVals,
+        };
+    }
+}
+
+function setToStorage(input){
+
+    const container = input.getParentView();
+    const childs    = container.getChildViews();
+    const newValues = [];
+
+    childs.forEach(function(el){
+
+        if (el.config.view == "datepicker"){
+            newValues.push({
+                id    : el.config.id,
+                value : el.config.value
+            });
+        }
+    });
+  
+    if (newValues.length){
+        const content = {
+            content : newValues
+        };
+        webix.storage.local.put("dashFilterState", content);
+
+        setTabInfo(newValues);
+    }
+
+   
+}
 
 const elements_inputsArray = [];
 let   elements_findAction;
@@ -7688,6 +7790,7 @@ function elements_createDate(type, input){
         editable    : true,
         value       : new Date(),
         placeholder : input.label,
+        keyPressTimeout:900,
         height      : 42,
         on          : {
             onItemClick:function(){
@@ -7700,6 +7803,17 @@ function elements_createDate(type, input){
                 );
 
                setAdaptiveWidth(this);
+            },
+
+            onChange:function(newV, oldV, config){
+                if(config){
+                    setToStorage(this);
+                }
+               
+            },
+
+            onTimedKeyPress:function(){
+                setToStorage(this);
             },
         }
     };
@@ -7718,6 +7832,8 @@ function elements_createDate(type, input){
 
 }
 
+let isClicked = false;
+
 function elements_createTime (type){
     const timeTemplate =  {   
         view        : "datepicker",
@@ -7725,6 +7841,7 @@ function elements_createTime (type){
         placeholder : "Время",
         height      : 42,
         editable    : true,
+        keyPressTimeout:900,
         value       : "00:00:00",
         type        : "time",
         seconds     : true,
@@ -7748,6 +7865,7 @@ function elements_createTime (type){
 
             onTimedKeyPress:function(){
                 setNullTimeValue(this);
+                setToStorage(this);
             },
             onAfterRender: function () {
                 this.getInputNode()
@@ -7756,7 +7874,12 @@ function elements_createTime (type){
                     "Часы, минуты, секунды"
                 );
                 setAdaptiveWidth(this);
-            }
+            },
+            // onChange:function(newValue, oldValue, config){
+            //     console.log(newValue, oldValue, config)
+            //     setToStorage(this);
+            // },
+       
            
         }
     };
@@ -7851,9 +7974,10 @@ function createInputs( input ){
 }
 
 function createFilter (inputs, el, ids){
-    elements_idsParam = ids;
+    elements_idsParam           = ids;
     elements_inputsArray.length = 0;
-    const values = Object.values(inputs);
+
+    const values       = Object.values(inputs);
 
     values.forEach(function(input, i){
 
@@ -8078,6 +8202,7 @@ class Dashboards {
     }
 
     defaultState(){
+      
         Action.hideItem($$("dashboardTool"));
         Action.showItem($$("dashboardInfoContainer"));
     }
@@ -8098,7 +8223,7 @@ function autorefresh_setIntervalConfig(type, counter){
     interval = setInterval(
         () => {
         
-            const table         = getTable();
+            const table         = commonFunctions_getTable();
             const isAutoRefresh = table.config.autorefresh;
             console.log(isAutoRefresh, getItemId(), "isAutoRefresh")
             if (isAutoRefresh){
@@ -8148,7 +8273,7 @@ function autorefresh_autorefresh (data){
 
     clearPastIntervals();
 
-    const table = getTable();
+    const table = commonFunctions_getTable();
 
 
     if (data.autorefresh){
@@ -8480,7 +8605,7 @@ function isExists(value){
 
 
 function returnValue(fieldValue){
-    const table = getTable();
+    const table = commonFunctions_getTable();
     const cols  = table.getColumns(true);
     
    
@@ -8517,7 +8642,7 @@ function createContextSpace_getLinkParams(param){
 
 function createContextSpace_selectContextId(){
     const idParam = createContextSpace_getLinkParams("id");
-    const table   = getTable();
+    const table   = commonFunctions_getTable();
     
     if (table && table.exists(idParam)){
         table.select(idParam);
@@ -8577,7 +8702,7 @@ function isEditParamExists(){
 
 
 function returnLostData(){
-
+  
     if (isEditParamExists()){
         $$("table-editTableBtnId").callEvent("clickEvent", [ "" ]);
     }
@@ -8598,6 +8723,8 @@ function returnLostData(){
 
             if (tableId == field ){
                 Action.hideItem($$("filterTableForm"));
+
+               
         
                 if (status === "put"){
                     const id = values.id;
@@ -8628,7 +8755,7 @@ function returnSortData(){
     const values = webix.storage.local.get("tableSortData");
 
     if (values){
-        const table = getTable();
+        const table = commonFunctions_getTable();
         table.config.sort = {
             idCol : values.idCol,
             type  : values.type
@@ -8870,7 +8997,7 @@ function clearTableFilter(){
 
 function clearSpace(){
 
-    clearTableFilter();
+//    clearTableFilter();
 
     const values = Filter.getAllChilds ();
  
@@ -8982,9 +9109,9 @@ function getFilterState(){
 
 
 
-function setTabInfo(id, sentVals){
+function setStateToStorage_setTabInfo(id, sentVals){
     const tabData =  mediator.tabs.getInfo();
-    console.log(id, tabData)
+ 
     if (tabData){
         if (!tabData.temp){
             tabData.temp = {};
@@ -9004,7 +9131,7 @@ function setState () {
         values         : result
     };
 
-    setTabInfo(id, sentObj);
+    setStateToStorage_setTabInfo(id, sentObj);
 
     webix.storage.local.put(
         "currFilterState", 
@@ -9066,7 +9193,7 @@ function setFilterCounterVal(table){
 
 async function resetTable(){
     const itemTreeId = getItemId ();
-    const table      = getTable  ();
+    const table      = commonFunctions_getTable  ();
     const query      = [
         `query=${itemTreeId}.id+%3E%3D+0&sorts=${itemTreeId}.id&limit=80&offset=0`
     ];
@@ -9258,7 +9385,7 @@ class Filter extends FilterPull {
     }
 
     static showApplyNotify(show = true){
-        const table   = getTable();
+        const table   = commonFunctions_getTable();
 
         if (table){
             const tableId = table.config.id;
@@ -9279,7 +9406,7 @@ class Filter extends FilterPull {
     }
 
     static hideInputsContainers(visibleInputs){
-        const table = getTable();
+        const table = commonFunctions_getTable();
         const cols  = table.getColumns();
         cols.forEach(function(col){
             const found = visibleInputs.find(element => element == col.id);
@@ -10357,17 +10484,27 @@ function setBtnsValue(el){
 }
 
 function showParentField (el){
+  
     const idEl      = el.id;
     const element   = $$(idEl);
-    const htmlClass = element.config.columnName;
-    Filter.setFieldState(1, htmlClass, idEl);
-
-    setBtnsValue(el);
-    setValue    (element, el.value);
+    if (element){
+        const htmlClass = element.config.columnName;
+        Filter.setFieldState(1, htmlClass, idEl);
+    
+        setBtnsValue(el);
+        setValue    (element, el.value);
+    } else {
+        errors_setFunctionError(
+            "element is " + element, 
+            userTemplate_logNameFile, 
+            "showParentField"
+        ); 
+    }
+    
 }
 
 function createChildField(el){
-    const table = getTable();
+    const table = commonFunctions_getTable();
     const col   = table.getColumnConfig(el.parent);
  
     const idField = createChildFields  (col, el.index);
@@ -10428,9 +10565,9 @@ function userTemplate_hideSegmentBtn(){
 
 
 function createWorkspace(prefs){
-    
-    Filter.clearFilter();
 
+    Filter.clearFilter();
+ 
  
     prefs.forEach(function(el){
         if (!el.parent){
@@ -10442,7 +10579,7 @@ function createWorkspace(prefs){
     });
 
     userTemplate_hideSegmentBtn();
-
+ 
 }
 
 
@@ -10552,13 +10689,12 @@ function hideHtmlContainers(){
 
 }
 
-function returnLostFilter(id){
+function returnLostFilter_returnLostFilter(id){
     const url       = window.location.search;
     const params    = new URLSearchParams(url);
     const viewParam = params.get("view"); 
 
-    
-
+  
 
     if (viewParam == "filter"){
         const data = webix.storage.local.get("currFilterState");
@@ -10566,13 +10702,13 @@ function returnLostFilter(id){
         Action.hideItem($$("table-editForm"));
 
         $$("table-filterId").callEvent("clickEvent", [ "" ]);
-
+   
         if (data){
       
             const activeTemplate = data.activeTemplate;
             Filter.setActiveTemplate(activeTemplate); // option in popup library
         
-          
+           
             if (isDataExists(data) && id == data.id){
  
                 createWorkspace(data.values.values);
@@ -10582,13 +10718,13 @@ function returnLostFilter(id){
                 Filter.enableSubmitButton();
         
             }
-
+       
             if (activeTemplate){
                 Action.hideItem($$("templateInfo"));
             }
 
             Filter.setStateToStorage();
-   
+ 
         }
     }
 
@@ -10653,7 +10789,7 @@ function checkCondition(array){
         Filter.setFieldState(1, id);
 
     } else {
-        const table = getTable();
+        const table = commonFunctions_getTable();
         const col   = table.getColumnConfig(id);
         inputId     = createChildFields(col);
 
@@ -10818,6 +10954,7 @@ function returnDashboardFilter(filter){
 
 
 
+
 const loadRows_logNameFile = "table => createSpace => loadData";
 
 
@@ -10942,6 +11079,7 @@ function filterParam(){
 
 
 async function returnFilter(tableElem){
+ 
     const filterString = tableElem.config.filter;
     const urlParameter = filterParam();
 
@@ -10956,8 +11094,12 @@ async function returnFilter(tableElem){
 
     if (!result.filter){
         result.prefs = false;
+    
+   
         if (filterString && filterString.table === itemTreeId){
             result.filter = filterString.query;
+            const id = tableElem.config.id + "_applyNotify";
+            Action.showItem($$(id));
 
         } else {
             result.filter = itemTreeId +'.id+%3E%3D+0';
@@ -11119,20 +11261,26 @@ async function loadTableData(table, id, idsParam, offset){
                     //     }
                     // ]
         
-   
                     setTableState(table);
                     parseRowData (data);
-            
+         
                     if (!offsetParam){
                     
                         createContextSpace_selectContextId      ();  
-                        returnLostData       ();
-                        returnLostFilter     (itemTreeId);
+                      //  returnLostData       ();
+                        mediator.tables.restore.restoreEditForm();
+                        mediator.tables.restore.restoreFilter  (itemTreeId);
+                               
+            
+                      //  returnLostFilter     (itemTreeId);
                         if (isPrefs){
                             returnDashboardFilter(filter);
                         }
                     }
-               
+       
+          
+                 
+
                     setCounterVal (reccount, tableElem);
                 } else {
                     errors_setFunctionError(
@@ -11160,6 +11308,7 @@ async function loadTableData(table, id, idsParam, offset){
 
         }
     });
+
 }
 
 
@@ -12564,20 +12713,25 @@ function preparationTable (){
     }
 }
 
-
+async function loadFields(){
+    await LoadServerData.content("fields");
+    return GetFields.keys;
+}
 
 async function generateTable (showExists){ 
- 
+    let keys;
+    
     if (!showExists){
-        await LoadServerData.content("fields");
+        keys = await loadFields();
+    } 
+
+    if (!keys && showExists){ // if tab is clicked but dont have fields
+        keys = await loadFields();
     }
-
-
-    const keys = GetFields.keys;
-
+ 
     if (keys){
         const columnsData = createTableCols (generateTable_idsParam, generateTable_idCurrTable);
-
+  
         createDetailAction  (columnsData, generateTable_idsParam, generateTable_idCurrTable);
 
         createElements_createDynamicElems  (generateTable_idCurrTable, generateTable_idsParam);
@@ -12592,7 +12746,7 @@ async function generateTable (showExists){
 
 
 function createTable (id, ids, showExists) {
- 
+
     generateTable_idCurrTable = id;
     generateTable_idsParam    = ids;
 
@@ -12855,7 +13009,7 @@ function moveListItem(sentVals, table){
 }
 
 function setUpdateCols(sentVals){
-    const table   = getTable();
+    const table   = commonFunctions_getTable();
 
     setVisibleState (sentVals, table);
     moveListItem    (sentVals, table);
@@ -12864,7 +13018,7 @@ function setUpdateCols(sentVals){
 
 
 function setSize(sentVals){
-    const table = getTable();
+    const table = commonFunctions_getTable();
     function setColWidth(el){
         table.eachColumn( 
             function (columnId){ 
@@ -13082,7 +13236,7 @@ const clearBtn_logNameFile = "table => columnsSettings => visibleCols => clearBt
 
 
 function returnContainer(){
-    const tableId = getTable().config.id;
+    const tableId = commonFunctions_getTable().config.id;
     if (tableId == "table"){
         return $$("tableContainer");
     } else if (tableId == "table-view"){
@@ -13094,7 +13248,7 @@ function returnContainer(){
 function clearBtn_setColsSize(col, listItems){
     const container  = returnContainer();
 
-    const table      = getTable();
+    const table      = commonFunctions_getTable();
     const countCols  = listItems.length;
     const scroll     = 17;
     const tableWidth = container.$width - scroll;
@@ -13163,7 +13317,7 @@ function showCols(){
 }
 
 function clearBtnColsClick (){
-    clearBtn_table        = getTable();
+    clearBtn_table        = commonFunctions_getTable();
 
     values = [];
 
@@ -13490,7 +13644,7 @@ function visibleColsSubmitClick (){
     const listPull  = list.data.pull;
     const listItems = Object.values(listPull);
     const values    = [];
-    const table     = getTable();
+    const table     = commonFunctions_getTable();
 
     const containerWidth = window.innerWidth - $$("tree").$width - 77; 
 
@@ -13817,7 +13971,7 @@ function createPopup(){
 const visibleColsBtn_logNameFile = "table => toolbar => visibleColsBtn";
 
 function visibleColsBtn_createSpace(){
-    const table    = getTable();
+    const table    = commonFunctions_getTable();
     const list     = $$("visibleList");
     const listPull = Object.values(list.data.pull);
     const cols     = table.getColumns(); 
@@ -14198,6 +14352,20 @@ function setPrimaryState(filter){
     Action.showItem($$("filterTableBarContainer"));
 }
 
+function removeTempData(){
+    webix.storage.local.remove("currFilterState");
+
+    const tabbar = $$("globalTabbar");
+    const idTab  = tabbar.getValue();
+    const tab    = tabbar.getOption(idTab);
+
+    if (tab.info.temp){
+        if (tab.info.temp.filter){
+            delete tab.info.temp.filter;
+        }
+    }
+}
+
 function setSecondaryState(){
     setBtnCssState(
         toolbarBtnClick_btnClass, 
@@ -14206,6 +14374,9 @@ function setSecondaryState(){
     );
     Action.hideItem($$("filterTableForm"));
     Action.hideItem($$("filterTableBarContainer"));
+ 
+    removeTempData();
+
 }
 
 function toolbarBtnLogic(filter){
@@ -14503,7 +14674,7 @@ function createTemplateCounter(idEl, text){
 
 
             if (keys.length){
-                const table = getTable();
+                const table = commonFunctions_getTable();
               
                 const obj = JSON.parse(values);
 
@@ -14814,13 +14985,23 @@ function isEqual(obj1, obj2) {
 }
 
 function property_setTabInfo(sentVals){
+    
     const tabData =  mediator.tabs.getInfo();
+ 
+    const tableId = $$("table").getSelectedId();
+    let id;
+    if (tableId){
+        id = tableId.id;
+    }
 
     if (tabData){
         if (!tabData.temp){
             tabData.temp = {};
         }
-        tabData.temp.edit = sentVals;
+        tabData.temp.edit = {
+            values: sentVals,
+            selected: id
+        };
     }
 }
 
@@ -15563,6 +15744,8 @@ const backBtn = new buttons_Button({
 
 
 
+
+
 const submitBtn_logNameFile = "filterTable => popup => submitBtn";
 
 
@@ -15692,6 +15875,13 @@ function submitBtn_createFilter(){
     );
 }
 
+function setToTabStorage(){
+    const data = mediator.tabs.getInfo();
+
+    if (data.temp && data.temp.queryFilter){
+        data.temp.queryFilter = null;
+    }
+}
 
 async function createModalBox(table){
     return modalBox("С таблицы будет сброшен текущий фильтр", 
@@ -15705,6 +15895,7 @@ async function createModalBox(table){
                 if (result){
                     Filter.showApplyNotify(false);
                     table.config.filter = null;
+                    setToTabStorage();
                     
                 } 
 
@@ -15755,9 +15946,9 @@ function isUnselectAll(){
 }
 
 function getCheckboxData(){
-    const table          = getTable();
+    const table          = commonFunctions_getTable();
     const isFilterExists = table.config.filter;
-
+ 
     if (isUnselectAll() && isFilterExists){
         createModalBox(table).then(function(result){
             if (result){
@@ -15791,7 +15982,7 @@ function popupSubmitBtn (){
 
         if (tabbarValue == "editFormPopupLib"){
 
-            const table          = getTable();
+            const table          = commonFunctions_getTable();
             const isFilterExists = table.config.filter;
          
             if (isFilterExists){
@@ -16778,6 +16969,8 @@ const editBtn = new buttons_Button({
 
 
 
+
+
  
 const buttons_submitBtn_logNameFile   = "tableFilter => buttons => submitBtn";
 
@@ -16817,7 +17010,7 @@ function setName(value){
 }
 
 function isBool(name){
-    const table = getTable();
+    const table = commonFunctions_getTable();
     const col   = table.getColumnConfig(name);
     const type  = col.type;
 
@@ -16948,11 +17141,29 @@ function createSentQuery(){
     return query.join("");
 }
 
+function setConfigToTab(query){
+    const data = mediator.tabs.getInfo();
+    if (!data.temp){
+        data.temp = {};
+    }
+
+    data.temp.queryFilter = query;
+
+    mediator.tabs.setInfo(data);
+
+}
+
 function setTableConfig(table, query){
+     
     table.config.filter = {
-        table:  table.config.filter,
+        table:  table.config.idTable,
         query:  query
     };
+
+ 
+
+    setConfigToTab(query);
+
 }
 
 function setData(currTableView, data){
@@ -16976,7 +17187,7 @@ function setData(currTableView, data){
 
 function setCounterValue (reccount){
     try{
-        const table   = getTable();
+        const table   = commonFunctions_getTable();
         const id      = table.config.id;
         const counter = $$(id+"-findElements");
 
@@ -17000,7 +17211,7 @@ function filterSubmitBtn (){
 
     if (isValid){
 
-        const currTableView = getTable();
+        const currTableView = commonFunctions_getTable();
         const query         = createSentQuery();
 
         setTableConfig(currTableView, query);
@@ -17161,8 +17372,16 @@ function clearInputSpace(){
 
 }
 
+function resetBtn_setToTabStorage(){
+    const data = mediator.tabs.getInfo();
+
+    if (data.temp && data.temp.queryFilter){
+        data.temp.queryFilter = null;
+    }
+}
+
 function resetFilterBtnClick (){
-    const table = getTable();
+    const table = commonFunctions_getTable();
     try {
 
         modalBox("Все фильтры будут удалены", 
@@ -17177,6 +17396,7 @@ function resetFilterBtnClick (){
                         Filter.showApplyNotify(false);
                     }
                     table.config.filter = null;
+                    resetBtn_setToTabStorage()
                     Action.hideItem($$("templateInfo"));
                 });
               
@@ -17213,7 +17433,7 @@ const resetBtn = new buttons_Button({
     onFunc: {
         resetFilter: function(){
   
-            const table         = getTable();
+            const table         = commonFunctions_getTable();
             table.config.filter = null;
 
             Filter.resetTable().then(function(result){
@@ -19650,7 +19870,7 @@ const onFuncTable = {
     onAfterDelete: function() {
         
         function setOverlayState(){
-            const id    = getTable().config.id;
+            const id    = commonFunctions_getTable().config.id;
             const table = $$(id);
 
 
@@ -20028,8 +20248,33 @@ function dropColsSettings(table){
 }
 
 
+;// CONCATENATED MODULE: ./src/js/components/table/createSpace/_tableSpaceMediator.js
+
+
+
+
+class TableSpace {
+    static restoreFilter(id){
+        returnLostFilter_returnLostFilter(id);
+    }
+
+    static restoreEditForm(){
+        returnLostData();
+    }
+}
+
+
 ;// CONCATENATED MODULE: ./src/js/components/table/filterForm/setDefaultState.js
 
+
+
+
+function setToolbarBtnState(){
+    const node = $$("table-filterId").getNode();
+
+    Filter.addClass   (node, "webix-transparent-btn");
+    Filter.removeClass(node, "webix-transparent-btn--primary");
+}
 
 
 function filterFormDefState(){
@@ -20050,7 +20295,8 @@ function filterFormDefState(){
     Action.removeItem(inputs);
 
     Action.showItem($$("filterEmptyTempalte"));
- 
+    
+    setToolbarBtnState();
 }
 
 
@@ -20074,6 +20320,8 @@ function toolsDefState(){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/table/_tableMediator.js
+
+
 
 
 
@@ -20138,7 +20386,7 @@ class Tables {
     }
 
     showExists(id){
-        const table = getTable().config.id;
+        const table = commonFunctions_getTable().config.id;
         createTable(table, id, true);
     }
 
@@ -20153,6 +20401,10 @@ class Tables {
 
     get filter (){
         return Filter;
+    }
+
+    get restore(){
+        return TableSpace;
     }
   
     defaultState(type){
@@ -20195,6 +20447,9 @@ class Tables {
         }
       
     }
+
+
+  
 
 }
 
@@ -22156,8 +22411,37 @@ const selectVisualElem_logNameFile = "treeSidebar => selectVisualElem";
 
 function setNameToTab(){
     mediator.tabs.changeTabName(false, false);
+    const data = mediator.tabs.getInfo();
+    data.tree  = {none:true};
+    mediator.tabs.setInfo(data);
+ 
 }
 
+function isOtherViewTab(){
+    const tabbar = $$("globalTabbar");
+    const id     = tabbar.getValue();
+    const option = $$("globalTabbar").getOption (id);
+
+    if (option.isOtherView){
+        return true;
+    }
+
+}
+
+function createTab(){
+    $$("globalTabbar").addOption({
+        id    : webix.uid(), 
+        value : "Новая вкладка", 
+        info  : {
+            tree:{
+                none:true
+                //null
+            }
+        },
+        close : true, 
+    }, true);
+    
+}
 
 function createUndefinedView(){
 
@@ -22182,8 +22466,15 @@ function createUndefinedView(){
 
     if ( !($$(id)) ){
         try{
+     
+            if (isOtherViewTab()){
+                createTab();
+                Backbone.history.navigate("tree/tab?new=true", { trigger : true });
+            } else {
+                setNameToTab();
+            }
+
             $$("container").addView(view, 2);
-            setNameToTab();
         } catch (err){ 
             errors_setFunctionError(
                 err, 
@@ -22481,7 +22772,7 @@ async function getMenuChilds(uid) {
 
 
 
-function loadFields(selectId, treeItem){
+function loadFields_loadFields(selectId, treeItem){
     const uid = webix.uid();
   
     loadFields_tree = $$("tree");
@@ -22664,11 +22955,11 @@ function treeSidebar () {
             },
 
             onBeforeOpen:function (id, selectItem){
-                loadFields(id, selectItem);
+                loadFields_loadFields(id, selectItem);
             },
 
             onAfterSelect:function(id){
-        
+                
                 if (!this.config.isTabSelect){ // !(tree select by tab click)
                   //  mediator.tabs.changeTabName(id);
                     getFields (id);
@@ -23422,7 +23713,9 @@ function itemClickContext(id){
         clickMenu("cp", "/cp");
 
     } else if (id == "settings"){
-        clickMenu("settings", "/settings");
+       // clickMenu("settings", "/settings");
+       clearTree();
+       navigateTo ("/settings");
 
     } else if (id == "favs"){
         const popup = $$("popupFavsLink");
@@ -23748,7 +24041,8 @@ function add(){
 
     Action.showItem ($$("webix__none-content"));
     Action.hideItem ($$("webix__null-content"));
-    window.history.pushState('', '', "?new=true");
+    Backbone.history.navigate("tree/tab?new=true", { trigger : true });
+ //   window.history.pushState('', '', "?new=true");
 }
 
 function remove(){
@@ -23761,6 +24055,25 @@ function remove(){
 
 
 
+function _tabMediator_isOtherViewTab(id){
+    const option = $$("globalTabbar").getOption (id);
+
+    if (option.isOtherView){
+        return true;
+    }
+
+}
+
+function _tabMediator_createTab(){
+    $$("globalTabbar").addOption({
+        id    : webix.uid(), 
+        value : " ", 
+        info  : {
+        },
+        close : true, 
+    }, true);
+    
+}
 class Tabs {
     addTab(){
         add();
@@ -23771,10 +24084,17 @@ class Tabs {
     }
 
     setInfo(values){
-        const tabbar   = $$("globalTabbar");
-        const tabId    = tabbar.getValue();
-        const tabIndex = tabbar.optionIndex(tabId);
 
+        const tabbar = $$("globalTabbar");
+        let tabId = tabbar.getValue();
+
+        if ( _tabMediator_isOtherViewTab(tabId)){
+            _tabMediator_createTab();
+            tabId = tabbar.getValue();
+        }
+       
+        const tabIndex = tabbar.optionIndex(tabId);
+ 
         if (tabIndex > -1){
 
             tabbar.config.options[tabIndex].info = values;
@@ -24512,9 +24832,25 @@ function setUserValues(){
 }
 
  
+function setTab(id){
+    $$("globalTabbar").addOption({
+        id    : id, 
+        value : "Смена пароля", 
+        isOtherView : true,
+        info  : {
+            tree:{
+                view : "cp"
+            }
+        },
+        close : true, 
+    }, true);
+}
+
 function cp_createCp(){
     const auth = $$("user_auth");
     
+    setTab("cp");
+
     if(auth){
         Action.showItem(auth);
     } else {
@@ -24623,6 +24959,19 @@ function getDataUserprefs(){
     });
 }
 
+function settings_setTab(id){
+    $$("globalTabbar").addOption({
+        id    : id, 
+        value : "Настройки", 
+        isOtherView : true,
+        info  : {
+            tree:{
+                view : "settings"
+            }
+        },
+        close : true, 
+    }, true);
+}
 
 function settingsRouter(){
 
@@ -24634,6 +24983,9 @@ function settingsRouter(){
     if (mediator.sidebar.dataLength() == 0){
         RouterActions.createContentSpace();
     }
+
+    settings_setTab(id);
+
 
     if (elem){
         Action.showItem(elem);
@@ -25411,25 +25763,51 @@ function createAddBtn(){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/tabs/restoreTempData.js
-
-
-
-///внести return fitler & edit в медиатор
+ 
 
 
 function restoreTempData(tempConfig, field){
-
+ 
     const filter = tempConfig.filter;
     const edit   = tempConfig.edit;
-
-    console.log(field)
+ 
     if (filter){
-        webix.storage.local.put("currFilterState", filter);
-        returnLostFilter(field);
-    }
-      
+     
+        if (filter.dashboards){
+            const data = {
+                content : filter.values
+            };
+            
+            webix.storage.local.put("dashFilterState", data);
+        } else {
+       
+            if (tempConfig.queryFilter){
+          
+                const table = commonFunctions_getTable();
+                if (table){
+                    table.config.filter = {
+                        table : filter.id,
+                        query : tempConfig.queryFilter
+                    };
+                  
+                }
+
+             
+            }
+            webix.storage.local.put("currFilterState", filter);
+        }
+   
+        window.history.pushState('', '', "?view=filter");
+  
+    } 
+ 
     if (edit){
-        webix.storage.local.put("editFormTempData", edit);
+      
+        webix.storage.local.put("editFormTempData", edit.values);
+        if (edit.selected){
+            window.history.pushState('', '', "?id=" + edit.selected);
+        }
+
     }
 
 
@@ -25437,7 +25815,7 @@ function restoreTempData(tempConfig, field){
 }
 
 
-;// CONCATENATED MODULE: ./src/js/components/tabs/showTreeItem.js
+;// CONCATENATED MODULE: ./src/js/components/tabs/showItem.js
 
 
 
@@ -25495,13 +25873,11 @@ function selectTree(id, isOtherTab){
     }
 }
 
-function showTreeItem_setLink(id){
-    console.log(id)
-
+function showItem_setLink(id){
 
     const path = "tree/" + id;
     Backbone.history.navigate(path, { trigger : true });
-    const search = window.location.search;
+   // const search = window.location.search;
     // if (search.length){
     //     const link    = window.location.href;
     //     const index   = link.lastIndexOf("?");
@@ -25525,36 +25901,40 @@ function showTreeItem_setLink(id){
 
 function setEmptyState(){
     mediator.hideAllContent();
-    window.history.pushState('', '', "?new=true");
-  
+    Backbone.history.navigate("tree/tab?new=true", { trigger : true });
     Action.showItem ($$("webix__none-content"));
 }
 
 
-function showTreeItem(config, isOtherTab){
-    const id              = config.field;
-    const type            = config.type;
- 
-    if (config.none){ //none-content
-        setEmptyState();
-
+function showTreeItem(config, isOtherTab, isOtherView){
+    
+    if (isOtherView){
+        Backbone.history.navigate("/" + config.view, { trigger : true });
     } else {
-        const selectElem = returnSelectElem(type);
 
-        hideOtherElems(selectElem);
+        const id              = config.field;
+        const type            = config.type;
+    
+        if (config.none){ //none-content
+            setEmptyState();
 
-        Action.showItem ($$(selectElem));
-  
+        } else {
+            const selectElem = returnSelectElem(type);
 
-        if (id){
-            showContent(selectElem, id);
-            showTreeItem_setLink    (id);
-            selectTree (id, isOtherTab);
+            hideOtherElems(selectElem);
+
+            Action.showItem ($$(selectElem));
+    
+
+            if (id){
+                showContent(selectElem, id);
+                showItem_setLink    (id);
+                selectTree (id, isOtherTab);
+
+            }
 
         }
-
     }
-   
 
 }
 
@@ -25587,6 +25967,7 @@ function setEmptyTabLink(){
     Backbone.history.navigate("tree/tab?new=true", { trigger : true });
 }
 
+
 function createTabbar(){
     const tabbar = {
         view    : "tabbar",
@@ -25600,20 +25981,16 @@ function createTabbar(){
            
         ],
         on:{
-            onItemClick:function(){
-                webix.message({
-                    text  :"Блок находится в разработке",
-                    type  :"debug", 
-                    expire: 10000,
-                });
-            },
-       
+
             onBeforeTabClick:function(id){
                 mediator.tables.defaultState();
+                mediator.dashboards.defaultState();
+                mediator.forms.defaultState();
                 prevValue = this.getValue();
             },
 
             onAfterTabClick:function(id){
+
                 let isOtherTab = true;
 
                 if (id == prevValue){
@@ -25628,16 +26005,14 @@ function createTabbar(){
                 const tempConfig = option.info.temp;
 
                 if (treeConfig){
-                    showTreeItem(treeConfig, isOtherTab);
+                    showTreeItem(treeConfig, isOtherTab, option.isOtherView);
 
              
                     if (tempConfig){
                         restoreTempData(tempConfig, treeConfig.field);
                     }
                 }
-
-        
-             
+ 
 
                 setStateToStorage(id);
 
@@ -25685,7 +26060,7 @@ function createTabbar(){
             // сделать параметр для единственной пустой вкладки
 
             onOptionRemove:function(removedTab, lastTab){
- 
+              
                 const tabbar = this;
 
                 if (lastTab.length){
@@ -25716,7 +26091,7 @@ function createTabbar(){
                   
     
                     if (treeConfig){
-                        showTreeItem(treeConfig, true);
+                        showTreeItem(treeConfig, true, option.isOtherView);
                     }
     
                     if (tempConfig){
@@ -25748,7 +26123,7 @@ function createTabbar(){
 
 
 ;// CONCATENATED MODULE: ./src/js/app.js
-console.log("expa 1.0.71"); 
+console.log("expa 1.0.72"); 
 
 
 

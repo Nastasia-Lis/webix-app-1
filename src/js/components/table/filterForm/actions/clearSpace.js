@@ -22,7 +22,7 @@ function clearTableFilter(){
 
 function clearSpace(){
 
-    clearTableFilter();
+//    clearTableFilter();
 
     const values = Filter.getAllChilds ();
  

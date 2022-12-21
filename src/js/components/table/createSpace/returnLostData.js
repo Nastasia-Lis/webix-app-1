@@ -45,7 +45,7 @@ function isEditParamExists(){
 
 
 function returnLostData(){
-
+  
     if (isEditParamExists()){
         $$("table-editTableBtnId").callEvent("clickEvent", [ "" ]);
     }
@@ -66,6 +66,8 @@ function returnLostData(){
 
             if (tableId == field ){
                 Action.hideItem($$("filterTableForm"));
+
+               
         
                 if (status === "put"){
                     const id = values.id;

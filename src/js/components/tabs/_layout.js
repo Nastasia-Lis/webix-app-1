@@ -1,7 +1,7 @@
 import { createAddBtn }      from "./logic.js";
 import { mediator }          from "../../blocks/_mediator.js";
 import { restoreTempData }   from "./restoreTempData.js";
-import { showTreeItem }      from "./showTreeItem.js";
+import { showTreeItem }      from "./showItem.js";
 
 
 let prevValue;
@@ -25,6 +25,7 @@ function setEmptyTabLink(){
     Backbone.history.navigate("tree/tab?new=true", { trigger : true });
 }
 
+
 function createTabbar(){
     const tabbar = {
         view    : "tabbar",
@@ -38,20 +39,16 @@ function createTabbar(){
            
         ],
         on:{
-            onItemClick:function(){
-                webix.message({
-                    text  :"Блок находится в разработке",
-                    type  :"debug", 
-                    expire: 10000,
-                });
-            },
-       
+
             onBeforeTabClick:function(id){
-                mediator.tables.defaultState();
+                mediator.tables     .defaultState();
+                mediator.dashboards .defaultState();
+                mediator.forms      .defaultState();
                 prevValue = this.getValue();
             },
 
             onAfterTabClick:function(id){
+
                 let isOtherTab = true;
 
                 if (id == prevValue){
@@ -66,16 +63,14 @@ function createTabbar(){
                 const tempConfig = option.info.temp;
 
                 if (treeConfig){
-                    showTreeItem(treeConfig, isOtherTab);
+                    showTreeItem(treeConfig, isOtherTab, option.isOtherView);
 
              
                     if (tempConfig){
                         restoreTempData(tempConfig, treeConfig.field);
                     }
                 }
-
-        
-             
+ 
 
                 setStateToStorage(id);
 
@@ -123,7 +118,7 @@ function createTabbar(){
             // сделать параметр для единственной пустой вкладки
 
             onOptionRemove:function(removedTab, lastTab){
- 
+              
                 const tabbar = this;
 
                 if (lastTab.length){
@@ -154,7 +149,7 @@ function createTabbar(){
                   
     
                     if (treeConfig){
-                        showTreeItem(treeConfig, true);
+                        showTreeItem(treeConfig, true, option.isOtherView);
                     }
     
                     if (tempConfig){

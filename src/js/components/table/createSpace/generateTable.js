@@ -69,20 +69,25 @@ function preparationTable (){
     }
 }
 
-
+async function loadFields(){
+    await LoadServerData.content("fields");
+    return GetFields.keys;
+}
 
 async function generateTable (showExists){ 
- 
+    let keys;
+    
     if (!showExists){
-        await LoadServerData.content("fields");
+        keys = await loadFields();
+    } 
+
+    if (!keys && showExists){ // if tab is clicked but dont have fields
+        keys = await loadFields();
     }
-
-
-    const keys = GetFields.keys;
-
+ 
     if (keys){
         const columnsData = createTableCols (idsParam, idCurrTable);
-
+  
         createDetailAction  (columnsData, idsParam, idCurrTable);
 
         createDynamicElems  (idCurrTable, idsParam);
@@ -97,7 +102,7 @@ async function generateTable (showExists){
 
 
 function createTable (id, ids, showExists) {
- 
+
     idCurrTable = id;
     idsParam    = ids;
 

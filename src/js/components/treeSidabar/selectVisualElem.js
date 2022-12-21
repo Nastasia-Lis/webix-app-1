@@ -7,8 +7,37 @@ const logNameFile = "treeSidebar => selectVisualElem";
 
 function setNameToTab(){
     mediator.tabs.changeTabName(false, false);
+    const data = mediator.tabs.getInfo();
+    data.tree  = {none:true};
+    mediator.tabs.setInfo(data);
+ 
 }
 
+function isOtherViewTab(){
+    const tabbar = $$("globalTabbar");
+    const id     = tabbar.getValue();
+    const option = $$("globalTabbar").getOption (id);
+
+    if (option.isOtherView){
+        return true;
+    }
+
+}
+
+function createTab(){
+    $$("globalTabbar").addOption({
+        id    : webix.uid(), 
+        value : "Новая вкладка", 
+        info  : {
+            tree:{
+                none:true
+                //null
+            }
+        },
+        close : true, 
+    }, true);
+    
+}
 
 function createUndefinedView(){
 
@@ -33,8 +62,15 @@ function createUndefinedView(){
 
     if ( !($$(id)) ){
         try{
+     
+            if (isOtherViewTab()){
+                createTab();
+                Backbone.history.navigate("tree/tab?new=true", { trigger : true });
+            } else {
+                setNameToTab();
+            }
+
             $$("container").addView(view, 2);
-            setNameToTab();
         } catch (err){ 
             setFunctionError(
                 err, 

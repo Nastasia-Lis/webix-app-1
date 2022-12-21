@@ -72,6 +72,19 @@ function getDataUserprefs(){
     });
 }
 
+function setTab(id){
+    $$("globalTabbar").addOption({
+        id    : id, 
+        value : "Настройки", 
+        isOtherView : true,
+        info  : {
+            tree:{
+                view : "settings"
+            }
+        },
+        close : true, 
+    }, true);
+}
 
 function settingsRouter(){
 
@@ -83,6 +96,9 @@ function settingsRouter(){
     if (mediator.sidebar.dataLength() == 0){
         RouterActions.createContentSpace();
     }
+
+    setTab(id);
+
 
     if (elem){
         Action.showItem(elem);

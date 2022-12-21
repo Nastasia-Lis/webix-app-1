@@ -56,12 +56,10 @@ function selectTree(id, isOtherTab){
 }
 
 function setLink(id){
-    console.log(id)
-
 
     const path = "tree/" + id;
     Backbone.history.navigate(path, { trigger : true });
-    const search = window.location.search;
+   // const search = window.location.search;
     // if (search.length){
     //     const link    = window.location.href;
     //     const index   = link.lastIndexOf("?");
@@ -85,36 +83,40 @@ function setLink(id){
 
 function setEmptyState(){
     mediator.hideAllContent();
-    window.history.pushState('', '', "?new=true");
-  
+    Backbone.history.navigate("tree/tab?new=true", { trigger : true });
     Action.showItem ($$("webix__none-content"));
 }
 
 
-function showTreeItem(config, isOtherTab){
-    const id              = config.field;
-    const type            = config.type;
- 
-    if (config.none){ //none-content
-        setEmptyState();
-
+function showTreeItem(config, isOtherTab, isOtherView){
+    
+    if (isOtherView){
+        Backbone.history.navigate("/" + config.view, { trigger : true });
     } else {
-        const selectElem = returnSelectElem(type);
 
-        hideOtherElems(selectElem);
+        const id              = config.field;
+        const type            = config.type;
+    
+        if (config.none){ //none-content
+            setEmptyState();
 
-        Action.showItem ($$(selectElem));
-  
+        } else {
+            const selectElem = returnSelectElem(type);
 
-        if (id){
-            showContent(selectElem, id);
-            setLink    (id);
-            selectTree (id, isOtherTab);
+            hideOtherElems(selectElem);
+
+            Action.showItem ($$(selectElem));
+    
+
+            if (id){
+                showContent(selectElem, id);
+                setLink    (id);
+                selectTree (id, isOtherTab);
+
+            }
 
         }
-
     }
-   
 
 }
 

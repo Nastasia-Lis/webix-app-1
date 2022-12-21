@@ -26,13 +26,23 @@ function setBtnsValue(el){
 }
 
 function showParentField (el){
+  
     const idEl      = el.id;
     const element   = $$(idEl);
-    const htmlClass = element.config.columnName;
-    Filter.setFieldState(1, htmlClass, idEl);
-
-    setBtnsValue(el);
-    setValue    (element, el.value);
+    if (element){
+        const htmlClass = element.config.columnName;
+        Filter.setFieldState(1, htmlClass, idEl);
+    
+        setBtnsValue(el);
+        setValue    (element, el.value);
+    } else {
+        setFunctionError(
+            "element is " + element, 
+            logNameFile, 
+            "showParentField"
+        ); 
+    }
+    
 }
 
 function createChildField(el){
@@ -97,9 +107,9 @@ function hideSegmentBtn(){
 
 
 function createWorkspace(prefs){
-    
-    Filter.clearFilter();
 
+    Filter.clearFilter();
+ 
  
     prefs.forEach(function(el){
         if (!el.parent){
@@ -111,7 +121,7 @@ function createWorkspace(prefs){
     });
 
     hideSegmentBtn();
-
+ 
 }
 
 

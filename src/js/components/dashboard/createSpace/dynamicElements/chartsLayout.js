@@ -249,7 +249,7 @@ function createScrollContent(dataCharts){
 }
 
 function createDashboardCharts(idsParam, dataCharts){
-
+    
     const container = $$("dashboardInfoContainer");
 
     const inner =  {   

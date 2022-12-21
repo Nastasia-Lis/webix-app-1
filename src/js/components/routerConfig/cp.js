@@ -24,9 +24,25 @@ function setUserValues(){
 }
 
  
+function setTab(id){
+    $$("globalTabbar").addOption({
+        id    : id, 
+        value : "Смена пароля", 
+        isOtherView : true,
+        info  : {
+            tree:{
+                view : "cp"
+            }
+        },
+        close : true, 
+    }, true);
+}
+
 function createCp(){
     const auth = $$("user_auth");
     
+    setTab("cp");
+
     if(auth){
         Action.showItem(auth);
     } else {

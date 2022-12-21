@@ -6,6 +6,8 @@ import { setFunctionError,
 import { getItemId, 
         getTable, Action }   from "../../../../blocks/commonFunctions.js";
 
+import { mediator }       from "../../../../blocks/_mediator.js";
+
 import { Button }            from "../../../../viewTemplates/buttons.js";
 
 import { Filter }            from "../actions/_FilterActions.js";
@@ -180,11 +182,29 @@ function createSentQuery(){
     return query.join("");
 }
 
+function setConfigToTab(query){
+    const data = mediator.tabs.getInfo();
+    if (!data.temp){
+        data.temp = {};
+    }
+
+    data.temp.queryFilter = query;
+
+    mediator.tabs.setInfo(data);
+
+}
+
 function setTableConfig(table, query){
+     
     table.config.filter = {
-        table:  table.config.filter,
+        table:  table.config.idTable,
         query:  query
     };
+
+ 
+
+    setConfigToTab(query);
+
 }
 
 function setData(currTableView, data){

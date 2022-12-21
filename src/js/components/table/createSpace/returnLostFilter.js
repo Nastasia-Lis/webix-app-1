@@ -31,8 +31,7 @@ function returnLostFilter(id){
     const params    = new URLSearchParams(url);
     const viewParam = params.get("view"); 
 
-    
-
+  
 
     if (viewParam == "filter"){
         const data = webix.storage.local.get("currFilterState");
@@ -40,13 +39,13 @@ function returnLostFilter(id){
         Action.hideItem($$("table-editForm"));
 
         $$("table-filterId").callEvent("clickEvent", [ "" ]);
-
+   
         if (data){
       
             const activeTemplate = data.activeTemplate;
             Filter.setActiveTemplate(activeTemplate); // option in popup library
         
-          
+           
             if (isDataExists(data) && id == data.id){
  
                 createWorkspace(data.values.values);
@@ -56,13 +55,13 @@ function returnLostFilter(id){
                 Filter.enableSubmitButton();
         
             }
-
+       
             if (activeTemplate){
                 Action.hideItem($$("templateInfo"));
             }
 
             Filter.setStateToStorage();
-   
+ 
         }
     }
 

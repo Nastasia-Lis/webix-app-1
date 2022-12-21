@@ -46,7 +46,8 @@ function add(){
 
     Action.showItem ($$("webix__none-content"));
     Action.hideItem ($$("webix__null-content"));
-    window.history.pushState('', '', "?new=true");
+    Backbone.history.navigate("tree/tab?new=true", { trigger : true });
+ //   window.history.pushState('', '', "?new=true");
 }
 
 function remove(){
