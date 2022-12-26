@@ -68,6 +68,7 @@ function createMainView(inputsArray){
 }
 
 
+
 function filterBtnClick (){
     const dashTool      = $$("dashboard-tool-main");
     const container     = $$("dashboardContainer" );
@@ -93,14 +94,16 @@ function filterBtnClick (){
         if (dashTool.isVisible()){
             Action.hideItem (tools);
         
-          //  mediator.linkParam(false, "view");
-            webix.storage.local.remove("dashFilterState");
+            mediator.linkParam(false, "view");
+            mediator.tabs.clearTemp("dashFilterState", "filter");
+          
 
         } else {
             Action.showItem (tools);
             Action.showItem (dashTool);
         
-           // mediator.linkParam(true, {"view": "filter"});
+            mediator.linkParam(true, {"view": "filter"});
+            mediator.tabs.clearTemp("dashTableContext", "context");
         }
     }
 

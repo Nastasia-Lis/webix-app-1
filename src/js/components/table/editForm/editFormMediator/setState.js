@@ -54,12 +54,17 @@ function setStatusProperty(status){
     }
 }
 
+function unsetDirtyProp(){
+    $$("table-editForm").setDirty(false);
+    mediator.tabs.setDirtyParam();
+}
+
 function editTablePostState(){
     const table = $$("table");
     initPropertyForm();
     setWorkspaceState (table);
     setStatusProperty("post");
- 
+    unsetDirtyProp();
     mediator.linkParam(true, {"view": "edit"});
 }
 
@@ -145,12 +150,16 @@ function defPropertyState(){
   
 }
 
-function unsetDirtyProp(){
-    $$("table-editForm").setDirty(false);
-}
 
-function editTableDefState(){
-    unsetDirtyProp();
+
+function editTableDefState(clearDirty){
+
+    if (clearDirty){
+        unsetDirtyProp();   
+    } else {
+        $$("table-editForm").setDirty(false); 
+    }
+ 
     
     Action.hideItem   ($$("table-editForm"    ));
     Action.hideItem   ($$("tablePropBtnsSpace"));

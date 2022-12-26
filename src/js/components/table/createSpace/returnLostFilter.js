@@ -4,6 +4,7 @@ import { Action }            from "../../../blocks/commonFunctions.js";
 import { Filter }            from "../filterForm/actions/_FilterActions.js";
 
 function isDataExists(data){
+    
     if (data && data.values.values.length){
         return true;
     }
@@ -31,9 +32,8 @@ function returnLostFilter(id){
     const params    = new URLSearchParams(url);
     const viewParam = params.get("view"); 
 
-  
-
     if (viewParam == "filter"){
+      
         const data = webix.storage.local.get("currFilterState");
 
         Action.hideItem($$("table-editForm"));

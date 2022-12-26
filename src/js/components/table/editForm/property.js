@@ -133,6 +133,7 @@ function setTabInfo(sentVals){
 }
 
 function createTempData(self){
+    
     if (!self.config.tempData){
         self.config.tempData = true;
     }
@@ -145,6 +146,7 @@ function createTempData(self){
    
     const storageName = "editFormTempData";
 
+ 
     if (!isEqual(tableValue, values)){
         const sentVals = {
             table : id,
@@ -161,6 +163,8 @@ function createTempData(self){
     } else {
        // webix.storage.local.remove(storageName);
     }
+
+    mediator.tabs.setDirtyParam();
 }
 
 

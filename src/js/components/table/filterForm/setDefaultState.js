@@ -1,4 +1,4 @@
-import { Action }           from "../../../blocks/commonFunctions.js";
+import { Action, getTable } from "../../../blocks/commonFunctions.js";
 import { Filter }           from "./actions/_FilterActions.js";
 
 
@@ -9,10 +9,21 @@ function setToolbarBtnState(){
     Filter.removeClass(node, "webix-transparent-btn--primary");
 }
 
+function resetTableFilter(){
+    const table = getTable();
+
+    if (table){
+        table.config.filter = null;
+    }
+
+}
+
 
 function filterFormDefState(){
     const filterContainer = $$("filterTableBarContainer");
     const inputs          = $$("inputsFilter");
+
+    resetTableFilter();
 
     Filter.clearAll();
     Filter.showApplyNotify(false);

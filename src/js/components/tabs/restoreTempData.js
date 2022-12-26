@@ -2,12 +2,12 @@ import { getTable }       from '../../blocks/commonFunctions.js';
 
 
 function restoreTempData(tempConfig, field){
- 
+  
     const filter = tempConfig.filter;
     const edit   = tempConfig.edit;
- 
+
     if (filter){
-     
+    
         if (filter.dashboards){
             const data = {
                 content : filter.values
@@ -17,7 +17,6 @@ function restoreTempData(tempConfig, field){
         } else {
        
             if (tempConfig.queryFilter){
-          
                 const table = getTable();
                 if (table){
                     table.config.filter = {
@@ -31,13 +30,13 @@ function restoreTempData(tempConfig, field){
             }
             webix.storage.local.put("currFilterState", filter);
         }
-   
+    
         window.history.pushState('', '', "?view=filter");
   
-    } 
+    }  
  
     if (edit){
-      
+         
         webix.storage.local.put("editFormTempData", edit.values);
         if (edit.selected){
             window.history.pushState('', '', "?id=" + edit.selected);

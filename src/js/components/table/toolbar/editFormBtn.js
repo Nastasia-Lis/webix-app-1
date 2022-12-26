@@ -56,6 +56,7 @@ function editBtnClick() {
 
             mediator.linkParam(false, "view");
             mediator.linkParam(false, "id"  );
+            mediator.tabs.clearTemp("editFormTempData", "edit");
 
             table.unselectAll ();
         } else if (editForm && !isVisible) {
@@ -67,6 +68,8 @@ function editBtnClick() {
             if(!isIdParamExists()){
                 mediator.linkParam(true, {"view" : "edit"});
             }
+
+            mediator.tabs.clearTemp("currFilterState", "filter");
         
         }
 

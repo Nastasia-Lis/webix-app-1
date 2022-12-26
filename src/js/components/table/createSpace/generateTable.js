@@ -75,6 +75,7 @@ async function loadFields(){
 }
 
 async function generateTable (showExists){ 
+ 
     let keys;
     
     if (!showExists){

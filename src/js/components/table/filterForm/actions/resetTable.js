@@ -49,6 +49,8 @@ function setFilterCounterVal(table){
 async function resetTable(){
     const itemTreeId = getItemId ();
     const table      = getTable  ();
+
+ 
     const query      = [
         `query=${itemTreeId}.id+%3E%3D+0&sorts=${itemTreeId}.id&limit=80&offset=0`
     ];
@@ -64,6 +66,7 @@ async function resetTable(){
 
         if (dataErr.err_type == "i"){
             try{
+                table.config.filter = null;
                 setDataTable (data, table);
                 setFilterCounterVal(table);
                 setLogValue("success", "Фильтры очищены");

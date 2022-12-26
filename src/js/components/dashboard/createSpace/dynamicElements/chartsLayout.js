@@ -1,4 +1,5 @@
 import { setFunctionError }             from "../../../../blocks/errors.js";
+import { updateSpace }                  from "../click/updateSpace.js";
 import { returnEl, setAttributes }      from '../click/itemClickLogic.js';
 import { getDashId }                    from '../common.js';
 
@@ -145,7 +146,7 @@ function createChart(dataCharts){
         //     "onDblClick": {}
         // };
      
-       // dataCharts.push(table)
+      // dataCharts.push(table)
         //dataCharts.push(res)
       
         dataCharts.forEach(function(el){
@@ -248,6 +249,35 @@ function createScrollContent(dataCharts){
     return content;
 }
 
+ 
+
+function isContextTableValues(){
+    const href   = window.location.search;
+    const params = new URLSearchParams (href);
+
+    const src      = params.get("src");
+    const isFilter = params.get("filter");
+ 
+    if (src && isFilter){
+        return true;
+    } else {
+        webix.storage.local.remove("dashTableContext"); // last context data
+        return false;
+    }
+   
+   
+}
+
+function createTableContext(){
+
+    const data = webix.storage.local.get("dashTableContext");
+
+    if (data){
+        updateSpace(data);
+    }
+
+}
+
 function createDashboardCharts(idsParam, dataCharts){
     
     const container = $$("dashboardInfoContainer");
@@ -271,6 +301,11 @@ function createDashboardCharts(idsParam, dataCharts){
     } 
 
     setIdAttribute(idsParam);
+    
+    if (isContextTableValues()){
+        createTableContext();
+    }
+    
 }
 
 

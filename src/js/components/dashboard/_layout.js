@@ -22,30 +22,27 @@ const dashboardContext = returnTemplate("Context");
 
 function dashboardLayout () {
         return [
-            {  // view : "scrollview", 
-                //id   : "dashScroll",  
-               // body: 
-               
-                  //  {   
-                       // view: "flexlayout",
-                        id  : "dashboardContainer",
-                
-                        rows: [
+            {  
+                id  : "dashboardContainer",
+        
+                rows: [
 
-                            {cols:[
-                                {   id      : "dashboardInfoContainer",
-                                    minWidth: 250, 
-                                    rows    : [] 
-                                },
-                                {view: "resizer"},
-                                dashboardTool,
-                                dashboardContext
-                            ]},
-                        
-                          
-                        
-                        ]
-                    //} 
+                    {cols:[
+                        {   id      : "dashboardInfoContainer",
+                            minWidth: 250, 
+                            rows    : [
+                                {id : "dash-none-content"}
+                            ] 
+                        },
+                        {view: "resizer"},
+                        dashboardTool,
+                        dashboardContext
+                    ]},
+                
+                    
+                
+                ]
+                    
             }
         ];
 }

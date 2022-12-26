@@ -13,32 +13,6 @@ function setNameToTab(){
  
 }
 
-function isOtherViewTab(){
-    const tabbar = $$("globalTabbar");
-    const id     = tabbar.getValue();
-    const option = $$("globalTabbar").getOption (id);
-
-    if (option.isOtherView){
-        return true;
-    }
-
-}
-
-function createTab(){
-    $$("globalTabbar").addOption({
-        id    : webix.uid(), 
-        value : "Новая вкладка", 
-        info  : {
-            tree:{
-                none:true
-                //null
-            }
-        },
-        close : true, 
-    }, true);
-    
-}
-
 function createUndefinedView(){
 
     const id = "webix__null-content";
@@ -59,13 +33,12 @@ function createUndefinedView(){
         }
         
     };
-
+     
     if ( !($$(id)) ){
         try{
-     
-            if (isOtherViewTab()){
-                createTab();
-                Backbone.history.navigate("tree/tab?new=true", { trigger : true });
+
+            if (mediator.tabs.isOtherViewTab()){
+                mediator.tabs.addTab(true);
             } else {
                 setNameToTab();
             }

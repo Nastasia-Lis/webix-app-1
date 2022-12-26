@@ -1,6 +1,5 @@
 import { Action }                           from "../../../../blocks/commonFunctions.js";
 import { setAjaxError, setFunctionError }   from "../../../../blocks/errors.js";
-import { mediator }                         from "../../../../blocks/_mediator.js";
 
 import { getUserPrefsContext }              from './userContext.js';
 import {  formattingBoolVals,
@@ -143,11 +142,12 @@ async function returnFilter(tableElem){
  
     const filterString = tableElem.config.filter;
     const urlParameter = filterParam();
-
+ 
     const result = {
         prefs : true
     };
 
+ 
     if (urlParameter){
         result.filter = await getUserPrefsContext(urlParameter, "filter");
         Filter.showApplyNotify();
@@ -156,7 +156,7 @@ async function returnFilter(tableElem){
     if (!result.filter){
         result.prefs = false;
     
-   
+  
         if (filterString && filterString.table === itemTreeId){
             result.filter = filterString.query;
             const id = tableElem.config.id + "_applyNotify";
@@ -167,6 +167,8 @@ async function returnFilter(tableElem){
           
         }
     }
+
+  
 
     return result;
 }
@@ -329,8 +331,8 @@ async function loadTableData(table, id, idsParam, offset){
                     
                         selectContextId      ();  
                       //  returnLostData       ();
-                        mediator.tables.restore.restoreEditForm();
-                        mediator.tables.restore.restoreFilter  (itemTreeId);
+                        returnLostData   ();
+                        returnLostFilter (itemTreeId);
                                
             
                       //  returnLostFilter     (itemTreeId);
@@ -339,7 +341,7 @@ async function loadTableData(table, id, idsParam, offset){
                         }
                     }
        
-          
+                   
                  
 
                     setCounterVal (reccount, tableElem);

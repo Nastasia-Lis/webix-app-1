@@ -25,7 +25,7 @@ function segmentBtn(element, isChild, uniqueId){
             { "id" : "2", "value" : "или" }, 
         ],
         on:{
-            onChange:function(){
+            onChange:function(v){
                 Filter.setStateToStorage();
                 if (Filter.getActiveTemplate()){
                     Action.showItem($$("templateInfo"));

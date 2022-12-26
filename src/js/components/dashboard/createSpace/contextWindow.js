@@ -58,10 +58,13 @@ async function createPropElements(){
     const data = [];
         if (item){
         const values = Object.values(item);
+        const keys   = Object.keys(item);
         const labels = await findLabels();
 
         values.forEach(function(val, i){
+
             data.push({
+                id    : keys[i],
                 label : labels[i], 
                 value :  val
             });
@@ -96,10 +99,30 @@ function goToTableBtnClick(){
     const id = item.id;
 
     if (item && item.id){
-        const path   = "tree/" + field;
-        const params = "?id=" + id;
-        Backbone.history.navigate(path + params, { trigger:true });
-        window.location.reload();
+
+        const propValues = $$("dashContextProperty").getValues();
+ 
+        const infoData = {
+
+            tree : {
+                field : field,
+                type  : "dbtable" 
+            },
+            temp : {
+                edit  : {
+                    selected : id, 
+                    values   : {
+                        status : "put",
+                        table  : field,
+                        values : propValues
+                    }
+                },
+              
+            }
+        };
+
+        mediator.tabs.openInNewTab(infoData);
+
     }
  
 }
@@ -165,6 +188,29 @@ function setLinkParams(){
     mediator.linkParam(true, params);
 }
 
+function setToTabStorage(){
+    const data = mediator.tabs.getInfo();
+  
+    if (data){
+        if(!data.temp){
+            data.temp = {};
+        }
+        if(data.temp.filter){
+            delete data.temp.filter;
+        }
+
+        data.temp.context = {};
+
+        data.temp.context.open  = true; // open context window
+        data.temp.context.field = field;
+        data.temp.context.id    = item.id;
+  
+        mediator.tabs.setInfo(data);
+    } 
+
+    
+}
+
 function createContextProperty(data, idTable){
     item  = data;
     field = idTable;
@@ -177,13 +223,15 @@ function createContextProperty(data, idTable){
     if (window.innerWidth < 850){
 
         container.config.width = window.innerWidth - 45;
-        console.log(container.config.width)
+ 
         container.resize();
         Action.hideItem($$("dashboardInfoContainer"));
     }
 
-    setLinkParams();
-    createSpace();
+    setLinkParams   ();
+    createSpace     ();
+    setToTabStorage ();
+    
 }
 
 export {

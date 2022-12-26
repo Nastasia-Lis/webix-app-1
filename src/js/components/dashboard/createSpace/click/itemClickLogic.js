@@ -5,6 +5,8 @@ import { LoadServerData,
 import { updateSpace }      from "./updateSpace.js";
 import { postPrefs }        from "./navigate.js";
 
+import { mediator }         from "../../../../blocks/_mediator.js";
+import { setFunctionError } from "../../../../blocks/errors.js";
 
 const action = {
     navigate: "true - переход на другую страницу, false - обновление в данном дашборде",
@@ -18,11 +20,11 @@ const action = {
 };
 
 const action2 = {
-    navigate: true,
+    navigate: false,
     field   : "auth_group", 
     context : true,
-    params  :{
-       filter : "auth_group.id = 1" 
+    params  : {
+       filter : "auth_group.id = 11" 
     // filter : "auth_group.id != '1' or auth_group.id != '3' and auth_group.role contains 'р' or auth_group.role = 'а'" 
        // filter:"auth_user.registration_key != '3dg' and auth_user.registration_id = 'dfgg'"
     } 
@@ -66,6 +68,8 @@ function cursorPointer(self, elem){
                 }
             });
         }
+
+       
     } else if (node){
         node.style.cursor = "pointer";
     }
@@ -81,17 +85,35 @@ async function findField(chartAction){
         field = chartAction.field;
     }
 
+    let isExists = false;
+
     keys.forEach(function(key){
-   
+       
         if ( key == field ){
+            isExists = true;
             if (chartAction.navigate){
                 postPrefs(chartAction);
             } else {
+       
                 updateSpace(chartAction);
+                webix.storage.local.put("dashTableContext", chartAction);
             } 
         
         }
     });
+
+    if (!isExists){ 
+        setFunctionError(
+            "Key «" + field + "» doesn't exist", 
+            "dashboard / create space / click / itemClickLogic", 
+            "findField"
+        );
+
+        mediator.linkParam(false, "src");
+        mediator.linkParam(false, "filter");
+    }
+
+ 
 }
 
 function findInnerChartField(elem, idEl){

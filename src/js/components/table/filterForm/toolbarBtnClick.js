@@ -53,19 +53,6 @@ function setPrimaryState(filter){
     Action.showItem($$("filterTableBarContainer"));
 }
 
-function removeTempData(){
-    webix.storage.local.remove("currFilterState");
-
-    const tabbar = $$("globalTabbar");
-    const idTab  = tabbar.getValue();
-    const tab    = tabbar.getOption(idTab);
-
-    if (tab.info.temp){
-        if (tab.info.temp.filter){
-            delete tab.info.temp.filter;
-        }
-    }
-}
 
 function setSecondaryState(){
     setBtnCssState(
@@ -76,7 +63,7 @@ function setSecondaryState(){
     Action.hideItem($$("filterTableForm"));
     Action.hideItem($$("filterTableBarContainer"));
  
-    removeTempData();
+    mediator.tabs.clearTemp("currFilterState", "filter");
 
 }
 

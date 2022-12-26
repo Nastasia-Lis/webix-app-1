@@ -3,7 +3,6 @@ import { mediator }          from "../../blocks/_mediator.js";
 import { restoreTempData }   from "./restoreTempData.js";
 import { showTreeItem }      from "./showItem.js";
 
-
 let prevValue;
 
 
@@ -12,7 +11,7 @@ function setStateToStorage(idTab){
     const tabbar  = $$("globalTabbar");
     const options = tabbar.config.options;
     
-
+ 
     const data = {
         tabs   : options,
         select : idTab
@@ -21,11 +20,87 @@ function setStateToStorage(idTab){
     webix.storage.local.put("tabbar", data);
 }
 
-function setEmptyTabLink(){
-    Backbone.history.navigate("tree/tab?new=true", { trigger : true });
+function isOtherTab(id){
+    let check = true;
+
+    if (id == prevValue){
+        check = false;
+    }
+
+    return check;
+}
+
+function createConfigSpace(id){
+    const option     = $$("globalTabbar").getOption(id);
+  
+    const treeConfig = option.info.tree;
+    const tempConfig = option.info.temp;
+  
+    if (treeConfig){
+        showTreeItem(
+            treeConfig, 
+            isOtherTab(), 
+            option.isOtherView
+        );
+
+ 
+        if (tempConfig){
+            restoreTempData(
+                tempConfig, 
+                treeConfig.field
+            );
+        }
+    }    
+}
+
+function restoreTabbar(data){
+    const tabbar = $$("globalTabbar");
+    const tabs   = data.tabs;
+    const select = data.select;
+ 
+    tabs.forEach(function(option){
+        tabbar.addOption(option, false); 
+    });
+
+    
+    if (select){
+        tabbar.setValue(select);
+
+    } else {
+        const options = tabbar.config.options;
+        const index   = options.length - 1;
+        const lastOpt = options[index]; 
+        if (lastOpt){
+            const id  = lastOpt.id;
+            tabbar.setValue(id);
+        }
+
+   
+    }
+}
+
+function addNewTab(){
+    $$("globalTabbar").addOption( { 
+        id    : "container", 
+        value : "Новая вкладка", 
+        info  : {},
+        close : true
+    }, true); 
 }
 
 
+function isSelectedOption(id){
+    const selectOpt = $$("globalTabbar").getValue();
+    if ( selectOpt == id ){
+        return true;
+    }
+}
+
+
+
+function tabbarClick(ev, id){
+    $$("globalTabbar").callEvent(ev, [ id ]);
+}
 function createTabbar(){
     const tabbar = {
         view    : "tabbar",
@@ -40,129 +115,82 @@ function createTabbar(){
         ],
         on:{
 
-            onBeforeTabClick:function(id){
-                mediator.tables     .defaultState();
+            onBeforeTabClick:function(){
+        
+                const clearDirty = false;
+                mediator.tables     .defaultState("edit", clearDirty);
+                mediator.tables     .defaultState("filter");
+
                 mediator.dashboards .defaultState();
                 mediator.forms      .defaultState();
+
                 prevValue = this.getValue();
             },
 
             onAfterTabClick:function(id){
-
-                let isOtherTab = true;
-
-                if (id == prevValue){
-                    isOtherTab = false;
-                }
-
+            
                 mediator.tables.filter.clearAll();
 
-                const option = this.getOption(id);
-
-                const treeConfig = option.info.tree;
-                const tempConfig = option.info.temp;
-
-                if (treeConfig){
-                    showTreeItem(treeConfig, isOtherTab, option.isOtherView);
-
-             
-                    if (tempConfig){
-                        restoreTempData(tempConfig, treeConfig.field);
-                    }
-                }
- 
+                createConfigSpace(id);
 
                 setStateToStorage(id);
-
+          
             },
 
+
+
             onAfterRender:webix.once(function(id){
-                const data   = webix.storage.local.get("tabbar");
-                const tabbar = $$("globalTabbar");
-
-                if (data){
-                    const tabs   = data.tabs;
-                    const select = data.select;
-                 
-                    tabs.forEach(function(option, i){
-                        tabbar.addOption(option, false); 
-                    });
-
+                const data  = webix.storage.local.get("tabbar");
+            
+                if (data && data.tabs.length){
+                    restoreTabbar(data);
                     
-                    if (select){
-                        tabbar.setValue(select);
-
-                    } else {
-                        const options = this.config.options;
-                        const index   = options.length - 1;
-                        const lastOpt = options[index]; 
-                        if (lastOpt){
-                            const id  = lastOpt.id;
-                            this.setValue(id);
-                        }
-                
-                   
-                    }
-                    
-                
                 } else {
-                    this.addOption( { 
-                        id    : "container", 
-                        value : "Имя вкладки", 
-                        info  : {},
-                        close : true
-                    }, true); 
+                    addNewTab();
                 }
             }),
-            
-            // сделать параметр для единственной пустой вкладки
 
-            onOptionRemove:function(removedTab, lastTab){
-              
-                const tabbar = this;
+            onBeforeTabClose: function(id){
+             
+                
+                const tabbar     = this;
+                const option     = tabbar.getOption(id);
+                const isTabDirty = option.info.dirty;
+   
 
-                if (lastTab.length){
-              
-                    tabbar.setValue(lastTab);
-                    const options = tabbar.config.options;
-            
-                    let conutEmptyTabs = 0;
-                    options.forEach(function(el, i){
-                        if (el.info.tree.none){ // empty tab
-                            conutEmptyTabs ++;
+                if (isSelectedOption(id)){ // текущая вкладка
+
+                    mediator.getGlobalModalBox().then(function(result){
+
+                        if (result){
+                            tabbar.removeOption(id);
                         }
+    
                     });
 
-                     
-                    if (options.length == conutEmptyTabs){ // all tabs is empty
-                        setEmptyTabLink();
-                    }
-
-
-                    mediator.tables.filter.clearAll();
-
-                    const option = this.getOption(lastTab);
+                } else { // другая вкладка
+        
+                    if (isTabDirty){
+                        tabbar.setValue(id);
+                 
+                        tabbarClick("onBeforeTabClick", id);
+                        tabbarClick("onAfterTabClick" , id);
     
-                    const treeConfig = option.info.tree;
-                    const tempConfig = option.info.temp;
-
-                  
-    
-                    if (treeConfig){
-                        showTreeItem(treeConfig, true, option.isOtherView);
+                        const optionData = mediator.tabs.getInfo();
+                        optionData.isClose = true;
+                        mediator.tabs.setInfo(optionData);
+                    } else {
+                        tabbar.removeOption(id);
                     }
-    
-                    if (tempConfig){
-                        restoreTempData(tempConfig);
-                    }
-                } else {   
-                    setEmptyTabLink();
-                    mediator.hideAllContent();
+              
+                } 
+            
+                return false;
+            },
 
-                }
+            onOptionRemove:function(removedTab, lastTab){
+                mediator.tabs.removeTab(lastTab);
 
-                setStateToStorage(lastTab);
-           
             },
           
         }

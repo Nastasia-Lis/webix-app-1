@@ -142,6 +142,7 @@ const onFuncTable = {
         }
         const name = "table-editForm";
         const isDirtyForm = $$(name).isDirty();
+    
         if (isDirtyForm){
             modalBoxTable ();
             return false;

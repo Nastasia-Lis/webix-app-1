@@ -1,3 +1,24 @@
+import { mediator }     from "../../../blocks/_mediator.js";
+
+function setDataToTab(currState){
+    const data = mediator.tabs.getInfo();
+ 
+    if (data){
+        if(!data.temp){
+            data.temp = {};
+        }
+        if(!data.temp.filter){
+            data.temp.filter = {};
+        }
+
+        data.temp.filter.dashboards = true;
+        data.temp.filter.values     = currState;
+
+        mediator.tabs.setInfo(data);
+    }
+ }
+
+
 function returnLostFilter (id){
     const url       = window.location.search;
     const params    = new URLSearchParams(url);
@@ -10,10 +31,14 @@ function returnLostFilter (id){
         const data = webix.storage.local.get("dashFilterState");
   
         if (data){
+       
             const content = data.content;
-          
+
+         
             if (content){
-                content.forEach(function(el, i){
+                setDataToTab(content);
+
+                content.forEach(function(el){
                     const input = $$(el.id);
                     if (input){
                         let value = el.value;

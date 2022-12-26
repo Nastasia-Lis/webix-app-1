@@ -135,7 +135,7 @@ function hasDirtyForms(){
 async function clickModalBox(id){
     const dirtyInfo = hasDirtyForms();
     const isDirty   = dirtyInfo.dirty;
-
+ 
     if (isDirty){
         const idForm = dirtyInfo.id;
         return globalModalBox (idForm);

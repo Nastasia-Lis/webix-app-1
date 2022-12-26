@@ -1,4 +1,7 @@
-import { setAjaxError, setFunctionError } from "../../../../blocks/errors.js";
+import { setAjaxError, 
+    setFunctionError }  from "../../../../blocks/errors.js";
+import { mediator }     from "../../../../blocks/_mediator.js";
+
 import { setLogValue }                    from "../../../logBlock.js";
 import { createContextProperty }          from "../contextWindow.js";
 
@@ -22,6 +25,41 @@ function scrollToTable(tableElem){
     node.scrollIntoView();
 }
 
+function setDataToTab(field, filter){
+    const data = mediator.tabs.getInfo();
+  
+    if (data){
+        if(!data.temp){
+            data.temp = {};
+        }
+        if(data.temp.filter){
+            delete data.temp.filter;
+        }
+
+        data.temp.context = {};
+
+        data.temp.context.id     = field;
+        data.temp.context.filter = filter;
+  
+        mediator.tabs.setInfo(data);
+
+    } 
+
+   
+}
+
+function setParamsToLink(id){
+    mediator.linkParam(true, {
+        "src"    : id , 
+        "filter" : true  
+    });
+}
+
+function clearParams(){
+    mediator.linkParam(false, "src");
+    mediator.linkParam(false, "filter");
+}
+
 function setDataToTable(table, data){
 
     const tableElem = $$(table);
@@ -30,6 +68,8 @@ function setDataToTable(table, data){
         tableElem.clearAll();
         tableElem.parse(data);
 
+        setParamsToLink(table);
+        scrollToTable  (tableElem);
     } else {    
         setFunctionError(
             "Таблица с id «" + table + 
@@ -37,9 +77,10 @@ function setDataToTable(table, data){
             logNameFile, 
             "setDataToTable"
         );
-    }
 
-    scrollToTable(tableElem);
+        clearParams();
+    }
+  
 }
 
 function getTableData(tableId, query, onlySelect){
@@ -56,6 +97,7 @@ function getTableData(tableId, query, onlySelect){
         const item       = content[0];
 
         if (!onlySelect){
+            setDataToTab   (tableId, fullQuery);
             setDataToTable (tableId, content);
         } else if (item){
             createContextProperty (item, tableId);
@@ -64,6 +106,7 @@ function getTableData(tableId, query, onlySelect){
 
         if (notifyType !== "i"){
             setLogValue("error", notifyMsg);
+            clearParams();
         }  
     });
     queryData.fail(function(err){
@@ -72,10 +115,12 @@ function getTableData(tableId, query, onlySelect){
             logNameFile, 
             "getTableData"
         );
+        clearParams();
     });
 }
 
 function updateSpace(chartAction){
+ 
     const tableId     = chartAction.field;
 
     const filter      = chartAction.params.filter;
@@ -89,6 +134,7 @@ function updateSpace(chartAction){
 
     getTableData(tableId, query, onlySelect);
     
+
 }
 
 export {

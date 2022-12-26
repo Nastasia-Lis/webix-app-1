@@ -880,7 +880,7 @@ async function createLogMessage(srcTable) {
     let name;
 
     if (srcTable == "version"){
-        name = 'Expa v1.0.72';
+        name = 'Expa v1.0.73';
 
     } else if (srcTable == "cp"){
         name = 'Смена пароля';
@@ -5506,30 +5506,27 @@ const dashboardContext = returnTemplate("Context");
 
 function dashboardLayout () {
         return [
-            {  // view : "scrollview", 
-                //id   : "dashScroll",  
-               // body: 
-               
-                  //  {   
-                       // view: "flexlayout",
-                        id  : "dashboardContainer",
-                
-                        rows: [
+            {  
+                id  : "dashboardContainer",
+        
+                rows: [
 
-                            {cols:[
-                                {   id      : "dashboardInfoContainer",
-                                    minWidth: 250, 
-                                    rows    : [] 
-                                },
-                                {view: "resizer"},
-                                dashboardTool,
-                                dashboardContext
-                            ]},
-                        
-                          
-                        
-                        ]
-                    //} 
+                    {cols:[
+                        {   id      : "dashboardInfoContainer",
+                            minWidth: 250, 
+                            rows    : [
+                                {id : "dash-none-content"}
+                            ] 
+                        },
+                        {view: "resizer"},
+                        dashboardTool,
+                        dashboardContext
+                    ]},
+                
+                    
+                
+                ]
+                    
             }
         ];
 }
@@ -6172,6 +6169,7 @@ function createMainView(inputsArray){
 }
 
 
+
 function filterBtnClick (){
     const dashTool      = $$("dashboard-tool-main");
     const container     = $$("dashboardContainer" );
@@ -6197,14 +6195,16 @@ function filterBtnClick (){
         if (dashTool.isVisible()){
             Action.hideItem (tools);
         
-          //  mediator.linkParam(false, "view");
-            webix.storage.local.remove("dashFilterState");
+            mediator.linkParam(false, "view");
+            mediator.tabs.clearTemp("dashFilterState", "filter");
+          
 
         } else {
             Action.showItem (tools);
             Action.showItem (dashTool);
         
-           // mediator.linkParam(true, {"view": "filter"});
+            mediator.linkParam(true, {"view": "filter"});
+            mediator.tabs.clearTemp("dashTableContext", "context");
         }
     }
 
@@ -6339,10 +6339,13 @@ async function createPropElements(){
     const data = [];
         if (item){
         const values = Object.values(item);
+        const keys   = Object.keys(item);
         const labels = await findLabels();
 
         values.forEach(function(val, i){
+
             data.push({
+                id    : keys[i],
                 label : labels[i], 
                 value :  val
             });
@@ -6377,10 +6380,30 @@ function goToTableBtnClick(){
     const id = item.id;
 
     if (item && item.id){
-        const path   = "tree/" + field;
-        const params = "?id=" + id;
-        Backbone.history.navigate(path + params, { trigger:true });
-        window.location.reload();
+
+        const propValues = $$("dashContextProperty").getValues();
+ 
+        const infoData = {
+
+            tree : {
+                field : field,
+                type  : "dbtable" 
+            },
+            temp : {
+                edit  : {
+                    selected : id, 
+                    values   : {
+                        status : "put",
+                        table  : field,
+                        values : propValues
+                    }
+                },
+              
+            }
+        };
+
+        mediator.tabs.openInNewTab(infoData);
+
     }
  
 }
@@ -6446,6 +6469,29 @@ function setLinkParams(){
     mediator.linkParam(true, params);
 }
 
+function setToTabStorage(){
+    const data = mediator.tabs.getInfo();
+  
+    if (data){
+        if(!data.temp){
+            data.temp = {};
+        }
+        if(data.temp.filter){
+            delete data.temp.filter;
+        }
+
+        data.temp.context = {};
+
+        data.temp.context.open  = true; // open context window
+        data.temp.context.field = field;
+        data.temp.context.id    = item.id;
+  
+        mediator.tabs.setInfo(data);
+    } 
+
+    
+}
+
 function createContextProperty(data, idTable){
     item  = data;
     field = idTable;
@@ -6458,17 +6504,21 @@ function createContextProperty(data, idTable){
     if (window.innerWidth < 850){
 
         container.config.width = window.innerWidth - 45;
-        console.log(container.config.width)
+ 
         container.resize();
         Action.hideItem($$("dashboardInfoContainer"));
     }
 
-    setLinkParams();
-    createSpace();
+    setLinkParams   ();
+    createSpace     ();
+    setToTabStorage ();
+    
 }
 
 
 ;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/click/updateSpace.js
+
+
 
 
 
@@ -6493,6 +6543,41 @@ function scrollToTable(tableElem){
     node.scrollIntoView();
 }
 
+function setDataToTab(field, filter){
+    const data = mediator.tabs.getInfo();
+  
+    if (data){
+        if(!data.temp){
+            data.temp = {};
+        }
+        if(data.temp.filter){
+            delete data.temp.filter;
+        }
+
+        data.temp.context = {};
+
+        data.temp.context.id     = field;
+        data.temp.context.filter = filter;
+  
+        mediator.tabs.setInfo(data);
+
+    } 
+
+   
+}
+
+function setParamsToLink(id){
+    mediator.linkParam(true, {
+        "src"    : id , 
+        "filter" : true  
+    });
+}
+
+function clearParams(){
+    mediator.linkParam(false, "src");
+    mediator.linkParam(false, "filter");
+}
+
 function setDataToTable(table, data){
 
     const tableElem = $$(table);
@@ -6501,6 +6586,8 @@ function setDataToTable(table, data){
         tableElem.clearAll();
         tableElem.parse(data);
 
+        setParamsToLink(table);
+        scrollToTable  (tableElem);
     } else {    
         errors_setFunctionError(
             "Таблица с id «" + table + 
@@ -6508,9 +6595,10 @@ function setDataToTable(table, data){
             updateSpace_logNameFile, 
             "setDataToTable"
         );
-    }
 
-    scrollToTable(tableElem);
+        clearParams();
+    }
+  
 }
 
 function getTableData(tableId, query, onlySelect){
@@ -6527,6 +6615,7 @@ function getTableData(tableId, query, onlySelect){
         const item       = content[0];
 
         if (!onlySelect){
+            setDataToTab   (tableId, fullQuery);
             setDataToTable (tableId, content);
         } else if (item){
             createContextProperty (item, tableId);
@@ -6535,6 +6624,7 @@ function getTableData(tableId, query, onlySelect){
 
         if (notifyType !== "i"){
             setLogValue("error", notifyMsg);
+            clearParams();
         }  
     });
     queryData.fail(function(err){
@@ -6543,10 +6633,12 @@ function getTableData(tableId, query, onlySelect){
             updateSpace_logNameFile, 
             "getTableData"
         );
+        clearParams();
     });
 }
 
 function updateSpace(chartAction){
+ 
     const tableId     = chartAction.field;
 
     const filter      = chartAction.params.filter;
@@ -6560,6 +6652,7 @@ function updateSpace(chartAction){
 
     getTableData(tableId, query, onlySelect);
     
+
 }
 
 
@@ -6586,11 +6679,146 @@ function createSentObj(prefs){
     return sentObj;
 }
 
-function navigate_navigate(field, id){
+
+function returnConditions(filter){
+    const array = filter.split(' ');
+
+    const conditions = [];
+    let r            = "";
+    let counter      = 0;
+
+    array.forEach(function(el, i){
+        const length = array.length;
+
+        if (length - 1 === i){
+            r += " " + el;
+            counter ++;
+        }
+
+        if (counter >= 4 || length - 1 === i){
+            conditions.push(r);
+            r       = "";
+            counter = 0;
+        }
+
+        if (counter < 4){
+            r += " " + el;
+            counter ++;
+        }
+
+        
+    });
+   
+
+    return conditions;
+}
+
+
+
+const filterArr = [];
+const ids       = [];
+
+
+function setInputValue(value){
+    let trueValue;
+    if (value){
+        trueValue = value.replace(/['"]+/g, '');
+    }
+
+    return trueValue;
+  
+}
+
+function checkCondition(arr, index){
+    let parent  = null;
+   
+    let id      = arr[1];
+    const i     = id.lastIndexOf(".") + 1;
+    id          = id.slice(i);
+
+    let logic   = arr[4];
+    const value = setInputValue(arr[3]);
+
+    ids.push(id);
+  
+    const isUnique = ids.filter(elem => elem == id);
+
+    if (isUnique.length > 1){ // isnt unique
+
+        parent  = id; 
+        id      = id + "_filter-child-"+ webix.uid();
+
+    } else {
+        id = id + "_filter";
+    }
+
+
+    if (logic == "and"){
+        logic = "1";
+    } else {
+        logic = "2";
+    }
+    
+ 
+    
+    filterArr.push({
+        id        : id,
+        value     : value,
+        operation : arr[2],
+        logic     : logic,
+        parent    : parent,
+        index     : index
+    });
+}
+
+
+function iterateConditions(conditions){
+
+    conditions.forEach(function(el, i){
+        const arr = el.split(' ');
+        checkCondition(arr, i);
+     
+    });
+
+    return filterArr;
+
+}
+
+
+
+function returnFilter(query){
+
+    const conditions = returnConditions(query);
+ 
+    iterateConditions(conditions);
+}
+
+function navigate_navigate(field, id, filter){
+ 
+
+    filterArr.length = 0;
+    ids.length       = 0;
+
     if (id){
-        const path = "tree/" + field + "?view=filter&prefs=" + id;
-        Backbone.history.navigate(path, { trigger : true });
-        window.location.reload();   
+
+        returnFilter(filter);
+    
+        const infoData = {
+            tree:{
+                field : field,
+                type  : "dbtable" // ??
+            },
+            temp:{
+                filter     : {
+                    id     : field, 
+                    values : {values : filterArr}
+                },
+                queryFilter :  filter
+            }
+        };
+
+        mediator.tabs.openInNewTab(infoData);
+
     } 
 }
 
@@ -6598,14 +6826,14 @@ function postPrefs(chartAction){
     const sentObj       = createSentObj(chartAction);
     const path          = "/init/default/api/userprefs/";
     const userprefsPost = webix.ajax().post(path, sentObj);
-                    
+      
     userprefsPost.then(function(data){
         data = data.json();
    
         if (data.err_type == "i"){
             const id = data.content.id;
             if (id){
-                navigate_navigate(chartAction.field, id);
+                navigate_navigate(chartAction.field, id, chartAction.params.filter);
             } else {
                 const errs   = data.content.errors;
                 const values = Object.values(errs);
@@ -6645,6 +6873,8 @@ function postPrefs(chartAction){
 
 
 
+
+
 const action = {
     navigate: "true - переход на другую страницу, false - обновление в данном дашборде",
     context : "true - открыть окно с записью таблицы, false - обновить таблицу",
@@ -6657,11 +6887,11 @@ const action = {
 };
 
 const action2 = {
-    navigate: true,
+    navigate: false,
     field   : "auth_group", 
     context : true,
-    params  :{
-       filter : "auth_group.id = 1" 
+    params  : {
+       filter : "auth_group.id = 11" 
     // filter : "auth_group.id != '1' or auth_group.id != '3' and auth_group.role contains 'р' or auth_group.role = 'а'" 
        // filter:"auth_user.registration_key != '3dg' and auth_user.registration_id = 'dfgg'"
     } 
@@ -6705,6 +6935,8 @@ function cursorPointer(self, elem){
                 }
             });
         }
+
+       
     } else if (node){
         node.style.cursor = "pointer";
     }
@@ -6720,17 +6952,35 @@ async function findField(chartAction){
         field = chartAction.field;
     }
 
+    let isExists = false;
+
     keys.forEach(function(key){
-   
+       
         if ( key == field ){
+            isExists = true;
             if (chartAction.navigate){
                 postPrefs(chartAction);
             } else {
+       
                 updateSpace(chartAction);
+                webix.storage.local.put("dashTableContext", chartAction);
             } 
         
         }
     });
+
+    if (!isExists){ 
+        errors_setFunctionError(
+            "Key «" + field + "» doesn't exist", 
+            "dashboard / create space / click / itemClickLogic", 
+            "findField"
+        );
+
+        mediator.linkParam(false, "src");
+        mediator.linkParam(false, "filter");
+    }
+
+ 
 }
 
 function findInnerChartField(elem, idEl){
@@ -6860,6 +7110,7 @@ function getDashId ( idsParam ){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/dynamicElements/chartsLayout.js
+
 
 
 
@@ -7007,7 +7258,7 @@ function createChart(dataCharts){
         //     "onDblClick": {}
         // };
      
-       // dataCharts.push(table)
+      // dataCharts.push(table)
         //dataCharts.push(res)
       
         dataCharts.forEach(function(el){
@@ -7110,6 +7361,35 @@ function createScrollContent(dataCharts){
     return content;
 }
 
+ 
+
+function isContextTableValues(){
+    const href   = window.location.search;
+    const params = new URLSearchParams (href);
+
+    const src      = params.get("src");
+    const isFilter = params.get("filter");
+ 
+    if (src && isFilter){
+        return true;
+    } else {
+        webix.storage.local.remove("dashTableContext"); // last context data
+        return false;
+    }
+   
+   
+}
+
+function createTableContext(){
+
+    const data = webix.storage.local.get("dashTableContext");
+
+    if (data){
+        updateSpace(data);
+    }
+
+}
+
 function createDashboardCharts(idsParam, dataCharts){
     
     const container = $$("dashboardInfoContainer");
@@ -7133,6 +7413,11 @@ function createDashboardCharts(idsParam, dataCharts){
     } 
 
     setIdAttribute(idsParam);
+    
+    if (isContextTableValues()){
+        createTableContext();
+    }
+    
 }
 
 
@@ -7166,6 +7451,27 @@ function createOverlayTemplate(id, text = "Загрузка...", hidden = false)
 
 
 ;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/returnLostFilter.js
+
+
+function returnLostFilter_setDataToTab(currState){
+    const data = mediator.tabs.getInfo();
+ 
+    if (data){
+        if(!data.temp){
+            data.temp = {};
+        }
+        if(!data.temp.filter){
+            data.temp.filter = {};
+        }
+
+        data.temp.filter.dashboards = true;
+        data.temp.filter.values     = currState;
+
+        mediator.tabs.setInfo(data);
+    }
+ }
+
+
 function returnLostFilter (id){
     const url       = window.location.search;
     const params    = new URLSearchParams(url);
@@ -7178,10 +7484,14 @@ function returnLostFilter (id){
         const data = webix.storage.local.get("dashFilterState");
   
         if (data){
+       
             const content = data.content;
-          
+
+         
             if (content){
-                content.forEach(function(el, i){
+                returnLostFilter_setDataToTab(content);
+
+                content.forEach(function(el){
                     const input = $$(el.id);
                     if (input){
                         let value = el.value;
@@ -8056,21 +8366,11 @@ function autorefresh (el, ids) {
 
 
 
+
+
 const createDashboard_logNameFile = "dashboard => createDashboard";
+
 let createDashboard_idsParam;
-
-// function getDashId ( idsParam ){
-//     const tree = $$("tree");
-//     let itemTreeId;
-
-//     if (idsParam){
-//         itemTreeId = idsParam;
-//     } else if (tree.getSelectedItem()){
-//         itemTreeId = tree.getSelectedItem().id;
-//     }
-
-//     return itemTreeId;
-// }
 
 
 function createDashSpace (){
@@ -8078,6 +8378,9 @@ function createDashSpace (){
     const item = GetFields.item(createDashboard_idsParam);
 
     if (item){
+
+        Action.removeItem($$("dash-none-content"));
+
         const url    = item.actions.submit.url;
         const inputs = createFilter (item.inputs, item, createDashboard_idsParam);
      
@@ -8090,6 +8393,11 @@ async function getFieldsData (isShowExists){
     if (!isShowExists){
         await LoadServerData.content("fields");
     }
+
+    if (!GetFields.keys){
+        await LoadServerData.content("fields");
+    }
+    
 
     createDashSpace ();
 }
@@ -8142,7 +8450,42 @@ function getLinkParams(param){
     return params.get(param);
 }
 
+
+
+function returnLostContext(){
+
+    const data = mediator.tabs.getInfo();
+ 
+    if (data && data.temp){
+
+        const context = data.temp.context;
+
+        if (context && context.open){ // open context window
+  
+            mediator.linkParam(true, {
+                "src": context.field , 
+                "id" : context.id  
+            });
+            
+        } else if (context){ // set values to dash table
+        
+            mediator.linkParam(true, {
+                "src"    : context.id , 
+                "filter" : true  
+            });
+
+            // const table = $$(context.id);
+            // scrollToTable(table);
+        }
+        
+    }
+ 
+}
+
+
 function selectContextId(){
+    returnLostContext();
+
     const idParam  = getLinkParams("id");
     const srcParam = getLinkParams("src");
     if (idParam && srcParam){
@@ -8150,7 +8493,7 @@ function selectContextId(){
     } 
 }
 function createContext(){
-    selectContextId()
+    selectContextId();
 }
 
 
@@ -8700,51 +9043,99 @@ function isEditParamExists(){
     }
 }
 
+function returnLostData_setDataToTab(currState){
+   const data = mediator.tabs.getInfo();
+
+    if (data){
+        if(!data.temp){
+            data.temp = {};
+        }
+        if(!data.temp.edit){
+            data.temp.edit = {};
+        }
+       
+        data.temp.edit.values = currState;
+
+        if (currState.status == "put"){
+         
+           data.temp.edit.selected = currState.values.id;
+        }
+
+        mediator.tabs.setInfo(data);
+    }
+}
+
 
 function returnLostData(){
   
     if (isEditParamExists()){
         $$("table-editTableBtnId").callEvent("clickEvent", [ "" ]);
     }
-  
+
     if (!isFilterParamExists()){
 
         const data = webix.storage.local.get("editFormTempData");
-
+     
+       
         if (data){
             prop          = $$("editTableFormProperty");
             returnLostData_form          = $$("table-editForm");
             const table   = $$("table");
             const tableId = table.config.idTable;
-
+     
             const values  = data.values;
             const field   = data.table;
             const status  = data.status;
-
+         
             if (tableId == field ){
                 Action.hideItem($$("filterTableForm"));
 
-               
+                returnLostData_setDataToTab(data);
         
                 if (status === "put"){
                     const id = values.id;
+              
                     if (table.exists(id)     &&
                         isThisIdSelected(id) )
                     {
-
+                  
                         table.select(id);
                         setVals(values);
                             
                     }
-                
+             
                 } else if (status === "post"){
                     Action.showItem(returnLostData_form);
                     mediator.tables.editForm.postState();
                     setVals(values);
                 }
+
+
+               
             }
         }
     }
+
+
+
+    mediator.tabs.setDirtyParam();
+
+    const tabInfo = mediator.tabs.getInfo();
+
+  
+    if (tabInfo.isClose){ // tab в процессе удаления
+        mediator.getGlobalModalBox().then(function(result){
+
+            if (result){
+                const tabbar = $$("globalTabbar");
+                const id     = tabbar.getValue();
+                tabbar.removeOption(id);
+            }
+
+        });
+    }
+
+     
 }
 
 
@@ -9194,6 +9585,8 @@ function setFilterCounterVal(table){
 async function resetTable(){
     const itemTreeId = getItemId ();
     const table      = commonFunctions_getTable  ();
+
+ 
     const query      = [
         `query=${itemTreeId}.id+%3E%3D+0&sorts=${itemTreeId}.id&limit=80&offset=0`
     ];
@@ -9209,6 +9602,7 @@ async function resetTable(){
 
         if (dataErr.err_type == "i"){
             try{
+                table.config.filter = null;
                 setDataTable (data, table);
                 setFilterCounterVal(table);
                 setLogValue("success", "Фильтры очищены");
@@ -10302,7 +10696,7 @@ function segmentBtn_segmentBtn(element, isChild, uniqueId){
             { "id" : "2", "value" : "или" }, 
         ],
         on:{
-            onChange:function(){
+            onChange:function(v){
                 Filter.setStateToStorage();
                 if (Filter.getActiveTemplate()){
                     Action.showItem($$("templateInfo"));
@@ -10477,7 +10871,7 @@ function setBtnsValue(el){
     const id = el.id;
     const segmentBtn    = $$(id + "_segmentBtn");
     const operationsBtn = $$(id + "-btnFilterOperations");
-
+ 
     setValue(segmentBtn   , el.logic    );
     setValue(operationsBtn, el.operation);
     
@@ -10567,7 +10961,6 @@ function userTemplate_hideSegmentBtn(){
 function createWorkspace(prefs){
 
     Filter.clearFilter();
- 
  
     prefs.forEach(function(el){
         if (!el.parent){
@@ -10667,6 +11060,7 @@ function getLibraryData(){
 
 
 function isDataExists(data){
+    
     if (data && data.values.values.length){
         return true;
     }
@@ -10694,9 +11088,8 @@ function returnLostFilter_returnLostFilter(id){
     const params    = new URLSearchParams(url);
     const viewParam = params.get("view"); 
 
-  
-
     if (viewParam == "filter"){
+      
         const data = webix.storage.local.get("currFilterState");
 
         Action.hideItem($$("table-editForm"));
@@ -10763,7 +11156,7 @@ function setSegmentBtn(id, value){
     }
 }
 
-function setInputValue(id, value){
+function returnDashboardFilter_setInputValue(id, value){
     if (value){
         const trueValue = value.replace(/['"]+/g, '');
         $$(id).setValue(trueValue);
@@ -10773,12 +11166,12 @@ function setInputValue(id, value){
 
 function returnDashboardFilter_setBtnsValue(id, array){
     returnDashboardFilter_setOperation (id, array[2]); // array[2] - operation
-    setInputValue(id, array[3]); // array[2] - value
+    returnDashboardFilter_setInputValue(id, array[3]); // array[2] - value
     setSegmentBtn(id, array[4]); // array[4] - and/or
 }
 
 
-function checkCondition(array){
+function returnDashboardFilter_checkCondition(array){
     const id = returnInputId(array[1]); //[1] - id
 
     let inputId       = id + "_filter"; 
@@ -10815,11 +11208,11 @@ function returInputsId(ids){
 }
 
 
-function iterateConditions(){
+function returnDashboardFilter_iterateConditions(){
     const ids = [];
     conditions.forEach(function(el){
         const arr = el.split(' ');
-        checkCondition(arr);
+        returnDashboardFilter_checkCondition(arr);
         ids.push(arr[1]);
      
     });
@@ -10829,7 +11222,7 @@ function iterateConditions(){
 }
 
 
-function returnConditions(filter){
+function returnDashboardFilter_returnConditions(filter){
     const array = filter.split(' ');
 
     const conditions = [];
@@ -10927,8 +11320,8 @@ function returnDashboardFilter(filter){
     Filter.clearFilter();
     Filter.clearAll();
 
-    conditions = returnConditions(filter);
-    iterateConditions();
+    conditions = returnDashboardFilter_returnConditions(filter);
+    returnDashboardFilter_iterateConditions();
     hideLastSegmentBtn();
 
     Action.enableItem($$("btnFilterSubmit"));
@@ -10938,7 +11331,6 @@ function returnDashboardFilter(filter){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/table/createSpace/rows/loadRows.js
-
 
 
 
@@ -11078,15 +11470,16 @@ function filterParam(){
 }
 
 
-async function returnFilter(tableElem){
+async function loadRows_returnFilter(tableElem){
  
     const filterString = tableElem.config.filter;
     const urlParameter = filterParam();
-
+ 
     const result = {
         prefs : true
     };
 
+ 
     if (urlParameter){
         result.filter = await getUserPrefsContext(urlParameter, "filter");
         Filter.showApplyNotify();
@@ -11095,7 +11488,7 @@ async function returnFilter(tableElem){
     if (!result.filter){
         result.prefs = false;
     
-   
+  
         if (filterString && filterString.table === itemTreeId){
             result.filter = filterString.query;
             const id = tableElem.config.id + "_applyNotify";
@@ -11106,6 +11499,8 @@ async function returnFilter(tableElem){
           
         }
     }
+
+  
 
     return result;
 }
@@ -11199,7 +11594,7 @@ async function loadTableData(table, id, idsParam, offset){
 
     idFindElem  = idCurrTable + "-findElements";
 
-    const resultFilter = await returnFilter(tableElem);
+    const resultFilter = await loadRows_returnFilter(tableElem);
     const isPrefs      = resultFilter.prefs;
     const filter       = resultFilter.filter;
 
@@ -11268,8 +11663,8 @@ async function loadTableData(table, id, idsParam, offset){
                     
                         createContextSpace_selectContextId      ();  
                       //  returnLostData       ();
-                        mediator.tables.restore.restoreEditForm();
-                        mediator.tables.restore.restoreFilter  (itemTreeId);
+                        returnLostData   ();
+                        returnLostFilter_returnLostFilter (itemTreeId);
                                
             
                       //  returnLostFilter     (itemTreeId);
@@ -11278,7 +11673,7 @@ async function loadTableData(table, id, idsParam, offset){
                         }
                     }
        
-          
+                   
                  
 
                     setCounterVal (reccount, tableElem);
@@ -12719,6 +13114,7 @@ async function loadFields(){
 }
 
 async function generateTable (showExists){ 
+ 
     let keys;
     
     if (!showExists){
@@ -14352,19 +14748,6 @@ function setPrimaryState(filter){
     Action.showItem($$("filterTableBarContainer"));
 }
 
-function removeTempData(){
-    webix.storage.local.remove("currFilterState");
-
-    const tabbar = $$("globalTabbar");
-    const idTab  = tabbar.getValue();
-    const tab    = tabbar.getOption(idTab);
-
-    if (tab.info.temp){
-        if (tab.info.temp.filter){
-            delete tab.info.temp.filter;
-        }
-    }
-}
 
 function setSecondaryState(){
     setBtnCssState(
@@ -14375,7 +14758,7 @@ function setSecondaryState(){
     Action.hideItem($$("filterTableForm"));
     Action.hideItem($$("filterTableBarContainer"));
  
-    removeTempData();
+    mediator.tabs.clearTemp("currFilterState", "filter");
 
 }
 
@@ -14525,6 +14908,7 @@ function editBtnClick() {
 
             mediator.linkParam(false, "view");
             mediator.linkParam(false, "id"  );
+            mediator.tabs.clearTemp("editFormTempData", "edit");
 
             table.unselectAll ();
         } else if (editForm && !isVisible) {
@@ -14536,6 +14920,8 @@ function editBtnClick() {
             if(!isIdParamExists()){
                 mediator.linkParam(true, {"view" : "edit"});
             }
+
+            mediator.tabs.clearTemp("currFilterState", "filter");
         
         }
 
@@ -15006,6 +15392,7 @@ function property_setTabInfo(sentVals){
 }
 
 function createTempData(self){
+    
     if (!self.config.tempData){
         self.config.tempData = true;
     }
@@ -15018,6 +15405,7 @@ function createTempData(self){
    
     const storageName = "editFormTempData";
 
+ 
     if (!isEqual(tableValue, values)){
         const sentVals = {
             table : id,
@@ -15034,6 +15422,8 @@ function createTempData(self){
     } else {
        // webix.storage.local.remove(storageName);
     }
+
+    mediator.tabs.setDirtyParam();
 }
 
 
@@ -15170,6 +15560,7 @@ function addItem () {
     } else {
         mediator.tables.editForm.clearTempStorage();
         setFormState();
+        
  
     }
 
@@ -15875,7 +16266,7 @@ function submitBtn_createFilter(){
     );
 }
 
-function setToTabStorage(){
+function submitBtn_setToTabStorage(){
     const data = mediator.tabs.getInfo();
 
     if (data.temp && data.temp.queryFilter){
@@ -15895,7 +16286,7 @@ async function createModalBox(table){
                 if (result){
                     Filter.showApplyNotify(false);
                     table.config.filter = null;
-                    setToTabStorage();
+                    submitBtn_setToTabStorage();
                     
                 } 
 
@@ -18370,98 +18761,69 @@ function createPopupOpenBtn(el){
 
 
 
-
-
-
-
-
 const reference_logNameFile = "tableEditForm => propBtns => reference";
 
 
 let selectBtn;
 let idPost;
 
-function toRefTable (refTable){ 
-    let url = "tree/" + refTable;
+function createTabConfig(refTable){
+    const infoData = {
 
-    if (idPost){
-        url = url + "?id=" + idPost;
-    }
-
-    if (refTable){
-        Backbone.history.navigate(url, { trigger : true});
-        window.location.reload();
-    }
-
+        tree : {
+            field : refTable,
+            type  : "dbtable" 
+        },
+        temp : {
+            edit  : {
+                selected : idPost, 
+                values   : {
+                    status : "put",
+                    table  : refTable,
+                    values : {}
+                }
+            },
+          
+        }
+    };  
+    
+    return infoData;
 }
-
 
 function setRefTable (srcTable){
-    const table = $$("table");
-    const cols  = table.getColumns();
-    const tree  = $$("tree");
+    if (srcTable){
+        const table = $$("table");
+        const cols  = table.getColumns();
+ 
 
-    try {
-        cols.forEach(function(col){
+        try {
+            cols.forEach(function(col){
 
-            if ( col.id == srcTable ){
-            
-                const refTable = col.type.slice(10);
+                if ( col.id == srcTable ){
+                
+                    const refTable = col.type.slice(10);
+                    
+                    const infoData = createTabConfig(refTable);
 
-                toRefTable (refTable);
-            
-            }
-
-        });
-    } catch (err){
-        errors_setFunctionError(
-            err, 
-            reference_logNameFile, 
-            "setRefTable"
-        );
-
-        Action.hideItem($$("EditEmptyTempalte"));
-    }
-}
-
-
-function reference_createModalBox (srcTable){
-   
-    modalBox().then(function(result){
-        const editForm =  $$("table-editForm");
-
-        if (result == 1 || result == 2){
-            const idExists = $$("table-saveBtn").isVisible();
-
-            const form = mediator.tables.editForm;
-            
-            if (result == 2){
-                if (idExists){
-                    form.put(false, true)
-                    .then(function (result){
-                        if (result){
-                            editForm.setDirty(false);
-                            setRefTable (srcTable);
-                        }
-                    });
-                } else {
-                    form.post(false, true)
-                    .then(function (result){
-                        if (result){
-                            editForm.setDirty(false);
-                            setRefTable (srcTable); 
-                        }
-                    });
+                    mediator.tabs.openInNewTab(infoData);
+                
                 }
-            } else {
-                editForm.setDirty(false);
-                setRefTable      (srcTable); 
-            }
+
+            });
+        } catch (err){
+            errors_setFunctionError(
+                err, 
+                reference_logNameFile, 
+                "setRefTable"
+            );
+
+            Action.hideItem($$("EditEmptyTempalte"));
         }
-    });
-        
-    
+
+    }
+
 }
+
 
 function findIdPost(editor){
     const prop = $$("editTableFormProperty");
@@ -18472,14 +18834,11 @@ function findIdPost(editor){
 function btnClick (idBtn){
     const config      = $$(idBtn).config;
     const srcTable    = config.srcTable;
-    const isDirtyForm = $$("table-editForm").isDirty();
+
     idPost            = findIdPost(config.idEditor);
-    
-    if (isDirtyForm){
-        reference_createModalBox (srcTable);
-    } else {
-        setRefTable    (srcTable);
-    }
+
+    setRefTable    (srcTable);
+  
 }
 
 function reference_btnLayout(idEditor){
@@ -18814,12 +19173,17 @@ function setStatusProperty(status){
     }
 }
 
+function setState_unsetDirtyProp(){
+    $$("table-editForm").setDirty(false);
+    mediator.tabs.setDirtyParam();
+}
+
 function editTablePostState(){
     const table = $$("table");
     initPropertyForm();
     setWorkspaceState (table);
     setStatusProperty("post");
- 
+    setState_unsetDirtyProp();
     mediator.linkParam(true, {"view": "edit"});
 }
 
@@ -18905,12 +19269,16 @@ function defPropertyState(){
   
 }
 
-function setState_unsetDirtyProp(){
-    $$("table-editForm").setDirty(false);
-}
 
-function editTableDefState(){
-    setState_unsetDirtyProp();
+
+function editTableDefState(clearDirty){
+
+    if (clearDirty){
+        setState_unsetDirtyProp();   
+    } else {
+        $$("table-editForm").setDirty(false); 
+    }
+ 
     
     Action.hideItem   ($$("table-editForm"    ));
     Action.hideItem   ($$("tablePropBtnsSpace"));
@@ -19283,7 +19651,9 @@ function uniqueData (itemData){
 const formAcitions_logNameFile = "table => formActions";
 
 function formAcitions_unsetDirtyProp(){
+ 
     $$("table-editForm").setDirty(false);
+    mediator.tabs.setDirtyParam();
     mediator.tables.editForm.clearTempStorage();
 }
 
@@ -19657,8 +20027,8 @@ class EditForm {
         Action.enableItem($$("table-newAddBtnId"));
     }
 
-    static defaultState (){
-        editTableDefState();
+    static defaultState (clearDirty = true){
+        editTableDefState(clearDirty);
     }
 
     static putState     (){
@@ -19834,6 +20204,7 @@ const onFuncTable = {
         }
         const name = "table-editForm";
         const isDirtyForm = $$(name).isDirty();
+    
         if (isDirtyForm){
             modalBoxTable ();
             return false;
@@ -20248,22 +20619,6 @@ function dropColsSettings(table){
 }
 
 
-;// CONCATENATED MODULE: ./src/js/components/table/createSpace/_tableSpaceMediator.js
-
-
-
-
-class TableSpace {
-    static restoreFilter(id){
-        returnLostFilter_returnLostFilter(id);
-    }
-
-    static restoreEditForm(){
-        returnLostData();
-    }
-}
-
-
 ;// CONCATENATED MODULE: ./src/js/components/table/filterForm/setDefaultState.js
 
 
@@ -20276,10 +20631,21 @@ function setToolbarBtnState(){
     Filter.removeClass(node, "webix-transparent-btn--primary");
 }
 
+function resetTableFilter(){
+    const table = commonFunctions_getTable();
+
+    if (table){
+        table.config.filter = null;
+    }
+
+}
+
 
 function filterFormDefState(){
     const filterContainer = $$("filterTableBarContainer");
     const inputs          = $$("inputsFilter");
+
+    resetTableFilter();
 
     Filter.clearAll();
     Filter.showApplyNotify(false);
@@ -20320,7 +20686,6 @@ function toolsDefState(){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/table/_tableMediator.js
-
 
 
 
@@ -20402,14 +20767,10 @@ class Tables {
     get filter (){
         return Filter;
     }
-
-    get restore(){
-        return TableSpace;
-    }
   
-    defaultState(type){
+    defaultState(type, clearDirty=true){
         if (type == "edit"){
-            EditForm["default"]();
+            EditForm.defaultState(clearDirty);
         } else if (type == "filter"){
             filterFormDefState();
         } else {
@@ -22417,32 +22778,6 @@ function setNameToTab(){
  
 }
 
-function isOtherViewTab(){
-    const tabbar = $$("globalTabbar");
-    const id     = tabbar.getValue();
-    const option = $$("globalTabbar").getOption (id);
-
-    if (option.isOtherView){
-        return true;
-    }
-
-}
-
-function createTab(){
-    $$("globalTabbar").addOption({
-        id    : webix.uid(), 
-        value : "Новая вкладка", 
-        info  : {
-            tree:{
-                none:true
-                //null
-            }
-        },
-        close : true, 
-    }, true);
-    
-}
-
 function createUndefinedView(){
 
     const id = "webix__null-content";
@@ -22463,13 +22798,12 @@ function createUndefinedView(){
         }
         
     };
-
+     
     if ( !($$(id)) ){
         try{
-     
-            if (isOtherViewTab()){
-                createTab();
-                Backbone.history.navigate("tree/tab?new=true", { trigger : true });
+
+            if (mediator.tabs.isOtherViewTab()){
+                mediator.tabs.addTab(true);
             } else {
                 setNameToTab();
             }
@@ -23710,7 +24044,9 @@ function itemClickContext(id){
         clickMenu("logout", "logout?auto=true");
 
     } else if (id == "cp"){
-        clickMenu("cp", "/cp");
+      //  clickMenu("cp", "/cp");
+      clearTree();
+      navigateTo ("/cp");
 
     } else if (id == "settings"){
        // clickMenu("settings", "/settings");
@@ -23992,61 +24328,326 @@ class Header {
 }
 
 
+;// CONCATENATED MODULE: ./src/js/components/tabs/showItem.js
+
+
+
+function returnSelectElem(type){
+   
+    let selectElem; 
+        
+    if (type == "dbtable"){
+        selectElem = "tables";
+
+    } else if(type == "tform"){
+        selectElem = "forms";
+
+    } else if(type == "dashboard"){
+        selectElem = "dashboards";
+    // Action.hideItem($$("propTableView"));
+
+    }  
+
+    return selectElem;
+}
+
+function hideOtherElems(selectElem){
+    const visiualElements = mediator.getViews();
+
+
+    if (visiualElements){
+        visiualElements.forEach(function(elem){
+            if (elem !== selectElem){
+                Action.hideItem($$(elem));
+            } 
+        });
+    }
+
+    Action.hideItem ($$("webix__null-content"));
+    Action.hideItem ($$("webix__none-content"));
+
+}
+
+
+function showContent(selectElem, id){
+    if (selectElem == "tables" || selectElem == "forms"){
+        mediator.tables.showExists(id);
+    } else if (selectElem == "dashboards"){
+        mediator.dashboards.showExists(id);
+    }
+
+}
+
+function selectTree(id, isOtherTab){
+    const tree = $$("tree");
+    if ( tree.exists(id) && isOtherTab){
+        tree.config.isTabSelect = true;
+        tree.select(id);
+    }
+}
+
+function showItem_setLink(id){
+
+    const path = "tree/" + id;
+    
+    Backbone.history.navigate(
+        path, { trigger : true }
+    );
+ 
+}
+
+function setEmptyState(){
+    mediator.hideAllContent();
+    Backbone.history.navigate("tree/tab?new=true", { trigger : true });
+    Action.showItem ($$("webix__none-content"));
+}
+
+
+function showTreeItem(config, isOtherTab, isOtherView){
+
+    if (isOtherView){
+        Backbone.history.navigate("/" + config.view, { trigger : true });
+    } else {
+
+        const id              = config.field;
+        const type            = config.type;
+    
+        if (config.none){ //none-content
+            setEmptyState();
+
+        } else {
+            const selectElem = returnSelectElem(type);
+
+            hideOtherElems(selectElem);
+
+            Action.showItem ($$(selectElem));
+    
+
+            if (id){
+                showItem_setLink    (id);
+                showContent(selectElem, id);
+                selectTree (id, isOtherTab);
+
+            }
+
+        }
+    }
+
+}
+
+
+;// CONCATENATED MODULE: ./src/js/components/tabs/restoreTempData.js
+ 
+
+
+function restoreTempData(tempConfig, field){
+  
+    const filter = tempConfig.filter;
+    const edit   = tempConfig.edit;
+
+    if (filter){
+    
+        if (filter.dashboards){
+            const data = {
+                content : filter.values
+            };
+            
+            webix.storage.local.put("dashFilterState", data);
+        } else {
+       
+            if (tempConfig.queryFilter){
+                const table = commonFunctions_getTable();
+                if (table){
+                    table.config.filter = {
+                        table : filter.id,
+                        query : tempConfig.queryFilter
+                    };
+                  
+                }
+
+             
+            }
+            webix.storage.local.put("currFilterState", filter);
+        }
+    
+        window.history.pushState('', '', "?view=filter");
+  
+    }  
+ 
+    if (edit){
+         
+        webix.storage.local.put("editFormTempData", edit.values);
+        if (edit.selected){
+            window.history.pushState('', '', "?id=" + edit.selected);
+        }
+
+    }
+
+
+   
+}
+
+
 ;// CONCATENATED MODULE: ./src/js/components/tabs/actions.js
 
 
 
-function add(){
-    const tabbar = $$("globalTabbar");
-    const id     = webix.uid();
-
-    tabbar.addOption({
-        id    : id, 
-        value : "Новая вкладка", 
-        info  : {
-            tree:{
-                none:true
-            }
-        },
-        close : true, 
-    }, true);
-
-    tabbar.showOption(id);
-
-    const visiualElements = mediator.getViews();
-
-    
-    visiualElements.forEach(function(elem){
-
-        Action.hideItem($$(elem));
-
-    });
 
 
-    
 
-   const options = $$("globalTabbar").config.options;
+/// add tab 
+
+function actions_createEmptySpace(show, hide){
+    Action.showItem (show);  
+    Action.hideItem (hide);
+}
+
+function actions_createSpace(isNull){
+    const nullContent = $$("webix__null-content");
+    const noneContent = $$("webix__none-content");
+
+   
+    if (isNull){
+        actions_createEmptySpace(nullContent, noneContent);
+    } else {
+        actions_createEmptySpace(noneContent, nullContent);
+    }
+}
+
+function setPath(){
+    Backbone.history.navigate(
+        "tree/tab?new=true", 
+        { trigger : true }
+    );
+}
+
+function actions_setToStorage(idTab){
+    const options = $$("globalTabbar").config.options;
  
     if (options){
 
         const data = {
             tabs   : options,
+            select : idTab
         };
 
         webix.storage.local.put   ("tabbar", data);
     } else {
         webix.storage.local.remove("tabbar");
-    }
-    
-
-    Action.showItem ($$("webix__none-content"));
-    Action.hideItem ($$("webix__null-content"));
-    Backbone.history.navigate("tree/tab?new=true", { trigger : true });
- //   window.history.pushState('', '', "?new=true");
+    }   
 }
 
-function remove(){
-    console.log('remove')
+
+function setDefaultState(){
+    mediator.tables.defaultState();
+    mediator.dashboards.defaultState();
+    mediator.forms.defaultState();
+}
+
+function add(isNull, open){
+    const tabbar = $$("globalTabbar");
+    const id     = webix.uid();
+
+   // let pathParam;
+
+    const treeConfig =  {
+        tree:{
+            none : true
+        }
+    };
+
+
+    tabbar.addOption({
+        id    : id, 
+        value : "Новая вкладка", 
+        info  : treeConfig,
+        close : true, 
+    }, open);
+
+    if (open){
+        setDefaultState();
+    }
+
+    mediator.hideAllContent(false);
+
+
+    actions_setToStorage();
+
+    actions_createSpace (isNull);
+
+    setPath     ();
+
+    return id;
+}
+
+
+// remove tab
+
+function setEmptyTabLink(){
+    Backbone.history.navigate(
+        "tree/tab?new=true", 
+        { trigger : true }
+    );
+}
+
+function emptyTabsLogic(lastTab){
+    const tabbar = $$("globalTabbar");
+
+    tabbar.setValue(lastTab);
+    const options = tabbar.config.options;
+
+    let conutEmptyTabs = 0;
+    options.forEach(function(el, i){
+        if (el.info.tree.none){ // empty tab
+            conutEmptyTabs ++;
+        }
+    });
+
+     
+    if (options.length == conutEmptyTabs){ // all tabs is empty
+        setEmptyTabLink();
+    }
+}
+
+function createConfigSpace(lastTab){
+    const option = $$("globalTabbar").getOption(lastTab);
+
+    const treeConfig = option.info.tree;
+    const tempConfig = option.info.temp;
+
+
+    if (treeConfig){
+        showTreeItem(treeConfig, true, option.isOtherView);
+    }
+
+    if (tempConfig){
+        restoreTempData(tempConfig);
+    }  
+}
+
+
+
+
+
+
+function remove(lastTab){
+
+    setDefaultState();
+
+    if (lastTab.length){
+        emptyTabsLogic(lastTab);
+
+        mediator.tables.filter.clearAll();
+
+        createConfigSpace(lastTab);
+        
+    } else {   
+        setEmptyTabLink();
+        mediator.hideAllContent();
+
+    }
+
+    actions_setToStorage(lastTab);
 }
 
 
@@ -24055,7 +24656,8 @@ function remove(){
 
 
 
-function _tabMediator_isOtherViewTab(id){
+
+function isOtherViewTab(id){
     const option = $$("globalTabbar").getOption (id);
 
     if (option.isOtherView){
@@ -24064,7 +24666,7 @@ function _tabMediator_isOtherViewTab(id){
 
 }
 
-function _tabMediator_createTab(){
+function createTab(){
     $$("globalTabbar").addOption({
         id    : webix.uid(), 
         value : " ", 
@@ -24074,22 +24676,132 @@ function _tabMediator_createTab(){
     }, true);
     
 }
-class Tabs {
-    addTab(){
-        add();
+
+function changeName(self, values){
+    
+    if (values && values.tree){
+        const id = values.tree.field;
+        self.changeTabName(id);
+    }
+   
+}
+
+function _tabMediator_setDataToStorage(tabbar, tabId){
+    const options = tabbar.config.options;
+            
+    const data = {
+        tabs   : options,
+        select : tabId
+    };
+
+    webix.storage.local.put("tabbar", data);
+}
+ 
+
+function getFieldsname(id){
+    const field    = GetFields.item(id);
+    const plural   = field.plural ;
+    const singular = field.singular ;
+
+    let name; 
+
+    if (field){
+        name = plural ? plural : singular;
+    } else {
+        name = "Новая вкладка";
     }
 
-    removeTab(id){
-        remove(id);
+    return name;
+}
+
+function _tabMediator_setName(name){
+    const tabbar   = $$("globalTabbar");
+    const tabId    = tabbar.getValue   ();
+
+    const tabIndex = tabbar.optionIndex(tabId);
+
+
+    if (tabIndex > -1){
+        tabbar.config.options[tabIndex].value = name;
+        tabbar.refresh();
+    }
+}
+
+function hasDirtyForms(){
+    const forms = mediator.getForms();
+    let check = {
+        dirty:false
+    };
+
+    if (forms){
+        forms.forEach(function(form){
+
+            if (form && form.isDirty() && !check.dirty){
+                check = {
+                    dirty : true,
+                    id    : form.config.id
+                };
+            }
+        });
+    }
+
+ 
+    return check;
+}
+
+function _tabMediator_tabbarClick(ev, id){
+    $$("globalTabbar").callEvent(ev, [ id ]);
+}
+class Tabs {
+    addTab(isNull, open = true){
+        return add(isNull, open);
+    }
+
+    
+    removeTab(lastTab){
+        remove(lastTab);
+    }
+    
+
+    isOtherViewTab(){
+        const tabbar = $$("globalTabbar");
+        const id     = tabbar.getValue();
+        const option = $$("globalTabbar").getOption (id);
+    
+        if (option.isOtherView){
+            return true;
+        } 
+    }
+
+    clearTemp(name, type){
+        webix.storage.local.remove(name);
+
+        const tabbar = $$("globalTabbar");
+        const idTab  = tabbar.getValue();
+        const tab    = tabbar.getOption(idTab);
+    
+        if (tab.info.temp){
+            if (type == "filter"){
+                if (tab.info.temp.filter){
+                    delete tab.info.temp.filter;
+                }
+            } else if (type == "edit"){
+                if (tab.info.temp.edit){
+                    delete tab.info.temp.edit;
+                }
+            }
+            
+        }
     }
 
     setInfo(values){
-
+  
+     
         const tabbar = $$("globalTabbar");
         let tabId = tabbar.getValue();
 
-        if ( _tabMediator_isOtherViewTab(tabId)){
-            _tabMediator_createTab();
+        if ( isOtherViewTab(tabId)){
+            createTab();
             tabId = tabbar.getValue();
         }
        
@@ -24100,20 +24812,9 @@ class Tabs {
             tabbar.config.options[tabIndex].info = values;
             tabbar.refresh();
 
-            if (values && values.tree){
-                const id = values.tree.field;
-                this.changeTabName(id);
-            }
-
+            changeName(this, values);
         
-            const options = tabbar.config.options;
-            
-            const data = {
-                tabs   : options,
-                select : tabId
-            };
-
-            webix.storage.local.put("tabbar", data);
+            _tabMediator_setDataToStorage(tabbar, tabId);
         }
     }
 
@@ -24121,6 +24822,7 @@ class Tabs {
         const tabbar   = $$("globalTabbar");
         const tabId    = tabbar.getValue();
         const tabIndex = tabbar.optionIndex(tabId);
+
         return tabbar.config.options[tabIndex].info;
      
     }
@@ -24133,31 +24835,37 @@ class Tabs {
             name = "Новая вкладка";
         } else {
             if (id){
-                const field = GetFields.item(id);
-                if (field){
-                    name = field.plural ? field.plural : field.singular;
-                } else {
-                    name = "Новая вкладка";
-                }
-          
-               
+                name = getFieldsname(id);
             } else {
                 name = value;
             }
       
         }
       
-        const tabbar   = $$("globalTabbar");
-        const tabId    = tabbar.getValue   ();
-  
-        const tabIndex = tabbar.optionIndex(tabId);
+        _tabMediator_setName(name);
 
-   
-        if (tabIndex > -1){
-            tabbar.config.options[tabIndex].value = name;
-            tabbar.refresh();
+    }
+
+    setDirtyParam(){
+
+        const tabbar = $$("globalTabbar");
+        const id     = tabbar.getValue();
+        const option = tabbar.getOption(id);
+
+        if (option && option.info){
+            option.info.dirty = hasDirtyForms().dirty;  
         }
+    
+     
+    }
 
+    openInNewTab(config){
+        const newTabId = this.addTab();
+
+        mediator.tabs.setInfo(config);
+
+        _tabMediator_tabbarClick("onBeforeTabClick", newTabId);
+        _tabMediator_tabbarClick("onAfterTabClick" , newTabId);
     }
 }
 
@@ -24276,7 +24984,7 @@ async function globalModalBox (idForm){
 }
 
 
-function hasDirtyForms(){
+function globalModalBox_hasDirtyForms(){
     const forms = mediator.getForms();
     let check = {
         dirty:false
@@ -24298,9 +25006,9 @@ function hasDirtyForms(){
 }
 
 async function clickModalBox(id){
-    const dirtyInfo = hasDirtyForms();
+    const dirtyInfo = globalModalBox_hasDirtyForms();
     const isDirty   = dirtyInfo.dirty;
-
+ 
     if (isDirty){
         const idForm = dirtyInfo.id;
         return globalModalBox (idForm);
@@ -24320,6 +25028,7 @@ function createParameters(params){
 function setParamToLink(vals){
     const params = createParameters(vals);
     window.history.replaceState(null, null, params);
+    
 }
 
 function removeParamFromLink(id){
@@ -24434,7 +25143,7 @@ const mediator = {
         return encodeQueryData(params);
     },
 
-    hideAllContent (){
+    hideAllContent (show = true){
         const visiualElements = this.getViews();
     
         if (visiualElements){
@@ -24443,8 +25152,11 @@ const mediator = {
             });
         }
     
-        Action.hideItem ($$("webix__null-content"));
-        Action.showItem ($$("webix__none-content"));
+        if (show){
+            Action.hideItem ($$("webix__null-content"));
+            Action.showItem ($$("webix__none-content"));
+        }
+       
     }
     
 
@@ -25762,185 +26474,7 @@ function createAddBtn(){
 
 
 
-;// CONCATENATED MODULE: ./src/js/components/tabs/restoreTempData.js
- 
-
-
-function restoreTempData(tempConfig, field){
- 
-    const filter = tempConfig.filter;
-    const edit   = tempConfig.edit;
- 
-    if (filter){
-     
-        if (filter.dashboards){
-            const data = {
-                content : filter.values
-            };
-            
-            webix.storage.local.put("dashFilterState", data);
-        } else {
-       
-            if (tempConfig.queryFilter){
-          
-                const table = commonFunctions_getTable();
-                if (table){
-                    table.config.filter = {
-                        table : filter.id,
-                        query : tempConfig.queryFilter
-                    };
-                  
-                }
-
-             
-            }
-            webix.storage.local.put("currFilterState", filter);
-        }
-   
-        window.history.pushState('', '', "?view=filter");
-  
-    } 
- 
-    if (edit){
-      
-        webix.storage.local.put("editFormTempData", edit.values);
-        if (edit.selected){
-            window.history.pushState('', '', "?id=" + edit.selected);
-        }
-
-    }
-
-
-   
-}
-
-
-;// CONCATENATED MODULE: ./src/js/components/tabs/showItem.js
-
-
-
-function returnSelectElem(type){
-   
-    let selectElem; 
-        
-    if (type == "dbtable"){
-        selectElem = "tables";
-
-    } else if(type == "tform"){
-        selectElem = "forms";
-
-    } else if(type == "dashboard"){
-        selectElem = "dashboards";
-    // Action.hideItem($$("propTableView"));
-
-    }  
-
-    return selectElem;
-}
-
-function hideOtherElems(selectElem){
-    const visiualElements = mediator.getViews();
-
-
-    if (visiualElements){
-        visiualElements.forEach(function(elem){
-            if (elem !== selectElem){
-                Action.hideItem($$(elem));
-            } 
-        });
-    }
-
-    Action.hideItem ($$("webix__null-content"));
-    Action.hideItem ($$("webix__none-content"));
-
-}
-
-
-function showContent(selectElem, id){
-    if (selectElem == "tables" || selectElem == "forms"){
-        mediator.tables.showExists(id);
-    } else if (selectElem == "dashboards"){
-        mediator.dashboards.showExists(id);
-    }
-
-}
-
-function selectTree(id, isOtherTab){
-    const tree = $$("tree");
-    if ( tree.exists(id) && isOtherTab){
-        tree.config.isTabSelect = true;
-        tree.select(id);
-    }
-}
-
-function showItem_setLink(id){
-
-    const path = "tree/" + id;
-    Backbone.history.navigate(path, { trigger : true });
-   // const search = window.location.search;
-    // if (search.length){
-    //     const link    = window.location.href;
-    //     const index   = link.lastIndexOf("?");
-    //     const newLink = link.slice(0, index);
-    //     console.log(newLink)
-      
-    // }
-
-
-  
-    // const params    = new URLSearchParams(search);
-    // const param = params.get("new"); 
-    // console.log(search)
-    // if (param){
-        
-    //     params.delete('new');
-    // }
-
-   
-}
-
-function setEmptyState(){
-    mediator.hideAllContent();
-    Backbone.history.navigate("tree/tab?new=true", { trigger : true });
-    Action.showItem ($$("webix__none-content"));
-}
-
-
-function showTreeItem(config, isOtherTab, isOtherView){
-    
-    if (isOtherView){
-        Backbone.history.navigate("/" + config.view, { trigger : true });
-    } else {
-
-        const id              = config.field;
-        const type            = config.type;
-    
-        if (config.none){ //none-content
-            setEmptyState();
-
-        } else {
-            const selectElem = returnSelectElem(type);
-
-            hideOtherElems(selectElem);
-
-            Action.showItem ($$(selectElem));
-    
-
-            if (id){
-                showContent(selectElem, id);
-                showItem_setLink    (id);
-                selectTree (id, isOtherTab);
-
-            }
-
-        }
-    }
-
-}
-
-
 ;// CONCATENATED MODULE: ./src/js/components/tabs/_layout.js
-
 
 
 
@@ -25954,7 +26488,7 @@ function setStateToStorage(idTab){
     const tabbar  = $$("globalTabbar");
     const options = tabbar.config.options;
     
-
+ 
     const data = {
         tabs   : options,
         select : idTab
@@ -25963,11 +26497,87 @@ function setStateToStorage(idTab){
     webix.storage.local.put("tabbar", data);
 }
 
-function setEmptyTabLink(){
-    Backbone.history.navigate("tree/tab?new=true", { trigger : true });
+function isOtherTab(id){
+    let check = true;
+
+    if (id == prevValue){
+        check = false;
+    }
+
+    return check;
+}
+
+function _layout_createConfigSpace(id){
+    const option     = $$("globalTabbar").getOption(id);
+  
+    const treeConfig = option.info.tree;
+    const tempConfig = option.info.temp;
+  
+    if (treeConfig){
+        showTreeItem(
+            treeConfig, 
+            isOtherTab(), 
+            option.isOtherView
+        );
+
+ 
+        if (tempConfig){
+            restoreTempData(
+                tempConfig, 
+                treeConfig.field
+            );
+        }
+    }    
+}
+
+function restoreTabbar(data){
+    const tabbar = $$("globalTabbar");
+    const tabs   = data.tabs;
+    const select = data.select;
+ 
+    tabs.forEach(function(option){
+        tabbar.addOption(option, false); 
+    });
+
+    
+    if (select){
+        tabbar.setValue(select);
+
+    } else {
+        const options = tabbar.config.options;
+        const index   = options.length - 1;
+        const lastOpt = options[index]; 
+        if (lastOpt){
+            const id  = lastOpt.id;
+            tabbar.setValue(id);
+        }
+
+   
+    }
+}
+
+function addNewTab(){
+    $$("globalTabbar").addOption( { 
+        id    : "container", 
+        value : "Новая вкладка", 
+        info  : {},
+        close : true
+    }, true); 
 }
 
 
+function isSelectedOption(id){
+    const selectOpt = $$("globalTabbar").getValue();
+    if ( selectOpt == id ){
+        return true;
+    }
+}
+
+
+
+function _layout_tabbarClick(ev, id){
+    $$("globalTabbar").callEvent(ev, [ id ]);
+}
 function createTabbar(){
     const tabbar = {
         view    : "tabbar",
@@ -25982,129 +26592,82 @@ function createTabbar(){
         ],
         on:{
 
-            onBeforeTabClick:function(id){
-                mediator.tables.defaultState();
+            onBeforeTabClick:function(){
+        
+                const clearDirty = false;
+                mediator.tables.defaultState("edit", clearDirty);
+                mediator.tables.defaultState("filter");
+
                 mediator.dashboards.defaultState();
                 mediator.forms.defaultState();
+
                 prevValue = this.getValue();
             },
 
             onAfterTabClick:function(id){
-
-                let isOtherTab = true;
-
-                if (id == prevValue){
-                    isOtherTab = false;
-                }
-
+            
                 mediator.tables.filter.clearAll();
 
-                const option = this.getOption(id);
-
-                const treeConfig = option.info.tree;
-                const tempConfig = option.info.temp;
-
-                if (treeConfig){
-                    showTreeItem(treeConfig, isOtherTab, option.isOtherView);
-
-             
-                    if (tempConfig){
-                        restoreTempData(tempConfig, treeConfig.field);
-                    }
-                }
- 
+                _layout_createConfigSpace(id);
 
                 setStateToStorage(id);
-
+          
             },
 
+
+
             onAfterRender:webix.once(function(id){
-                const data   = webix.storage.local.get("tabbar");
-                const tabbar = $$("globalTabbar");
-
-                if (data){
-                    const tabs   = data.tabs;
-                    const select = data.select;
-                 
-                    tabs.forEach(function(option, i){
-                        tabbar.addOption(option, false); 
-                    });
-
+                const data  = webix.storage.local.get("tabbar");
+            
+                if (data && data.tabs.length){
+                    restoreTabbar(data);
                     
-                    if (select){
-                        tabbar.setValue(select);
-
-                    } else {
-                        const options = this.config.options;
-                        const index   = options.length - 1;
-                        const lastOpt = options[index]; 
-                        if (lastOpt){
-                            const id  = lastOpt.id;
-                            this.setValue(id);
-                        }
-                
-                   
-                    }
-                    
-                
                 } else {
-                    this.addOption( { 
-                        id    : "container", 
-                        value : "Имя вкладки", 
-                        info  : {},
-                        close : true
-                    }, true); 
+                    addNewTab();
                 }
             }),
-            
-            // сделать параметр для единственной пустой вкладки
 
-            onOptionRemove:function(removedTab, lastTab){
-              
-                const tabbar = this;
+            onBeforeTabClose: function(id){
+             
+                
+                const tabbar     = this;
+                const option     = tabbar.getOption(id);
+                const isTabDirty = option.info.dirty;
+   
 
-                if (lastTab.length){
-              
-                    tabbar.setValue(lastTab);
-                    const options = tabbar.config.options;
-            
-                    let conutEmptyTabs = 0;
-                    options.forEach(function(el, i){
-                        if (el.info.tree.none){ // empty tab
-                            conutEmptyTabs ++;
+                if (isSelectedOption(id)){ // текущая вкладка
+
+                    mediator.getGlobalModalBox().then(function(result){
+
+                        if (result){
+                            tabbar.removeOption(id);
                         }
+    
                     });
 
-                     
-                    if (options.length == conutEmptyTabs){ // all tabs is empty
-                        setEmptyTabLink();
-                    }
-
-
-                    mediator.tables.filter.clearAll();
-
-                    const option = this.getOption(lastTab);
+                } else { // другая вкладка
+        
+                    if (isTabDirty){
+                        tabbar.setValue(id);
+                 
+                        _layout_tabbarClick("onBeforeTabClick", id);
+                        _layout_tabbarClick("onAfterTabClick" , id);
     
-                    const treeConfig = option.info.tree;
-                    const tempConfig = option.info.temp;
-
-                  
-    
-                    if (treeConfig){
-                        showTreeItem(treeConfig, true, option.isOtherView);
+                        const optionData = mediator.tabs.getInfo();
+                        optionData.isClose = true;
+                        mediator.tabs.setInfo(optionData);
+                    } else {
+                        tabbar.removeOption(id);
                     }
-    
-                    if (tempConfig){
-                        restoreTempData(tempConfig);
-                    }
-                } else {   
-                    setEmptyTabLink();
-                    mediator.hideAllContent();
+              
+                } 
+            
+                return false;
+            },
 
-                }
+            onOptionRemove:function(removedTab, lastTab){
+                mediator.tabs.removeTab(lastTab);
 
-                setStateToStorage(lastTab);
-           
             },
           
         }
@@ -26123,7 +26686,7 @@ function createTabbar(){
 
 
 ;// CONCATENATED MODULE: ./src/js/app.js
-console.log("expa 1.0.72"); 
+console.log("expa 1.0.73"); 
 
 
 

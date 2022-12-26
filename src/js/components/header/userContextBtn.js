@@ -41,7 +41,9 @@ function itemClickContext(id){
         clickMenu("logout", "logout?auto=true");
 
     } else if (id == "cp"){
-        clickMenu("cp", "/cp");
+      //  clickMenu("cp", "/cp");
+      clearTree();
+      navigateTo ("/cp");
 
     } else if (id == "settings"){
        // clickMenu("settings", "/settings");

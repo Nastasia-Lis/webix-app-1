@@ -39,6 +39,7 @@ function addItem () {
     } else {
         mediator.tables.editForm.clearTempStorage();
         setFormState();
+        
  
     }
 

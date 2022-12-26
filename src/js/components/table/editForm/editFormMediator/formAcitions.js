@@ -13,7 +13,9 @@ import { mediator } from "../../../../blocks/_mediator.js";
 const logNameFile = "table => formActions";
 
 function unsetDirtyProp(){
+ 
     $$("table-editForm").setDirty(false);
+    mediator.tabs.setDirtyParam();
     mediator.tables.editForm.clearTempStorage();
 }
 

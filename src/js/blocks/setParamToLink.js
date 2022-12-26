@@ -6,6 +6,7 @@ function createParameters(params){
 function setParamToLink(vals){
     const params = createParameters(vals);
     window.history.replaceState(null, null, params);
+    
 }
 
 function removeParamFromLink(id){

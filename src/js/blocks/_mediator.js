@@ -77,7 +77,7 @@ const mediator = {
         return encodeQueryData(params);
     },
 
-    hideAllContent (){
+    hideAllContent (show = true){
         const visiualElements = this.getViews();
     
         if (visiualElements){
@@ -86,8 +86,11 @@ const mediator = {
             });
         }
     
-        Action.hideItem ($$("webix__null-content"));
-        Action.showItem ($$("webix__none-content"));
+        if (show){
+            Action.hideItem ($$("webix__null-content"));
+            Action.showItem ($$("webix__none-content"));
+        }
+       
     }
     
 

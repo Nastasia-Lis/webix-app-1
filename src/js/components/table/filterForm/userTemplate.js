@@ -19,7 +19,7 @@ function setBtnsValue(el){
     const id = el.id;
     const segmentBtn    = $$(id + "_segmentBtn");
     const operationsBtn = $$(id + "-btnFilterOperations");
-
+ 
     setValue(segmentBtn   , el.logic    );
     setValue(operationsBtn, el.operation);
     
@@ -109,7 +109,6 @@ function hideSegmentBtn(){
 function createWorkspace(prefs){
 
     Filter.clearFilter();
- 
  
     prefs.forEach(function(el){
         if (!el.parent){

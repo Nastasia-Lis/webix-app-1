@@ -1,6 +1,7 @@
 
 import { add, remove }  from "./actions.js";
 import { GetFields }    from "../../blocks/globalStorage.js";
+import { mediator }     from "../../blocks/_mediator.js";
 
 function isOtherViewTab(id){
     const option = $$("globalTabbar").getOption (id);
@@ -21,17 +22,127 @@ function createTab(){
     }, true);
     
 }
-class Tabs {
-    addTab(){
-        add();
+
+function changeName(self, values){
+    
+    if (values && values.tree){
+        const id = values.tree.field;
+        self.changeTabName(id);
+    }
+   
+}
+
+function setDataToStorage(tabbar, tabId){
+    const options = tabbar.config.options;
+            
+    const data = {
+        tabs   : options,
+        select : tabId
+    };
+
+    webix.storage.local.put("tabbar", data);
+}
+ 
+
+function getFieldsname(id){
+    const field    = GetFields.item(id);
+    const plural   = field.plural ;
+    const singular = field.singular ;
+
+    let name; 
+
+    if (field){
+        name = plural ? plural : singular;
+    } else {
+        name = "Новая вкладка";
     }
 
-    removeTab(id){
-        remove(id);
+    return name;
+}
+
+function setName(name){
+    const tabbar   = $$("globalTabbar");
+    const tabId    = tabbar.getValue   ();
+
+    const tabIndex = tabbar.optionIndex(tabId);
+
+
+    if (tabIndex > -1){
+        tabbar.config.options[tabIndex].value = name;
+        tabbar.refresh();
+    }
+}
+
+function hasDirtyForms(){
+    const forms = mediator.getForms();
+    let check = {
+        dirty:false
+    };
+
+    if (forms){
+        forms.forEach(function(form){
+
+            if (form && form.isDirty() && !check.dirty){
+                check = {
+                    dirty : true,
+                    id    : form.config.id
+                };
+            }
+        });
+    }
+
+ 
+    return check;
+}
+
+function tabbarClick(ev, id){
+    $$("globalTabbar").callEvent(ev, [ id ]);
+}
+class Tabs {
+    addTab(isNull, open = true){
+        return add(isNull, open);
+    }
+
+    
+    removeTab(lastTab){
+        remove(lastTab);
+    }
+    
+
+    isOtherViewTab(){
+        const tabbar = $$("globalTabbar");
+        const id     = tabbar.getValue();
+        const option = $$("globalTabbar").getOption (id);
+    
+        if (option.isOtherView){
+            return true;
+        } 
+    }
+
+    clearTemp(name, type){
+        webix.storage.local.remove(name);
+
+        const tabbar = $$("globalTabbar");
+        const idTab  = tabbar.getValue();
+        const tab    = tabbar.getOption(idTab);
+    
+        if (tab.info.temp){
+            if (type == "filter"){
+                if (tab.info.temp.filter){
+                    delete tab.info.temp.filter;
+                }
+            } else if (type == "edit"){
+                if (tab.info.temp.edit){
+                    delete tab.info.temp.edit;
+                }
+            }
+            
+        }
     }
 
     setInfo(values){
-
+  
+     
         const tabbar = $$("globalTabbar");
         let tabId = tabbar.getValue();
 
@@ -47,20 +158,9 @@ class Tabs {
             tabbar.config.options[tabIndex].info = values;
             tabbar.refresh();
 
-            if (values && values.tree){
-                const id = values.tree.field;
-                this.changeTabName(id);
-            }
-
+            changeName(this, values);
         
-            const options = tabbar.config.options;
-            
-            const data = {
-                tabs   : options,
-                select : tabId
-            };
-
-            webix.storage.local.put("tabbar", data);
+            setDataToStorage(tabbar, tabId);
         }
     }
 
@@ -68,6 +168,7 @@ class Tabs {
         const tabbar   = $$("globalTabbar");
         const tabId    = tabbar.getValue();
         const tabIndex = tabbar.optionIndex(tabId);
+
         return tabbar.config.options[tabIndex].info;
      
     }
@@ -80,31 +181,37 @@ class Tabs {
             name = "Новая вкладка";
         } else {
             if (id){
-                const field = GetFields.item(id);
-                if (field){
-                    name = field.plural ? field.plural : field.singular;
-                } else {
-                    name = "Новая вкладка";
-                }
-          
-               
+                name = getFieldsname(id);
             } else {
                 name = value;
             }
       
         }
       
-        const tabbar   = $$("globalTabbar");
-        const tabId    = tabbar.getValue   ();
-  
-        const tabIndex = tabbar.optionIndex(tabId);
+        setName(name);
 
-   
-        if (tabIndex > -1){
-            tabbar.config.options[tabIndex].value = name;
-            tabbar.refresh();
+    }
+
+    setDirtyParam(){
+
+        const tabbar = $$("globalTabbar");
+        const id     = tabbar.getValue();
+        const option = tabbar.getOption(id);
+
+        if (option && option.info){
+            option.info.dirty = hasDirtyForms().dirty;  
         }
+    
+     
+    }
 
+    openInNewTab(config){
+        const newTabId = this.addTab();
+
+        mediator.tabs.setInfo(config);
+
+        tabbarClick("onBeforeTabClick", newTabId);
+        tabbarClick("onAfterTabClick" , newTabId);
     }
 }
 

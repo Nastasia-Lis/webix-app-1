@@ -58,27 +58,11 @@ function selectTree(id, isOtherTab){
 function setLink(id){
 
     const path = "tree/" + id;
-    Backbone.history.navigate(path, { trigger : true });
-   // const search = window.location.search;
-    // if (search.length){
-    //     const link    = window.location.href;
-    //     const index   = link.lastIndexOf("?");
-    //     const newLink = link.slice(0, index);
-    //     console.log(newLink)
-      
-    // }
-
-
-  
-    // const params    = new URLSearchParams(search);
-    // const param = params.get("new"); 
-    // console.log(search)
-    // if (param){
-        
-    //     params.delete('new');
-    // }
-
-   
+    
+    Backbone.history.navigate(
+        path, { trigger : true }
+    );
+ 
 }
 
 function setEmptyState(){
@@ -89,7 +73,7 @@ function setEmptyState(){
 
 
 function showTreeItem(config, isOtherTab, isOtherView){
-    
+
     if (isOtherView){
         Backbone.history.navigate("/" + config.view, { trigger : true });
     } else {
@@ -109,8 +93,8 @@ function showTreeItem(config, isOtherTab, isOtherView){
     
 
             if (id){
-                showContent(selectElem, id);
                 setLink    (id);
+                showContent(selectElem, id);
                 selectTree (id, isOtherTab);
 
             }

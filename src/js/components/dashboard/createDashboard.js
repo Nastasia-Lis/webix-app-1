@@ -1,5 +1,6 @@
 import { LoadServerData, GetFields }      from "../../blocks/globalStorage.js";
 import { Action }                         from '../../blocks/commonFunctions.js';
+import { mediator }                       from '../../blocks/_mediator.js';
 import { setFunctionError, 
             setAjaxError }                from '../../blocks/errors.js';
 
@@ -8,21 +9,10 @@ import { createFilter }                   from './createSpace/filter/elements.js
 import { autorefresh }                    from './autorefresh.js';
 import { createContextProperty }          from './createSpace/contextWindow.js';
 
+
 const logNameFile = "dashboard => createDashboard";
+
 let idsParam;
-
-// function getDashId ( idsParam ){
-//     const tree = $$("tree");
-//     let itemTreeId;
-
-//     if (idsParam){
-//         itemTreeId = idsParam;
-//     } else if (tree.getSelectedItem()){
-//         itemTreeId = tree.getSelectedItem().id;
-//     }
-
-//     return itemTreeId;
-// }
 
 
 function createDashSpace (){
@@ -30,6 +20,9 @@ function createDashSpace (){
     const item = GetFields.item(idsParam);
 
     if (item){
+
+        Action.removeItem($$("dash-none-content"));
+
         const url    = item.actions.submit.url;
         const inputs = createFilter (item.inputs, item, idsParam);
      
@@ -42,6 +35,11 @@ async function getFieldsData (isShowExists){
     if (!isShowExists){
         await LoadServerData.content("fields");
     }
+
+    if (!GetFields.keys){
+        await LoadServerData.content("fields");
+    }
+    
 
     createDashSpace ();
 }
@@ -94,7 +92,42 @@ function getLinkParams(param){
     return params.get(param);
 }
 
+
+
+function returnLostContext(){
+
+    const data = mediator.tabs.getInfo();
+ 
+    if (data && data.temp){
+
+        const context = data.temp.context;
+
+        if (context && context.open){ // open context window
+  
+            mediator.linkParam(true, {
+                "src": context.field , 
+                "id" : context.id  
+            });
+            
+        } else if (context){ // set values to dash table
+        
+            mediator.linkParam(true, {
+                "src"    : context.id , 
+                "filter" : true  
+            });
+
+            // const table = $$(context.id);
+            // scrollToTable(table);
+        }
+        
+    }
+ 
+}
+
+
 function selectContextId(){
+    returnLostContext();
+
     const idParam  = getLinkParams("id");
     const srcParam = getLinkParams("src");
     if (idParam && srcParam){
@@ -102,7 +135,7 @@ function selectContextId(){
     } 
 }
 function createContext(){
-    selectContextId()
+    selectContextId();
 }
 
 

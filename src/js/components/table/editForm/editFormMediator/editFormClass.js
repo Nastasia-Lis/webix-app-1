@@ -16,8 +16,8 @@ class EditForm {
         Action.enableItem($$("table-newAddBtnId"));
     }
 
-    static defaultState (){
-        editTableDefState();
+    static defaultState (clearDirty = true){
+        editTableDefState(clearDirty);
     }
 
     static putState     (){
