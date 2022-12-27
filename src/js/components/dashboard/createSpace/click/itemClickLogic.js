@@ -3,7 +3,7 @@
 import { LoadServerData, 
          GetFields }        from "../../../../blocks/globalStorage.js";
 import { updateSpace }      from "./updateSpace.js";
-import { postPrefs }        from "./navigate.js";
+import { navigate }         from "./navigate.js";
 
 import { mediator }         from "../../../../blocks/_mediator.js";
 import { setFunctionError } from "../../../../blocks/errors.js";
@@ -20,7 +20,7 @@ const action = {
 };
 
 const action2 = {
-    navigate: false,
+    navigate: true,
     field   : "auth_group", 
     context : true,
     params  : {
@@ -92,7 +92,7 @@ async function findField(chartAction){
         if ( key == field ){
             isExists = true;
             if (chartAction.navigate){
-                postPrefs(chartAction);
+                navigate(chartAction.field, chartAction.params.filter);
             } else {
        
                 updateSpace(chartAction);

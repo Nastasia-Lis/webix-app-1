@@ -9,103 +9,86 @@ function setStorageData (name, value){
     } 
 }
 
-function isLocationParam(userLocation){
-    if (userLocation       && 
-        userLocation.href  && 
-        userLocation.href !== window.location.href )
-    {
-        return true;
-    }
-}
+// function isLocationParam(userLocation){
+//     if (userLocation       && 
+//         userLocation.href  && 
+//         userLocation.href !== window.location.href )
+//     {
+//         return true;
+//     }
+// }
 
 
-function setLoginActionPref(userLocation){
-    if (isLocationParam(userLocation)){
-        window.location.replace(userLocation.href);
-    }
-}
+// function setLoginActionPref(userLocation){
+//     if (isLocationParam(userLocation)){
+//         window.location.replace(userLocation.href);
+//     }
+// }
 
-function setLink(data){
-    const url          = new URL( data.href );
-    const isLogoutPath = url.pathname.includes("logout");
-    const origin       = window.location.origin;
+// function setLink(data){
+//     const url          = new URL( data.href );
+//     const isLogoutPath = url.pathname.includes("logout");
+//     const origin       = window.location.origin;
 
-    if (url.origin == origin && !isLogoutPath) {
-        setLoginActionPref(data);
-    }
-}
+//     if (url.origin == origin && !isLogoutPath) {
+//         setLoginActionPref(data);
+//     }
+// }
 
-function moveUser(){
+// function moveUser(){
 
-    const localPath = "/index.html/content";
-    const expaPath  = "/init/default/spaw/content";
+//     const localPath = "/index.html/content";
+//     const expaPath  = "/init/default/spaw/content";
 
-    const path = window.location.pathname;
-    if ( path == localPath || path == expaPath ){
+//     const path = window.location.pathname;
   
-        const userLocation = webix.storage.local.get("userLocationHref");
-        const outsideHref  = webix.storage.local.get("outsideHref");
-
+//     if ( path == localPath || path == expaPath ){
+  
+//         const userLocation = webix.storage.local.get("userLocationHref");
+//         const outsideHref  = webix.storage.local.get("outsideHref");
+ 
    
-        if (outsideHref){
-            setLink(outsideHref);
-        } else {
-            setLink(userLocation);
-        }
+//         if (outsideHref){
+//             setLink(outsideHref);
+//         } else {
+//             setLink(userLocation);
+//         }
 
-    }
-}
+//     }
+// }
 
 let restorePref;
 let restore;
 
 function setRestoreToStorage(name, value){
-    if(restore && value){
+    if(value){
+   
         setStorageData (name, JSON.stringify(value));
+     
+        console.log(   webix.storage.local.get("editFormTempData"))
 
     } 
 }
 
-function restoreData(){
-    restore = webix.storage.local.get("userRestoreData");
 
-    if (restore){
-        const path = "/init/default/api/userprefs/" + restorePref.id;
-
-        const delData = webix.ajax().del(path, restorePref);
-
-        delData.then(function(data){
-            data = data.json();
-
-            if (data.err_type !== "i"){
-                setFunctionError(
-                    data.err, 
-                    "storageSettings", 
-                    "restoreData"
-                );
-            }
-        });
-
-        delData.fail(function(err){
-            setAjaxError(
-                err, 
-                "storageSettings", 
-                "restoreData"
-            );
-        });
-    
-    
-        setRestoreToStorage(
-            "editFormTempData", 
-            restore.editProp
-        );
-
-        setRestoreToStorage(
-            "currFilterState",  
-            restore.filter  
-        );
+function restoreDataToStorage(el){
  
-    }
+    ///?????
+    // if (el){
+    //     const prefs = JSON.parse(el);
+
+    
+    //     setRestoreToStorage(
+    //         "editFormTempData", 
+    //         prefs.editProp
+    //     );
+    
+    //     setRestoreToStorage(
+    //         "currFilterState",  
+    //         prefs.filter  
+    //     );
+    // }
+  
 }
 
 function setLogState(value){
@@ -156,6 +139,34 @@ function setLogPref(){
    
 }
 
+function deletePrefs(id, obj){
+    if (id){
+        const path = "/init/default/api/userprefs/" + id;
+
+        const delData = webix.ajax().del(path, obj);
+
+        delData.then(function(data){
+            data = data.json();
+
+            if (data.err_type !== "i"){
+                setFunctionError(
+                    data.err, 
+                    "storageSettings", 
+                    "deletePrefs"
+                );
+            }
+        });
+
+        delData.fail(function(err){
+            setAjaxError(
+                err, 
+                "storageSettings", 
+                "deletePrefs"
+            );
+        });
+    }
+}
+
 
 function setDataToStorage(data, user){
  
@@ -167,10 +178,18 @@ function setDataToStorage(data, user){
             const isFavPref = name.includes("fav-link_");
 
             if (owner == user.id && !isFavPref){
-                setStorageData (el.name, el.prefs);
+                 
+               // setStorageData (el.name, el.prefs);
 
-                if (name == "userRestoreData"){
-                    restorePref = el;
+                if (name !== "userRestoreData"){
+                    setStorageData (el.name, el.prefs);
+                    //restorePref = el;
+                } else {
+                    restoreDataToStorage(el.prefs);
+                }
+
+                if (name == "tabbar" || name == "userRestoreData"){
+                    deletePrefs(el.id, el);
                 }
             }
 
@@ -208,9 +227,13 @@ async function setUserPrefs (userData){
    
         setDataToStorage(data, user);
      
-        moveUser        ();
+        //moveUser        ();
 
-        restoreData();
+
+       // tabbarSelect();
+       
+    
+        $$("globalTabbar").callEvent("setStorageData", [ '1' ]);
      
         setLogPref ();
    

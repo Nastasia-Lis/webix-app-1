@@ -1,7 +1,8 @@
 
-import { add, remove }  from "./actions.js";
-import { GetFields }    from "../../blocks/globalStorage.js";
-import { mediator }     from "../../blocks/_mediator.js";
+import { add, remove }          from "./actions.js";
+import { GetFields }            from "../../blocks/globalStorage.js";
+import { setFunctionError }     from "../../blocks/errors.js";
+import { mediator }             from "../../blocks/_mediator.js";
 
 function isOtherViewTab(id){
     const option = $$("globalTabbar").getOption (id);
@@ -32,30 +33,33 @@ function changeName(self, values){
    
 }
 
-function setDataToStorage(tabbar, tabId){
-    const options = tabbar.config.options;
-            
-    const data = {
-        tabs   : options,
-        select : tabId
-    };
 
-    webix.storage.local.put("tabbar", data);
-}
- 
 
 function getFieldsname(id){
     const field    = GetFields.item(id);
-    const plural   = field.plural ;
-    const singular = field.singular ;
-
     let name; 
 
     if (field){
-        name = plural ? plural : singular;
+        const plural   = field.plural ;
+        const singular = field.singular ;
+    
+      
+    
+        if (field){
+            name = plural ? plural : singular;
+        } else {
+            name = "Новая вкладка";
+        }
     } else {
-        name = "Новая вкладка";
+        setFunctionError(
+            "Ссылки с id " + id + " не существует" , 
+            "tabs/_tabMediator", 
+            "getFieldsname"
+        );
     }
+
+
+
 
     return name;
 }
@@ -107,6 +111,18 @@ class Tabs {
     removeTab(lastTab){
         remove(lastTab);
     }
+
+    setDataToStorage(tabbar, tabId){
+        const options = tabbar.config.options;
+                
+        const data = {
+            tabs   : options,
+            select : tabId
+        };
+    
+        webix.storage.local.put("tabbar", data);
+    }
+     
     
 
     isOtherViewTab(){
@@ -160,7 +176,7 @@ class Tabs {
 
             changeName(this, values);
         
-            setDataToStorage(tabbar, tabId);
+            this.setDataToStorage(tabbar, tabId);
         }
     }
 
@@ -187,7 +203,7 @@ class Tabs {
             }
       
         }
-      
+ 
         setName(name);
 
     }

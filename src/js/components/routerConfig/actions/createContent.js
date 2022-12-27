@@ -39,6 +39,13 @@ function setUserData(){
     );
 }
 
+// function selectTab(){
+//     const tabbarData = webix.storage.local.get("tabbar"); 
+//     if (tabbarData && tabbarData.select){
+//         console.log(tabbarData.select)
+//     }
+// }
+
 
 async function createContent (){
 
@@ -52,10 +59,12 @@ async function createContent (){
         Action.showItem($$("mainLayout"));
     
         setUserData();
-    
+
         createElements();
     
         getMenuTree();
+ 
+
     } else {
         Backbone.history.navigate("/", { trigger:true});
         window.location.reload();

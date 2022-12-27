@@ -2,6 +2,8 @@ import { createAddBtn }      from "./logic.js";
 import { mediator }          from "../../blocks/_mediator.js";
 import { restoreTempData }   from "./restoreTempData.js";
 import { showTreeItem }      from "./showItem.js";
+ 
+
 
 let prevValue;
 
@@ -53,6 +55,12 @@ function createConfigSpace(id){
     }    
 }
 
+function tabbarClick(ev, id){
+    $$("globalTabbar").callEvent(ev, [ id ]);
+}
+
+
+
 function restoreTabbar(data){
     const tabbar = $$("globalTabbar");
     const tabs   = data.tabs;
@@ -62,10 +70,14 @@ function restoreTabbar(data){
         tabbar.addOption(option, false); 
     });
 
-    
+  
     if (select){
+  
         tabbar.setValue(select);
 
+        tabbarClick("onBeforeTabClick", select);
+        tabbarClick("onAfterTabClick" , select);
+ 
     } else {
         const options = tabbar.config.options;
         const index   = options.length - 1;
@@ -98,9 +110,7 @@ function isSelectedOption(id){
 
 
 
-function tabbarClick(ev, id){
-    $$("globalTabbar").callEvent(ev, [ id ]);
-}
+
 function createTabbar(){
     const tabbar = {
         view    : "tabbar",
@@ -108,6 +118,7 @@ function createTabbar(){
         css     : "global-tabbar",
         value   : "container",
         tooltip : "#value#",
+      //  addedTabs:0,
         optionWidth: 300,
         multiview  : true, 
         options : [
@@ -134,21 +145,20 @@ function createTabbar(){
                 createConfigSpace(id);
 
                 setStateToStorage(id);
-          
+        
             },
 
 
-
-            onAfterRender:webix.once(function(id){
+            setStorageData:function(){
                 const data  = webix.storage.local.get("tabbar");
-            
+               
                 if (data && data.tabs.length){
                     restoreTabbar(data);
                     
                 } else {
                     addNewTab();
                 }
-            }),
+            },
 
             onBeforeTabClose: function(id){
              
@@ -187,6 +197,11 @@ function createTabbar(){
             
                 return false;
             },
+
+            // onOptionAdd:function(){
+            //     this.config.addedTabs ++; 
+
+            // },
 
             onOptionRemove:function(removedTab, lastTab){
                 mediator.tabs.removeTab(lastTab);

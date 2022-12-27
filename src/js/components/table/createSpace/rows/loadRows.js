@@ -252,7 +252,7 @@ function tableErrorState (){
 
 
 async function loadTableData(table, id, idsParam, offset){
-
+   
     const tableElem = $$(table);
     const limitLoad = 80;
 
@@ -331,6 +331,7 @@ async function loadTableData(table, id, idsParam, offset){
                     
                         selectContextId      ();  
                       //  returnLostData       ();
+                 
                         returnLostData   ();
                         returnLostFilter (itemTreeId);
                                

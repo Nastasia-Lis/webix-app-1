@@ -77,11 +77,13 @@ async function loadFields(){
 async function generateTable (showExists){ 
  
     let keys;
+
+    console.log(showExists, 'showExists')
     
     if (!showExists){
         keys = await loadFields();
     } 
-
+    
     if (!keys && showExists){ // if tab is clicked but dont have fields
         keys = await loadFields();
     }
@@ -103,7 +105,7 @@ async function generateTable (showExists){
 
 
 function createTable (id, ids, showExists) {
-
+ 
     idCurrTable = id;
     idsParam    = ids;
 

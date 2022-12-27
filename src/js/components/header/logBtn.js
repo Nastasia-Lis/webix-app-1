@@ -53,6 +53,9 @@ const logBtn = new Button({
     onFunc   :{
         onChange:function(newValue){
             onChangeLogBtn(newValue);
+        },
+        setStorageData:function(){
+
         }
     },
     titleAttribute : "Показать/скрыть системные сообщения"

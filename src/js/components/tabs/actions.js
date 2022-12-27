@@ -6,6 +6,14 @@ import { restoreTempData }   from "./restoreTempData.js";
 
 /// add tab 
 
+function clearTree(){
+    const tree = $$("tree");
+    if (tree){
+        tree.unselectAll();
+    }
+  
+}
+
 function createEmptySpace(show, hide){
     Action.showItem (show);  
     Action.hideItem (hide);
@@ -72,6 +80,8 @@ function add(isNull, open){
         info  : treeConfig,
         close : true, 
     }, open);
+
+    clearTree();
 
     if (open){
         setDefaultState();
@@ -155,6 +165,8 @@ function remove(lastTab){
         mediator.hideAllContent();
 
     }
+
+    clearTree();
 
     setToStorage(lastTab);
 }

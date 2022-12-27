@@ -6,6 +6,7 @@ import { pushUserDataStorage,
 import { Popup }                            from "../viewTemplates/popup.js";
 import { Button }                           from "../viewTemplates/buttons.js";
 import { modalBox }                         from "../blocks/notifications.js";
+import { mediator }                         from "../blocks/_mediator.js";
 
 import { setLogValue }                      from "./logBlock.js";
 
@@ -74,7 +75,7 @@ function createOptions(data, user){
             });
         }
 
-        $$("popupFavsLink").show();
+        Action.showItem($$("popupFavsLink"));
 
     } catch (err){
         setFunctionError(
@@ -119,10 +120,23 @@ async function favsPopupCollectionClick (){
 
 function favsPopupSubmitClick(){
     try{
-        const radio  = $$("favCollectionLinks");
-        const value  = radio.getValue();
-        const option = radio.getOption(value);
-        window.location.replace(option.favLink);
+        const radio   = $$("favCollectionLinks");
+        const value   = radio.getValue();
+        const option  = radio.getOption(value);
+        const fieldId = option.id;
+
+        if (fieldId){
+            const infoData = {
+                tree:{
+                    field : fieldId,
+                    type  : "dbtable" 
+                },
+            };
+    
+            mediator.tabs.openInNewTab(infoData);    
+        }
+        Action.destructItem($$("popupFavsLink"));
+
     } catch (err){
         setFunctionError(
             err,

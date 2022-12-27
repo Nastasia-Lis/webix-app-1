@@ -1,4 +1,4 @@
-console.log("expa 1.0.73"); 
+console.log("expa 1.0.74"); 
 
 import { textInputClean }                     from "./blocks/commonFunctions.js";
 import { auth }                               from "./components/login.js";
@@ -110,9 +110,10 @@ const mainLayout = {
 try{
 
     webix.ready (function(){
-
+ 
         protoUIEdittree();
-
+  
+ 
         webix.ui({
             view    : "scrollview",
             type    : "clean",
@@ -133,7 +134,7 @@ try{
 
 
       
-
+    
         setUserPrefs            ();
         resizeAdaptive          ();
         setRouterStart          ();

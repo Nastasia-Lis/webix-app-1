@@ -48,8 +48,11 @@ async function getLinkName(){
 function getLink(){
     try{
         let link    = window.location.href;
-        const index = link.lastIndexOf("?");
-        link        = link.slice(0, index);
+        let index   = link.lastIndexOf("?");
+ 
+        if (index !== -1){ // if url params is exists
+            link        = link.slice(0, index);
+        }
 
         const favTemplate = $$("favLink");
         if (favTemplate){
@@ -79,6 +82,7 @@ function createTemplate(id, name, nonName){
         template    : function(){
             const value = $$(id).getValues();
             const keys  = Object.keys(value);
+         
 
             if (keys.length !== 0){
                 return createDivTemplate(name, value);

@@ -129,7 +129,11 @@ function setTabInfo(sentVals){
             values: sentVals,
             selected: id
         };
+
+        mediator.tabs.setInfo(tabData);
     }
+
+ 
 }
 
 function createTempData(self){

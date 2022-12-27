@@ -15,8 +15,8 @@ class RouterActions {
         hideAllElements();
     }
 
-    static createContentSpace (){
-        createContent  ();
+    static async createContentSpace (){
+        await createContent  ();
     }
 
     static async loadSpace(){

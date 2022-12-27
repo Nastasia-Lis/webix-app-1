@@ -13,103 +13,86 @@ function setStorageData (name, value){
     } 
 }
 
-function isLocationParam(userLocation){
-    if (userLocation       && 
-        userLocation.href  && 
-        userLocation.href !== window.location.href )
-    {
-        return true;
-    }
-}
+// function isLocationParam(userLocation){
+//     if (userLocation       && 
+//         userLocation.href  && 
+//         userLocation.href !== window.location.href )
+//     {
+//         return true;
+//     }
+// }
 
 
-function setLoginActionPref(userLocation){
-    if (isLocationParam(userLocation)){
-        window.location.replace(userLocation.href);
-    }
-}
+// function setLoginActionPref(userLocation){
+//     if (isLocationParam(userLocation)){
+//         window.location.replace(userLocation.href);
+//     }
+// }
 
-function setLink(data){
-    const url          = new URL( data.href );
-    const isLogoutPath = url.pathname.includes("logout");
-    const origin       = window.location.origin;
+// function setLink(data){
+//     const url          = new URL( data.href );
+//     const isLogoutPath = url.pathname.includes("logout");
+//     const origin       = window.location.origin;
 
-    if (url.origin == origin && !isLogoutPath) {
-        setLoginActionPref(data);
-    }
-}
+//     if (url.origin == origin && !isLogoutPath) {
+//         setLoginActionPref(data);
+//     }
+// }
 
-function moveUser(){
+// function moveUser(){
 
-    const localPath = "/index.html/content";
-    const expaPath  = "/init/default/spaw/content";
+//     const localPath = "/index.html/content";
+//     const expaPath  = "/init/default/spaw/content";
 
-    const path = window.location.pathname;
-    if ( path == localPath || path == expaPath ){
+//     const path = window.location.pathname;
   
-        const userLocation = webix.storage.local.get("userLocationHref");
-        const outsideHref  = webix.storage.local.get("outsideHref");
-
+//     if ( path == localPath || path == expaPath ){
+  
+//         const userLocation = webix.storage.local.get("userLocationHref");
+//         const outsideHref  = webix.storage.local.get("outsideHref");
+ 
    
-        if (outsideHref){
-            setLink(outsideHref);
-        } else {
-            setLink(userLocation);
-        }
+//         if (outsideHref){
+//             setLink(outsideHref);
+//         } else {
+//             setLink(userLocation);
+//         }
 
-    }
-}
+//     }
+// }
 
 let restorePref;
 let restore;
 
 function setRestoreToStorage(name, value){
-    if(restore && value){
+    if(value){
+   
         setStorageData (name, JSON.stringify(value));
+     
+        console.log(   webix.storage.local.get("editFormTempData"))
 
     } 
 }
 
-function restoreData(){
-    restore = webix.storage.local.get("userRestoreData");
 
-    if (restore){
-        const path = "/init/default/api/userprefs/" + restorePref.id;
-
-        const delData = webix.ajax().del(path, restorePref);
-
-        delData.then(function(data){
-            data = data.json();
-
-            if (data.err_type !== "i"){
-                errors_setFunctionError(
-                    data.err, 
-                    "storageSettings", 
-                    "restoreData"
-                );
-            }
-        });
-
-        delData.fail(function(err){
-            setAjaxError(
-                err, 
-                "storageSettings", 
-                "restoreData"
-            );
-        });
-    
-    
-        setRestoreToStorage(
-            "editFormTempData", 
-            restore.editProp
-        );
-
-        setRestoreToStorage(
-            "currFilterState",  
-            restore.filter  
-        );
+function restoreDataToStorage(el){
  
-    }
+    ///?????
+    // if (el){
+    //     const prefs = JSON.parse(el);
+
+    
+    //     setRestoreToStorage(
+    //         "editFormTempData", 
+    //         prefs.editProp
+    //     );
+    
+    //     setRestoreToStorage(
+    //         "currFilterState",  
+    //         prefs.filter  
+    //     );
+    // }
+  
 }
 
 function setLogState(value){
@@ -160,6 +143,34 @@ function setLogPref(){
    
 }
 
+function deletePrefs(id, obj){
+    if (id){
+        const path = "/init/default/api/userprefs/" + id;
+
+        const delData = webix.ajax().del(path, obj);
+
+        delData.then(function(data){
+            data = data.json();
+
+            if (data.err_type !== "i"){
+                errors_setFunctionError(
+                    data.err, 
+                    "storageSettings", 
+                    "deletePrefs"
+                );
+            }
+        });
+
+        delData.fail(function(err){
+            errors_setAjaxError(
+                err, 
+                "storageSettings", 
+                "deletePrefs"
+            );
+        });
+    }
+}
+
 
 function setDataToStorage(data, user){
  
@@ -171,10 +182,18 @@ function setDataToStorage(data, user){
             const isFavPref = name.includes("fav-link_");
 
             if (owner == user.id && !isFavPref){
-                setStorageData (el.name, el.prefs);
+                 
+               // setStorageData (el.name, el.prefs);
 
-                if (name == "userRestoreData"){
-                    restorePref = el;
+                if (name !== "userRestoreData"){
+                    setStorageData (el.name, el.prefs);
+                    //restorePref = el;
+                } else {
+                    restoreDataToStorage(el.prefs);
+                }
+
+                if (name == "tabbar" || name == "userRestoreData"){
+                    deletePrefs(el.id, el);
                 }
             }
 
@@ -212,9 +231,13 @@ async function setUserPrefs (userData){
    
         setDataToStorage(data, user);
      
-        moveUser        ();
+        //moveUser        ();
 
-        restoreData();
+
+       // tabbarSelect();
+       
+    
+        $$("globalTabbar").callEvent("setStorageData", [ '1' ]);
      
         setLogPref ();
    
@@ -235,7 +258,7 @@ async function setUserPrefs (userData){
 
 
 
-class buttons_Button {
+class Button {
 
     constructor (options){
         this.buttonView = {
@@ -424,20 +447,20 @@ function putPrefs(id, sentObj){
     });   
 }
 
-function isPrefExists(data){
+function isPrefExists(data, name){
     const result = {
         exists : false
     };
  
     try{
         data.forEach(function(el){
-            if (el.name == "userLocationHref"){
+            if (el.name == name){
                 result.exists = true;
                 result.id     = el.id;
             } 
         });  
     }   catch(err){
-        errors_setFunctionError(
+        setFunctionError(
             err, 
             logNameFile, 
             "isPrefExists"
@@ -446,8 +469,6 @@ function isPrefExists(data){
     
     return result;
 }
-
-
 
 function postUserPrefs(sentObj){
 
@@ -458,7 +479,7 @@ function postUserPrefs(sentObj){
         data = data.json();
  
         if (data.err_type !== "i"){
-            errors_setFunctionError(
+            setFunctionError(
                 data.err, 
                 logNameFile, 
                 "putUserPrefs"
@@ -477,7 +498,7 @@ function postUserPrefs(sentObj){
 }
 
 
-function returnSentTamplate(name, data){
+function returnSentTemplate(name, data){
     return {
         name  : name,
         prefs : data
@@ -486,113 +507,68 @@ function returnSentTamplate(name, data){
 
 async function logout() {
    
-    let ownerId = getUserDataStorage();
+    // let ownerId = getUserDataStorage();
 
-    if (!ownerId){
-        await pushUserDataStorage();
-        ownerId = getUserDataStorage();
-    }
+    // if (!ownerId){
+    //     await pushUserDataStorage();
+    //     ownerId = getUserDataStorage();
+    // }
 
-    const path = "/init/default/api/userprefs/";
-    const userprefsData = webix.ajax().get(path);
+    // const path = "/init/default/api/userprefs/";
+    // const userprefsData = webix.ajax().get(path);
 
-    userprefsData.then(function(data){
-        data = data.json().content;
+    // userprefsData.then(function(data){
+    //     data = data.json().content;
 
-        const location    = {};
+    //     const location    = {};
     
 
-        location.href     = window.location.href;
+    //     location.href     = window.location.href;
 
-        const restore = {
-            editProp :  webix.storage.local.get("editFormTempData"),
-            filter   :  webix.storage.local.get("currFilterState")
-        };
-        const locationData = returnSentTamplate("userLocationHref", location);
-        const restoreData  = returnSentTamplate("userRestoreData",  restore );
+    //     const restore = {
+    //         editProp :  webix.storage.local.get("editFormTempData"),
+    //         filter   :  webix.storage.local.get("currFilterState")
+    //     };
+
+    //     const locationData = returnSentTemplate("userLocationHref", location);
+    //     const restoreData  = returnSentTemplate("userRestoreData",  restore );
    
-        if (window.location.pathname !== "/index.html/content"){
+    //     if (window.location.pathname !== "/index.html/content"){
 
-            const result = isPrefExists(data);
-            const isExists = result.exists;
+    //         const locationResult  = isPrefExists(data, "userLocationHref");
+    //         const isExists        = locationResult.exists;
       
          
-            if (isExists){
-                const id = result.id;
-                putPrefs(id, locationData);
-            } else {
-                locationData.owner = ownerId.id;
-                postUserPrefs(locationData);
-            }
-            restoreData.owner = ownerId.id;
-            postUserPrefs(restoreData); // тк удаляется при login
-        }
-    });
+    //         if (isExists){
+    //             const id = locationResult.id;
+    //             putPrefs(id, locationData);
+    //         } else {
+    //             locationData.owner = ownerId.id;
+    //             postUserPrefs(locationData);
+    //         }
+    //         restoreData.owner = ownerId.id;
+    //         postUserPrefs(restoreData); // тк удаляется при login
+    //     }
 
-    userprefsData.then(function(){
-        Backbone.history.navigate("logout?auto=true", { trigger:true});
-    });
+       
 
-    userprefsData.fail(function(err){
-        setAjaxError(
-            err, 
-            logNameFile, 
-            "logout"
-        );
-    });
+    // });
+
+    // userprefsData.then(function(){
+    //     Backbone.history.navigate("logout?auto=true", { trigger:true});
+    // });
+
+    // userprefsData.fail(function(err){
+    //     setAjaxError(
+    //         err, 
+    //         logNameFile, 
+    //         "logout"
+    //     );
+    // });
+    Backbone.history.navigate("logout?auto=true", { trigger:true});
   
 }
 
-function toLogin(){
-    window.location.reload();
-}
-
-function popupNotAuth(){
-    const subtitle = {
-        template    :"Войдите в систему, чтобы продолжить",
-        height      :40,
-        borderless  :true,
-    };
-
-    const btn = new Button({
-    
-        config   : {
-            id      : "authBtnNavigate",
-            hotkey  : "Shift+Space",
-            value   : "Войти в систему", 
-            click   : toLogin
-        },
-        titleAttribute : "Войти в систему"
-    
-    }).maxView("primary");
-
-    const popup = new Popup({
-        headline : "Отказ в доступе",
-        config   : {
-            id    : "popupNotAuth",
-            width     : 400,
-            minHeight : 300,
-    
-        },
-
-        elements : {
-            padding:{
-                left : 5,
-                right: 5
-            },
-            rows:[
-                subtitle,
-                btn
-            ]
-         
-          
-        }
-    });
-    if ( !($$("popupNotAuth")) ){
-        popup.createView ();
-    }
-    popup.showPopup  ();
-}
 
 function checkNotAuth (err){
  
@@ -880,7 +856,7 @@ async function createLogMessage(srcTable) {
     let name;
 
     if (srcTable == "version"){
-        name = 'Expa v1.0.73';
+        name = 'Expa v1.0.74';
 
     } else if (srcTable == "cp"){
         name = 'Смена пароля';
@@ -969,7 +945,7 @@ const logBlock = {
     data    : [],
     on      : {
         onAfterLoad:function(){
-            setLogValue (
+            logBlock_setLogValue (
                 "success", 
                 "Интерфейс загружен", 
                 "version"
@@ -1005,7 +981,7 @@ const logLayout = {
     ]
 };
 
-function setLogValue (type, text, src) {
+function logBlock_setLogValue (type, text, src) {
     typeNotify  = type;
     specificSrc = src;
     notifyText  = text;     
@@ -1016,10 +992,10 @@ function setLogValue (type, text, src) {
 
 ;// CONCATENATED MODULE: ./src/js/blocks/errors.js
 
-function setAjaxError(err, file, func){
+function errors_setAjaxError(err, file, func){
     if (err.status === 400 ||  err.status === 401 || err.status === 404){
 
-        setLogValue(
+        logBlock_setLogValue(
             "error", 
             file +
             " function " + func + ": " +
@@ -1027,7 +1003,7 @@ function setAjaxError(err, file, func){
             err.responseURL + " (" + err.responseText + ") "
         );
     } else {
-        setLogValue(
+        logBlock_setLogValue(
             "error", 
             file + 
             " function " + func + ": " +
@@ -1059,7 +1035,7 @@ function setToLog(msg){
 
         eventData.fail(function(err){
             error = true;
-            setAjaxError(
+            errors_setAjaxError(
                 err, 
                 "errors", 
                 "setToLog"
@@ -1073,7 +1049,7 @@ function errors_setFunctionError(err, file, func){
     console.log(err);
     const msg = file + " function " + func + ": " + err;
 
-    setLogValue("error", file + " function " + func + ": " + err);
+    logBlock_setLogValue("error", file + " function " + func + ": " + err);
 
     setToLog(msg);
 }
@@ -1281,7 +1257,7 @@ function getComboOptions (refTable){
                         return dataArray;
                     
                     }).catch(err => {
-                        setAjaxError(
+                        errors_setAjaxError(
                             err, 
                             "commonFunctions",
                             "getComboOptions"
@@ -1301,7 +1277,7 @@ async function pushUserDataStorage(){
  
     const path = "/init/default/api/whoami";
     const userprefsGetData = webix.ajax(path).fail(function(err){
-        setAjaxError(err, "commonFunctions", "getUserData");
+        errors_setAjaxError(err, "commonFunctions", "getUserData");
         return false;
     });
 
@@ -5598,7 +5574,7 @@ function nextBtnClick (){
 function createHistoryBtns(){
 
     
-    const prevBtn = new buttons_Button({
+    const prevBtn = new Button({
         
         config   : {
             id       : webix.uid(),
@@ -5613,7 +5589,7 @@ function createHistoryBtns(){
     
     }).transparentView();
 
-    const nextBtn = new buttons_Button({
+    const nextBtn = new Button({
         
         config   : {
             id       : webix.uid(),
@@ -5642,7 +5618,7 @@ function createHistoryBtns(){
  
 
 ;// CONCATENATED MODULE: ./src/js/viewTemplates/popup.js
-class popup_Popup {
+class Popup {
 
     constructor (options){
 
@@ -5802,8 +5778,11 @@ async function getLinkName(){
 function getLink(){
     try{
         let link    = window.location.href;
-        const index = link.lastIndexOf("?");
-        link        = link.slice(0, index);
+        let index   = link.lastIndexOf("?");
+ 
+        if (index !== -1){ // if url params is exists
+            link        = link.slice(0, index);
+        }
 
         const favTemplate = $$("favLink");
         if (favTemplate){
@@ -5833,6 +5812,7 @@ function createTemplate(id, name, nonName){
         template    : function(){
             const value = $$(id).getValues();
             const keys  = Object.keys(value);
+         
 
             if (keys.length !== 0){
                 return createDivTemplate(name, value);
@@ -5883,7 +5863,7 @@ async function postContent(namePref){
             data = data.json();
     
             if (data.err_type == "i"){
-                setLogValue(
+                logBlock_setLogValue(
                     "success", 
                     "Ссылка" + " «" + favNameLinkVal + "» " + 
                     " сохранёна в избранное");
@@ -5899,7 +5879,7 @@ async function postContent(namePref){
         });
 
         postData.fail(function(err){
-            setAjaxError(
+            errors_setAjaxError(
                 err, 
                 favoriteBtn_logNameFile, 
                 "postContent"
@@ -5942,7 +5922,7 @@ function getNotUniquePref(favPrefs, namePref){
 
             if (id == namePref && unique){
                 unique = false;
-                setLogValue(
+                logBlock_setLogValue(
                     "success", 
                     "Такая ссылка уже есть в избранном"
                 );
@@ -5989,7 +5969,7 @@ function btnSaveLinkClick(){
     
     });
     getData.fail(function(err){
-        setAjaxError(
+        errors_setAjaxError(
             err, 
             favoriteBtn_logNameFile,
             "btnSaveLinkClick"
@@ -5998,7 +5978,7 @@ function btnSaveLinkClick(){
 
 }
 
-const btnSaveLink = new buttons_Button({
+const btnSaveLink = new Button({
 
     config   : {
         value    : "Сохранить ссылку", 
@@ -6014,7 +5994,7 @@ const btnSaveLink = new buttons_Button({
 
 function saveFavsClick(){
 
-    const popup = new popup_Popup({
+    const popup = new Popup({
         headline : "Сохранить ссылку",
         config   : {
             id    : "popupFavsLinkSave",
@@ -6055,7 +6035,7 @@ function saveFavsClick(){
 function createFavoriteBtn(){
 
        
-    const favsBtn = new buttons_Button({
+    const favsBtn = new Button({
     
         config   : {
             id       : webix.uid(),
@@ -6122,7 +6102,7 @@ function createMainView(inputsArray){
         borderless  : true
     };
 
-    const filterBackBtn = new buttons_Button({
+    const filterBackBtn = new Button({
     
         config   : {
             id       : "dash-backDashBtn",
@@ -6246,7 +6226,7 @@ function addViewToContainer(filterBtn){
 
 function createFilterBtn(){
 
-    const filterBtn = new buttons_Button({
+    const filterBtn = new Button({
         config   : {
             id       : "dashFilterBtn",
             hotkey   : "Ctrl+Shift+F",
@@ -6306,7 +6286,7 @@ function closeBtnClick(){
     mediator.linkParam(false, "src");
 }
 
-const closeBtn  = new buttons_Button({
+const closeBtn  = new Button({
     config   : {
         id     : "dashContexCloseBtn",
         hotkey : "Esc",
@@ -6408,7 +6388,7 @@ function goToTableBtnClick(){
  
 }
 
-const goToTableBtn = new buttons_Button({
+const goToTableBtn = new Button({
     
     config   : {
         id       : "goToTableBtn",
@@ -6623,12 +6603,12 @@ function getTableData(tableId, query, onlySelect){
        
 
         if (notifyType !== "i"){
-            setLogValue("error", notifyMsg);
+            logBlock_setLogValue("error", notifyMsg);
             clearParams();
         }  
     });
     queryData.fail(function(err){
-        setAjaxError(
+        errors_setAjaxError(
             err, 
             updateSpace_logNameFile, 
             "getTableData"
@@ -6658,26 +6638,6 @@ function updateSpace(chartAction){
 
 ;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/click/navigate.js
 
-         
-
-
-
-const navigate_logNameFile = "table => createSpace => click => navigate";
-
-function createSentObj(prefs){
-    const sentObj = {
-        name    : "dashboards_context-prefs",
-        prefs   : prefs,
-    };
-
-    const ownerId = webix.storage.local.get("user").id;
-
-    if (ownerId){
-        sentObj.owner = ownerId;
-    }
-
-    return sentObj;
-}
 
 
 function returnConditions(filter){
@@ -6793,13 +6753,13 @@ function returnFilter(query){
     iterateConditions(conditions);
 }
 
-function navigate_navigate(field, id, filter){
+function navigate_navigate(field, filter){
  
 
     filterArr.length = 0;
     ids.length       = 0;
 
-    if (id){
+    if (field){
 
         returnFilter(filter);
     
@@ -6822,47 +6782,7 @@ function navigate_navigate(field, id, filter){
     } 
 }
 
-function postPrefs(chartAction){
-    const sentObj       = createSentObj(chartAction);
-    const path          = "/init/default/api/userprefs/";
-    const userprefsPost = webix.ajax().post(path, sentObj);
-      
-    userprefsPost.then(function(data){
-        data = data.json();
-   
-        if (data.err_type == "i"){
-            const id = data.content.id;
-            if (id){
-                navigate_navigate(chartAction.field, id, chartAction.params.filter);
-            } else {
-                const errs   = data.content.errors;
-                const values = Object.values(errs);
-                const keys   = Object.keys  (errs);
 
-                values.forEach(function(err, i){
-                    errors_setFunctionError(
-                        err + " - " + keys[i] , 
-                        navigate_logNameFile, 
-                        "postPrefs"
-                    );
-                });
-               
-            }
-          
-
-        } else {
-            setLogValue("error", data.error);
-        }
-    });
-
-    userprefsPost.fail(function(err){
-        setAjaxError(
-            err, 
-            navigate_logNameFile,
-            "postPrefs"
-        );
-    });
-}
 
 
 ;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/click/itemClickLogic.js
@@ -6887,7 +6807,7 @@ const action = {
 };
 
 const action2 = {
-    navigate: false,
+    navigate: true,
     field   : "auth_group", 
     context : true,
     params  : {
@@ -6959,7 +6879,7 @@ async function findField(chartAction){
         if ( key == field ){
             isExists = true;
             if (chartAction.navigate){
-                postPrefs(chartAction);
+                navigate_navigate(chartAction.field, chartAction.params.filter);
             } else {
        
                 updateSpace(chartAction);
@@ -7628,7 +7548,7 @@ function addSuccessView (dataCharts){
 
 function setUpdate(dataCharts){
     if (dataCharts == undefined){
-        setLogValue   (
+        logBlock_setLogValue   (
             "error", 
             "Ошибка при загрузке данных"
         );
@@ -7642,7 +7562,7 @@ function setUserUpdateMsg(){
          url.includes("sdt") && 
          url.includes("edt") )
         {
-        setLogValue(
+        logBlock_setLogValue(
             "success", 
             "Данные обновлены"
         );
@@ -7705,7 +7625,7 @@ function getChartsLayout(){
             createOverlayTemplate(id, "Ошибка"));
         }
    
-        setAjaxError(err, _layout_logNameFile, "getAjax");
+        errors_setAjaxError(err, _layout_logNameFile, "getAjax");
     });
     
 }
@@ -7967,7 +7887,7 @@ function sentQuery (){
             resetInvalidMark(childs);
         } else {
             setInvalidView("top", childs);
-            setLogValue(
+            logBlock_setLogValue(
                 "error", 
                 "Начало периода больше, чем конец"
             );
@@ -7976,7 +7896,7 @@ function sentQuery (){
       
         setInvalidView("empty", childs);
      
-        setLogValue(
+        logBlock_setLogValue(
             "error", 
             "Не все поля заполнены"
         );
@@ -8209,7 +8129,7 @@ function elements_createTime (type){
 
 function createBtn (input, i){
 
-    const btnFilter = new buttons_Button({
+    const btnFilter = new Button({
         
         config   : {
             id       : "dashBtn" + i,
@@ -8436,7 +8356,7 @@ function createDashboard_getData(tableId, src){
         }  
     });
     queryData.fail(function(err){
-        setAjaxError(
+        errors_setAjaxError(
             err, 
             createDashboard_logNameFile, 
             "getTableData"
@@ -8559,16 +8479,14 @@ class Dashboards {
 
 let interval;
 const intervals = [];
-function clear(){
-    clearInterval(interval); 
-}
+ 
 function autorefresh_setIntervalConfig(type, counter){
     interval = setInterval(
         () => {
         
             const table         = commonFunctions_getTable();
             const isAutoRefresh = table.config.autorefresh;
-            console.log(isAutoRefresh, getItemId(), "isAutoRefresh")
+             
             if (isAutoRefresh){
                 if( type == "dbtable" ){
                     getItemData ("table");
@@ -8680,7 +8598,7 @@ function removePref(el){
     });
 
     userprefsDel.fail(function(err){
-        setAjaxError(
+        errors_setAjaxError(
             err, 
             userContext_logNameFile,
             "userprefsDel"
@@ -8723,7 +8641,7 @@ async function getDataPrefs(urlParameter){
     });
 
     userprefsGet.fail(function (err){
-        setAjaxError(
+        errors_setAjaxError(
             err, 
             userContext_logNameFile,
             "userprefsGet"
@@ -9023,7 +8941,7 @@ function setVals(values){
     prop.setValues(values);
     returnLostData_form.setDirty(true);
 
-    setLogValue(
+    logBlock_setLogValue(
         "success", 
         "Данные редактора восстановлены"
     );
@@ -9076,7 +8994,7 @@ function returnLostData(){
 
         const data = webix.storage.local.get("editFormTempData");
      
-       
+        console.log(data,'rest')
         if (data){
             prop          = $$("editTableFormProperty");
             returnLostData_form          = $$("table-editForm");
@@ -9605,7 +9523,7 @@ async function resetTable(){
                 table.config.filter = null;
                 setDataTable (data, table);
                 setFilterCounterVal(table);
-                setLogValue("success", "Фильтры очищены");
+                logBlock_setLogValue("success", "Фильтры очищены");
                 return true;
             } catch (err){
                 errors_setFunctionError(
@@ -9616,14 +9534,14 @@ async function resetTable(){
             }
 
         } else {
-            setLogValue(
+            logBlock_setLogValue(
                 "error", 
                 "resetFilterBtn ajax: " +
                 dataErr.err
             );
         }
     }).fail(function(err){
-        setAjaxError(
+        errors_setAjaxError(
             err, 
             resetTable_logNameFile,
             "resetFilterBtn"
@@ -10319,7 +10237,7 @@ function clickContextBtnParent (id, el){
 
         showEmptyTemplate        ();
         Filter.setStateToStorage ();
-        setLogValue         ("success", "Поле удалено"); 
+        logBlock_setLogValue         ("success", "Поле удалено"); 
 
     }
 
@@ -10414,7 +10332,7 @@ function removeInput(){
     Action.removeItem        ( $$(thisContainer));
     showEmptyTemplate        ();
     Filter.setStateToStorage ();
-    setLogValue              ("success", "Поле удалено"); 
+    logBlock_setLogValue              ("success", "Поле удалено"); 
 }
 
 
@@ -10485,7 +10403,7 @@ function createContextBtn (el, id, isChild){
         }
     };
 
-    const contextBtn = new buttons_Button({
+    const contextBtn = new Button({
     
         config   : {
             id       :  id + "_contextMenuFilter",
@@ -10607,7 +10525,7 @@ function createOperationBtn(typeField, elemId){
     
     const idBtnOperation = elemId + "-btnFilterOperations";
 
-    const btn = new buttons_Button({
+    const btn = new Button({
     
         config   : {
             id       : idBtnOperation,
@@ -11035,7 +10953,7 @@ function getLibraryData(){
         Filter.setStateToStorage ();
         Filter.enableSubmitButton();
         Action.hideItem($$("templateInfo"));
-        setLogValue(
+        logBlock_setLogValue(
             "success", 
             "Рабочая область фильтра обновлена"
         );
@@ -11043,7 +10961,7 @@ function getLibraryData(){
     });
 
     userprefsData.fail(function(err){
-        setAjaxError(
+        errors_setAjaxError(
             err, 
             userTemplate_logNameFile, 
             "getLibraryData"
@@ -11584,7 +11502,7 @@ function tableErrorState (){
 
 
 async function loadTableData(table, id, idsParam, offset){
-
+   
     const tableElem = $$(table);
     const limitLoad = 80;
 
@@ -11663,6 +11581,7 @@ async function loadTableData(table, id, idsParam, offset){
                     
                         createContextSpace_selectContextId      ();  
                       //  returnLostData       ();
+                 
                         returnLostData   ();
                         returnLostFilter_returnLostFilter (itemTreeId);
                                
@@ -11698,7 +11617,7 @@ async function loadTableData(table, id, idsParam, offset){
                     window.location.reload();
                 } 
 
-                setAjaxError(err, "loadRows", "getData");
+                errors_setAjaxError(err, "loadRows", "getData");
             });
 
         }
@@ -12213,7 +12132,7 @@ function buttonLogic_setTableState(tableView, data){
         if (data.length !== 0){
             tableView.hideOverlay(noneMsg);
             tableView.parse(data);
-            setLogValue("success", "Данные обновлены");
+            logBlock_setLogValue("success", "Данные обновлены");
 
         } else {
             tableView.showOverlay(noneMsg);
@@ -12267,7 +12186,7 @@ function refreshButton(){
     });
 
     getData.fail(function(err){
-        setAjaxError(
+        errors_setAjaxError(
             err, 
             buttonLogic_logNameFile,
             "refreshButton"
@@ -12288,7 +12207,7 @@ function downloadButton(){
             );
         } 
     }).catch(err => {
-        setAjaxError(
+        errors_setAjaxError(
             err, 
             buttonLogic_logNameFile, 
             "downloadButton"
@@ -12309,14 +12228,14 @@ async function uploadData(formData, link){
 
         if ( data.err_type == "i" ){
             loadEl.setValues( "Файл загружен" );
-            setLogValue(
+            logBlock_setLogValue(
                 "success",
                 "Файл успешно загружен"
             );
 
         } else {
             loadEl.setValues( "Ошибка" );
-            setLogValue     ( "error", data.err );
+            logBlock_setLogValue     ( "error", data.err );
         }
     })
     
@@ -12494,7 +12413,7 @@ function getOptionData      (){
 
             }).catch(err => {
                 console.log(err);
-                setAjaxError(
+                errors_setAjaxError(
                     err,
                     createInputs_logNameFile,
                     "generateCustomInputs => getOptionData"
@@ -12598,7 +12517,7 @@ function getInputsId        (element){
 
 function createDeleteBtn    (findAction,i){
 
-    const btn = new buttons_Button({
+    const btn = new Button({
 
         config   : {
             id       : "customBtnDel" + i,
@@ -12666,7 +12585,7 @@ function submitClick(findAction, i, id, elem){
 
 function createCustomBtn    (findAction, i){
 
-    const btn = new buttons_Button({
+    const btn = new Button({
         
         config   : {
             id       : "customBtn" + i,
@@ -12995,7 +12914,7 @@ function adaptiveCustomInputs (){
         const customInputs  = generateCustomInputs (createElements_data, createElements_idCurrTable);
         const filterBar     = $$("table-view-filterId").getParentView();
 
-        const btnTools = new buttons_Button({
+        const btnTools = new Button({
             config   : {
                 id       : "viewToolsBtn",
                 hotkey   : "Ctrl+Shift+G",
@@ -13116,11 +13035,13 @@ async function loadFields(){
 async function generateTable (showExists){ 
  
     let keys;
+
+    console.log(showExists, 'showExists')
     
     if (!showExists){
         keys = await loadFields();
     } 
-
+    
     if (!keys && showExists){ // if tab is clicked but dont have fields
         keys = await loadFields();
     }
@@ -13142,14 +13063,14 @@ async function generateTable (showExists){
 
 
 function createTable (id, ids, showExists) {
-
+ 
     generateTable_idCurrTable = id;
     generateTable_idsParam    = ids;
 
     getValsTable ();
    
     if (titem == undefined) {
-        setLogValue("error","Данные не найдены");
+        logBlock_setLogValue("error","Данные не найдены");
     } else {
         preparationTable ();
         generateTable (showExists);
@@ -13192,14 +13113,14 @@ function trashBtn(config,idTable){
                         "wxi-trash => delData"
                     );
                 }
-                setLogValue("success", "Данные успешно удалены");
+                logBlock_setLogValue("success", "Данные успешно удалены");
             } else {
-                setLogValue("error", data.err);
+                logBlock_setLogValue("error", data.err);
             }
         });
 
         delData.fail(function(err){
-            setAjaxError(
+            errors_setAjaxError(
                 err, 
                 btnsInTable_logNameFile,
                 "wxi-trash => delElem"
@@ -13324,7 +13245,7 @@ function getProp(propertyElem, cell){
     });
 
     getData.fail(function(err){
-        setAjaxError(
+        errors_setAjaxError(
             err, 
             btnsInTable_logNameFile,
             "getProp"
@@ -13443,13 +13364,13 @@ function saveExistsTemplate(sentObj, idPutData, visCol){
         data = data.json();
          
         if (data.err_type !== "i"){
-            setLogValue(
+            logBlock_setLogValue(
                 "error",
                 "toolbarTable function saveExistsTemplate putData: "+ 
                 data.err
             );
         } else {
-            setLogValue   (
+            logBlock_setLogValue   (
                 "success",
                 "Рабочая область таблицы обновлена"
             );
@@ -13475,7 +13396,7 @@ function saveExistsTemplate(sentObj, idPutData, visCol){
     });
 
     putData.fail(function(err){
-        setAjaxError(
+        errors_setAjaxError(
             err, 
             userprefsPost_logNameFile,
             "saveExistsTemplate => putUserprefsData"
@@ -13507,7 +13428,7 @@ function saveNewTemplate(sentObj){
             );
 
         } else {
-            setLogValue   (
+            logBlock_setLogValue   (
                 "success", 
                 "Рабочая область таблицы обновлена"
             );
@@ -13525,7 +13446,7 @@ function saveNewTemplate(sentObj){
     });
 
     userprefsPost.fail(function(err){
-        setAjaxError(
+        errors_setAjaxError(
             err, 
             userprefsPost_logNameFile, 
             "saveTemplate"
@@ -13577,7 +13498,7 @@ function getUserprefsData(sentObj, visCol){
 
 
     getData.fail(function(err){
-        setAjaxError(
+        errors_setAjaxError(
             err, 
             userprefsPost_logNameFile, 
             "getUserprefsData"
@@ -13727,7 +13648,7 @@ function clearBtnColsClick (){
             showCols();
             postPrefsValues(values);
             Action.destructItem($$("popupVisibleCols"));
-            setLogValue (
+            logBlock_setLogValue (
                 "success",
                 "Рабочая область таблицы обновлена"
             );
@@ -13736,7 +13657,7 @@ function clearBtnColsClick (){
 }
 
 function returnClearBtn(){
-    const clearBtn = new buttons_Button({
+    const clearBtn = new Button({
 
         config   : {
             id       : "clearBtnCols",
@@ -13802,7 +13723,7 @@ function colsMove(action){
 
 function returnMoveBtns(){
 
-    const moveUpBtn = new buttons_Button({
+    const moveUpBtn = new Button({
 
         config   : {
             id       : "moveSelctedUp",
@@ -13817,7 +13738,7 @@ function returnMoveBtns(){
        
     }).transparentView(); 
 
-    const moveDownBtn = new buttons_Button({
+    const moveDownBtn = new Button({
 
         config   : {
             id       : "moveSelctedDown",
@@ -13985,7 +13906,7 @@ function colsPopupSelect(action){
 }
 
 function returnListBtns(){
-    const addColsBtn = new buttons_Button({
+    const addColsBtn = new Button({
 
         config   : {
             id       : "addColsBtn",
@@ -14000,7 +13921,7 @@ function returnListBtns(){
        
     }).transparentView();
 
-    const removeColsBtn = new buttons_Button({
+    const removeColsBtn = new Button({
 
         config   : {
             id       : "removeColsBtn",
@@ -14115,7 +14036,7 @@ function visibleColsSubmitClick (){
 }
 
 function returnSaveBtn(){
-    const btnSaveState = new buttons_Button({
+    const btnSaveState = new Button({
 
         config   : {
             id       : "visibleColsSubmit",
@@ -14332,7 +14253,7 @@ function returnContent(){
 
 function createPopup(){
        
-    const popup = new popup_Popup({
+    const popup = new Popup({
         headline : "Видимость колонок",
         config   : {
             id          : "popupVisibleCols",
@@ -14484,7 +14405,7 @@ function  visibleColsButtonClick(idTable){
 function toolbarVisibleColsBtn(idTable){
     const idVisibleCols = idTable + "-visibleCols";
 
-    const visibleCols = new buttons_Button({
+    const visibleCols = new Button({
     
         config   : {
             id       : idVisibleCols,
@@ -14823,7 +14744,7 @@ function toolbarFilterBtn(idTable, visible){
         idFilter  = idTable + "-filterId"
     ;
 
-    const btn = new buttons_Button({
+    const btn = new Button({
         config   : {
             id       : idFilter,
             hotkey   : "Ctrl+Shift+F",
@@ -14970,7 +14891,7 @@ function toolbarEditButton (idTable, visible){
         }
     }   
 
-    const btn = new buttons_Button({
+    const btn = new Button({
         config   : {
             id       : idBtnEdit,
             hotkey   : "Ctrl+Shift+X",
@@ -15013,7 +14934,7 @@ function exportToExcel(idTable){
             filterHTML  : true,
             styles      : true
         });
-        setLogValue("success", "Таблица сохранена");
+        logBlock_setLogValue("success", "Таблица сохранена");
 
     } catch (err) {   
         errors_setFunctionError(err, "toolbarTable", "exportToExcel");
@@ -15023,7 +14944,7 @@ function exportToExcel(idTable){
 function toolbarDownloadButton(idTable, visible){
     const idExport = idTable + "-exportBtn";
 
-    const exportBtn = new buttons_Button({
+    const exportBtn = new Button({
     
         config   : {
             id       : idExport,
@@ -15388,7 +15309,11 @@ function property_setTabInfo(sentVals){
             values: sentVals,
             selected: id
         };
+
+        mediator.tabs.setInfo(tabData);
     }
+
+ 
 }
 
 function createTempData(self){
@@ -15614,7 +15539,7 @@ function backTableBtnClick() {
 }
 
 
-const newAddBtn = new buttons_Button({
+const newAddBtn = new Button({
     
     config   : {
         id          : "table-newAddBtnId",
@@ -15629,7 +15554,7 @@ const newAddBtn = new buttons_Button({
    
 }).maxView();
 
-const delBtn = new buttons_Button({
+const delBtn = new Button({
     
     config   : {
         id       : "table-delBtnId",
@@ -15655,7 +15580,7 @@ const delBtn = new buttons_Button({
 }).minView("delete");
 
 
-const saveBtn = new buttons_Button({
+const saveBtn = new Button({
     
     config   : {
         id       : "table-saveBtn",
@@ -15681,7 +15606,7 @@ const saveBtn = new buttons_Button({
 }).maxView("primary");
 
 
-const saveNewBtn = new buttons_Button({
+const saveNewBtn = new Button({
     
     config   : {
         id       : "table-saveNewBtn",
@@ -15708,7 +15633,7 @@ const saveNewBtn = new buttons_Button({
 }).maxView("primary");
 
 
-const backTableBtn = new buttons_Button({
+const backTableBtn = new Button({
     
     config   : {
         id       : "table-backTableBtn",
@@ -15868,7 +15793,7 @@ async function isTemplateExists(){
 
 
     }).fail(function(err){
-        setAjaxError(
+        errors_setAjaxError(
             err, 
             libSaveBtn_logNameFile,
             "isTemplateExists"
@@ -15888,7 +15813,7 @@ function putUserprefsTemplate(id){
     putData.then(function(data){
         data = data.json();
         if (data.err_type == "i"){
-            setLogValue(
+            logBlock_setLogValue(
                 "success",
                 "Шаблон" +
                 " «" +
@@ -15906,7 +15831,7 @@ function putUserprefsTemplate(id){
     });
 
     putData.fail(function(err){
-        setAjaxError(
+        errors_setAjaxError(
             err, 
             libSaveBtn_logNameFile,
             "putUserprefsData"
@@ -15940,7 +15865,7 @@ function libSaveBtn_saveNewTemplate(){
         data = data.json();
 
         if (data.err_type == "i"){
-            setLogValue(
+            logBlock_setLogValue(
                 "success",
                 "Шаблон" +
                 " «" +
@@ -15958,7 +15883,7 @@ function libSaveBtn_saveNewTemplate(){
     });
 
     userprefsPost.fail(function(err){
-        setAjaxError(
+        errors_setAjaxError(
             err, 
             libSaveBtn_logNameFile,
             "saveTemplate => saveNewTemplate"
@@ -16039,7 +15964,7 @@ function libraryBtnClick () {
     }
 }
 
-const librarySaveBtn = new buttons_Button({
+const librarySaveBtn = new Button({
     
     config   : {
         id       : "filterLibrarySaveBtn",
@@ -16100,7 +16025,7 @@ function backBtn_backTableBtnClick() {
 
 
 
-const backBtn = new buttons_Button({
+const backBtn = new Button({
     
     config   : {
         id       : "table-backTableBtnFilter",
@@ -16260,7 +16185,7 @@ function submitBtn_createFilter(){
 
     //resetLibSelectOption();
   
-    setLogValue(
+    logBlock_setLogValue(
         "success",
         "Рабочая область фильтра обновлена"
     );
@@ -16417,7 +16342,7 @@ function popupSubmitBtn (){
 
 
 
-const submitBtn_submitBtn = new buttons_Button({
+const submitBtn_submitBtn = new Button({
     
     config   : {
         id       : "popupFilterSubmitBtn",
@@ -16487,7 +16412,7 @@ function deleteElement(){
         const value = radioValue.value;
 
         if (data.err_type == "i"){
-            setLogValue(
+            logBlock_setLogValue(
                 "success",
                 "Шаблон « " + value + " » удален"
             );
@@ -16507,7 +16432,7 @@ function deleteElement(){
     });
 
     deleteTemplate.fail(function(err){
-        setAjaxError(
+        errors_setAjaxError(
             err, 
             removeBtn_logNameFile,
             "getLibraryData"
@@ -16554,7 +16479,7 @@ function removeBtnClick (){
 }
 
 
-const removeBtn = new buttons_Button({
+const removeBtn = new Button({
     
     config   : {
         id       : "editFormPopupLibRemoveBtn",
@@ -16863,7 +16788,7 @@ const editFormPopup = {
 
 function createFilterPopup() {
 
-    const popup = new popup_Popup({
+    const popup = new Popup({
         headline : "Редактор фильтров",
         config   : {
             id    : "popupFilterEdit",
@@ -17010,7 +16935,7 @@ async function createLibTab(){
     });
     
     userprefsGetData.fail(function(err){
-        setAjaxError(
+        errors_setAjaxError(
             err, 
             createLibTab_logNameFile, 
             "saveTemplate"
@@ -17336,7 +17261,7 @@ function editFiltersBtn (){
 
 
 
-const editBtn = new buttons_Button({
+const editBtn = new Button({
     
     config   : {
         hotkey   : "Alt+A",
@@ -17623,19 +17548,19 @@ function filterSubmitBtn (){
                 setCounterValue (reccount);
                 Action.hideItem ($$("tableFilterPopup"));
         
-                setLogValue(
+                logBlock_setLogValue(
                     "success",
                     "Фильтры успшено применены"
                 );
             
             } else {
                 Filter.showApplyNotify(false);
-                setLogValue("error", notifyMsg);
+                logBlock_setLogValue("error", notifyMsg);
             } 
         });
 
         queryData.fail(function (err){
-            setAjaxError(
+            errors_setAjaxError(
                 err, 
                 buttons_submitBtn_logNameFile, 
                 "createGetData"
@@ -17643,7 +17568,7 @@ function filterSubmitBtn (){
         });
 
     } else {
-        setLogValue(
+        logBlock_setLogValue(
             "error", 
             "Не все поля формы заполнены"
         );
@@ -17653,7 +17578,7 @@ function filterSubmitBtn (){
 }
 
 
-const buttons_submitBtn_submitBtn = new buttons_Button({
+const buttons_submitBtn_submitBtn = new Button({
 
     config   : {
         id       : "btnFilterSubmit",
@@ -17809,7 +17734,7 @@ function resetFilterBtnClick (){
 
 
 
-const resetBtn = new buttons_Button({
+const resetBtn = new Button({
     
     config   : {
         id       : "resetFilterBtn",
@@ -17887,7 +17812,7 @@ function saveTemplateNotify_putUserprefsTemplate(id, sentObj, nameTemplate){
     putData.then(function(data){
         data = data.json();
         if (data.err_type == "i"){
-            setLogValue(
+            logBlock_setLogValue(
                 "success",
                 "Шаблон" +
                 " «" +
@@ -17908,7 +17833,7 @@ function saveTemplateNotify_putUserprefsTemplate(id, sentObj, nameTemplate){
     });
 
     putData.fail(function(err){
-        setAjaxError(
+        errors_setAjaxError(
             err, 
             saveTemplateNotify_logNameFile,
             "putUserprefsData"
@@ -17945,7 +17870,7 @@ function saveTemplateNotify(){
         borderless : true
     };
 
-    const btn = new buttons_Button({
+    const btn = new Button({
     
         config   : {
             id       : "putTemplateBtn",
@@ -18451,7 +18376,7 @@ function returnDateEditor(){
 }
 
 function returnSubmitBtn(elem){
-    const btn = new buttons_Button({
+    const btn = new Button({
 
         config   : {
             id       : "editPropCalendarSubmitBtn",
@@ -18473,7 +18398,7 @@ function popupEdit(elem){
 
     const headline = "Редактор поля  «" + elem.label + "»";
 
-    const popup = new popup_Popup({
+    const popup = new Popup({
         headline : headline,
         config   : {
             id        : "editTablePopupCalendar",
@@ -18509,7 +18434,7 @@ function propBtnClick(elem){
 
 function createDateBtn(elem){
 
-    const btn = new buttons_Button({
+    const btn = new Button({
 
         config   : {
             width    : 30,
@@ -18662,7 +18587,7 @@ function returnTextArea(){
 }
 
 function textarea_returnSubmitBtn(el){
-    const btn = new buttons_Button({
+    const btn = new Button({
 
         config   : {
             id       : "editPropSubmitBtn",
@@ -18685,7 +18610,7 @@ function textarea_returnSubmitBtn(el){
 function textarea_popupEdit(el){
     const headline = "Редактор поля  «" + el.label + "»";
 
-    const popup = new popup_Popup({
+    const popup = new Popup({
         headline : headline,
         config   : {
             id        : "editTablePopupText",
@@ -18723,7 +18648,7 @@ function textarea_popupEdit(el){
 }
 
 function createBtnTextEditor(el){
-    const btn = new buttons_Button({
+    const btn = new Button({
 
         config   : {
             width    : 30,
@@ -18843,7 +18768,7 @@ function btnClick (idBtn){
 
 function reference_btnLayout(idEditor){
 
-    const btn = new buttons_Button({
+    const btn = new Button({
 
         config   : {
             width    : 30,
@@ -19241,7 +19166,7 @@ function editTablePutState(){
    
         if( !(editForm.isVisible()) ){
             mediator.tables.defaultState("filter");
-            buttons_Button.transparentDefaultState();
+            Button.transparentDefaultState();
             adaptiveView (editForm);
             editForm.show();
         }
@@ -19592,7 +19517,7 @@ function setLogError (){
                 }
             });
 
-            setLogValue("error", el.textError + " (Поле: " + nameEl + ")");
+            logBlock_setLogValue("error", el.textError + " (Поле: " + nameEl + ")");
         });
 
     } catch (err){
@@ -19712,7 +19637,7 @@ function formAcitions_formattingBoolVals(arr){
 
 } 
 
-function formAcitions_createSentObj (values){
+function createSentObj (values){
     const uniqueVals     = uniqueData     (values    );
     const dateFormatVals = formAcitions_dateFormatting (uniqueVals);
     return formAcitions_formattingBoolVals(dateFormatVals);
@@ -19731,7 +19656,7 @@ function putTable (updateSpace, isNavigate, form){
         if (!isError && id && isDirtyForm){
           
             const path    = "/init/default/api/" + currId + "/" + id;
-            const sentObj = formAcitions_createSentObj (itemData);
+            const sentObj = createSentObj (itemData);
     
             const putData = webix.ajax().put(path, sentObj);
        
@@ -19752,7 +19677,7 @@ function putTable (updateSpace, isNavigate, form){
 
                     formAcitions_unsetDirtyProp();
 
-                    setLogValue(
+                    logBlock_setLogValue(
                         "success", 
                         "Данные сохранены", 
                         currId
@@ -19761,7 +19686,7 @@ function putTable (updateSpace, isNavigate, form){
                     return true;
 
                 } else {
-                    setLogValue(
+                    logBlock_setLogValue(
                         "error", 
                         formAcitions_logNameFile + 
                         " function saveItem: " + 
@@ -19771,7 +19696,7 @@ function putTable (updateSpace, isNavigate, form){
                     return false;
                 }
             }).fail(function(err){
-                setAjaxError(
+                errors_setAjaxError(
                     err, 
                     formAcitions_logNameFile, 
                     "saveItem"
@@ -19786,12 +19711,12 @@ function putTable (updateSpace, isNavigate, form){
                     setLogError ();
                 });
             } else if (!id){
-                setLogValue(
+                logBlock_setLogValue(
                     "error", 
                     "Поле id не заполнено"
                 );
             } else if (!isDirtyForm){
-                setLogValue(
+                logBlock_setLogValue(
                     "error", 
                     "Обновлять нечего"
                 );
@@ -19904,7 +19829,7 @@ function postTable (updateSpace, isNavigate, form){
 
                 formAcitions_unsetDirtyProp();
 
-                setLogValue(
+                logBlock_setLogValue(
                     "success",
                     "Данные успешно добавлены",
                     currId
@@ -19926,7 +19851,7 @@ function postTable (updateSpace, isNavigate, form){
                     msg = data.err; 
                 }
 
-                setLogValue(
+                logBlock_setLogValue(
                     "error",
                     "editTableForm function saveNewItem: " + 
                     msg
@@ -19936,7 +19861,7 @@ function postTable (updateSpace, isNavigate, form){
             }
         }).fail(function(err){
             console.log(err);
-            setAjaxError(
+            errors_setAjaxError(
                 err, 
                 "tableEditForm => btns",
                 "saveNewItem"
@@ -19983,14 +19908,14 @@ function removeTableItem(form){
 
                     formAcitions_unsetDirtyProp();
          
-                    setLogValue(
+                    logBlock_setLogValue(
                         "success",
                         "Данные успешно удалены"
                     );
                     removeRow();
                     formAcitions_setCounterVal (true);
                 } else {
-                    setLogValue(
+                    logBlock_setLogValue(
                         "error",
                         "editTableForm function removeItem: " +
                         data.err
@@ -19998,7 +19923,7 @@ function removeTableItem(form){
                 }
             });
             removeData.fail(function(err){
-                setAjaxError(
+                errors_setAjaxError(
                     err, 
                     formAcitions_logNameFile,
                     "removeItem"
@@ -20751,11 +20676,13 @@ class Tables {
     }
 
     showExists(id){
+        console.log('showExists')
         const table = commonFunctions_getTable().config.id;
         createTable(table, id, true);
     }
 
     load(id){
+        console.log('load')
        // const table = getTable().config.id;
         createTable("table", id);
     }
@@ -20853,7 +20780,7 @@ class Forms {
 
     defaultState(){
         toolsDefState ();
-        buttons_Button.transparentDefaultState();
+        Button.transparentDefaultState();
     }
 
 
@@ -21105,7 +21032,7 @@ function renameTree(state, editor){
         postData.then(function(data){
             data = data.json();
             if (data.err_type == "i"){
-                setLogValue("success", "Данные изменены");
+                logBlock_setLogValue("success", "Данные изменены");
 
             } else {
                 errors_setFunctionError(
@@ -21117,7 +21044,7 @@ function renameTree(state, editor){
         });
 
         postData.fail(function(err){
-            setAjaxError(
+            errors_setAjaxError(
                 err, 
                 "editTree",
                 "tree onAfterEditStop postData"
@@ -21307,7 +21234,7 @@ function contextMenu_addItem(text){
 
                 Option.add(comboOption);
             
-                setLogValue("success","Данные сохранены");
+                logBlock_setLogValue("success","Данные сохранены");
             } else {
                 errors_setFunctionError( 
                     data.err,
@@ -21321,7 +21248,7 @@ function contextMenu_addItem(text){
     });
 
     postData.fail(function(err){
-        setAjaxError(err, "editTree", "case add");
+        errors_setAjaxError(err, "editTree", "case add");
     });
 
 }
@@ -21348,7 +21275,7 @@ function renameItem(text){
 
                 Option.rename(option);
 
-                setLogValue("success", "Данные изменены");
+                logBlock_setLogValue("success", "Данные изменены");
             } else {
                 errors_setFunctionError( 
                     data.err,
@@ -21366,7 +21293,7 @@ function renameItem(text){
     });
 
     putData.fail(function(err){
-        setAjaxError(err, "editTree", "case rename");
+        errors_setAjaxError(err, "editTree", "case rename");
     });
 }
 
@@ -21390,7 +21317,7 @@ function removeItem(){
 
               
 
-                setLogValue("success", "Данные удалены");
+                logBlock_setLogValue("success", "Данные удалены");
             } else {
                 errors_setFunctionError( 
                     data.err, 
@@ -21408,7 +21335,7 @@ function removeItem(){
     });
 
     delData.fail(function(err){
-        setAjaxError(err, "editTree", "case delete");
+        errors_setAjaxError(err, "editTree", "case delete");
     });
 }
 
@@ -21641,7 +21568,7 @@ async function setOwnerComboValues(){
 
     });
     getDataRef.fail(function(err){
-        setAjaxError(
+        errors_setAjaxError(
             err, 
             "getInfoTree", 
             "setOwnerComboValues"
@@ -21727,7 +21654,7 @@ function getTrees(){
     });
 
     getData.fail(function(err){
-        setAjaxError(
+        errors_setAjaxError(
             err, 
             "getInfoTree", 
             "getInfoEditTree"
@@ -21847,12 +21774,12 @@ async function doAuthCp (){
             data = data.json();
             
             if (data.err_type == "i"){
-                setLogValue("success", data.err);
+                logBlock_setLogValue("success", data.err);
                 _layout_form.clear();
                 _layout_form.setDirty(false);
                 return true;
             } else {
-                setLogValue(
+                logBlock_setLogValue(
                     "error",
                     "authSettings function doAuthCp: " + 
                     data.err, 
@@ -21863,7 +21790,7 @@ async function doAuthCp (){
       
             
         }).fail(function(err){
-            setAjaxError(
+            errors_setAjaxError(
                 err, 
                 "authSettings",
                 "doAuthCp"
@@ -21929,7 +21856,7 @@ function generatePassInput(labelPass, namePass){
     };
 }
 
-const btnSubmit = new buttons_Button({
+const btnSubmit = new Button({
     
     config   : {
         hotkey   : "Shift+Space",
@@ -21971,7 +21898,7 @@ const authCp = {
             const checkCp = $$("cp-form").isDirty();
 
             if (data.newPass != data.repeatPass){
-                setLogValue(
+                logBlock_setLogValue(
                     "error",
                     "Новый пароль не совпадает с повтором"
                 );
@@ -21979,7 +21906,7 @@ const authCp = {
             }
 
             if (data.newPass == data.oldPass && checkCp ){
-                setLogValue(
+                logBlock_setLogValue(
                     "error",
                     "Новый пароль должен отличаться от старого"
                 );
@@ -22386,18 +22313,18 @@ function buttons_putPrefs(el){
 
             buttons_form.setDirty(false);
 
-            setLogValue(
+            logBlock_setLogValue(
                 "success", 
                 "Настройки сохранены"
             );
             return true;
         } else {
-            setLogValue("error", data.error);
+            logBlock_setLogValue("error", data.error);
             return false;
         }
 
     }).fail(function(err){
-        setAjaxError(
+        errors_setAjaxError(
             err, 
             buttons_logNameFile, 
             "putPrefs"
@@ -22431,7 +22358,7 @@ function findExistsData(data){
 }
 
 
-function buttons_postPrefs(){
+function postPrefs(){
    
     const path = "/init/default/api/userprefs/";
 
@@ -22446,14 +22373,14 @@ function buttons_postPrefs(){
 
             buttons_form.setDirty(false);
 
-            setLogValue(
+            logBlock_setLogValue(
                 "success", 
                 "Настройки сохранены"
             );
 
             return true;
         } else {
-            setLogValue(
+            logBlock_setLogValue(
                 "error", 
                 data.error
             );
@@ -22462,7 +22389,7 @@ function buttons_postPrefs(){
         }
 
     }).fail(function(err){
-        setAjaxError(
+        errors_setAjaxError(
             err, 
             buttons_logNameFile, 
             "postPrefs"
@@ -22501,14 +22428,14 @@ async function savePrefs(){
         const isExistsSetting = result.exists;
 
         if (!isExistsSetting){
-            return buttons_postPrefs();
+            return postPrefs();
         } else {
             const findElem = result.findElem;
             return buttons_putPrefs(findElem);
         }
 
     }).fail(function(err){
-        setAjaxError(
+        errors_setAjaxError(
             err, 
             buttons_logNameFile, 
             "savePrefs"
@@ -22527,7 +22454,7 @@ async function saveSettings (){
         return savePrefs();   
    
     } else {
-        setLogValue(
+        logBlock_setLogValue(
             "debug", 
             "Сохранять нечего"
         );
@@ -22562,7 +22489,7 @@ function clearSettings (){
 }
 
 
-const clearBtn = new buttons_Button({
+const clearBtn = new Button({
     
     config   : {
         id       : "userprefsResetBtn",
@@ -22575,7 +22502,7 @@ const clearBtn = new buttons_Button({
    
 }).maxView();
 
-const buttons_submitBtn = new buttons_Button({
+const buttons_submitBtn = new Button({
     
     config   : {
         id       : "userprefsSaveBtn",
@@ -22874,7 +22801,7 @@ function removeTreeEdit(){
 }
 
 function selectElem(id){
-
+ 
     const type = GetFields.attribute (id, "type");
 
     Action.hideItem($$("webix__none-content"));
@@ -22911,7 +22838,7 @@ async function getSingleTreeItem(data) {
 }
 
 function preparationView(id){
-   
+  
     mediator.header.defaultState();
     mediator.treeEdit.defaultState(id);
     mediator.dashboards.defaultState();
@@ -23107,6 +23034,7 @@ async function getMenuChilds(uid) {
 
 
 function loadFields_loadFields(selectId, treeItem){
+ 
     const uid = webix.uid();
   
     loadFields_tree = $$("tree");
@@ -23128,7 +23056,7 @@ function loadFields_loadFields(selectId, treeItem){
 
 
 
-const treeSidabar_navigate_logNameFile = "treeSidebar => navigate";
+const navigate_logNameFile = "treeSidebar => navigate";
 
 function getFields (id){
     const menu  = GetMenu.content;
@@ -23137,7 +23065,7 @@ function getFields (id){
         try{
             Backbone.history.navigate("tree/" + id, { trigger : true });
         } catch (err){
-            errors_setFunctionError(err, treeSidabar_navigate_logNameFile, "getFields");
+            errors_setFunctionError(err, navigate_logNameFile, "getFields");
         }
     }
 }
@@ -23188,7 +23116,7 @@ function setErrLoad(err){
     }
 
     if (err){
-        setLogValue(
+        logBlock_setLogValue(
             "error", 
             err.status + " " + err.statusText + " " +
             err.responseURL + " (" + err.responseText + "). " +
@@ -23196,7 +23124,7 @@ function setErrLoad(err){
             "version"
         );
     } else {
-        setLogValue(
+        logBlock_setLogValue(
             "error", 
             "Меню не загружено sidebar => onLoadError", 
             "version"
@@ -23507,7 +23435,7 @@ function checkFonts (){
         });
 
         if (!check){
-            setLogValue("success", "Не удалось загрузить шрифт иконок", 'expa');
+            logBlock_setLogValue("success", "Не удалось загрузить шрифт иконок", 'expa');
         }
 
 
@@ -23674,7 +23602,7 @@ function onChangeLogBtn(newValue){
 }
 
 
-const logBtn = new buttons_Button({
+const logBtn = new Button({
     
     config   : {
         id       : "webix_log-btn",
@@ -23688,6 +23616,9 @@ const logBtn = new buttons_Button({
     onFunc   :{
         onChange:function(newValue){
             onChangeLogBtn(newValue);
+        },
+        setStorageData:function(){
+
         }
     },
     titleAttribute : "Показать/скрыть системные сообщения"
@@ -23697,6 +23628,7 @@ const logBtn = new buttons_Button({
 
 
 ;// CONCATENATED MODULE: ./src/js/components/favorites.js
+
 
 
 
@@ -23772,7 +23704,7 @@ function createOptions(data, user){
             });
         }
 
-        $$("popupFavsLink").show();
+        Action.showItem($$("popupFavsLink"));
 
     } catch (err){
         errors_setFunctionError(
@@ -23805,7 +23737,7 @@ async function favsPopupCollectionClick (){
     });
 
     getData.fail(function(err){
-        setAjaxError(
+        errors_setAjaxError(
             err, 
             "favsLink",
             "favsPopupCollectionClick"
@@ -23817,10 +23749,23 @@ async function favsPopupCollectionClick (){
 
 function favsPopupSubmitClick(){
     try{
-        const radio  = $$("favCollectionLinks");
-        const value  = radio.getValue();
-        const option = radio.getOption(value);
-        window.location.replace(option.favLink);
+        const radio   = $$("favCollectionLinks");
+        const value   = radio.getValue();
+        const option  = radio.getOption(value);
+        const fieldId = option.id;
+
+        if (fieldId){
+            const infoData = {
+                tree:{
+                    field : fieldId,
+                    type  : "dbtable" 
+                },
+            };
+    
+            mediator.tabs.openInNewTab(infoData);    
+        }
+        Action.destructItem($$("popupFavsLink"));
+
     } catch (err){
         errors_setFunctionError(
             err,
@@ -23868,7 +23813,7 @@ const favorites_container = {
     }
 };
 
-const favorites_btnSaveLink = new buttons_Button({
+const favorites_btnSaveLink = new Button({
 
     config   : {
         id       : "favLinkSubmit",
@@ -23912,7 +23857,7 @@ function deleteUserprefsData(options, option){
     });
 
     deleteData.fail(function(err){
-        setAjaxError(
+        errors_setAjaxError(
             err, 
             favorites_logNameFile, 
             "deleteUserprefsData"
@@ -23933,7 +23878,7 @@ function favorites_removeBtnClick(){
         if (result == 1){
 
             deleteUserprefsData(options, option);
-            setLogValue (
+            logBlock_setLogValue (
                 "success",
                 `Закладка «${option.value}» удалена из избранного`
             );
@@ -23943,7 +23888,7 @@ function favorites_removeBtnClick(){
 }
 
 function returnRemoveBtn(){
-    const removeBtn = new buttons_Button({
+    const removeBtn = new Button({
 
         config   : {
             id       : "removeFavsBtn",
@@ -23963,7 +23908,7 @@ function returnRemoveBtn(){
 
 function favsPopup(){
 
-    const popupFavsLink = new popup_Popup({
+    const popupFavsLink = new Popup({
         headline : "Избранное",
         config   : {
             id    : "popupFavsLink",
@@ -24100,7 +24045,7 @@ async function onItemClickBtn(){
             }); 
 
             ajaxVar.fail(function(err){
-                setAjaxError(err, userContextBtn_logNameFile, msg);
+                errors_setAjaxError(err, userContextBtn_logNameFile, msg);
             });
         }
 
@@ -24145,7 +24090,7 @@ async function onItemClickBtn(){
     });
     getData.fail(function(err){
     
-        setAjaxError(
+        errors_setAjaxError(
             err, 
             userContextBtn_logNameFile,
             "onItemClickBtn getData"
@@ -24156,7 +24101,7 @@ async function onItemClickBtn(){
 }
 
 
-const userContextBtn = new buttons_Button({
+const userContextBtn = new Button({
     
     config   : {
         id       : "button-context-menu",
@@ -24379,20 +24324,22 @@ function showContent(selectElem, id){
 }
 
 function selectTree(id, isOtherTab){
+   
     const tree = $$("tree");
     if ( tree.exists(id) && isOtherTab){
         tree.config.isTabSelect = true;
         tree.select(id);
+       // tree.showItem(id);
     }
+
+    // if parent is closed ??
 }
 
-function showItem_setLink(id){
+function setLink(id){
 
     const path = "tree/" + id;
     
-    Backbone.history.navigate(
-        path, { trigger : true }
-    );
+    Backbone.history.navigate(path);
  
 }
 
@@ -24402,9 +24349,8 @@ function setEmptyState(){
     Action.showItem ($$("webix__none-content"));
 }
 
-
 function showTreeItem(config, isOtherTab, isOtherView){
-
+     
     if (isOtherView){
         Backbone.history.navigate("/" + config.view, { trigger : true });
     } else {
@@ -24424,7 +24370,7 @@ function showTreeItem(config, isOtherTab, isOtherView){
     
 
             if (id){
-                showItem_setLink    (id);
+                setLink    (id);
                 showContent(selectElem, id);
                 selectTree (id, isOtherTab);
 
@@ -24497,6 +24443,14 @@ function restoreTempData(tempConfig, field){
 
 /// add tab 
 
+function actions_clearTree(){
+    const tree = $$("tree");
+    if (tree){
+        tree.unselectAll();
+    }
+  
+}
+
 function actions_createEmptySpace(show, hide){
     Action.showItem (show);  
     Action.hideItem (hide);
@@ -24563,6 +24517,8 @@ function add(isNull, open){
         info  : treeConfig,
         close : true, 
     }, open);
+
+    actions_clearTree();
 
     if (open){
         setDefaultState();
@@ -24647,11 +24603,14 @@ function remove(lastTab){
 
     }
 
+    actions_clearTree();
+
     actions_setToStorage(lastTab);
 }
 
 
 ;// CONCATENATED MODULE: ./src/js/components/tabs/_tabMediator.js
+
 
 
 
@@ -24686,30 +24645,33 @@ function changeName(self, values){
    
 }
 
-function _tabMediator_setDataToStorage(tabbar, tabId){
-    const options = tabbar.config.options;
-            
-    const data = {
-        tabs   : options,
-        select : tabId
-    };
 
-    webix.storage.local.put("tabbar", data);
-}
- 
 
 function getFieldsname(id){
     const field    = GetFields.item(id);
-    const plural   = field.plural ;
-    const singular = field.singular ;
-
     let name; 
 
     if (field){
-        name = plural ? plural : singular;
+        const plural   = field.plural ;
+        const singular = field.singular ;
+    
+      
+    
+        if (field){
+            name = plural ? plural : singular;
+        } else {
+            name = "Новая вкладка";
+        }
     } else {
-        name = "Новая вкладка";
+        errors_setFunctionError(
+            "Ссылки с id " + id + " не существует" , 
+            "tabs/_tabMediator", 
+            "getFieldsname"
+        );
     }
+
+
+
 
     return name;
 }
@@ -24761,6 +24723,18 @@ class Tabs {
     removeTab(lastTab){
         remove(lastTab);
     }
+
+    setDataToStorage(tabbar, tabId){
+        const options = tabbar.config.options;
+                
+        const data = {
+            tabs   : options,
+            select : tabId
+        };
+    
+        webix.storage.local.put("tabbar", data);
+    }
+     
     
 
     isOtherViewTab(){
@@ -24814,7 +24788,7 @@ class Tabs {
 
             changeName(this, values);
         
-            _tabMediator_setDataToStorage(tabbar, tabId);
+            this.setDataToStorage(tabbar, tabId);
         }
     }
 
@@ -24841,7 +24815,7 @@ class Tabs {
             }
       
         }
-      
+ 
         _tabMediator_setName(name);
 
     }
@@ -25285,6 +25259,13 @@ function setUserData(){
     );
 }
 
+// function selectTab(){
+//     const tabbarData = webix.storage.local.get("tabbar"); 
+//     if (tabbarData && tabbarData.select){
+//         console.log(tabbarData.select)
+//     }
+// }
+
 
 async function createContent (){
 
@@ -25298,10 +25279,12 @@ async function createContent (){
         Action.showItem($$("mainLayout"));
     
         setUserData();
-    
+
         createElements();
     
         getMenuTree();
+ 
+
     } else {
         Backbone.history.navigate("/", { trigger:true});
         window.location.reload();
@@ -25330,8 +25313,8 @@ class RouterActions {
         hideAllElements();
     }
 
-    static createContentSpace (){
-        createContent  ();
+    static async createContentSpace (){
+        await createContent  ();
     }
 
     static async loadSpace(){
@@ -25663,7 +25646,7 @@ function getDataUserprefs(){
     });
 
     userprefsData.fail(function (err){
-        setAjaxError(
+        errors_setAjaxError(
             err, 
             settings_logNameFile, 
             "getDataUserprefs"
@@ -25757,6 +25740,9 @@ function experimentalRouter(){
 
 
 
+
+
+
 const logout_logNameFile = "router => logout";
 
 function clearStorage(){
@@ -25771,6 +25757,169 @@ function clearStorage(){
         );
     }
 }
+
+function logout_putPrefs(id, sentObj){
+
+    const path    = "/init/default/api/userprefs/" + id;
+    const putData = webix.ajax().put(path, sentObj);
+
+    putData.then(function(data){
+   
+        data = data.json();
+    
+        if (data.err_type !== "i"){
+            logBlock_setLogValue("error", data.err);
+        }
+    });
+
+    putData.fail(function(err){
+        errors_setAjaxError(
+            err, 
+            logout_logNameFile, 
+            "putUserPrefs"
+        );
+    });   
+}
+
+function logout_isPrefExists(data, name){
+    const result = {
+        exists : false
+    };
+ 
+    try{
+        data.forEach(function(el){
+            if (el.name == name){
+                result.exists = true;
+                result.id     = el.id;
+            } 
+        });  
+    }   catch(err){
+        errors_setFunctionError(
+            err, 
+            logout_logNameFile, 
+            "isPrefExists"
+        );
+    }
+    
+    return result;
+}
+
+function logout_postUserPrefs(sentObj){
+
+    const path     = "/init/default/api/userprefs/";
+    const postData = webix.ajax().post(path, sentObj);
+
+    postData.then(function(data){
+        data = data.json();
+ 
+        if (data.err_type !== "i"){
+            errors_setFunctionError(
+                data.err, 
+                logout_logNameFile, 
+                "putUserPrefs"
+            );
+        }
+    });
+
+    postData.fail(function(err){
+        errors_setAjaxError(
+            err, 
+            logout_logNameFile, 
+            "postUserPrefs"
+        );
+    });
+
+}
+
+
+function logout_returnSentTemplate(name, data){
+    return {
+        name  : name,
+        prefs : data
+    };
+}
+
+async function getOwner(){
+    let owner = getUserDataStorage();
+
+    if (!owner){
+        await pushUserDataStorage();
+        owner = getUserDataStorage();
+    } 
+
+    return owner;
+}
+
+
+async function saveCurrData(servData, name, prefs, owner){
+
+    const pref = logout_returnSentTemplate(name, prefs);
+
+   // if (window.location.pathname !== "/index.html/content"){
+
+        const result   = logout_isPrefExists(servData, name);
+        const isExists = result.exists;
+     
+        if (isExists){
+            const id = result.id;
+            logout_putPrefs(id, pref);
+        } else {
+            pref.owner = owner.id;
+            logout_postUserPrefs(pref);
+        }
+      //  restoreData.owner = ownerId.id;
+      //  postUserPrefs(restoreData); // тк удаляется при login
+   // }
+
+ 
+
+}
+
+const userLocation = {};
+const logout_restore      = {};
+
+async function saveLocalStorage() {
+
+    const owner  = await getOwner();
+    
+    const path = "/init/default/api/userprefs/";
+    const userprefsData = webix.ajax().get(path);
+
+    await userprefsData.then(function(data){
+        data = data.json().content;
+
+        const tabbarData = webix.storage.local.get("tabbar");
+
+        saveCurrData(data, "tabbar", tabbarData, owner);
+  
+        if (window.location.pathname !== "/index.html/content"){
+ 
+
+            const restore = {
+                editProp :  webix.storage.local.get("editFormTempData"),
+                filter   :  webix.storage.local.get("currFilterState")
+            };
+
+            console.log(restore)
+         //   saveCurrData(data, "userLocationHref", userLocation, owner);
+            saveCurrData(data, "userRestoreData" , restore , owner);
+        }
+       
+    });
+
+
+
+    userprefsData.fail(function(err){
+        errors_setAjaxError(
+            err, 
+            logout_logNameFile, 
+            "saveLocalStorage"
+        );
+    });
+  
+}
+
+
 
 
 function backPage(){
@@ -25789,18 +25938,29 @@ function backPage(){
 
 
 
-function logoutRouter(){
+async function logoutRouter(){
+
+
+   // userLocation.href = window.location.href;
+
+    // restore.editProp  = webix.storage.local.get("editFormTempData");
+    // restore.filter    = webix.storage.local.get("currFilterState");
+
+    await saveLocalStorage();
+
     const path = "/init/default/logout/";
     const logoutData = webix.ajax().post(path);
-  
+
+
     logoutData.then(function (){
+
         backPage        ();
         mediator.sidebar.clear();
         clearStorage    ();
     });
 
     logoutData.fail(function (err){
-        setAjaxError(
+        errors_setAjaxError(
             err, 
             logout_logNameFile, 
             "logoutData"
@@ -26454,7 +26614,7 @@ function setRouterStart(){
 
 
 function createAddBtn(){
-    const btn = new buttons_Button({
+    const btn = new Button({
     
         config   : {
             id       : "addTabBtn",
@@ -26478,6 +26638,8 @@ function createAddBtn(){
 
 
 
+
+ 
 
 
 let prevValue;
@@ -26530,6 +26692,12 @@ function _layout_createConfigSpace(id){
     }    
 }
 
+function _layout_tabbarClick(ev, id){
+    $$("globalTabbar").callEvent(ev, [ id ]);
+}
+
+
+
 function restoreTabbar(data){
     const tabbar = $$("globalTabbar");
     const tabs   = data.tabs;
@@ -26539,10 +26707,14 @@ function restoreTabbar(data){
         tabbar.addOption(option, false); 
     });
 
-    
+  
     if (select){
+  
         tabbar.setValue(select);
 
+        _layout_tabbarClick("onBeforeTabClick", select);
+        _layout_tabbarClick("onAfterTabClick" , select);
+ 
     } else {
         const options = tabbar.config.options;
         const index   = options.length - 1;
@@ -26575,9 +26747,7 @@ function isSelectedOption(id){
 
 
 
-function _layout_tabbarClick(ev, id){
-    $$("globalTabbar").callEvent(ev, [ id ]);
-}
+
 function createTabbar(){
     const tabbar = {
         view    : "tabbar",
@@ -26585,6 +26755,7 @@ function createTabbar(){
         css     : "global-tabbar",
         value   : "container",
         tooltip : "#value#",
+      //  addedTabs:0,
         optionWidth: 300,
         multiview  : true, 
         options : [
@@ -26611,21 +26782,20 @@ function createTabbar(){
                 _layout_createConfigSpace(id);
 
                 setStateToStorage(id);
-          
+        
             },
 
 
-
-            onAfterRender:webix.once(function(id){
+            setStorageData:function(){
                 const data  = webix.storage.local.get("tabbar");
-            
+               
                 if (data && data.tabs.length){
                     restoreTabbar(data);
                     
                 } else {
                     addNewTab();
                 }
-            }),
+            },
 
             onBeforeTabClose: function(id){
              
@@ -26665,6 +26835,11 @@ function createTabbar(){
                 return false;
             },
 
+            // onOptionAdd:function(){
+            //     this.config.addedTabs ++; 
+
+            // },
+
             onOptionRemove:function(removedTab, lastTab){
                 mediator.tabs.removeTab(lastTab);
 
@@ -26686,7 +26861,7 @@ function createTabbar(){
 
 
 ;// CONCATENATED MODULE: ./src/js/app.js
-console.log("expa 1.0.73"); 
+console.log("expa 1.0.74"); 
 
 
 
@@ -26797,9 +26972,10 @@ const mainLayout = {
 try{
 
     webix.ready (function(){
-
+ 
         protoUIEdittree();
-
+  
+ 
         webix.ui({
             view    : "scrollview",
             type    : "clean",
@@ -26820,7 +26996,7 @@ try{
 
 
       
-
+    
         setUserPrefs            ();
         resizeAdaptive          ();
         setRouterStart          ();

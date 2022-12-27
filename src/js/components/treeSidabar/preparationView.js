@@ -14,7 +14,7 @@ async function getSingleTreeItem(data) {
 }
 
 function preparationView(id){
-   
+  
     mediator.header    .defaultState();
     mediator.treeEdit  .defaultState(id);
     mediator.dashboards.defaultState();

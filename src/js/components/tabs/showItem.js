@@ -48,20 +48,22 @@ function showContent(selectElem, id){
 }
 
 function selectTree(id, isOtherTab){
+   
     const tree = $$("tree");
     if ( tree.exists(id) && isOtherTab){
         tree.config.isTabSelect = true;
         tree.select(id);
+       // tree.showItem(id);
     }
+
+    // if parent is closed ??
 }
 
 function setLink(id){
 
     const path = "tree/" + id;
     
-    Backbone.history.navigate(
-        path, { trigger : true }
-    );
+    Backbone.history.navigate(path);
  
 }
 
@@ -71,9 +73,8 @@ function setEmptyState(){
     Action.showItem ($$("webix__none-content"));
 }
 
-
 function showTreeItem(config, isOtherTab, isOtherView){
-
+     
     if (isOtherView){
         Backbone.history.navigate("/" + config.view, { trigger : true });
     } else {

@@ -76,7 +76,7 @@ function returnLostData(){
 
         const data = webix.storage.local.get("editFormTempData");
      
-       
+        console.log(data,'rest')
         if (data){
             prop          = $$("editTableFormProperty");
             form          = $$("table-editForm");

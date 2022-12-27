@@ -3,16 +3,14 @@ import { getItemId, getTable }   from '../../../../blocks/commonFunctions.js';
 
 let interval;
 const intervals = [];
-function clear(){
-    clearInterval(interval); 
-}
+ 
 function setIntervalConfig(type, counter){
     interval = setInterval(
         () => {
         
             const table         = getTable();
             const isAutoRefresh = table.config.autorefresh;
-            console.log(isAutoRefresh, getItemId(), "isAutoRefresh")
+             
             if (isAutoRefresh){
                 if( type == "dbtable" ){
                     getItemData ("table");

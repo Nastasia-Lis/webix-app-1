@@ -181,6 +181,7 @@ async function getMenuChilds(uid) {
 
 
 function loadFields(selectId, treeItem){
+ 
     const uid = webix.uid();
   
     tree = $$("tree");
