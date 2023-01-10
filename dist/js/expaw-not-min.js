@@ -125,10 +125,10 @@ function setLogPref(){
     const form = "userprefsWorkspaceForm";
 
     const userprefsWorkspace = webix.storage.local.get(form);
- 
+
     if (userprefsWorkspace){
         const option = userprefsWorkspace.logBlockOpt;
-
+    
         if (option){
             if (option == "2"){
                 setLogState(1);
@@ -210,7 +210,7 @@ function setDataToStorage(data, user){
 
 
 async function setUserPrefs (userData){
-    
+  
     let user = getUserDataStorage();
 
     if (!user){
@@ -220,27 +220,22 @@ async function setUserPrefs (userData){
  
     const path = "/init/default/api/userprefs/";
     const userprefsData = webix.ajax(path);
-
+  
     userprefsData.then( function (data) {
+  
         let user = webix.storage.local.get("user");
         data     = data.json().content;
 
         if (userData){
             user = userData;
         }
-   
+ 
         setDataToStorage(data, user);
-     
-        //moveUser        ();
-
-
-       // tabbarSelect();
-       
-    
-        $$("globalTabbar").callEvent("setStorageData", [ '1' ]);
-     
         setLogPref ();
-   
+
+  
+        $$("globalTabbar").callEvent("setStorageData", [ '1' ]);
+        
     });
 
     userprefsData.fail(function(err){
@@ -856,7 +851,7 @@ async function createLogMessage(srcTable) {
     let name;
 
     if (srcTable == "version"){
-        name = 'Expa v1.0.74';
+        name = 'Expa v1.0.75';
 
     } else if (srcTable == "cp"){
         name = 'Смена пароля';
@@ -7178,7 +7173,7 @@ function createChart(dataCharts){
         //     "onDblClick": {}
         // };
      
-      // dataCharts.push(table)
+   //   dataCharts.push(table)
         //dataCharts.push(res)
       
         dataCharts.forEach(function(el){
@@ -8941,10 +8936,6 @@ function setVals(values){
     prop.setValues(values);
     returnLostData_form.setDirty(true);
 
-    logBlock_setLogValue(
-        "success", 
-        "Данные редактора восстановлены"
-    );
 }
 
 function isFilterParamExists(){
@@ -8994,7 +8985,6 @@ function returnLostData(){
 
         const data = webix.storage.local.get("editFormTempData");
      
-        console.log(data,'rest')
         if (data){
             prop          = $$("editTableFormProperty");
             returnLostData_form          = $$("table-editForm");
@@ -11857,6 +11847,7 @@ let createCols_table;
 let createCols_field;
 
 function refreshCols(columnsData){
+ 
     if(createCols_table){
         createCols_table.refreshColumns(columnsData);
     }
@@ -11996,11 +11987,14 @@ function createCols_createField(type){
     }   
 }
 
+
 function createTableCols (idsParam, idCurrTable){
  
     const data          = GetFields.item(idsParam);
     const dataFields    = data.fields;
     const colsName      = Object.keys(data.fields);
+
+  
     const columnsData   = [];
     
     createCols_table               = $$(idCurrTable);
@@ -12018,13 +12012,14 @@ function createTableCols (idsParam, idCurrTable){
             if(createCols_field.id == "id"){
                 userPrefsId();
             }
-           
+      
             if (createCols_field.label){
                 columnsData.push(createCols_field);
             }
 
         });
 
+        
         refreshCols(columnsData);
         columnsWidth_setUserPrefs(createCols_table, idsParam);
 
@@ -13035,8 +13030,6 @@ async function loadFields(){
 async function generateTable (showExists){ 
  
     let keys;
-
-    console.log(showExists, 'showExists')
     
     if (!showExists){
         keys = await loadFields();
@@ -15382,6 +15375,7 @@ const propertyEditForm = {
         },
 
         onNewValues:function(value, editor){
+       
             editingEnd (editor.id, value);
             createTempData(this);
         },
@@ -15391,15 +15385,15 @@ const propertyEditForm = {
         },
 
         onBeforeRender:function (){
-
+  
+          
             const size = this.config.elements.length * 28;
-            
+  
             if (size && this.$height !== size){
                 this.define("height", size);
                 this.resize();
             }
-    
-          
+   
         },
 
         onItemClick:function(id){
@@ -15726,6 +15720,7 @@ const editForm = {
     ],
     on:{
         onViewShow: webix.once(function(){
+            
             this.config.width = 350;
             this.resize();
             mediator.setForm(this);
@@ -18995,10 +18990,49 @@ function returnPropElem(el){
 
     return propElem;
 }
+function findContentHeight(arr){
+    let result = 0;
+    if (arr){
+     
+        arr.forEach(function(el, i){
+            const height = el.$height;
+            if (height){
+                result += height;
+            }
+      
+        });
+    }
+  
+ 
+    return result;
+}
+
+function findHeight(elem){
+    if (elem && elem.isVisible()){
+        return elem.$height;
+    }
+}
+ 
+
+function setEditFormSize(){
+    const form   = $$("table-editForm");
+    const childs = form.getChildViews();
+
+    const contentHeight = findContentHeight(childs);
+    
+    const containerHeight = findHeight($$("container"));
+
+    if(contentHeight < containerHeight){
+        const scrollBugSpace = 2;
+        form.config.height   = containerHeight - scrollBugSpace;
+        form.resize();
+    }
+
+}
 
 
 function createProperty (parentElement) {
- 
+
     const property         = $$(parentElement);
     const columnsData      = $$("table").getColumns(true);
     const elems            = property.elements;
@@ -19031,6 +19065,9 @@ function createProperty (parentElement) {
                 $$("table-delBtnId").enable();
             }
         }
+
+
+        setEditFormSize();
     } catch (err){
         errors_setFunctionError(
             err, 
@@ -19130,7 +19167,7 @@ function setPropertyWidth(prop){
 function adaptiveView (editForm){
     try {
         const container = $$("container");
-
+        
         if (container.$width < 850){
             Action.hideItem($$("tree"));
 
@@ -19197,15 +19234,20 @@ function defPropertyState(){
 
 
 function editTableDefState(clearDirty){
-
+    const form = $$("table-editForm");
+    
     if (clearDirty){
         setState_unsetDirtyProp();   
     } else {
-        $$("table-editForm").setDirty(false); 
+        if (form){
+            form.setDirty(false);   
+        }
+
     }
  
+
     
-    Action.hideItem   ($$("table-editForm"    ));
+    Action.hideItem   ($$(form                ));
     Action.hideItem   ($$("tablePropBtnsSpace"));
     Action.hideItem   ($$("table-saveNewBtn"  ));
     Action.hideItem   ($$("table-saveBtn"     ));
@@ -20072,6 +20114,7 @@ const onFuncTable = {
     },
 
     onBeforeSelect:function(selection){
+     
         const table     = $$("table");
         const nextItem   = selection.id;
 
@@ -20152,7 +20195,6 @@ const onFuncTable = {
  
         try {
             this.hideOverlay();
-
             defaultStateForm ();
         } catch (err){
             errors_setFunctionError(
@@ -20676,13 +20718,12 @@ class Tables {
     }
 
     showExists(id){
-        console.log('showExists')
         const table = commonFunctions_getTable().config.id;
         createTable(table, id, true);
     }
 
     load(id){
-        console.log('load')
+
        // const table = getTable().config.id;
         createTable("table", id);
     }
@@ -23576,6 +23617,7 @@ function logBtnClick(id){
 
 
 function onChangeLogBtn(newValue){
+
     const list      = $$("logBlock-list");
     const logLayout = $$("logLayout");
     const logBtn    = $$("webix_log-btn");
@@ -23597,6 +23639,7 @@ function onChangeLogBtn(newValue){
         list.showItem(lastItemList);
 
     } else {
+       
         setState (5, "icon-eye");
     }
 }
@@ -23615,6 +23658,7 @@ const logBtn = new Button({
     },
     onFunc   :{
         onChange:function(newValue){
+        
             onChangeLogBtn(newValue);
         },
         setStorageData:function(){
@@ -25894,13 +25938,12 @@ async function saveLocalStorage() {
   
         if (window.location.pathname !== "/index.html/content"){
  
-
+   
             const restore = {
                 editProp :  webix.storage.local.get("editFormTempData"),
                 filter   :  webix.storage.local.get("currFilterState")
             };
 
-            console.log(restore)
          //   saveCurrData(data, "userLocationHref", userLocation, owner);
             saveCurrData(data, "userRestoreData" , restore , owner);
         }
@@ -26702,19 +26745,22 @@ function restoreTabbar(data){
     const tabbar = $$("globalTabbar");
     const tabs   = data.tabs;
     const select = data.select;
- 
-    tabs.forEach(function(option){
-        tabbar.addOption(option, false); 
-    });
 
+    if (tabs){
+        tabs.forEach(function(option){
+            tabbar.addOption(option, false); 
+        });
+    }
+   
   
     if (select){
-  
+    
         tabbar.setValue(select);
-
-        _layout_tabbarClick("onBeforeTabClick", select);
-        _layout_tabbarClick("onAfterTabClick" , select);
  
+        _layout_tabbarClick("onBeforeTabClick", select);
+   
+        _layout_tabbarClick("onAfterTabClick" , select);
+  
     } else {
         const options = tabbar.config.options;
         const index   = options.length - 1;
@@ -26767,12 +26813,15 @@ function createTabbar(){
         
                 const clearDirty = false;
                 mediator.tables.defaultState("edit", clearDirty);
+                
                 mediator.tables.defaultState("filter");
-
+                
                 mediator.dashboards.defaultState();
+               
                 mediator.forms.defaultState();
 
                 prevValue = this.getValue();
+         
             },
 
             onAfterTabClick:function(id){
@@ -26788,10 +26837,12 @@ function createTabbar(){
 
             setStorageData:function(){
                 const data  = webix.storage.local.get("tabbar");
-               
+          
+                
                 if (data && data.tabs.length){
+                 
                     restoreTabbar(data);
-                    
+                  
                 } else {
                     addNewTab();
                 }
@@ -26861,7 +26912,7 @@ function createTabbar(){
 
 
 ;// CONCATENATED MODULE: ./src/js/app.js
-console.log("expa 1.0.74"); 
+console.log("expa 1.0.75"); 
 
 
 

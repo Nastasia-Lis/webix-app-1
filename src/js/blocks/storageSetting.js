@@ -121,10 +121,10 @@ function setLogPref(){
     const form = "userprefsWorkspaceForm";
 
     const userprefsWorkspace = webix.storage.local.get(form);
- 
+
     if (userprefsWorkspace){
         const option = userprefsWorkspace.logBlockOpt;
-
+    
         if (option){
             if (option == "2"){
                 setLogState(1);
@@ -206,7 +206,7 @@ function setDataToStorage(data, user){
 
 
 async function setUserPrefs (userData){
-    
+  
     let user = getUserDataStorage();
 
     if (!user){
@@ -216,27 +216,22 @@ async function setUserPrefs (userData){
  
     const path = "/init/default/api/userprefs/";
     const userprefsData = webix.ajax(path);
-
+  
     userprefsData.then( function (data) {
+  
         let user = webix.storage.local.get("user");
         data     = data.json().content;
 
         if (userData){
             user = userData;
         }
-   
+ 
         setDataToStorage(data, user);
-     
-        //moveUser        ();
-
-
-       // tabbarSelect();
-       
-    
-        $$("globalTabbar").callEvent("setStorageData", [ '1' ]);
-     
         setLogPref ();
-   
+
+  
+        $$("globalTabbar").callEvent("setStorageData", [ '1' ]);
+        
     });
 
     userprefsData.fail(function(err){

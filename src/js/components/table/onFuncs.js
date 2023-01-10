@@ -85,6 +85,7 @@ const onFuncTable = {
     },
 
     onBeforeSelect:function(selection){
+     
         const table     = $$("table");
         const nextItem   = selection.id;
 
@@ -165,7 +166,6 @@ const onFuncTable = {
  
         try {
             this.hideOverlay();
-
             defaultStateForm ();
         } catch (err){
             setFunctionError(

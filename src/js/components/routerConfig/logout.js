@@ -157,13 +157,12 @@ async function saveLocalStorage() {
   
         if (window.location.pathname !== "/index.html/content"){
  
-
+   
             const restore = {
                 editProp :  webix.storage.local.get("editFormTempData"),
                 filter   :  webix.storage.local.get("currFilterState")
             };
 
-            console.log(restore)
          //   saveCurrData(data, "userLocationHref", userLocation, owner);
             saveCurrData(data, "userRestoreData" , restore , owner);
         }

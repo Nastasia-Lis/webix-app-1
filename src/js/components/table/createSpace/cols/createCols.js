@@ -12,6 +12,7 @@ let table;
 let field;
 
 function refreshCols(columnsData){
+ 
     if(table){
         table.refreshColumns(columnsData);
     }
@@ -151,11 +152,14 @@ function createField(type){
     }   
 }
 
+
 function createTableCols (idsParam, idCurrTable){
  
     const data          = GetFields.item(idsParam);
     const dataFields    = data.fields;
     const colsName      = Object.keys(data.fields);
+
+  
     const columnsData   = [];
     
     table               = $$(idCurrTable);
@@ -173,13 +177,14 @@ function createTableCols (idsParam, idCurrTable){
             if(field.id == "id"){
                 userPrefsId();
             }
-           
+      
             if (field.label){
                 columnsData.push(field);
             }
 
         });
 
+        
         refreshCols(columnsData);
         setUserPrefs(table, idsParam);
 

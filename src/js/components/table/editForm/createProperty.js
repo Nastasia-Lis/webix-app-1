@@ -192,10 +192,49 @@ function returnPropElem(el){
 
     return propElem;
 }
+function findContentHeight(arr){
+    let result = 0;
+    if (arr){
+     
+        arr.forEach(function(el, i){
+            const height = el.$height;
+            if (height){
+                result += height;
+            }
+      
+        });
+    }
+  
+ 
+    return result;
+}
+
+function findHeight(elem){
+    if (elem && elem.isVisible()){
+        return elem.$height;
+    }
+}
+ 
+
+function setEditFormSize(){
+    const form   = $$("table-editForm");
+    const childs = form.getChildViews();
+
+    const contentHeight = findContentHeight(childs);
+    
+    const containerHeight = findHeight($$("container"));
+
+    if(contentHeight < containerHeight){
+        const scrollBugSpace = 2;
+        form.config.height   = containerHeight - scrollBugSpace;
+        form.resize();
+    }
+
+}
 
 
 function createProperty (parentElement) {
- 
+
     const property         = $$(parentElement);
     const columnsData      = $$("table").getColumns(true);
     const elems            = property.elements;
@@ -228,6 +267,9 @@ function createProperty (parentElement) {
                 $$("table-delBtnId").enable();
             }
         }
+
+
+        setEditFormSize();
     } catch (err){
         setFunctionError(
             err, 

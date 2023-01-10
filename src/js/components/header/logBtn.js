@@ -13,6 +13,7 @@ function logBtnClick(id){
 
 
 function onChangeLogBtn(newValue){
+
     const list      = $$("logBlock-list");
     const logLayout = $$("logLayout");
     const logBtn    = $$("webix_log-btn");
@@ -34,6 +35,7 @@ function onChangeLogBtn(newValue){
         list.showItem(lastItemList);
 
     } else {
+       
         setState (5, "icon-eye");
     }
 }
@@ -52,6 +54,7 @@ const logBtn = new Button({
     },
     onFunc   :{
         onChange:function(newValue){
+        
             onChangeLogBtn(newValue);
         },
         setStorageData:function(){

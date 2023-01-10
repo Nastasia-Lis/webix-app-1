@@ -65,19 +65,22 @@ function restoreTabbar(data){
     const tabbar = $$("globalTabbar");
     const tabs   = data.tabs;
     const select = data.select;
- 
-    tabs.forEach(function(option){
-        tabbar.addOption(option, false); 
-    });
 
+    if (tabs){
+        tabs.forEach(function(option){
+            tabbar.addOption(option, false); 
+        });
+    }
+   
   
     if (select){
-  
+    
         tabbar.setValue(select);
-
-        tabbarClick("onBeforeTabClick", select);
-        tabbarClick("onAfterTabClick" , select);
  
+        tabbarClick("onBeforeTabClick", select);
+   
+        tabbarClick("onAfterTabClick" , select);
+  
     } else {
         const options = tabbar.config.options;
         const index   = options.length - 1;
@@ -130,12 +133,15 @@ function createTabbar(){
         
                 const clearDirty = false;
                 mediator.tables     .defaultState("edit", clearDirty);
+                
                 mediator.tables     .defaultState("filter");
-
+                
                 mediator.dashboards .defaultState();
+               
                 mediator.forms      .defaultState();
 
                 prevValue = this.getValue();
+         
             },
 
             onAfterTabClick:function(id){
@@ -151,10 +157,12 @@ function createTabbar(){
 
             setStorageData:function(){
                 const data  = webix.storage.local.get("tabbar");
-               
+          
+                
                 if (data && data.tabs.length){
+                 
                     restoreTabbar(data);
-                    
+                  
                 } else {
                     addNewTab();
                 }

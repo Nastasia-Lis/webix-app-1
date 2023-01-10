@@ -77,8 +77,6 @@ async function loadFields(){
 async function generateTable (showExists){ 
  
     let keys;
-
-    console.log(showExists, 'showExists')
     
     if (!showExists){
         keys = await loadFields();

@@ -202,6 +202,7 @@ const propertyEditForm = {
         },
 
         onNewValues:function(value, editor){
+       
             editingEnd (editor.id, value);
             createTempData(this);
         },
@@ -211,15 +212,15 @@ const propertyEditForm = {
         },
 
         onBeforeRender:function (){
-
+  
+          
             const size = this.config.elements.length * 28;
-            
+  
             if (size && this.$height !== size){
                 this.define("height", size);
                 this.resize();
             }
-    
-          
+   
         },
 
         onItemClick:function(id){

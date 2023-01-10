@@ -86,7 +86,7 @@ function setPropertyWidth(prop){
 function adaptiveView (editForm){
     try {
         const container = $$("container");
-
+        
         if (container.$width < 850){
             Action.hideItem($$("tree"));
 
@@ -153,15 +153,20 @@ function defPropertyState(){
 
 
 function editTableDefState(clearDirty){
-
+    const form = $$("table-editForm");
+    
     if (clearDirty){
         unsetDirtyProp();   
     } else {
-        $$("table-editForm").setDirty(false); 
+        if (form){
+            form.setDirty(false);   
+        }
+
     }
  
+
     
-    Action.hideItem   ($$("table-editForm"    ));
+    Action.hideItem   ($$(form                ));
     Action.hideItem   ($$("tablePropBtnsSpace"));
     Action.hideItem   ($$("table-saveNewBtn"  ));
     Action.hideItem   ($$("table-saveBtn"     ));

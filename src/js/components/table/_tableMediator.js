@@ -64,13 +64,12 @@ class Tables {
     }
 
     showExists(id){
-        console.log('showExists')
         const table = getTable().config.id;
         createTable(table, id, true);
     }
 
     load(id){
-        console.log('load')
+
        // const table = getTable().config.id;
         createTable("table", id);
     }
