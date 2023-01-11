@@ -37,7 +37,7 @@ function createChart(dataCharts){
           { "view":"label", "label":"За сегодня закрыто: 15","minWidth":200,"action":action,"css":{"background-color":"#AAFFAA","text-align":"center"}},
           { "view":"label", "label":"За сегодня в работе: 5","minWidth":200,"action":action,"css":{"background-color":"#AAFFFF","text-align":"center"}},
           { "view":"label", "label":"Всего не закрыто: 130" ,"minWidth":200,"action":action,"css":{"background-color":"#AAFFFF","text-align":"center"}},
-          { "view":"label", "label":"Без цвета: ???"        ,"minWidth":200,"action":action,"css":{"text-align":"center"}},
+          { "view":"label", "label":"Без цвета: ???"        ,"minWidth":200,"action":action,"css":{"text-align":"center"}}
         ]
 
         const res =  
@@ -146,8 +146,8 @@ function createChart(dataCharts){
         //     "onDblClick": {}
         // };
      
-   //   dataCharts.push(table)
-        //dataCharts.push(res)
+        // dataCharts.push(table);
+        // dataCharts.push(res);
       
         dataCharts.forEach(function(el){
           
@@ -172,7 +172,7 @@ function createChart(dataCharts){
                     {template:' ', height:20, css:"dash-delim"},
                     returnHeadline (titleTemplate),
                     {   margin     : 10,
-                        height     : 300,
+                        minHeight  : 300,
                         padding    : 10,
                         borderless : true,
                         rows       : [

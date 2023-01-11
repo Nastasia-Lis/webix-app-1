@@ -841,7 +841,11 @@ function returnName(srcTable){
         });
 
     } catch (err){
-        errors_setFunctionError(err, "logBlock", "findTableName");
+        errors_setFunctionError(
+            err, 
+            "logBlock",
+            "findTableName"
+        );
     }
 
     return name;
@@ -851,7 +855,7 @@ async function createLogMessage(srcTable) {
     let name;
 
     if (srcTable == "version"){
-        name = 'Expa v1.0.75';
+        name = 'Expa v1.0.76';
 
     } else if (srcTable == "cp"){
         name = 'Смена пароля';
@@ -5558,12 +5562,83 @@ function setHeadlineBlock ( idTemplate, title ){
 
 
 
+
+
+
+function returnProp(name){
+    const tabInfo = mediator.tabs.getInfo();
+    return tabInfo[name];
+}
+
+function selectPage(config, id, changeHistory=false){
+    mediator.tabs.setInfo(config, changeHistory);
+    tabbarClick("onBeforeTabClick", id);
+    tabbarClick("onAfterTabClick" , id);
+}
+
+function returnPrevPageConfig(history){
+    if (history && history.length){
+        const lastIndex     = history.length - 1;
+        const modifyHistory = history.slice(0, lastIndex);
+
+        return{ 
+            tree    : history[lastIndex],
+            history : modifyHistory,
+        };
+    }
+
+}
+
+function tabbarClick(ev, id){
+    $$("globalTabbar").callEvent(ev, [ id ]);
+}
+
+
+function returnSelectTabId(){
+    const tabbar   = $$("globalTabbar");
+    return tabbar.getValue();  
+}
+
+function addNextPageConfig(prevPageConfig){
+    const tree = returnProp ("tree");
+    prevPageConfig.nextPage = tree;
+}
+
 function prevBtnClick (){
-    history.back();
+    const tabId          = returnSelectTabId    ();
+    const history        = returnProp           ("history");
+    const prevPageConfig = returnPrevPageConfig (history);
+  
+    if (prevPageConfig){
+        addNextPageConfig(prevPageConfig);
+        selectPage(prevPageConfig, tabId);
+    }
+}
+
+function returnNextPageConfig(nextPage){
+    const history = returnProp("history");
+    return {
+        tree   : nextPage,
+        history: history
+    };
+}
+
+function isNextPageExists(nextPage){
+    if (nextPage){
+        return nextPage;
+    }
 }
 
 function nextBtnClick (){
-    history.forward();
+    const nextPage = returnProp("nextPage");
+
+    if (isNextPageExists(nextPage)){
+        const tabId          = returnSelectTabId   ();
+        const nextPageConfig = returnNextPageConfig(nextPage);
+
+        selectPage(nextPageConfig, tabId, true);
+    }
+
 }   
 
 function createHistoryBtns(){
@@ -7064,7 +7139,7 @@ function createChart(dataCharts){
           { "view":"label", "label":"За сегодня закрыто: 15","minWidth":200,"action":chartsLayout_action,"css":{"background-color":"#AAFFAA","text-align":"center"}},
           { "view":"label", "label":"За сегодня в работе: 5","minWidth":200,"action":chartsLayout_action,"css":{"background-color":"#AAFFFF","text-align":"center"}},
           { "view":"label", "label":"Всего не закрыто: 130" ,"minWidth":200,"action":chartsLayout_action,"css":{"background-color":"#AAFFFF","text-align":"center"}},
-          { "view":"label", "label":"Без цвета: ???"        ,"minWidth":200,"action":chartsLayout_action,"css":{"text-align":"center"}},
+          { "view":"label", "label":"Без цвета: ???"        ,"minWidth":200,"action":chartsLayout_action,"css":{"text-align":"center"}}
         ]
 
         const res =  
@@ -7173,8 +7248,8 @@ function createChart(dataCharts){
         //     "onDblClick": {}
         // };
      
-   //   dataCharts.push(table)
-        //dataCharts.push(res)
+        // dataCharts.push(table);
+        // dataCharts.push(res);
       
         dataCharts.forEach(function(el){
           
@@ -7199,7 +7274,7 @@ function createChart(dataCharts){
                     {template:' ', height:20, css:"dash-delim"},
                     chartsLayout_returnHeadline (titleTemplate),
                     {   margin     : 10,
-                        height     : 300,
+                        minHeight  : 300,
                         padding    : 10,
                         borderless : true,
                         rows       : [
@@ -16619,7 +16694,7 @@ function editFilter (){
 }
 
 
-function tabbarClick (id){
+function tabbar_tabbarClick (id){
 
     if (id =="editFormPopupLib"){
         filterLibrary();  
@@ -16660,7 +16735,7 @@ const tabbar =  {
 
     on:{
         onAfterTabClick: function(id){
-            tabbarClick(id);
+            tabbar_tabbarClick(id);
         }
     }
 };
@@ -22198,14 +22273,28 @@ const visibleIdRadio = {
     ],
 };
 
+const saveHistoryRadio = {
+    view            : "radio",
+    labelPosition   : "top", 
+    label           : "История последнего сеанса", 
+    value           : 2,
+    name            : "saveHistoryOpt", 
+    options         : [
+        {id : 1, value : "Сохранять"   },
+        {id : 2, value : "Не сохранять"}
+    ],
+};
+
 function formOther_returnForm(){
     const elems = [{
         rows: [
             autorefRadio,
-            {height:5},
+            {height:25},
             autorefCounter,
-            {height:5},
+            {height:25},
             visibleIdRadio,
+            {height:25},
+            saveHistoryRadio,
             {}
         ]
     }];
@@ -24659,6 +24748,10 @@ function remove(lastTab){
 
 
 
+ 
+ 
+const TABS_HISTORY  = [];
+const IS_LOGIN      = {}; 
 
 function isOtherViewTab(id){
     const option = $$("globalTabbar").getOption (id);
@@ -24758,6 +24851,65 @@ function hasDirtyForms(){
 function _tabMediator_tabbarClick(ev, id){
     $$("globalTabbar").callEvent(ev, [ id ]);
 }
+
+
+function copyHistory(currHistory){
+    
+    let res = currHistory;
+
+    
+    if (currHistory.length > 4){
+        res = res.slice(1);
+    } 
+
+    return res;
+}
+
+function checkAlreadyExists(history, currLastPage){
+ 
+    const lastIndex = history.length - 1;
+    const lastElem  = history[lastIndex];
+ 
+    if (lastElem && lastElem.field == currLastPage.field){
+        return true;
+    }
+ 
+}
+
+function addLastPage(treeData, history){
+    const lastPage = treeData;
+ 
+    if (treeData && !treeData.none){ // isn't empty page
+
+        const alreadyExists = checkAlreadyExists(history, lastPage);  //already exists in history
+       
+        if (!alreadyExists){
+            mediator.tabs.addTabHistory(lastPage);
+            history.push               (lastPage);  
+        }
+        
+    } 
+    
+    return history;
+}
+
+
+function returnHistory(tabbar, tabIndex){
+    const conf        = tabbar.config.options[tabIndex].info;
+    const currHistory = conf.history;
+
+    let history     = [];
+   
+    if (currHistory){
+        history = copyHistory(currHistory); 
+    } 
+
+    history = addLastPage(conf.tree, history);
+
+    return history;
+}
+
+
 class Tabs {
     addTab(isNull, open = true){
         return add(isNull, open);
@@ -24812,11 +24964,12 @@ class Tabs {
         }
     }
 
-    setInfo(values){
+    setInfo(values, addHistory=true){
   
-     
+
         const tabbar = $$("globalTabbar");
-        let tabId = tabbar.getValue();
+        let tabId    = tabbar.getValue();
+    
 
         if ( isOtherViewTab(tabId)){
             createTab();
@@ -24827,6 +24980,12 @@ class Tabs {
  
         if (tabIndex > -1){
 
+            if (addHistory){
+                const history  = returnHistory(tabbar, tabIndex);
+                values.history = history;
+                
+            }
+           
             tabbar.config.options[tabIndex].info = values;
             tabbar.refresh();
 
@@ -24885,6 +25044,56 @@ class Tabs {
         _tabMediator_tabbarClick("onBeforeTabClick", newTabId);
         _tabMediator_tabbarClick("onAfterTabClick" , newTabId);
     }
+
+    getTabHistory(){
+        return TABS_HISTORY;
+    }
+
+    saveTabHistory(){
+        const sentObj = {
+            history : mediator.tabs.getTabHistory()
+        };
+    
+        webix.storage.local.put("tabsHistory", sentObj);
+    }
+
+    addTabHistory(page){
+        if (TABS_HISTORY.length > 10){
+            TABS_HISTORY.shift();
+        }
+        TABS_HISTORY.push(page);
+
+        this.saveTabHistory();
+    }
+
+    removeTabHistoryPage(index){
+        TABS_HISTORY.splice(index,  1);
+
+        this.saveTabHistory();
+    }
+
+    clearTabHistory(){
+        TABS_HISTORY.length = 0;
+
+        this.saveTabHistory();
+    }
+
+
+
+    getLoginPref(){
+        return IS_LOGIN.success;
+    }
+
+    enableLoginPref(){
+        IS_LOGIN.success = true;
+    }
+
+    
+    disableLoginPref(){
+        IS_LOGIN.success = false;
+    }
+
+
 }
 
 
@@ -25119,7 +25328,7 @@ const boxes = (/* unused pure expression or super */ null && ([     // id ком
 
 // editForm, cp, up
 
-const _mediator_forms = []; // формы
+const _mediator_forms    = []; // формы
 
 
 const mediator = {
@@ -25303,12 +25512,8 @@ function setUserData(){
     );
 }
 
-// function selectTab(){
-//     const tabbarData = webix.storage.local.get("tabbar"); 
-//     if (tabbarData && tabbarData.select){
-//         console.log(tabbarData.select)
-//     }
-// }
+
+
 
 
 async function createContent (){
@@ -25328,11 +25533,13 @@ async function createContent (){
     
         getMenuTree();
  
-
+         
     } else {
         Backbone.history.navigate("/", { trigger:true});
         window.location.reload();
     }
+
+  
 
 
 }
@@ -25922,6 +26129,14 @@ async function saveCurrData(servData, name, prefs, owner){
 const userLocation = {};
 const logout_restore      = {};
 
+function saveHistoryTrue(){
+    const tabbarData  = webix.storage.local.get("userprefsOtherForm");
+
+    if (tabbarData && tabbarData.saveHistoryOpt == "1"){
+        return true;
+    }
+}
+
 async function saveLocalStorage() {
 
     const owner  = await getOwner();
@@ -25932,13 +26147,18 @@ async function saveLocalStorage() {
     await userprefsData.then(function(data){
         data = data.json().content;
 
-        const tabbarData = webix.storage.local.get("tabbar");
+        const tabbarData  = webix.storage.local.get("tabbar");
+        saveCurrData(data, "tabbar"     , tabbarData , owner);
 
-        saveCurrData(data, "tabbar", tabbarData, owner);
+        console.log(saveHistoryTrue(), 'saveHistoryTrue()')
+        if (saveHistoryTrue()){
+            const tabsHistory = webix.storage.local.get("tabsHistory");
+            saveCurrData(data, "tabsHistory", tabsHistory, owner);
+        }
+        
   
         if (window.location.pathname !== "/index.html/content"){
- 
-   
+
             const restore = {
                 editProp :  webix.storage.local.get("editFormTempData"),
                 filter   :  webix.storage.local.get("currFilterState")
@@ -26081,6 +26301,7 @@ function router (){
 
 
 
+
 function login_createSentObj(){
     const loginData = {};
     const form      = $$("formAuth");
@@ -26102,6 +26323,7 @@ function login_createSentObj(){
 }
 
 
+
 function postLoginData(){
     const loginData = login_createSentObj();
     const form      = $$("formAuth");
@@ -26119,6 +26341,8 @@ function postLoginData(){
                 form.clear();
             }
 
+            mediator.tabs.enableLoginPref(); // для загрузки истории из userprefs
+            
             Backbone.history.navigate("content", { trigger:true});
             window.location.reload();
  
@@ -26677,12 +26901,292 @@ function createAddBtn(){
 
 
 
+;// CONCATENATED MODULE: ./src/js/components/tabs/tabsHistory.js
+
+
+
+
+
+
+
+
+
+
+
+function getSelectedOption(){
+    const radio      = $$("tabsHistoryList");
+    const selectedId = radio.getValue();
+    return radio.getOption(selectedId);
+}
+
+
+function tabsHistory_returnEmptyOption(){
+    return {   
+        id       : "radioNoneContent", 
+        disabled : true, 
+        value    : "История пуста"
+    };
+}
+
+function returnItem(config, index){
+    
+    const item = GetFields.item(config.field);
+    const name = item.plural ? item.plural : item.singular;
+  
+    return {
+        id    : config.field,
+        value : name,
+        config: config,
+        index : index
+    };
+   
+}
+
+function returnListItems(){
+    const history = mediator.tabs.getTabHistory();
+    const items = [];
+
+    if (history.length){
+     
+        history.forEach(function(el, i){
+            items.push(returnItem(el, i));
+        });
+
+    } else {
+        items.push(tabsHistory_returnEmptyOption());
+    }
+
+    return items;
+}
+
+
+function returnRadio(){
+    const radio = {
+        view     : "radio", 
+        id       : "tabsHistoryList",
+        vertical : true,
+        options  : returnListItems(),
+        on       : {
+            onChange:function(newValue, oldValue){
+                if (newValue !== oldValue){
+                    Action.enableItem($$("tabsHistoryBtn"));
+                }
+            }
+        }
+    };
+
+    return radio;
+}
+
+function returnRadioList(){
+    const container = {
+        view       : "scrollview",
+        scroll     : "y",
+        maxHeight  : 300,
+        borderless : true,
+        body       : {
+            rows: [
+                returnRadio()
+            ]
+        }
+    };
+
+    return container;
+}
+
+
+function openLink(){
+    const option = getSelectedOption();
+ 
+    const createConfig = {
+        tree: option.config
+    };
+
+    mediator.tabs.openInNewTab(createConfig);
+
+    Action.destructItem($$("popupTabsHistory"));
+}
+
+function returnOpenBtn(){
+    const btn = new Button({
+        config   : {
+            id       : "tabsHistoryBtn",
+            hotkey   : "Ctrl+Shift+Space",
+            value    : "Открыть ссылку", 
+            disabled : true,
+            click    : function(){
+                openLink();
+            },
+        },
+        titleAttribute : "Открыть ссылку"
+    
+       
+    }).maxView("primary");
+
+    return btn;
+}
+
+function returnSuccessNotify(text){
+    logBlock_setLogValue ("succcess", text, '"expa'); 
+}
+
+
+
+function clearAllClick(){
+
+    modalBox("История будет очищена полностью", 
+        "Вы уверены?", 
+        ["Отмена", "Продолжить"]
+    )
+    .then(function (result){
+        if (result == 1){
+            mediator.tabs.clearTabHistory();
+            Action.destructItem($$("popupTabsHistory"));
+            returnSuccessNotify("История успешно очищена");
+        }
+
+    });
+
+}
+
+function tabsHistory_removeOptionState (option){
+    const radio = $$("tabsHistoryList");
+    try{
+
+        option.value = option.value + " (запись удалена)";
+        radio.refresh();
+        
+        radio.disableOption(option.id);
+
+    } catch (err){
+        errors_setFunctionError(
+            err, 
+            "tabs / tabsHistory", 
+            "removeOptionState"
+        );
+    }
+}
+
+function removeItemClick(){
+    const option = getSelectedOption();
+ 
+    if (option){
+        const name = option.value;
+        modalBox("Запись «" + name + "» будет удалена из истории", 
+            "Вы уверены?", 
+            ["Отмена", "Продолжить"]
+        )
+        .then(function (result){
+            if (result == 1){
+                
+                mediator.tabs.removeTabHistoryPage(option.index);
+                tabsHistory_removeOptionState (option);
+                returnSuccessNotify("Запись «" + name + "» удалена из истории");
+            }
+    
+        });
+    } else {
+        webix.message({
+            text :"Запись не выбрана",
+            type :"error", 
+        });
+    }
+ 
+   
+}
+
+
+
+function tabsHistory_returnRemoveBtn(){
+    const removeBtn = new Button({
+
+        config   : {
+            id       : "removeTabsHistory",
+            hotkey   : "Alt+Shift+R",
+            icon     : "icon-trash",
+            popup   : {
+
+                view    : 'contextmenu',
+                css     : "webix_contextmenu",
+                data    : [
+                    { id: 'clearSingle', value: 'Удалить ссылку'   },
+                    { id: 'clearAll',    value: 'Очистить историю' }
+                ],
+                on      : {
+                    onItemClick: function(id){
+                        if (id == "clearAll"){
+                            clearAllClick();
+                        } else if (id == "clearSingle"){
+                            removeItemClick();
+                            // проверить выбрана ли ссылка
+                        }
+     
+                    }
+                }
+            },
+
+        },
+        titleAttribute : "Очистить историю / удалить выбранную ссылку"
+       
+    }).minView("delete");
+
+    return removeBtn;
+}
+
+
+function openHistoryPopup(){
+ 
+    const popup = new Popup({
+        headline : "История",
+        config   : {
+            id    : "popupTabsHistory",
+            width : 500,
+    
+        },
+
+        elements : {
+            rows : [
+                returnRadioList(),
+                {cols:[
+                    returnOpenBtn(),
+                    tabsHistory_returnRemoveBtn()
+                ]}
+            ]
+          
+        }
+    });
+
+    popup.createView ();
+    popup.showPopup  ();
+}
+
+function tabsHistoryBtn(){
+    const btn = new Button({
+        
+        config   : {
+            id       : "historyTabBtn",
+           // hotkey   : "Ctrl+Shift+A",
+            icon     : "icon-file", //wxi-plus
+            click    : function(){
+                openHistoryPopup();
+            },
+        },
+        titleAttribute : "Посмотреть историю посещений"
+    
+       
+    }).transparentView();
+
+    return btn;
+}
+
+
 ;// CONCATENATED MODULE: ./src/js/components/tabs/_layout.js
 
 
 
 
- 
+
+
 
 
 let prevValue;
@@ -26809,6 +27313,21 @@ function createTabbar(){
         ],
         on:{
 
+            onAfterRender:webix.once(function(){
+                console.log(mediator.tabs.getLoginPref())
+                // const data = webix.storage.local.get("tabsHistory"); 
+     
+                // if (data){
+                //     const history = data.history;
+                //     console.log(history)
+                //     history.forEach(function(el){
+                    
+                //         mediator.tabs.addTabHistory(el);
+                //     });
+                // }
+   
+            }),
+
             onBeforeTabClick:function(){
         
                 const clearDirty = false;
@@ -26895,6 +27414,8 @@ function createTabbar(){
                 mediator.tabs.removeTab(lastTab);
 
             },
+
+           
           
         }
      
@@ -26904,6 +27425,7 @@ function createTabbar(){
         cols:[
             createAddBtn(),
             tabbar,
+            tabsHistoryBtn()
         ]
     };
 
@@ -26912,7 +27434,7 @@ function createTabbar(){
 
 
 ;// CONCATENATED MODULE: ./src/js/app.js
-console.log("expa 1.0.75"); 
+console.log("expa 1.0.76"); 
 
 
 

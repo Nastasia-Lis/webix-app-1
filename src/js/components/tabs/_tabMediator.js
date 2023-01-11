@@ -1,8 +1,12 @@
 
 import { add, remove }          from "./actions.js";
 import { GetFields }            from "../../blocks/globalStorage.js";
-import { setFunctionError }     from "../../blocks/errors.js";
+import { setFunctionError}      from "../../blocks/errors.js";
 import { mediator }             from "../../blocks/_mediator.js";
+ 
+ 
+const TABS_HISTORY  = [];
+const IS_LOGIN      = {}; 
 
 function isOtherViewTab(id){
     const option = $$("globalTabbar").getOption (id);
@@ -102,6 +106,65 @@ function hasDirtyForms(){
 function tabbarClick(ev, id){
     $$("globalTabbar").callEvent(ev, [ id ]);
 }
+
+
+function copyHistory(currHistory){
+    
+    let res = currHistory;
+
+    
+    if (currHistory.length > 4){
+        res = res.slice(1);
+    } 
+
+    return res;
+}
+
+function checkAlreadyExists(history, currLastPage){
+ 
+    const lastIndex = history.length - 1;
+    const lastElem  = history[lastIndex];
+ 
+    if (lastElem && lastElem.field == currLastPage.field){
+        return true;
+    }
+ 
+}
+
+function addLastPage(treeData, history){
+    const lastPage = treeData;
+ 
+    if (treeData && !treeData.none){ // isn't empty page
+
+        const alreadyExists = checkAlreadyExists(history, lastPage);  //already exists in history
+       
+        if (!alreadyExists){
+            mediator.tabs.addTabHistory(lastPage);
+            history.push               (lastPage);  
+        }
+        
+    } 
+    
+    return history;
+}
+
+
+function returnHistory(tabbar, tabIndex){
+    const conf        = tabbar.config.options[tabIndex].info;
+    const currHistory = conf.history;
+
+    let history     = [];
+   
+    if (currHistory){
+        history = copyHistory(currHistory); 
+    } 
+
+    history = addLastPage(conf.tree, history);
+
+    return history;
+}
+
+
 class Tabs {
     addTab(isNull, open = true){
         return add(isNull, open);
@@ -156,11 +219,12 @@ class Tabs {
         }
     }
 
-    setInfo(values){
+    setInfo(values, addHistory=true){
   
-     
+
         const tabbar = $$("globalTabbar");
-        let tabId = tabbar.getValue();
+        let tabId    = tabbar.getValue();
+    
 
         if ( isOtherViewTab(tabId)){
             createTab();
@@ -171,6 +235,12 @@ class Tabs {
  
         if (tabIndex > -1){
 
+            if (addHistory){
+                const history  = returnHistory(tabbar, tabIndex);
+                values.history = history;
+                
+            }
+           
             tabbar.config.options[tabIndex].info = values;
             tabbar.refresh();
 
@@ -229,6 +299,56 @@ class Tabs {
         tabbarClick("onBeforeTabClick", newTabId);
         tabbarClick("onAfterTabClick" , newTabId);
     }
+
+    getTabHistory(){
+        return TABS_HISTORY;
+    }
+
+    saveTabHistory(){
+        const sentObj = {
+            history : mediator.tabs.getTabHistory()
+        };
+    
+        webix.storage.local.put("tabsHistory", sentObj);
+    }
+
+    addTabHistory(page){
+        if (TABS_HISTORY.length > 10){
+            TABS_HISTORY.shift();
+        }
+        TABS_HISTORY.push(page);
+
+        this.saveTabHistory();
+    }
+
+    removeTabHistoryPage(index){
+        TABS_HISTORY.splice(index,  1);
+
+        this.saveTabHistory();
+    }
+
+    clearTabHistory(){
+        TABS_HISTORY.length = 0;
+
+        this.saveTabHistory();
+    }
+
+
+
+    getLoginPref(){
+        return IS_LOGIN.success;
+    }
+
+    enableLoginPref(){
+        IS_LOGIN.success = true;
+    }
+
+    
+    disableLoginPref(){
+        IS_LOGIN.success = false;
+    }
+
+
 }
 
 export {

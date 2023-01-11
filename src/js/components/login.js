@@ -1,4 +1,5 @@
-import { router }              from "./routerConfig/_router.js";
+import { router }   from "./routerConfig/_router.js";
+import { mediator } from "../blocks/_mediator.js";
 
 
 function createSentObj(){
@@ -22,6 +23,7 @@ function createSentObj(){
 }
 
 
+
 function postLoginData(){
     const loginData = createSentObj();
     const form      = $$("formAuth");
@@ -39,6 +41,8 @@ function postLoginData(){
                 form.clear();
             }
 
+            mediator.tabs.enableLoginPref(); // для загрузки истории из userprefs
+            
             Backbone.history.navigate("content", { trigger:true});
             window.location.reload();
  

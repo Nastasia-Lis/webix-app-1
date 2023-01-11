@@ -94,7 +94,11 @@ function returnName(srcTable){
         });
 
     } catch (err){
-        setFunctionError(err, "logBlock", "findTableName");
+        setFunctionError(
+            err, 
+            "logBlock",
+            "findTableName"
+        );
     }
 
     return name;
@@ -104,7 +108,7 @@ async function createLogMessage(srcTable) {
     let name;
 
     if (srcTable == "version"){
-        name = 'Expa v1.0.75';
+        name = 'Expa v1.0.76';
 
     } else if (srcTable == "cp"){
         name = 'Смена пароля';

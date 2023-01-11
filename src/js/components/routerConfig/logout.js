@@ -141,6 +141,14 @@ async function saveCurrData(servData, name, prefs, owner){
 const userLocation = {};
 const restore      = {};
 
+function saveHistoryTrue(){
+    const tabbarData  = webix.storage.local.get("userprefsOtherForm");
+
+    if (tabbarData && tabbarData.saveHistoryOpt == "1"){
+        return true;
+    }
+}
+
 async function saveLocalStorage() {
 
     const owner  = await getOwner();
@@ -151,13 +159,18 @@ async function saveLocalStorage() {
     await userprefsData.then(function(data){
         data = data.json().content;
 
-        const tabbarData = webix.storage.local.get("tabbar");
+        const tabbarData  = webix.storage.local.get("tabbar");
+        saveCurrData(data, "tabbar"     , tabbarData , owner);
 
-        saveCurrData(data, "tabbar", tabbarData, owner);
+        console.log(saveHistoryTrue(), 'saveHistoryTrue()')
+        if (saveHistoryTrue()){
+            const tabsHistory = webix.storage.local.get("tabsHistory");
+            saveCurrData(data, "tabsHistory", tabsHistory, owner);
+        }
+        
   
         if (window.location.pathname !== "/index.html/content"){
- 
-   
+
             const restore = {
                 editProp :  webix.storage.local.get("editFormTempData"),
                 filter   :  webix.storage.local.get("currFilterState")

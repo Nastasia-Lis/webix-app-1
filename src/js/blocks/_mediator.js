@@ -35,7 +35,7 @@ const boxes = [     // id компонентов с модальными окн�
 
 // editForm, cp, up
 
-const forms = []; // формы
+const forms    = []; // формы
 
 
 const mediator = {

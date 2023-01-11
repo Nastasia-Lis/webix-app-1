@@ -2,7 +2,8 @@ import { createAddBtn }      from "./logic.js";
 import { mediator }          from "../../blocks/_mediator.js";
 import { restoreTempData }   from "./restoreTempData.js";
 import { showTreeItem }      from "./showItem.js";
- 
+import { tabsHistoryBtn }    from "./tabsHistory.js";
+
 
 
 let prevValue;
@@ -129,6 +130,21 @@ function createTabbar(){
         ],
         on:{
 
+            onAfterRender:webix.once(function(){
+                console.log(mediator.tabs.getLoginPref())
+                // const data = webix.storage.local.get("tabsHistory"); 
+     
+                // if (data){
+                //     const history = data.history;
+                //     console.log(history)
+                //     history.forEach(function(el){
+                    
+                //         mediator.tabs.addTabHistory(el);
+                //     });
+                // }
+   
+            }),
+
             onBeforeTabClick:function(){
         
                 const clearDirty = false;
@@ -215,6 +231,8 @@ function createTabbar(){
                 mediator.tabs.removeTab(lastTab);
 
             },
+
+           
           
         }
      
@@ -224,6 +242,7 @@ function createTabbar(){
         cols:[
             createAddBtn(),
             tabbar,
+            tabsHistoryBtn()
         ]
     };
 

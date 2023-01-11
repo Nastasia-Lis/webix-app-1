@@ -86,14 +86,28 @@ const visibleIdRadio = {
     ],
 };
 
+const saveHistoryRadio = {
+    view            : "radio",
+    labelPosition   : "top", 
+    label           : "История последнего сеанса", 
+    value           : 2,
+    name            : "saveHistoryOpt", 
+    options         : [
+        {id : 1, value : "Сохранять"   },
+        {id : 2, value : "Не сохранять"}
+    ],
+};
+
 function returnForm(){
     const elems = [{
         rows: [
             autorefRadio,
-            {height:5},
+            {height:25},
             autorefCounter,
-            {height:5},
+            {height:25},
             visibleIdRadio,
+            {height:25},
+            saveHistoryRadio,
             {}
         ]
     }];
