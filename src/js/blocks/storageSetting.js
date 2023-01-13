@@ -1,7 +1,7 @@
 import { setAjaxError, setFunctionError } from "./errors.js";
 import { pushUserDataStorage, 
     getUserDataStorage }                  from "./commonFunctions.js";
-
+import { mediator }                       from "./_mediator.js";
 
 function setStorageData (name, value){
     if (typeof(Storage) !== 'undefined') {
@@ -64,8 +64,7 @@ function setRestoreToStorage(name, value){
     if(value){
    
         setStorageData (name, JSON.stringify(value));
-     
-        console.log(   webix.storage.local.get("editFormTempData"))
+    
 
     } 
 }
@@ -179,7 +178,6 @@ function setDataToStorage(data, user){
 
             if (owner == user.id && !isFavPref){
                  
-               // setStorageData (el.name, el.prefs);
 
                 if (name !== "userRestoreData"){
                     setStorageData (el.name, el.prefs);
@@ -188,7 +186,7 @@ function setDataToStorage(data, user){
                     restoreDataToStorage(el.prefs);
                 }
 
-                if (name == "tabbar" || name == "userRestoreData"){
+                if (name == "tabbar" || name == "userRestoreData" || name == "tabsHistory"){
                     deletePrefs(el.id, el);
                 }
             }
@@ -203,6 +201,23 @@ function setDataToStorage(data, user){
     }
 }
 
+function setTabHistory(){
+    const data = webix.storage.local.get("tabsHistory"); 
+ 
+    if (data){
+        const history = data.history;
+        
+        if (history.length){
+            history.forEach(function(el){
+        
+                mediator.tabs.addTabHistory(el);
+            });
+
+            webix.storage.local.remove("tabsHistory");
+        }
+        
+    }
+}
 
 
 async function setUserPrefs (userData){
@@ -227,8 +242,8 @@ async function setUserPrefs (userData){
         }
  
         setDataToStorage(data, user);
-        setLogPref ();
-
+        setLogPref      ();
+        setTabHistory   ();
   
         $$("globalTabbar").callEvent("setStorageData", [ '1' ]);
         

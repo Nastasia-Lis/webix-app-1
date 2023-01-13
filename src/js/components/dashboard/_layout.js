@@ -29,6 +29,7 @@ function dashboardLayout () {
 
                     {cols:[
                         {   id      : "dashboardInfoContainer",
+                            css     : "dash_container",
                             minWidth: 250, 
                             rows    : [
                                 {id : "dash-none-content"}

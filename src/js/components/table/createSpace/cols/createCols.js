@@ -31,6 +31,7 @@ function createReferenceCol (){
             const item   = config.collection.getItem(itemId);
             return item ? item.value : "";
         };
+ 
     }catch (err){
         setFunctionError(
             err, 
@@ -118,6 +119,8 @@ function setFillCol     (dataFields){
 
 
 function setHeaderCol   (){
+
+   // field.header = field["label"] + `<span class="webix_icon wxi-angle-right "> </span>` 
     field.header = field["label"];
 }
 

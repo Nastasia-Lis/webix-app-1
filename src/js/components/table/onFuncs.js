@@ -10,6 +10,8 @@ import { EditForm }          from "./editForm/editFormMediator/editFormClass.js"
 
 import { mediator }          from "../../blocks/_mediator.js";
 
+ 
+
 const logNameFile = "table => onFuncs";
 
 function toEditForm (nextItem) {
@@ -163,7 +165,7 @@ const onFuncTable = {
     },
 
     onAfterLoad:function(){
- 
+    
         try {
             this.hideOverlay();
             defaultStateForm ();
@@ -197,6 +199,77 @@ const onFuncTable = {
     onAfterAdd: function() {
         this.hideOverlay();
     },
+
+    onHeaderClick:function(config){
+        const cols          = this.getColumns();
+        const colId         = config.column;
+        const currColConfig = this.getColumnConfig(colId);
+        const self          = this;
+
+        function resizeColumn(newWidth){
+            self.setColumnWidth(colId, newWidth);
+        }
+        
+        if (cols){
+            const lastIndex = cols.length - 1;
+            let currColIndex;
+
+            cols.forEach(function(col, i){
+                if (col.id == colId){
+                    currColIndex = i;
+                }
+            });
+
+            if (lastIndex == currColIndex){
+                 
+
+                if (!$$("resizeLastCol")){
+                    const width = currColConfig.width ? currColConfig.width : 0
+                    webix.prompt({
+                        title       : "Размер последней колонки",
+                        ok          : "Применить",
+                        cancel      : "Отменить",
+                        css         : "webix_prompt-filter-lib",
+                        input       : {
+                            required    : true,
+                            placeholder : "Введите число...",
+                            value       : Math.round(width),
+                        },
+                        width       : 350,
+                    }).then(function(result){
+                      
+                        if(result){
+
+                            if (isNaN(+result)){
+                                const text = "Нельзя изменить размер колонки." +
+                                " «"+result + "» – не является числом";
+
+                                setFunctionError(
+                                    text,
+                                    logNameFile, 
+                                    "last column resize"
+                                );
+                            } else{
+                                resizeColumn(result);
+                            }
+                           
+                        }
+                       
+            
+                    });
+             
+                }
+            
+                
+      
+           
+               
+            }
+        }
+        
+    }
+
+
 
 
 };

@@ -122,7 +122,6 @@ function createTabbar(){
         css     : "global-tabbar",
         value   : "container",
         tooltip : "#value#",
-      //  addedTabs:0,
         optionWidth: 300,
         multiview  : true, 
         options : [
@@ -130,20 +129,6 @@ function createTabbar(){
         ],
         on:{
 
-            onAfterRender:webix.once(function(){
-                console.log(mediator.tabs.getLoginPref())
-                // const data = webix.storage.local.get("tabsHistory"); 
-     
-                // if (data){
-                //     const history = data.history;
-                //     console.log(history)
-                //     history.forEach(function(el){
-                    
-                //         mediator.tabs.addTabHistory(el);
-                //     });
-                // }
-   
-            }),
 
             onBeforeTabClick:function(){
         
@@ -185,7 +170,11 @@ function createTabbar(){
             },
 
             onBeforeTabClose: function(id){
-             
+               
+                const tabConfig = this.getOption(id);
+                if (tabConfig && tabConfig.info){
+                    mediator.tabs.addRemovedTab(tabConfig.info.tree);
+                }
                 
                 const tabbar     = this;
                 const option     = tabbar.getOption(id);
@@ -228,6 +217,7 @@ function createTabbar(){
             // },
 
             onOptionRemove:function(removedTab, lastTab){
+      
                 mediator.tabs.removeTab(lastTab);
 
             },

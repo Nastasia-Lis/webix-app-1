@@ -1,4 +1,4 @@
-console.log("expa 1.0.76"); 
+console.log("expa 1.0.77"); 
 
 import { textInputClean }                     from "./blocks/commonFunctions.js";
 import { auth }                               from "./components/login.js";
@@ -88,6 +88,7 @@ const mainLayout = {
                         {rows:[
                             createTabbar(),
                             {   id    : "globalTabCells",
+                                css   : "tabbar_globalCells",
                                 cells : [  
                                     container,
                                     
@@ -98,6 +99,8 @@ const mainLayout = {
                         //container,
                     ]}
                 ]}, 
+
+               
 
             ]
         },
@@ -131,8 +134,8 @@ try{
             },
 
         });
-
-
+     
+       
       
     
         setUserPrefs            ();
@@ -146,6 +149,8 @@ try{
         webixGlobalPrefs        ();
 
     });
+
+
 
 } catch(err){
     alert("Ошибка при выполнении "+ err);

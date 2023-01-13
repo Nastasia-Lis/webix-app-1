@@ -1603,3 +1603,8 @@ button {
   background-color: transparent !important;
   padding: 10px 0px 10px 15px !important;
 }
+
+.dash_container {
+  margin-top: 1px !important;
+  margin-left: 1px !important;
+}

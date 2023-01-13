@@ -6,12 +6,12 @@ import { mediator }             from "../../blocks/_mediator.js";
  
  
 const TABS_HISTORY  = [];
-const IS_LOGIN      = {}; 
+const TABS_REMOVED  = [];
 
 function isOtherViewTab(id){
     const option = $$("globalTabbar").getOption (id);
 
-    if (option.isOtherView){
+    if (option && option.isOtherView){
         return true;
     }
 
@@ -163,7 +163,6 @@ function returnHistory(tabbar, tabIndex){
 
     return history;
 }
-
 
 class Tabs {
     addTab(isNull, open = true){
@@ -333,21 +332,24 @@ class Tabs {
         this.saveTabHistory();
     }
 
-
-
-    getLoginPref(){
-        return IS_LOGIN.success;
+    addRemovedTab(page){
+        if (TABS_REMOVED.length > 10){
+            TABS_REMOVED.shift();
+        }
+        TABS_REMOVED.push(page);
+        
     }
 
-    enableLoginPref(){
-        IS_LOGIN.success = true;
+    deleteOpenRemovedTab(index){
+        TABS_REMOVED.splice(index,  1);
+        
     }
 
-    
-    disableLoginPref(){
-        IS_LOGIN.success = false;
+    getRemovedTabs(){
+        return TABS_REMOVED;
     }
 
+ 
 
 }
 

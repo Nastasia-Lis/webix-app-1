@@ -256,6 +256,30 @@ function openHistoryPopup(){
     popup.showPopup  ();
 }
 
+function findLastRemovedTab(){
+    const removedHistory = mediator.tabs.getRemovedTabs();
+
+    if (removedHistory){
+        const index = removedHistory.length - 1;
+        const tab   =  removedHistory[index];
+
+        mediator.tabs.deleteOpenRemovedTab(index);
+
+        return tab;
+
+    }
+
+}
+
+function openClosedTab(){
+    const lastRemovedTabConfig = findLastRemovedTab();
+    if (lastRemovedTabConfig){
+        mediator.tabs.openInNewTab({tree:lastRemovedTabConfig});
+    }
+   
+    
+}
+
 function tabsHistoryBtn(){
     const btn = new Button({
         
@@ -263,11 +287,37 @@ function tabsHistoryBtn(){
             id       : "historyTabBtn",
            // hotkey   : "Ctrl+Shift+A",
             icon     : "icon-file", //wxi-plus
-            click    : function(){
-                openHistoryPopup();
+            popup   : {
+
+                view    : 'contextmenu',
+               
+                css     : "webix_contextmenu",
+                data    : [
+                    { id: 'addTab' , value: 'Новая вкладка'            },
+                    { id: 'history', value: 'Открыть историю'          },
+                    { id: 'restore', value: 'Открыть закрытую вкладку' },
+                    { id: 'empty'  , value: '',                        }
+                ],
+                on      : {
+                    onItemClick: function(id){
+                        if (id == "addTab"){
+                            mediator.tabs.openInNewTab({tree:{none:true}});
+
+                        } else if (id == "history"){
+                            openHistoryPopup();
+
+                        } else if (id == "restore"){
+                           openClosedTab();
+                        }  
+     
+                    }
+                }
             },
+            // click    : function(){
+            //     openHistoryPopup();
+            // },
         },
-        titleAttribute : "Посмотреть историю посещений"
+        titleAttribute : "Действия с вкладками"
     
        
     }).transparentView();

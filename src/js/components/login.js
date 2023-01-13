@@ -41,7 +41,7 @@ function postLoginData(){
                 form.clear();
             }
 
-            mediator.tabs.enableLoginPref(); // для загрузки истории из userprefs
+            //mediator.tabs.enableLoginPref(); // для загрузки истории из userprefs
             
             Backbone.history.navigate("content", { trigger:true});
             window.location.reload();

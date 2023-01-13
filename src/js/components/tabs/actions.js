@@ -117,7 +117,7 @@ function emptyTabsLogic(lastTab){
 
     let conutEmptyTabs = 0;
     options.forEach(function(el, i){
-        if (el.info.tree.none){ // empty tab
+        if (el.info && el.info.tree && el.info.tree.none){ // empty tab
             conutEmptyTabs ++;
         }
     });
