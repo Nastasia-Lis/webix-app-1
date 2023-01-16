@@ -1,6 +1,7 @@
 import { LoadServerData, GetFields }      from "../../blocks/globalStorage.js";
 import { Action }                         from '../../blocks/commonFunctions.js';
 import { mediator }                       from '../../blocks/_mediator.js';
+import { ServerData }                     from '../../blocks/getServerData.js';
 import { setFunctionError, 
             setAjaxError }                from '../../blocks/errors.js';
 
@@ -53,37 +54,36 @@ function getData(tableId, src){
         "offset="+ 0,
     ];
     const fullQuery = query.join("&");
-    const path      = "/init/default/api/smarts?";
-    const queryData = webix.ajax(path + fullQuery);
 
-    queryData.then(function(data){
-        data             = data.json();
-        const notifyType = data.err_type;
-        const notifyMsg  = data.err;
-        const content    = data.content[0];
+    
+    new ServerData({
+    
+        id           : "smarts?" + fullQuery,
+       
+    }).get().then(function(data){
+    
+        if (data){
 
-        if (content){
-            createContextProperty(
-                content, 
-                src
-            );
+            const content = data.content;
+
+            if (content){
+             
+                const firstPost = content[0];
+    
+                if (firstPost){
+                    createContextProperty(
+                        firstPost, 
+                        src
+                    );
+                }
+
+            }
         }
+         
+    });
 
-        if (notifyType !== "i"){
-            setFunctionError(
-                notifyMsg, 
-                logNameFile, 
-                "getData"
-            );
-        }  
-    });
-    queryData.fail(function(err){
-        setAjaxError(
-            err, 
-            logNameFile, 
-            "getTableData"
-        );
-    });
+
+
 }
 
 function getLinkParams(param){

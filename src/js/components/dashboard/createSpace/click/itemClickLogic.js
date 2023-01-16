@@ -20,7 +20,7 @@ const action = {
 };
 
 const action2 = {
-    navigate: true,
+    navigate: false,
     field   : "auth_group", 
     context : true,
     params  : {

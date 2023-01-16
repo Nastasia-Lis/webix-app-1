@@ -1,7 +1,6 @@
 import { setLogValue }                      from "../../logBlock.js";
 import { setStorageData }                   from "../../../blocks/storageSetting.js";
-import { setFunctionError, setAjaxError  }  from "../../../blocks/errors.js";
-
+import { ServerData }                       from "../../../blocks/getServerData.js";
 import { Button }                           from "../../../viewTemplates/buttons.js";
 
 import { defaultValue }                     from "./commonTab.js";
@@ -9,7 +8,6 @@ import { defaultValue }                     from "./commonTab.js";
 import { pushUserDataStorage, 
          getUserDataStorage }               from "../../../blocks/commonFunctions.js";
 
-const logNameFile   = "settings => tabbar => buttons";
 
 let tabbar;
 let tabbarVal;
@@ -18,17 +16,14 @@ let form;
 let values;
 let sentObj;
 
-function putPrefs(el){
- 
-    const path    = "/init/default/api/userprefs/" + el.id;
-    const putData = webix.ajax().put(path, sentObj);
+function putPrefs(id){
 
-    return putData.then(function(data){
+    return new ServerData({
+        id : `userprefs/${id}`
+       
+    }).put(sentObj).then(function(data){
 
-        data = data.json();
-
-        if (data.err_type == "i"){
-
+        if (data){
             const formVals = JSON.stringify(values);
             setStorageData (tabbarVal, formVals);
 
@@ -42,56 +37,21 @@ function putPrefs(el){
                 "Настройки сохранены"
             );
             return true;
-        } else {
-            setLogValue("error", data.error);
-            return false;
         }
-
-    }).fail(function(err){
-        setAjaxError(
-            err, 
-            logNameFile, 
-            "putPrefs"
-        );
-        return false;
+         
     });
-}
 
-
-function findExistsData(data){
-    const result = {
-        exists : false
-    };
-
-    try{
-        data.forEach(function(el){
-           
-            if (el.name == tabbarVal){
-                result.exists = true;
-                result.findElem = el;
-            } 
-        });
-    } catch (err){
-        setFunctionError(
-            err, 
-            logNameFile, 
-            "findExistsData"
-        );
-    }
-    return result;
 }
 
 
 function postPrefs(){
-   
-    const path = "/init/default/api/userprefs/";
 
-    const postData = webix.ajax().post(path, sentObj);
+    return new ServerData({
+        id : "userprefs"
+       
+    }).post(sentObj).then(function(data){
 
-    return postData.then(function(data){
-        data = data.json();
-
-        if (data.err_type == "i"){
+        if (data){
             const tabbarVal         = tabbar.getValue();
             defaultValue[tabbarVal] = values;
 
@@ -103,24 +63,20 @@ function postPrefs(){
             );
 
             return true;
-        } else {
-            setLogValue(
-                "error", 
-                data.error
-            );
-
-            return false;
         }
-
-    }).fail(function(err){
-        setAjaxError(
-            err, 
-            logNameFile, 
-            "postPrefs"
-        );
-
-        return false;
+         
     });
+   
+}
+
+function createSentObj(owner, values){
+    const sentObj = {
+        name  : tabbarVal,
+        owner : owner,
+        prefs : values,
+    };
+
+    return sentObj;
 }
 
 
@@ -132,38 +88,28 @@ async function savePrefs(){
         ownerId = getUserDataStorage();
     }
 
-    const url     = "/init/default/api/userprefs/";
-    const getData =  webix.ajax().get(url);
- 
-    return getData.then(function(data){
-        data = data.json().content;
+    return new ServerData({
+        id : `smarts?query=userprefs.name='${tabbarVal}'+and+userprefs.owner=${ownerId.id}&limit=80&offset=0`
+       
+    }).get().then(function(data){
 
-        values = form.getValues();
- 
-        sentObj = {
-            name  : tabbarVal,
-            owner : ownerId.id,
-            prefs : values,
-        };
+        if (data){
+            values  = form.getValues();
+            sentObj = createSentObj(ownerId.id, values);
 
-   
-
-        const result          = findExistsData(data);
-        const isExistsSetting = result.exists;
-
-        if (!isExistsSetting){
-            return postPrefs();
-        } else {
-            const findElem = result.findElem;
-            return putPrefs(findElem);
+            if (data.content && data.content.length){ // запись уже существует
+                const content   = data.content;
+                const firstPost = content[0];
+    
+                if (firstPost){
+                    return putPrefs(firstPost.id);
+                }
+              
+            } else {
+                return postPrefs(); 
+            }
         }
-
-    }).fail(function(err){
-        setAjaxError(
-            err, 
-            logNameFile, 
-            "savePrefs"
-        );
+         
     });
 }
 
@@ -196,7 +142,6 @@ function clearSettings (){
     
         form.setValues({
             logBlockOpt    : '1', 
-        //    LoginActionOpt : '1'
         });
 
     } else if (tabbarVal === "userprefsOtherForm"){

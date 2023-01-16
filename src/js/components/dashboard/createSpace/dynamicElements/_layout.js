@@ -1,6 +1,8 @@
 import { setLogValue }                    from '../../../logBlock.js';
-import { setAjaxError, setFunctionError } from "../../../../blocks/errors.js";
+import { setFunctionError }               from "../../../../blocks/errors.js";
 import { Action }                         from '../../../../blocks/commonFunctions.js';
+import { ServerData }                     from "../../../../blocks/getServerData.js";
+
 import { createHeadline }                 from '../../../viewHeadline/_layout.js';
 import { createFilterLayout }             from '../filter/filterLayout.js';
 import { createDashboardCharts }          from './chartsLayout.js';
@@ -147,50 +149,54 @@ function removeLoadView(){
     Action.removeItem($$("dash-load-charts"));
 }
 
+
+
+function errorActions(){
+    const id = "dashLoadErr";
+    Action.removeItem($$("dashLoad"));
+    if ( !$$(id) ){
+        $$("dashboardInfoContainer").addView(  
+        createOverlayTemplate(id, "Ошибка"));
+    }
+}
+
+
 function getChartsLayout(){
     addLoadElem();
-    const getData = webix.ajax().get(url);
-  
-    getData.then(function(data){
-   
-        const err = data.json();
-        if (err.err_type == "i"){
 
-            Action.removeItem($$("dashLoad"));
-            const dataCharts    = data.json().charts;
+    new ServerData({
     
-            Action.removeItem($$("dashBodyScroll"));
-    
-            if ( !action ){ //не с помощью кнопки фильтра
-                removeFilter();
+        id           : url,
+        isFullPath   : true,
+        errorActions : errorActions
+       
+    }).get().then(function(data){
+
+        if (data){
+
+            const charts = data.charts;
+
+            if (charts){
+
+                Action.removeItem($$("dashLoad"));
+        
+                Action.removeItem($$("dashBodyScroll"));
+        
+                if ( !action ){ //не с помощью кнопки фильтра
+                    removeFilter();
+                }
+                
+                removeCharts    ();
+                setUpdate       (charts);
+                setUserUpdateMsg();
+                removeLoadView  ();
+                setScrollHeight ();
+
             }
-            
-            removeCharts    ();
-            setUpdate       (dataCharts);
-            setUserUpdateMsg();
-            removeLoadView  ();
-            setScrollHeight ();
+        }
          
-        } else {
-            setFunctionError(
-                err.err, 
-                logNameFile, 
-                "getChartsLayout"
-            );
-        }
     });
-   
-    getData.fail(function(err){
-        const id = "dashLoadErr";
-        Action.removeItem($$("dashLoad"));
-        if ( !$$(id) ){
-            $$("dashboardInfoContainer").addView(  
-            createOverlayTemplate(id, "Ошибка"));
-        }
-   
-        setAjaxError(err, logNameFile, "getAjax");
-    });
-    
+ 
 }
 
 

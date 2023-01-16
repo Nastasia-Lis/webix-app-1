@@ -1,9 +1,8 @@
-import { setAjaxError, 
-    setFunctionError }  from "../../../../blocks/errors.js";
-import { mediator }     from "../../../../blocks/_mediator.js";
+import { setFunctionError }         from "../../../../blocks/errors.js";
+import { mediator }                 from "../../../../blocks/_mediator.js";
+import { ServerData }               from "../../../../blocks/getServerData.js";
 
-import { setLogValue }                    from "../../../logBlock.js";
-import { createContextProperty }          from "../contextWindow.js";
+import { createContextProperty }    from "../contextWindow.js";
 
 const logNameFile = "table => createSpace => click => updateSpace";
 
@@ -86,37 +85,34 @@ function setDataToTable(table, data){
 function getTableData(tableId, query, onlySelect){
 
     const fullQuery = query.join("&");
-    const path      = "/init/default/api/smarts?";
-    const queryData = webix.ajax(path + fullQuery);
 
-    queryData.then(function(data){
-        data             = data.json();
-        const notifyType = data.err_type;
-        const notifyMsg  = data.err;
-        const content    = data.content;
-        const item       = content[0];
-
-        if (!onlySelect){
-            setDataToTab   (tableId, fullQuery);
-            setDataToTable (tableId, content);
-        } else if (item){
-            createContextProperty (item, tableId);
-        }
+    new ServerData({
+    
+        id           : "smarts?" + fullQuery,
+        isFullPath   : false,
+        errorActions : clearParams
        
+    }).get().then(function(data){
+  
+        if (data){
 
-        if (notifyType !== "i"){
-            setLogValue("error", notifyMsg);
-            clearParams();
-        }  
+            const content = data.content;
+
+            if (content){
+                const item = content[0];
+        
+                if (!onlySelect){
+                    setDataToTab   (tableId, fullQuery);
+                    setDataToTable (tableId, content);
+                } else if (item){
+                    createContextProperty (item, tableId);
+                }
+
+            }
+        }
+         
     });
-    queryData.fail(function(err){
-        setAjaxError(
-            err, 
-            logNameFile, 
-            "getTableData"
-        );
-        clearParams();
-    });
+
 }
 
 function updateSpace(chartAction){

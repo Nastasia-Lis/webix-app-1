@@ -1,10 +1,10 @@
-import { setFunctionError, setAjaxError }   from "../../blocks/errors.js";
-import { mediator }                         from "../../blocks/_mediator.js";
+import { setFunctionError }     from "../../blocks/errors.js";
+import { mediator }             from "../../blocks/_mediator.js";
+import { ServerData }           from "../../blocks/getServerData.js";
 
 import { pushUserDataStorage, 
-    getUserDataStorage }                    from "../../blocks/commonFunctions.js";
+        getUserDataStorage }    from "../../blocks/commonFunctions.js";
 
-import { setLogValue }                   from "../logBlock.js";
 
 const logNameFile = "router => logout";
 
@@ -23,25 +23,10 @@ function clearStorage(){
 
 function putPrefs(id, sentObj){
 
-    const path    = "/init/default/api/userprefs/" + id;
-    const putData = webix.ajax().put(path, sentObj);
-
-    putData.then(function(data){
-   
-        data = data.json();
-    
-        if (data.err_type !== "i"){
-            setLogValue("error", data.err);
-        }
-    });
-
-    putData.fail(function(err){
-        setAjaxError(
-            err, 
-            logNameFile, 
-            "putUserPrefs"
-        );
-    });   
+    new ServerData({  
+        id : `userprefs/${id}`
+    }).put(sentObj);
+  
 }
 
 function isPrefExists(data, name){
@@ -69,28 +54,9 @@ function isPrefExists(data, name){
 
 function postUserPrefs(sentObj){
 
-    const path     = "/init/default/api/userprefs/";
-    const postData = webix.ajax().post(path, sentObj);
-
-    postData.then(function(data){
-        data = data.json();
- 
-        if (data.err_type !== "i"){
-            setFunctionError(
-                data.err, 
-                logNameFile, 
-                "putUserPrefs"
-            );
-        }
-    });
-
-    postData.fail(function(err){
-        setAjaxError(
-            err, 
-            logNameFile, 
-            "postUserPrefs"
-        );
-    });
+    new ServerData({  
+        id : "userprefs"
+    }).post(sentObj);
 
 }
 
@@ -118,28 +84,21 @@ async function saveCurrData(servData, name, prefs, owner){
 
     const pref = returnSentTemplate(name, prefs);
 
-   // if (window.location.pathname !== "/index.html/content"){
-
-        const result   = isPrefExists(servData, name);
-        const isExists = result.exists;
-     
-        if (isExists){
-            const id = result.id;
-            putPrefs(id, pref);
-        } else {
-            pref.owner = owner.id;
-            postUserPrefs(pref);
-        }
-      //  restoreData.owner = ownerId.id;
-      //  postUserPrefs(restoreData); // тк удаляется при login
-   // }
+    const result   = isPrefExists(servData, name);
+    const isExists = result.exists;
+    
+    if (isExists){
+        const id = result.id;
+        putPrefs(id, pref);
+    } else {
+        pref.owner = owner.id;
+        postUserPrefs(pref);
+    }
 
  
 
 }
 
-const userLocation = {};
-const restore      = {};
 
 function saveHistoryTrue(){
     const tabbarData  = webix.storage.local.get("userprefsOtherForm");
@@ -149,48 +108,51 @@ function saveHistoryTrue(){
     }
 }
 
+function getLocalData(name){
+    return webix.storage.local.get(name);
+}
+
+function createRestoreData(){
+    const restore = {
+        editProp :  getLocalData("editFormTempData"),
+        filter   :  getLocalData("currFilterState")
+    };
+
+    return restore;
+}
+
 async function saveLocalStorage() {
 
     const owner  = await getOwner();
     
-    const path = "/init/default/api/userprefs/";
-    const userprefsData = webix.ajax().get(path);
+    new ServerData({  
+        id           : "userprefs"
+    }).get().then(function(data){
 
-    await userprefsData.then(function(data){
-        data = data.json().content;
+        if (data && data.content){
 
-        const tabbarData  = webix.storage.local.get("tabbar");
-        saveCurrData(data, "tabbar"     , tabbarData , owner);
+        const content = data.content;
 
-        console.log(saveHistoryTrue(), 'saveHistoryTrue()')
+        const tabbarData  = getLocalData("tabbar");
+        saveCurrData(content, "tabbar" , tabbarData , owner);
+
+ 
         if (saveHistoryTrue()){
-            const tabsHistory = webix.storage.local.get("tabsHistory");
-            saveCurrData(data, "tabsHistory", tabsHistory, owner);
+            const tabsHistory = getLocalData("tabsHistory");
+            saveCurrData(content, "tabsHistory", tabsHistory, owner);
         }
         
   
         if (window.location.pathname !== "/index.html/content"){
 
-            const restore = {
-                editProp :  webix.storage.local.get("editFormTempData"),
-                filter   :  webix.storage.local.get("currFilterState")
-            };
+            const restore = createRestoreData();
 
-         //   saveCurrData(data, "userLocationHref", userLocation, owner);
-            saveCurrData(data, "userRestoreData" , restore , owner);
+            saveCurrData(content, "userRestoreData" , restore , owner);
         }
-       
+        }
+         
     });
 
-
-
-    userprefsData.fail(function(err){
-        setAjaxError(
-            err, 
-            logNameFile, 
-            "saveLocalStorage"
-        );
-    });
   
 }
 
@@ -215,32 +177,26 @@ function backPage(){
 
 async function logoutRouter(){
 
-
-   // userLocation.href = window.location.href;
-
-    // restore.editProp  = webix.storage.local.get("editFormTempData");
-    // restore.filter    = webix.storage.local.get("currFilterState");
-
     await saveLocalStorage();
 
-    const path = "/init/default/logout/";
-    const logoutData = webix.ajax().post(path);
+    new ServerData({  
+        id           : "/init/default/logout/",
+        isFullPath   : true
+    }).post().then(function(data){
 
-
-    logoutData.then(function (){
-
-        backPage        ();
-        mediator.sidebar.clear();
-        clearStorage    ();
-    });
-
-    logoutData.fail(function (err){
-        setAjaxError(
-            err, 
-            logNameFile, 
-            "logoutData"
-        );
-    });  
+        if (data){
+            backPage        ();
+            mediator.sidebar.clear();
+            clearStorage    ();
+        } else {
+            setFunctionError(
+                "data is " + data, 
+                logNameFile, 
+                "logoutRouter"
+            );  
+        }
+         
+    }); 
 }
 
 export{

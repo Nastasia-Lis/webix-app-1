@@ -1,7 +1,8 @@
-import { setFunctionError, setAjaxError}    from "../../blocks/errors.js";
-import { mediator }                         from "../../blocks/_mediator.js";
-import { Action }                           from "../../blocks/commonFunctions.js";
-import { RouterActions }                    from "./actions/_RouterActions.js";
+import { setFunctionError }         from "../../blocks/errors.js";
+import { mediator }                 from "../../blocks/_mediator.js";
+import { ServerData }               from "../../blocks/getServerData.js";
+import { Action }                   from "../../blocks/commonFunctions.js";
+import { RouterActions }            from "./actions/_RouterActions.js";
 
 const logNameFile = "router => settings";
 
@@ -29,7 +30,9 @@ function setUserprefsNameValue (){
 
 function setTemplateValue(data){
 
-    try{
+    const type = typeof data;
+
+    if (type == "object"){
         data.forEach(function(el){
             const name    = el.name;
             const prefsId = "userprefs";
@@ -42,34 +45,34 @@ function setTemplateValue(data){
                 form.config.storagePrefs = prefs;
             }
         });
-    } catch (err){
+    } else {
         setFunctionError(
-            err, 
+            `error type of data : ${type}`, 
             logNameFile, 
-            "getDataUserprefs"
+            "setTemplateValue"
         );
     }
+    
 
 
 }
 
 function getDataUserprefs(){
-    const path          = "/init/default/api/userprefs/";
-    const userprefsData = webix.ajax().get(path);
 
-    userprefsData.then(function(data){
-        data = data.json().content;
-        setTemplateValue(data);
-        
+    new ServerData({  
+        id : "userprefs"
+    }).get().then(function(data){
+        if (data){
+            setTemplateValue(data.content);
+        } else {
+            setFunctionError(
+                `data is ${data}` , 
+                logNameFile, 
+                "getDataUserprefs"
+            ); 
+        }
     });
 
-    userprefsData.fail(function (err){
-        setAjaxError(
-            err, 
-            logNameFile, 
-            "getDataUserprefs"
-        );
-    });
 }
 
 function setTab(id){

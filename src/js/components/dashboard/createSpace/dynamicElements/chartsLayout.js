@@ -146,7 +146,7 @@ function createChart(dataCharts){
         //     "onDblClick": {}
         // };
      
-        // dataCharts.push(table);
+        //  dataCharts.push(table);
         // dataCharts.push(res);
       
         dataCharts.forEach(function(el){
