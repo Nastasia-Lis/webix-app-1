@@ -168,11 +168,15 @@ function resizeTableFilterForm (){
 function setSearchInputState(){
     const headerChilds = $$("header").getChildViews();
 
+    
     headerChilds.forEach(function(el){
         if (el.config.id.includes("search")){
             el.show();
         }
     });
+
+
+   
 }
 
 

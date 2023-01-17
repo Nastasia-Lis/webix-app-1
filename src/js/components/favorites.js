@@ -1,7 +1,7 @@
 
-import { setAjaxError, setFunctionError }   from "../blocks/errors.js";
-import { pushUserDataStorage, 
-        getUserDataStorage, Action }        from "../blocks/commonFunctions.js";
+import { setFunctionError }                 from "../blocks/errors.js";
+import { ServerData }                       from "../blocks/getServerData.js";
+import { returnOwner, Action }              from "../blocks/commonFunctions.js";
 
 import { Popup }                            from "../viewTemplates/popup.js";
 import { Button }                           from "../viewTemplates/buttons.js";
@@ -89,31 +89,27 @@ function createOptions(data, user){
 
 async function favsPopupCollectionClick (){
 
-    let user =  getUserDataStorage();
+    const user = await returnOwner();
 
-    if (!user){
-        await pushUserDataStorage();
-        user =  getUserDataStorage();
-    }
-
-    const path    = "/init/default/api/userprefs/";
-    const getData = webix.ajax().get(path);
+    new ServerData({
+        id : "userprefs"
+       
+    }).get().then(function(data){
     
-    getData.then(function(data){
-        data = data.json().content;
-        if (user){
-            createOptions(data, user);
+        if (data){
+    
+            const content = data.content;
+    
+            if (content){
+                if (user){
+                    createOptions(content, user);
+                }
+    
+            }
         }
-
+         
     });
 
-    getData.fail(function(err){
-        setAjaxError(
-            err, 
-            "favsLink",
-            "favsPopupCollectionClick"
-        );
-    });
 
     
 }
@@ -203,37 +199,24 @@ const btnSaveLink = new Button({
 function deleteUserprefsData(options, option){
     const id = option.dataId;
 
-    const url = "/init/default/api/userprefs/" + id;
-    const deleteData = webix.ajax().del(url, {id : option.id});
-    deleteData.then(function(data){
-
-        data = data.json();
-
-        if (data.err_type == "i"){
+    new ServerData({
+        id : `userprefs/${id}`
+       
+    }).del({id : option.id}).then(function(data){
+    
+        if (data){
             const length = options.data.options.length;
             if (length == 1){
                 const emptyOpt = returnEmptyOption();
                 options.addOption(emptyOpt);
             }
             options.removeOption(option.id);
-
-        } else {
-            setFunctionError(
-                data.err, 
-                logNameFile, 
-                "deleteUserprefsData" 
-            );
+             
         }
-   
+         
     });
 
-    deleteData.fail(function(err){
-        setAjaxError(
-            err, 
-            logNameFile, 
-            "deleteUserprefsData"
-        );
-    });
+
 }
 function removeBtnClick(){
     const options = $$("favCollectionLinks");

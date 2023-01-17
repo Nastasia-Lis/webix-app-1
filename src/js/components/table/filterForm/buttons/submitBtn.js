@@ -1,12 +1,13 @@
 import { setLogValue }       from '../../../logBlock.js';
 
-import { setFunctionError, 
-        setAjaxError }       from "../../../../blocks/errors.js";
+import { setFunctionError}   from "../../../../blocks/errors.js";
 
 import { getItemId, 
         getTable, Action }   from "../../../../blocks/commonFunctions.js";
 
-import { mediator }       from "../../../../blocks/_mediator.js";
+import { ServerData }        from "../../../../blocks/getServerData.js";
+
+import { mediator }          from "../../../../blocks/_mediator.js";
 
 import { Button }            from "../../../../viewTemplates/buttons.js";
 
@@ -244,6 +245,9 @@ function setCounterValue (reccount){
     }
 }
 
+function errorActions(){
+    Filter.showApplyNotify(false);
+}
 
 function filterSubmitBtn (){
                            
@@ -257,19 +261,20 @@ function filterSubmitBtn (){
 
         setTableConfig(currTableView, query);
 
-        const path = "/init/default/api/smarts?query=" + query;
-        const queryData = webix.ajax(path);
- 
-        queryData.then(function(data){
-            data             = data.json();
-            const reccount   = data.reccount;
-            const notifyType = data.err_type;
-            const notifyMsg  = data.err;
-            data             = data.content;
-         
-            if (notifyType == "i"){
+        new ServerData({
+    
+            id           : `smarts?query=${query}`,
+            isFullPath   : false,
+            errorActions : errorActions
+           
+        }).get().then(function(data){
+          
+            if (data){
+                const reccount = data.reccount;
+                const content  = data.content;
+
                 Filter.showApplyNotify();
-                setData         (currTableView, data);
+                setData         (currTableView, content);
                 setCounterValue (reccount);
                 Action.hideItem ($$("tableFilterPopup"));
         
@@ -277,20 +282,10 @@ function filterSubmitBtn (){
                     "success",
                     "Фильтры успшено применены"
                 );
-            
-            } else {
-                Filter.showApplyNotify(false);
-                setLogValue("error", notifyMsg);
-            } 
+            }
+             
         });
 
-        queryData.fail(function (err){
-            setAjaxError(
-                err, 
-                logNameFile, 
-                "createGetData"
-            );
-        });
 
     } else {
         setLogValue(

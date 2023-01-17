@@ -1,12 +1,16 @@
 
-import { getItemId, pushUserDataStorage,
-        getUserDataStorage, getTable, Action }  from "../../../blocks/commonFunctions.js";
-import { setFunctionError, setAjaxError }       from "../../../blocks/errors.js";
-import { setLogValue }                          from "../../logBlock.js";
-import { setStorageData }                       from "../../../blocks/storageSetting.js";
+import { getItemId, returnOwner, 
+        getTable, Action }          from "../../../blocks/commonFunctions.js";
+import { setFunctionError }         from "../../../blocks/errors.js";
+import { setLogValue }              from "../../logBlock.js";
+import { setStorageData }           from "../../../blocks/storageSetting.js";
+import { ServerData }               from "../../../blocks/getServerData.js";
+
+
 
 const logNameFile = "table => columnsSettings => userprefsPost";
 let setUpdates;
+let userData;
 
 function findUniqueCols(sentVals, col){
     let result = false;
@@ -86,54 +90,44 @@ function setSize(sentVals){
 
 
 function saveExistsTemplate(sentObj, idPutData, visCol){
-    const url     = "/init/default/api/userprefs/" + idPutData;
-    const putData = webix.ajax().put(url, sentObj);
 
     const prefs   = sentObj.prefs;
     const id      = getItemId();
 
-    putData.then(function(data){
-        data = data.json();
-         
-        if (data.err_type !== "i"){
-            setLogValue(
-                "error",
-                "toolbarTable function saveExistsTemplate putData: "+ 
-                data.err
-            );
-        } else {
-            setLogValue   (
-                "success",
-                "Рабочая область таблицы обновлена"
-            );
-            setStorageData(
-                "visibleColsPrefs_" + 
-                id, 
-                JSON.stringify(sentObj.prefs)
-            );
-        
-            if (setUpdates){
-                setUpdateCols (prefs);
-            }
-          
-
-            if (visCol){
-                setSize(prefs);
-            }
-    
-          
-        }
-
+    new ServerData({
+        id : `userprefs/${idPutData}`,
        
+    }).put(sentObj).then(function(data){
+    
+        if (data){
+    
+            const content = data.content;
+    
+            if (content){
+                setLogValue   (
+                    "success",
+                    "Рабочая область таблицы обновлена"
+                );
+                setStorageData(
+                    "visibleColsPrefs_" + 
+                    id, 
+                    JSON.stringify(sentObj.prefs)
+                );
+            
+                if (setUpdates){
+                    setUpdateCols (prefs);
+                }
+              
+    
+                if (visCol){
+                    setSize(prefs);
+                }
+    
+            }
+        }
+         
     });
 
-    putData.fail(function(err){
-        setAjaxError(
-            err, 
-            logNameFile,
-            "saveExistsTemplate => putUserprefsData"
-        );
-    });
 
     Action.destructItem($$("popupVisibleCols"));
 } 
@@ -144,45 +138,35 @@ function saveNewTemplate(sentObj){
     const prefs  = sentObj.prefs;
     const id     = getItemId();
 
-    const url    = "/init/default/api/userprefs/";
+       
+    new ServerData({
+        id : "userprefs",
+       
+    }).post(sentObj).then(function(data){
     
-    const userprefsPost = webix.ajax().post(url, sentObj);
+        if (data){
     
-    userprefsPost.then(function(data){
-        data = data.json();
+            const content = data.content;
+    
+            if (content){
+               
+                setLogValue   (
+                    "success", 
+                    "Рабочая область таблицы обновлена"
+                );
+                setStorageData(
+                    "visibleColsPrefs_" + 
+                    id, 
+                    JSON.stringify(sentObj.prefs)
+                );
+    
+                if (setUpdates){
+                    setUpdateCols (prefs);
+                }
 
-        if (data.err_type !== "i"){
-
-            setFunctionError(
-                data.err,
-                logNameFile,
-                "saveNewTemplate"
-            );
-
-        } else {
-            setLogValue   (
-                "success", 
-                "Рабочая область таблицы обновлена"
-            );
-            setStorageData(
-                "visibleColsPrefs_" + 
-                id, 
-                JSON.stringify(sentObj.prefs)
-            );
-
-            if (setUpdates){
-                setUpdateCols (prefs);
             }
-
         }
-    });
-
-    userprefsPost.fail(function(err){
-        setAjaxError(
-            err, 
-            logNameFile, 
-            "saveTemplate"
-        );
+         
     });
 
     Action.destructItem($$("popupVisibleCols"));
@@ -190,66 +174,33 @@ function saveNewTemplate(sentObj){
 
 function getUserprefsData(sentObj, visCol){
     const id      = getItemId();
-    const path    = "/init/default/api/userprefs";
-    const getData = webix.ajax().get(path);
+
+    new ServerData({
+        id : `smarts?query=userprefs.name+=+%27visibleColsPrefs_${id}%27+and+userprefs.owner+=+${userData.id}&limit=80&offset=0`,
     
-    let settingExists = false;
-    let idPutData;
+    }).get().then(function(data){
 
-    getData.then(function(data){
-        data = data.json().content;
-     
-        try{
-            data.forEach(function(el){
-                
-                if (el.name == "visibleColsPrefs_" + id && !settingExists){
-                    idPutData     = el.id;
-                    settingExists = true;
-            
-                }
-            });
+        if (data){
 
-        } catch (err){
-            setFunctionError(
-                err,
-                logNameFile,
-                "getUserprefsData getData"
-            );
+            const content = data.content;
+
+            if (content && content.length){ // запись уже существует
+                saveExistsTemplate(sentObj, content[0].id, visCol);
+            } else {
+                saveNewTemplate(sentObj);
+            }
+
         }
+        
     });
 
-    getData.then(function(){
- 
-        if (!settingExists){
-            saveNewTemplate(sentObj);
-        } else {
-  
-            saveExistsTemplate(sentObj, idPutData, visCol);
-        }
-    });
-
-
-    getData.fail(function(err){
-        setAjaxError(
-            err, 
-            logNameFile, 
-            "getUserprefsData"
-        );
-    });
-
-    return settingExists;
 
 }
 
 
 async function postPrefsValues(values, visCol = false, updates = true){
     setUpdates   = updates;
-    let userData = getUserDataStorage();
-    
-    if (!userData){
-        await pushUserDataStorage();
-        userData = getUserDataStorage();
-    }
+    userData = await returnOwner();
    
     const id = getItemId();
     

@@ -1,9 +1,9 @@
 import { setLogValue }                           from '../../../logBlock.js';
 
-import { setFunctionError,setAjaxError }         from "../../../../blocks/errors.js";
+import { setFunctionError }                      from "../../../../blocks/errors.js";
 import { modalBox }                              from "../../../../blocks/notifications.js";
-import { getItemId, pushUserDataStorage, 
-         getUserDataStorage }                    from "../../../../blocks/commonFunctions.js";
+import { ServerData }                            from "../../../../blocks/getServerData.js";
+import { getItemId, returnOwner }                from "../../../../blocks/commonFunctions.js";
 
 import { Button }                                from "../../../../viewTemplates/buttons.js";
 import { Filter }                                from "../actions/_FilterActions.js";
@@ -16,74 +16,64 @@ let sentObj;
 let currName;
 
 
-async function isTemplateExists(){
+async function isTemplateExists(owner){
     let exists = {
         check : false
     };
+
+    await new ServerData({
+        id : `smarts?query=userprefs.name+=+%27${currName}%27+and+userprefs.owner+=+${owner}`
+       
+    }).get().then(function(data){
     
-    const path = "/init/default/api/userprefs/";
-    const userprefsData = webix.ajax().get(path);
-
-    await userprefsData.then(function(data){
-        data = data.json().content;
-
-        data.forEach(function(el){
+        if (data){
+    
+            const content = data.content;
+    
+            if (content && typeof content == "object" && content.length){
+    
+                content.forEach(function(el){
    
-            if (el.name == currName){
-              
-                exists = {
-                    check : true,
-                    id    : el.id
-                };
-            } 
-        });
-
-
-    }).fail(function(err){
-        setAjaxError(
-            err, 
-            logNameFile,
-            "isTemplateExists"
-        );
-        
+                    if (el.name == currName){
+                      
+                        exists = {
+                            check : true,
+                            id    : el.id
+                        };
+                    } 
+                });
+            }
+        }
+         
     });
+
 
     return exists;
 }
 
 
 function putUserprefsTemplate(id){
-    const path = "/init/default/api/userprefs/" + id;
-    
-    const putData = webix.ajax().put(path, sentObj);
 
-    putData.then(function(data){
-        data = data.json();
-        if (data.err_type == "i"){
+    
+    new ServerData({
+        id : `userprefs/${id}`
+    
+    }).put(sentObj).then(function(data){
+
+        if (data){
+
             setLogValue(
                 "success",
                 "Шаблон" +
                 " «" +
                 nameTemplate +
                 "» " +
-                " сохранён в библиотеку"
-            );
-        } else {
-            setFunctionError(
-                data.err,
-                logNameFile,
-                "saveExistsTemplate"
+                " обновлён"
             );
         }
+        
     });
 
-    putData.fail(function(err){
-        setAjaxError(
-            err, 
-            logNameFile,
-            "putUserprefsData"
-        );
-    });
 }
 
 async function saveExistsTemplate(id){
@@ -103,15 +93,15 @@ async function saveExistsTemplate(id){
  
 
 function saveNewTemplate(){
-  
-    const path = "/init/default/api/userprefs/";
 
-    const userprefsPost = webix.ajax().post(path, sentObj);
+     
+    new ServerData({
+        id : "userprefs"
     
-    userprefsPost.then(function(data){
-        data = data.json();
+    }).post(sentObj).then(function(data){
 
-        if (data.err_type == "i"){
+        if (data){
+
             setLogValue(
                 "success",
                 "Шаблон" +
@@ -120,34 +110,17 @@ function saveNewTemplate(){
                 "» " +
                 " сохранён в библиотеку"
             );
-        } else {
-            setFunctionError(
-                data.err,
-                logNameFile,
-                "saveNewTemplate"
-            );
         }
+        
     });
 
-    userprefsPost.fail(function(err){
-        setAjaxError(
-            err, 
-            logNameFile,
-            "saveTemplate => saveNewTemplate"
-        );
-    });
 
 }
 
 
 async function saveTemplate (result){ 
 
-    let user = getUserDataStorage();
-    
-    if (!user){
-        await pushUserDataStorage();
-        user = getUserDataStorage();
-    } 
+    const user = await returnOwner();
 
    
     const currId = getItemId();
@@ -171,7 +144,7 @@ async function saveTemplate (result){
     };
   
 
-    const existsInfo = await isTemplateExists();
+    const existsInfo = await isTemplateExists(user.id);
     const isExists   = existsInfo.check;
 
 

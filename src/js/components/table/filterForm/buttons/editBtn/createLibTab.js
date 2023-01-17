@@ -1,10 +1,9 @@
 
-import { setFunctionError, setAjaxError }     from "../../../../../blocks/errors.js";
-import { getItemId, pushUserDataStorage, 
-        getUserDataStorage }                  from "../../../../../blocks/commonFunctions.js";
+import { getItemId, returnOwner }   from "../../../../../blocks/commonFunctions.js";
+
+import { ServerData }               from "../../../../../blocks/getServerData.js";
 
 
-const logNameFile = "filterForm => buttons => editBtn => createLibTab";
 let user;
 let prefsData;
 let lib;
@@ -60,21 +59,15 @@ function setTemplates(){
    
     clearOptionsPull();
 
-    const dataSrc = prefsData.json().content;
-    try {
-        dataSrc.forEach(function(data, i){
+    if (typeof prefsData == "object"){
+        prefsData.forEach(function(data, i){
             if(isThisOption(data)){
                 createOption(i, data);
             }
         
         });
-    } catch (err) {
-        setFunctionError(
-            err, 
-            logNameFile, 
-            "setTemplates"
-        );
     }
+
 
 }
 
@@ -89,39 +82,36 @@ function setEmptyOption(){
 
 async function createLibTab(){ 
     lib  = $$("filterEditLib");
-    user = getUserDataStorage();
+    user = await returnOwner();
 
-    if (!user){
-        await pushUserDataStorage ();
-        user =  getUserDataStorage();
-    }
-
-    const path = "/init/default/api/userprefs/";
-    const userprefsGetData = webix.ajax(path);
-
-    userprefsGetData.then(function(getData){
-        prefsData = getData;
-        if(user){
-            setTemplates();
-
-            const lib = $$("filterEditLib");
-            
-            if (lib && lib.data.options.length == 0 ){
-                setEmptyOption();
-            }
-        
-        }
+    new ServerData({
+        id : "userprefs"
        
-        
-    });
+    }).get().then(function(data){
     
-    userprefsGetData.fail(function(err){
-        setAjaxError(
-            err, 
-            logNameFile, 
-            "saveTemplate"
-        );
+        if (data){
+    
+            const content = data.content;
+    
+            if (content){
+
+                prefsData = content;
+
+                if(user){
+                    setTemplates();
+        
+                    const lib = $$("filterEditLib");
+                    
+                    if (lib && lib.data.options.length == 0 ){
+                        setEmptyOption();
+                    }
+                
+                }
+            }
+        }
+         
     });
+
    
 }
 

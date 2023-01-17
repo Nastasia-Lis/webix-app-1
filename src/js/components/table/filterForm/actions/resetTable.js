@@ -1,9 +1,9 @@
-import { setLogValue }                       from '../../../logBlock.js';
+import { setLogValue }          from '../../../logBlock.js';
 
-import { setFunctionError, setAjaxError }    from "../../../../blocks/errors.js";
+import { setFunctionError }     from "../../../../blocks/errors.js";
 
-import { getItemId, getTable, Action }       from "../../../../blocks/commonFunctions.js";
-import { Filter }                            from "./_FilterActions.js";
+import { getItemId, getTable }  from "../../../../blocks/commonFunctions.js";
+import { ServerData }           from "../../../../blocks/getServerData.js";
 
 const logNameFile   = "tableFilter => buttons => resetBtn";
 
@@ -55,44 +55,29 @@ async function resetTable(){
         `query=${itemTreeId}.id+%3E%3D+0&sorts=${itemTreeId}.id&limit=80&offset=0`
     ];
    
-    const path       = "/init/default/api/smarts?" + query;
-    const queryData  = webix.ajax(path);
-
-     
-    return await queryData.then(function(data){
-        const dataErr =  data.json();
-      
-        data = data.json().content;
-
-        if (dataErr.err_type == "i"){
-            try{
+    return await new ServerData({
+        id : `smarts?${query}`
+       
+    }).get().then(function(data){
+    
+        if (data){
+    
+            const content = data.content;
+    
+            if (content){
                 table.config.filter = null;
-                setDataTable (data, table);
-                setFilterCounterVal(table);
-                setLogValue("success", "Фильтры очищены");
-                return true;
-            } catch (err){
-                setFunctionError(
-                    err,
-                    logNameFile,
-                    "resetFilterBtn"
-                );
-            }
 
-        } else {
-            setLogValue(
-                "error", 
-                "resetFilterBtn ajax: " +
-                dataErr.err
-            );
+                setDataTable        (content, table);
+                setFilterCounterVal (table);
+                setLogValue         ("success", "Фильтры очищены");
+
+                return true;
+
+            }
         }
-    }).fail(function(err){
-        setAjaxError(
-            err, 
-            logNameFile,
-            "resetFilterBtn"
-        );
+         
     });
+
 }
 
 export {

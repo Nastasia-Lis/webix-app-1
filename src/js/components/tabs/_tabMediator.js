@@ -1,7 +1,7 @@
 
 import { add, remove }          from "./actions.js";
 import { GetFields }            from "../../blocks/globalStorage.js";
-import { setFunctionError}      from "../../blocks/errors.js";
+import { setFunctionError }     from "../../blocks/errors.js";
 import { mediator }             from "../../blocks/_mediator.js";
  
  

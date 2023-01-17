@@ -1,6 +1,6 @@
 
 import { setLogValue }      from '../logBlock.js';
-import { setAjaxError }     from "../../blocks/errors.js";
+import { ServerData }       from "../../blocks/getServerData.js";
 import { mediator }         from "../../blocks/_mediator.js";
 import { Button }           from "../../viewTemplates/buttons.js";
 
@@ -24,37 +24,25 @@ async function doAuthCp (){
     if ( form && form.validate()){
 
         const objPass = returnPassData();
+
+        return await new ServerData({
+    
+            id : "cp"
+
+        }).post(objPass).then(function(data){
         
-        const path = "/init/default/api/cp";
-        const postData = webix.ajax().post(path, objPass);
-        
-        return await postData.then(function(data){
-            data = data.json();
-            
-            if (data.err_type == "i"){
-                setLogValue("success", data.err);
+            if (data){
+                if (data.err){
+                    setLogValue("success", data.err);
+                }
+                
                 form.clear();
                 form.setDirty(false);
                 return true;
-            } else {
-                setLogValue(
-                    "error",
-                    "authSettings function doAuthCp: " + 
-                    data.err, 
-                    "cp"
-                );
-                return false;
             }
-      
-            
-        }).fail(function(err){
-            setAjaxError(
-                err, 
-                "authSettings",
-                "doAuthCp"
-            );
-            return false;
+             
         });
+
 
     } else {
         return false;

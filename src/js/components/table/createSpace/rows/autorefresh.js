@@ -1,5 +1,5 @@
-import { getItemData }           from './createRows.js';
-import { getItemId, getTable }   from '../../../../blocks/commonFunctions.js';
+import { getItemData }  from './createRows.js';
+import { getTable }     from '../../../../blocks/commonFunctions.js';
 
 let interval;
 const intervals = [];
@@ -26,23 +26,7 @@ function setIntervalConfig(type, counter){
 
 
     intervals.push(interval);
-    
 
-
-    // interval = setInterval(function(){
-       
-    //     const table         = getTable();
-    //     const isAutoRefresh = table.config.autorefresh;
-    //     console.log(isAutoRefresh, "isAutoRefresh")
-    //     if (isAutoRefresh){
-    //         if( type == "dbtable" ){
-    //             getItemData ("table");
-    //         } else if ( type == "tform" ){
-    //             getItemData ("table-view");
-    //         }
-    //     }
-   
-    // }, counter );
 }
 
 function clearPastIntervals(){

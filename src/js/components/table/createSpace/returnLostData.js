@@ -1,4 +1,4 @@
-import { setLogValue }  from "../../logBlock.js";
+
 import { mediator }     from "../../../blocks/_mediator.js";
 import { Action }       from "../../../blocks/commonFunctions.js";
 

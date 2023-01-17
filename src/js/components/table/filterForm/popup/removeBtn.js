@@ -1,8 +1,9 @@
 
 import { setLogValue }       from '../../../logBlock.js';
 
-import { setFunctionError, 
-        setAjaxError }       from "../../../../blocks/errors.js";
+import { setFunctionError}   from "../../../../blocks/errors.js";
+
+import { ServerData }        from "../../../../blocks/getServerData.js";
 
 import { modalBox }          from "../../../../blocks/notifications.js";
 
@@ -43,15 +44,16 @@ function deleteElement(){
     const prefs   = radioValue.prefs;
     const idPrefs = prefs.id;
 
-    const path = "/init/default/api/userprefs/" + idPrefs;
-    const deleteTemplate = webix.ajax().del(path, prefs);
+        
+    new ServerData({
+        id : `userprefs/${idPrefs}`
+    
+    }).del(prefs).then(function(data){
 
-    deleteTemplate.then(function(data){
-        data = data.json();
+        if (data){
 
-        const value = radioValue.value;
+            const value = radioValue.value;
 
-        if (data.err_type == "i"){
             setLogValue(
                 "success",
                 "Шаблон « " + value + " » удален"
@@ -60,24 +62,10 @@ function deleteElement(){
             Filter.clearFilter();
             Filter.setStateToStorage();
             Action.showItem($$("filterEmptyTempalte"));
-            
-        } else {
-            setFunctionError(
-                data.err, 
-                logNameFile, 
-                "userprefsData"
-            );
         }
-
+        
     });
 
-    deleteTemplate.fail(function(err){
-        setAjaxError(
-            err, 
-            logNameFile,
-            "getLibraryData"
-        );
-    });
 }
 
 

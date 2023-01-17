@@ -1,94 +1,17 @@
-import { setAjaxError, setFunctionError } from "./errors.js";
-import { pushUserDataStorage, 
-    getUserDataStorage }                  from "./commonFunctions.js";
-import { mediator }                       from "./_mediator.js";
+import { setFunctionError } from "./errors.js";
+import { ServerData }       from "./getServerData.js"
+import { returnOwner }      from "./commonFunctions.js";
+import { mediator }         from "./_mediator.js";
 
+const logNameFile = "storageSettings";
 function setStorageData (name, value){
     if (typeof(Storage) !== 'undefined') {
         localStorage.setItem(name, value);
     } 
 }
 
-// function isLocationParam(userLocation){
-//     if (userLocation       && 
-//         userLocation.href  && 
-//         userLocation.href !== window.location.href )
-//     {
-//         return true;
-//     }
-// }
 
 
-// function setLoginActionPref(userLocation){
-//     if (isLocationParam(userLocation)){
-//         window.location.replace(userLocation.href);
-//     }
-// }
-
-// function setLink(data){
-//     const url          = new URL( data.href );
-//     const isLogoutPath = url.pathname.includes("logout");
-//     const origin       = window.location.origin;
-
-//     if (url.origin == origin && !isLogoutPath) {
-//         setLoginActionPref(data);
-//     }
-// }
-
-// function moveUser(){
-
-//     const localPath = "/index.html/content";
-//     const expaPath  = "/init/default/spaw/content";
-
-//     const path = window.location.pathname;
-  
-//     if ( path == localPath || path == expaPath ){
-  
-//         const userLocation = webix.storage.local.get("userLocationHref");
-//         const outsideHref  = webix.storage.local.get("outsideHref");
- 
-   
-//         if (outsideHref){
-//             setLink(outsideHref);
-//         } else {
-//             setLink(userLocation);
-//         }
-
-//     }
-// }
-
-let restorePref;
-let restore;
-
-function setRestoreToStorage(name, value){
-    if(value){
-   
-        setStorageData (name, JSON.stringify(value));
-    
-
-    } 
-}
-
-
-function restoreDataToStorage(el){
- 
-    ///?????
-    // if (el){
-    //     const prefs = JSON.parse(el);
-
-    
-    //     setRestoreToStorage(
-    //         "editFormTempData", 
-    //         prefs.editProp
-    //     );
-    
-    //     setRestoreToStorage(
-    //         "currFilterState",  
-    //         prefs.filter  
-    //     );
-    // }
-  
-}
 
 function setLogState(value){
     const logLayout          = $$("logLayout");
@@ -140,36 +63,18 @@ function setLogPref(){
 
 function deletePrefs(id, obj){
     if (id){
-        const path = "/init/default/api/userprefs/" + id;
 
-        const delData = webix.ajax().del(path, obj);
-
-        delData.then(function(data){
-            data = data.json();
-
-            if (data.err_type !== "i"){
-                setFunctionError(
-                    data.err, 
-                    "storageSettings", 
-                    "deletePrefs"
-                );
-            }
-        });
-
-        delData.fail(function(err){
-            setAjaxError(
-                err, 
-                "storageSettings", 
-                "deletePrefs"
-            );
-        });
+        new ServerData({
+            id : `userprefs/${id}`
+        }).del(obj);
     }
 }
 
 
 function setDataToStorage(data, user){
  
-    try{
+        
+    if (data && typeof data == "object"){
         data.forEach(function(el){
             const owner = el.owner;
             const name  = el.name;
@@ -181,23 +86,22 @@ function setDataToStorage(data, user){
 
                 if (name !== "userRestoreData"){
                     setStorageData (el.name, el.prefs);
-                    //restorePref = el;
-                } else {
-                    restoreDataToStorage(el.prefs);
-                }
+                } 
 
-                if (name == "tabbar" || name == "userRestoreData" || name == "tabsHistory"){
+                if (name == "tabbar" || name == "userRestoreData" 
+                    || name == "tabsHistory"){
                     deletePrefs(el.id, el);
                 }
             }
 
         });
-    } catch(err){
+    } else {
         setFunctionError(
-            err,
-            "storageSettings",
-            "setDataToStorage"
-        );
+            `type of content is not a array: 
+            ${data} or array does not exists`, 
+            logNameFile, 
+            "createComboValues"
+        ); 
     }
 }
 
@@ -222,12 +126,7 @@ function setTabHistory(){
 
 async function setUserPrefs (userData){
   
-    let user = getUserDataStorage();
-
-    if (!user){
-        await pushUserDataStorage(); 
-        user = getUserDataStorage();
-    }
+    const user = await returnOwner();
  
     const path = "/init/default/api/userprefs/";
     const userprefsData = webix.ajax(path);
@@ -252,7 +151,7 @@ async function setUserPrefs (userData){
     userprefsData.fail(function(err){
         console.log(err);
         console.log(
-            "storageSettings function setUserPrefs"
+            logNameFile + " function setUserPrefs"
         );
     });
 

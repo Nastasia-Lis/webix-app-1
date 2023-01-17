@@ -1,5 +1,5 @@
-import { router }   from "./routerConfig/_router.js";
-import { mediator } from "../blocks/_mediator.js";
+import { router }       from "./routerConfig/_router.js";
+import { ServerData }   from "../blocks/getServerData.js";
 
 
 function createSentObj(){
@@ -23,51 +23,50 @@ function createSentObj(){
 }
 
 
+function errorActions (){
+    const form      = $$("formAuth");
+
+    if (form && form.isDirty()){
+        form.markInvalid(
+            "username", 
+            ""
+        );
+        form.markInvalid(
+            "password", 
+            "Неверный логин или пароль"
+        );
+    }
+}
 
 function postLoginData(){
     const loginData = createSentObj();
     const form      = $$("formAuth");
 
-    const path      = "/init/default/login";
-    const postData  = webix.ajax().post(path, loginData);
-
-    postData.then(function(data){
-
-        if (data.json().err_type == "i"){
-
-            data = data.json().content;
-
-            if (form){
-                form.clear();
-            }
-
-            //mediator.tabs.enableLoginPref(); // для загрузки истории из userprefs
-            
-            Backbone.history.navigate("content", { trigger:true});
-            window.location.reload();
- 
-        } else {
-
-            if (form && form.isDirty()){
-                form.markInvalid(
-                    "username", 
-                    ""
-                );
-                form.markInvalid(
-                    "password", 
-                    "Неверный логин или пароль"
-                );
+    new ServerData({
+    
+        id           : "/init/default/login",
+        isFullPath   : true,
+        errorActions : errorActions
+       
+    }).post(loginData).then(function(data){
+    
+        if (data){
+    
+            const content = data.content;
+    
+            if (content){
+    
+                if (form){
+                    form.clear();
+                }
+                
+                Backbone.history.navigate("content", { trigger:true});
+                window.location.reload();
             }
         }
-
+         
     });
 
-    postData.fail(function(err){
-        console.log(
-            err + 
-            " login function postLoginData"
-        );
-    });
 }
 
 const invalidMsgText = "Поле должно быть заполнено";

@@ -1,21 +1,21 @@
 import { Button }               from "../../../viewTemplates/buttons.js";
 import { Filter }               from "./actions/_FilterActions.js";
-import { setFunctionError, 
-        setAjaxError }          from "../../../blocks/errors.js";
-
+ 
+import { ServerData }           from "../../../blocks/getServerData.js";
 import { setLogValue }          from "../../logBlock.js"
 import { Action }               from "../../../blocks/commonFunctions.js"
-
-const logNameFile = "filterFrom => SaveTemplateNotify";
-
+ 
 
 function putUserprefsTemplate(id, sentObj, nameTemplate){
-    const path    = "/init/default/api/userprefs/" + id;
-    const putData = webix.ajax().put(path, sentObj);
 
-    putData.then(function(data){
-        data = data.json();
-        if (data.err_type == "i"){
+    new ServerData({
+    
+        id : `userprefs/${id}`
+       
+    }).put(sentObj).then(function(data){
+    
+        if (data){
+    
             setLogValue(
                 "success",
                 "Шаблон" +
@@ -26,22 +26,8 @@ function putUserprefsTemplate(id, sentObj, nameTemplate){
             );
 
             Action.hideItem($$("templateInfo"));
-
-        } else {
-            setFunctionError(
-                data.err,
-                logNameFile,
-                "saveExistsTemplate"
-            );
         }
-    });
-
-    putData.fail(function(err){
-        setAjaxError(
-            err, 
-            logNameFile,
-            "putUserprefsData"
-        );
+         
     });
 }
 

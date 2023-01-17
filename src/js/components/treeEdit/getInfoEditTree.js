@@ -1,4 +1,5 @@
-import { setAjaxError, setFunctionError } from "../../blocks/errors.js";
+import { setFunctionError }               from "../../blocks/errors.js";
+import { ServerData }                     from "../../blocks/getServerData.js";
 import { GetFields, LoadServerData }      from "../../blocks/globalStorage.js";
 
 const logNameFile = "getContent => getInfoEditTree";
@@ -97,25 +98,24 @@ function setOptionsToCombo(options){
 
 async function setOwnerComboValues(){
 
-    const refField    = await getRefField();
+    const refField = await getRefField();
 
-    const url       = "/init/default/api/" + refField;
-    const getDataRef   = webix.ajax().get(url);
-
-    getDataRef.then(function(data){
-        data = data.json().content;
-      
-        const options = getOptions(data);
-        setOptionsToCombo(options);
-
+    new ServerData({
+        id : refField 
+       
+    }).get().then(function(data){
+    
+        if (data){
+    
+            const content = data.content;
+            if (content){
+                const options = getOptions(content);
+                setOptionsToCombo(options);
+            }
+        }
+         
     });
-    getDataRef.fail(function(err){
-        setAjaxError(
-            err, 
-            "getInfoTree", 
-            "setOwnerComboValues"
-        );
-    });
+
 
 }
 
@@ -177,30 +177,32 @@ function createStruct(treeData){
 }
 
 function getTrees(){
-    const url       = "/init/default/api/" + "trees";
-    const getData   = webix.ajax().get(url);
 
-    getData.then(function(data){
-
-        data = data.json().content;
-        data[0].pid = 0;
-
-        const treeData   = pushTreeData(data);
-        const treeStruct = createStruct(treeData);
-
-        treeEdit.parse      (treeStruct);
-
-        setComboValues      (treeData);
-        setOwnerComboValues ();
-
-    });
-
-    getData.fail(function(err){
-        setAjaxError(
-            err, 
-            "getInfoTree", 
-            "getInfoEditTree"
-        );
+    new ServerData({
+    
+        id : "trees"
+       
+    }).get().then(function(data){
+    
+        if (data){
+    
+            const content = data.content;
+    
+            if (content){
+                
+                content[0].pid = 0;
+        
+                const treeData   = pushTreeData(content);
+                const treeStruct = createStruct(treeData);
+        
+                treeEdit.parse      (treeStruct);
+        
+                setComboValues      (treeData);
+                setOwnerComboValues ();
+    
+            }
+        }
+         
     });
 
 }

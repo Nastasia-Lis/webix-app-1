@@ -1,11 +1,9 @@
 import { setLogValue }                   from '../logBlock.js';
-import { setAjaxError,setFunctionError } from "../../blocks/errors.js";
+import { ServerData }                    from "../../blocks/getServerData.js";
 import { returnForm }                    from "./form.js";
 
 
 function renameTree(state, editor){
- 
-    const url = "/init/default/api/trees/";
     
     if(state.value != state.old){
       
@@ -22,29 +20,15 @@ function renameTree(state, editor){
             cdt     : null,
         };
 
-     
-        const postData = webix.ajax().put(url + editor.id, postObj);
-
-        postData.then(function(data){
-            data = data.json();
-            if (data.err_type == "i"){
+        new ServerData({
+            id : `trees/${editor.id}`
+           
+        }).put(postObj).then(function(data){
+        
+            if (data){
                 setLogValue("success", "Данные изменены");
-
-            } else {
-                setFunctionError(
-                    data.err,
-                    "editTree",
-                    "tree onAfterEditStop postData msg"
-                );
             }
-        });
-
-        postData.fail(function(err){
-            setAjaxError(
-                err, 
-                "editTree",
-                "tree onAfterEditStop postData"
-            );
+             
         });
 
 

@@ -1,6 +1,7 @@
 
-import { modalBox }  from "./notifications.js";
-import { mediator }  from "./_mediator.js";
+import { modalBox }          from "./notifications.js";
+import { setFunctionError }  from "./errors.js";
+import { mediator }          from "./_mediator.js";
 
 function getSettingsFormValues(id){
     const storageData = webix.storage.local.get(id);
@@ -25,7 +26,7 @@ function unsetDirty(){
         dirty:false
     };
 
-    if (forms){
+    if (forms && typeof forms == "object"){
         forms.forEach(function(form){
 
             if (form && form.isDirty()){
@@ -37,7 +38,14 @@ function unsetDirty(){
                 form.setDirty(false);
             }
         });
+    } else {
+        setFunctionError(
+            `type of content is not a array: ${forms} or array does not exists`, 
+            "commonFunctions", 
+            "createComboValues"
+        ); 
     }
+
 
     return check;
 }

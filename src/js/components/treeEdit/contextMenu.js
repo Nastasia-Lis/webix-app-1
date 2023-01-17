@@ -1,6 +1,6 @@
-import { setLogValue }                    from '../logBlock.js';
-import { setAjaxError, setFunctionError } from "../../blocks/errors.js";
-
+import { setLogValue }          from '../logBlock.js';
+import { setFunctionError }     from "../../blocks/errors.js";
+import { ServerData }           from "../../blocks/getServerData.js";
 
 let tree;
 let context ;
@@ -103,14 +103,17 @@ function addItem(text){
     postObj.name = text;
     postObj.pid = titem.id;
 
-    const postData = webix.ajax().post(url, postObj);
-
-    postData.then(function(data){
-        try{
-            data = data.json();
-            if (data.err_type == "i"){
-                
-                let idNewItem = data.content.id;
+    new ServerData({
+        id : url 
+       
+    }).post(postObj).then(function(data){
+    
+        if (data){
+    
+            const content = data.content;
+    
+            if (content){
+                let idNewItem = content.id;
             
                 tree.data.add({
                     id    : idNewItem,
@@ -119,7 +122,6 @@ function addItem(text){
                 }, 0, titem.id);
                 
                 tree.open(titem.id);
-
   
                 const comboOption = {
                     id      : titem.id, 
@@ -129,21 +131,12 @@ function addItem(text){
                 Option.add(comboOption);
             
                 setLogValue("success","Данные сохранены");
-            } else {
-                setFunctionError( 
-                    data.err,
-                    "editTree",
-                    "case add post msg"
-                );
+    
             }
-        } catch (err){
-            setFunctionError(err, "editTree", "case add");
         }
+         
     });
 
-    postData.fail(function(err){
-        setAjaxError(err, "editTree", "case add");
-    });
 
 }
 
@@ -152,85 +145,55 @@ function renameItem(text){
     postObj.id = titem.id;
     postObj.pid = titem.pid;
 
-    const putData =  
-    webix.ajax().put(url + titem.id, postObj);
+    new ServerData({
+        id : url + titem.id
+       
+    }).put(postObj).then(function(data){
+    
+        if (data){
 
-    putData.then(function(data){
-        try{
-            data = data.json();
-            if (data.err_type == "i"){
-                titem.value = text;
-                tree.updateItem(titem.id, titem);
+            titem.value = text;
+            tree.updateItem(titem.id, titem);
 
-                const option = {
-                    id    : titem.id, 
-                    value : titem.value
-                };
+            const option = {
+                id    : titem.id, 
+                value : titem.value
+            };
 
-                Option.rename(option);
+            Option.rename(option);
 
-                setLogValue("success", "Данные изменены");
-            } else {
-                setFunctionError( 
-                    data.err,
-                    "editTree",
-                    "case rename put msg"
-                );
-            }
-        } catch (err){
-            setFunctionError( 
-                err, 
-                "editTree", 
-                "case rename"
-            );
+            setLogValue("success", "Данные изменены");
+    
+            
         }
+         
     });
 
-    putData.fail(function(err){
-        setAjaxError(err, "editTree", "case rename");
-    });
 }
 
 function removeItem(){
-    const delData = 
-    webix.ajax().del(url + titem.id, titem);
 
-    delData.then(function(data){
-        try{
-            data = data.json();
-            if (data.err_type == "i"){
+    new ServerData({
+        id : url + titem.id
+       
+    }).del(titem).then(function(data){
+    
+        if (data){
+            const option = {
+                id    : titem.id, 
+                value : titem.value
+            };
 
-                const option = {
-                    id    : titem.id, 
-                    value : titem.value
-                };
+            Option.remove(option);
 
-                Option.remove(option);
+            tree.remove(titem.id);
 
-                tree.remove(titem.id);
-
-              
-
-                setLogValue("success", "Данные удалены");
-            } else {
-                setFunctionError( 
-                    data.err, 
-                    "editTree", 
-                    "case delete del msg"
-                );
-            }
-        } catch (err){
-            setFunctionError(
-                err, 
-                "editTree", 
-                "case delete"
-            );
+            setLogValue("success", "Данные удалены"); 
+    
         }
+         
     });
 
-    delData.fail(function(err){
-        setAjaxError(err, "editTree", "case delete");
-    });
 }
 
 function expandItem(){
@@ -271,7 +234,7 @@ function contextLogic(id, self){
     titem   = tree.getItem(context.id); 
     menu    = self.getMenu(id);
     cmd     = menu.getItem(id).value;
-    url     = "/init/default/api/trees/";
+    url     = "trees/";
 
     postObj = {
         name  : "",

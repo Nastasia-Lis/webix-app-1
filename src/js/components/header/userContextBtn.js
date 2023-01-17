@@ -1,13 +1,12 @@
 
-import { favsPopup }                                    from "../favorites.js";
+import { favsPopup }    from "../favorites.js";
 
-import { pushUserDataStorage, 
-         getUserDataStorage }                           from "../../blocks/commonFunctions.js";
+import { returnOwner }  from "../../blocks/commonFunctions.js";
 
-import { Button }                                       from "../../viewTemplates/buttons.js";
+import { Button }       from "../../viewTemplates/buttons.js";
 
-import { mediator }                                     from "../../blocks/_mediator.js";
-import { ServerData }                                   from "../../blocks/getServerData.js";
+import { mediator }     from "../../blocks/_mediator.js";
+import { ServerData }   from "../../blocks/getServerData.js";
 
 
 function navigateTo (path){
@@ -74,13 +73,10 @@ function postUserprefsData (sentObj){
     }).post(sentObj);
 }
 
-async function onItemClickBtn(){
-    let ownerId = getUserDataStorage();
 
-    if (!ownerId){
-        await pushUserDataStorage();
-        ownerId = getUserDataStorage();
-    }
+
+async function onItemClickBtn(){
+    const ownerId     = await returnOwner().id;
 
     const localUrl    = "/index.html/content";
     const spawUrl     = "/init/default/spaw/content";
@@ -89,7 +85,7 @@ async function onItemClickBtn(){
     const prefName    = "userLocationHref";
 
     new ServerData({
-        id : `smarts?query=userprefs.name=${prefName}+and+userprefs.owner=${ownerId.id}&limit=80&offset=0`
+        id : `smarts?query=userprefs.name=${prefName}+and+userprefs.owner=${ownerId}&limit=80&offset=0`
        
     }).get().then(function(data){
       
@@ -117,88 +113,6 @@ async function onItemClickBtn(){
         }
          
     });
-
-
-
-    // const getData = webix.ajax().get("/init/default/api/userprefs/");
-
-    // getData.then(function(data){
-    //     data = data.json().content;
-
-    //     const localUrl    = "/index.html/content";
-    //     const spawUrl     = "/init/default/spaw/content";
-    //     const path        = window.location.pathname;
-        
-    //     let settingExists = false;
-
-    //     function checkError(ajaxVar){
-    //         const msg = "onItemClickBtn " + ajaxVar;
-
-    //         ajaxVar.then(function(data){
-    //             data = data.json();
-          
-    //             if (data.err_type !== "i"){
-                   
-    //                 setFunctionError(
-    //                     data.error, 
-    //                     logNameFile,
-    //                     msg
-    //                 );
-    //             }
-    //         }); 
-
-    //         ajaxVar.fail(function(err){
-    //             setAjaxError(err, logNameFile, msg);
-    //         });
-    //     }
-
-    //     function putUserprefs(id, sentObj){
-    //         const path = "/init/default/api/userprefs/" + id;
-    //         const putData = webix.ajax().put(path, sentObj);
-    //         checkError(putData);
-    //     }
-
-    //     function postUserprefsData (sentObj){
-    //         const path = "/init/default/api/userprefs/";
-    //         const postUserprefs = webix.ajax().post(path, sentObj);
-    //         checkError(postUserprefs);
-    //     }
-
-    //     if (path !== localUrl && path !== spawUrl){
-
-    //         const location = {
-    //             href : window.location.href
-    //         };
-
-    //         const sentObj = {
-    //             name  : "userLocationHref",
-    //             owner : ownerId.id,
-    //             prefs : location
-    //         };
-
-
-    //         data.forEach(function(el,i){
-    //             if (el.name == "userLocationHref"){
-    //                 putUserprefs(el.id, sentObj);
-    //                 settingExists = true;
-  
-    //             } 
-    //         });
-
-    //         if (!settingExists){
-    //             postUserprefsData (sentObj);
-    //         }
-         
-    //     }
-    // });
-    // getData.fail(function(err){
-    
-    //     setAjaxError(
-    //         err, 
-    //         logNameFile,
-    //         "onItemClickBtn getData"
-    //     );
-    // });
 
  
 }

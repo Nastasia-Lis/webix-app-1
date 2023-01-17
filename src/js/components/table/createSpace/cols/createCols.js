@@ -167,7 +167,7 @@ function createTableCols (idsParam, idCurrTable){
     
     table               = $$(idCurrTable);
 
-    try{
+    if (typeof colsName == "object" && colsName.length){
         colsName.forEach(function(data) {
             field = dataFields[data]; 
          
@@ -189,17 +189,9 @@ function createTableCols (idsParam, idCurrTable){
 
         
         refreshCols(columnsData);
-        setUserPrefs(table, idsParam);
-
-
-    } catch (err){
-        setFunctionError(
-            err, 
-            logNameFile, 
-            "createTableCols"
-        );
+        setUserPrefs(table, idsParam); 
     }
-
+          
 
     return columnsData;
 }

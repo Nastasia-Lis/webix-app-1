@@ -2,8 +2,7 @@ import { setFunctionError }     from "../../blocks/errors.js";
 import { mediator }             from "../../blocks/_mediator.js";
 import { ServerData }           from "../../blocks/getServerData.js";
 
-import { pushUserDataStorage, 
-        getUserDataStorage }    from "../../blocks/commonFunctions.js";
+import { returnOwner }          from "../../blocks/commonFunctions.js";
 
 
 const logNameFile = "router => logout";
@@ -69,12 +68,7 @@ function returnSentTemplate(name, data){
 }
 
 async function getOwner(){
-    let owner = getUserDataStorage();
-
-    if (!owner){
-        await pushUserDataStorage();
-        owner = getUserDataStorage();
-    } 
+    const owner = await returnOwner();
 
     return owner;
 }

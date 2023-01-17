@@ -1,4 +1,4 @@
-import {trashBtn, showPropBtn}        from "./btnsInTable.js";
+import { trashBtn, showPropBtn }      from "./btnsInTable.js";
 import { tableToolbar }               from "./toolbar/_layout.js"
 import { propertyTemplate }           from "./formTools/viewProperty.js";
 import { viewTools }                  from "./formTools/viewTools.js";

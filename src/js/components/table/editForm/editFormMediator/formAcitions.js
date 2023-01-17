@@ -2,13 +2,13 @@ import { getItemId }                from "../../../../blocks/commonFunctions.js"
 import { validateProfForm, 
         setLogError, uniqueData }   from "../validation.js";
 
-import { setFunctionError, 
-        setAjaxError }              from "../../../../blocks/errors.js";
+import { setFunctionError }         from "../../../../blocks/errors.js";
 
 import { setLogValue }              from "../../../logBlock.js";
 
 import { popupExec }                from "../../../../blocks/notifications.js";
-import { mediator } from "../../../../blocks/_mediator.js";
+import { mediator }                 from "../../../../blocks/_mediator.js";
+import { ServerData }               from "../../../../blocks/getServerData.js";
 
 const logNameFile = "table => formActions";
 
@@ -89,20 +89,18 @@ function putTable (updateSpace, isNavigate, form){
         const id       = itemData.id;
 
         const isDirtyForm = $$("table-editForm").isDirty();
- 
         if (!isError && id && isDirtyForm){
-          
-            const path    = "/init/default/api/" + currId + "/" + id;
             const sentObj = createSentObj (itemData);
+
+
+            return new ServerData({
     
-            const putData = webix.ajax().put(path, sentObj);
-       
-            return putData.then(function (data){
-                data = data.json();
-             
-                if (data.err_type == "i"){
-
-
+                id           : `${currId}/${id}`
+               
+            }).put(sentObj).then(function(data){
+            
+                if (data){
+            
                     if (updateSpace){
                         form.defaultState();
                     }
@@ -121,25 +119,10 @@ function putTable (updateSpace, isNavigate, form){
                     );
 
                     return true;
-
-                } else {
-                    setLogValue(
-                        "error", 
-                        logNameFile + 
-                        " function saveItem: " + 
-                        data.err
-                    );
-
-                    return false;
                 }
-            }).fail(function(err){
-                setAjaxError(
-                    err, 
-                    logNameFile, 
-                    "saveItem"
-                );
+                 
             });
-                
+
 
         } else {
             if (isError){
@@ -242,70 +225,47 @@ function postTable (updateSpace, isNavigate, form){
         const property  = $$("editTableFormProperty");
         const newValues = property.getValues();
         const postObj   = createPostObj(newValues);
- 
-        const path      = "/init/default/api/" + currId;
-        return  webix.ajax().post(path, postObj)
-            .then(function(data){
-   
-            data         = data.json();
-            const id     = data.content.id;
-            newValues.id = id;
 
- 
-            if (data.err_type == "i" && id){
-           
+        return new ServerData({
+            id : currId
 
-                if (updateSpace){
-                    form.defaultState();
-                }
+        }).post(postObj).then(function(data){
+        
+            if (data){
 
-            // для модальных окон без перехода на другую стр.
-                if (updateSpace || !isNavigate){ 
-                    addToTable    (newValues);
-                }
+                const id = data.content.id;
+                if (id){
+                    newValues.id = id;
 
-                unsetDirtyProp();
 
-                setLogValue(
-                    "success",
-                    "Данные успешно добавлены",
-                    currId
-                );
-
-                return true;
-                
-            } else {
-               
-                const errs   = data.content.errors;
-                let msg      = "";
-                if (errs){
-                    const values = Object.values(errs);
-                    values.forEach(function(err, i){
-                        const errorField = Object.keys(errs)[i];
-                        msg += err + " (Поле: " + errorField + "); ";
-                    });
-                } else {
-                    msg = data.err; 
-                }
-
-                setLogValue(
-                    "error",
-                    "editTableForm function saveNewItem: " + 
-                    msg
-                );
-
-                return false;
-            }
-        }).fail(function(err){
-            console.log(err);
-            setAjaxError(
-                err, 
-                "tableEditForm => btns",
-                "saveNewItem"
-            );
-            return false;
-        });
+                    if (updateSpace){
+                        form.defaultState();
+                    }
     
+                // для модальных окон без перехода на другую стр.
+                    if (updateSpace || !isNavigate){ 
+                        addToTable    (newValues);
+                    }
+    
+                    unsetDirtyProp();
+    
+                    setLogValue(
+                        "success",
+                        "Данные успешно добавлены",
+                        currId
+                    );
+    
+                    return true;
+                }
+
+
+               
+               
+            }
+             
+        });
+ 
+
 
     } else {
         setLogError ();
@@ -332,15 +292,15 @@ function removeTableItem(form){
         function(){
         
             const formValues = $$("editTableFormProperty").getValues();
-            const id    = formValues.id;
-            const path  ="/init/default/api/" + currId + "/" + id + ".json";
-            const removeData = webix.ajax().del(path, formValues);
+            const id         = formValues.id;
 
-            removeData.then(function(data){
-                data = data.json();
-
-                if (data.err_type == "i"){
-                    
+            new ServerData({
+    
+                id           : `${currId}/${id}.json`,
+               
+            }).del(formValues).then(function(data){
+            
+                if (data){
                     form.defaultState();
 
                     unsetDirtyProp();
@@ -351,20 +311,9 @@ function removeTableItem(form){
                     );
                     removeRow();
                     setCounterVal (true);
-                } else {
-                    setLogValue(
-                        "error",
-                        "editTableForm function removeItem: " +
-                        data.err
-                    );
+                     
                 }
-            });
-            removeData.fail(function(err){
-                setAjaxError(
-                    err, 
-                    logNameFile,
-                    "removeItem"
-                );
+                 
             });
     
         }

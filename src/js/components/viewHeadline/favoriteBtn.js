@@ -1,10 +1,9 @@
 import { LoadServerData, GetFields }        from "../../blocks/globalStorage.js";
 
 import { setLogValue }                      from "../logBlock.js";
-import { setAjaxError, setFunctionError }   from "../../blocks/errors.js";
-import { getItemId, pushUserDataStorage, 
-         getUserDataStorage, 
-         Action}                            from "../../blocks/commonFunctions.js";
+import { setFunctionError }                 from "../../blocks/errors.js";
+import { ServerData }                       from "../../blocks/getServerData.js";
+import { getItemId, returnOwner, Action}    from "../../blocks/commonFunctions.js";
 
 import { Popup }                            from "../../viewTemplates/popup.js";
 import { Button }                           from "../../viewTemplates/buttons.js";
@@ -106,13 +105,7 @@ async function postContent(namePref){
     const favNameLinkVal = getValue("favNameLink");
     const favLinkVal     = getValue("favLink");
 
-    let user = getUserDataStorage();
-
-    if (!user){
-        await pushUserDataStorage();
-        user = getUserDataStorage();
-    }
-
+    const user = await returnOwner();
 
     if (user){
 
@@ -126,35 +119,22 @@ async function postContent(namePref){
             }
         };
 
-        const path     = "/init/default/api/userprefs/";
-        const postData = webix.ajax().post(path, postObj);
-
-        postData.then(function(data){
-            data = data.json();
-    
-            if (data.err_type == "i"){
+        new ServerData({
+            id : "userprefs"
+           
+        }).post(postObj).then(function(data){
+        
+            if (data){
+        
                 setLogValue(
                     "success", 
                     "Ссылка" + " «" + favNameLinkVal + "» " + 
-                    " сохранёна в избранное");
-            } else {
-                setFunctionError(
-                    data.err, 
-                    logNameFile, 
-                    "postContent msg" 
+                    " сохранёна в избранное"
                 );
             }
-
-            Action.destructItem($$("popupFavsLinkSave"));
+            Action.destructItem($$("popupFavsLinkSave")); 
         });
 
-        postData.fail(function(err){
-            setAjaxError(
-                err, 
-                logNameFile, 
-                "postContent"
-            );
-        });
     }
 }
 
@@ -231,19 +211,21 @@ function getNotUniquePrefs (data, namePref){
 function btnSaveLinkClick(){
   
     const namePref = getItemId();
-    const path     = "/init/default/api/userprefs/";
-    const getData  = webix.ajax().get(path);
-    getData.then(function(data){
-        data = data.json().content;
-        getNotUniquePrefs (data, namePref);
+
+    new ServerData({
+        id : "userprefs"
+       
+    }).get().then(function(data){
     
-    });
-    getData.fail(function(err){
-        setAjaxError(
-            err, 
-            logNameFile,
-            "btnSaveLinkClick"
-        );
+        if (data){
+            const content = data.content;
+
+            if (content && content.length){
+                getNotUniquePrefs (content, namePref);
+            }
+            
+        }
+
     });
 
 }

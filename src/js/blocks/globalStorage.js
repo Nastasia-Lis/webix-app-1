@@ -3,18 +3,22 @@ import { checkNotAuth }     from "../components/logout/common.js";
 
 const STORAGE = {};
 
+
 function getTableNames (content){
     let tableNames = [];
-    try{
-        Object.values(content).forEach(function(el,i){
+
+    if (content && content.length){
+        const values = Object.values(content);
+    
+        values.forEach(function(el,i){
             tableNames.push({
                 id:Object.keys(content)[i], 
                 name:(el.plural) ? el.plural : el.singular
             });
         });
-    } catch (err){   
-        setFunctionError(err,"globalStorage","getTableNames");
     }
+    
+
     return tableNames;
 }
 
@@ -125,16 +129,16 @@ class GetFields extends LoadServerData {
         const keys   = this.keys;
         if (this.fields){
             const tableNames = [];
-            try{
+
+            if (values && values.length){
                 values.forEach(function(el,i){
                     tableNames.push({
                         id  : keys[i], 
                         name: (el.plural) ? el.plural : el.singular
                     });
                 });
-            } catch (err){   
-                setFunctionError(err,"globalStorage","getTableNames");
             }
+
 
             return tableNames;
   

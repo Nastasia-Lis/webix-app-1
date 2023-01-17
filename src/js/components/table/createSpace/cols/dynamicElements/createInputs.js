@@ -1,7 +1,8 @@
-import { setAjaxError, setFunctionError }   from "../../../../../blocks/errors.js";
-import { Action }                           from "../../../../../blocks/commonFunctions.js";
-import { Button }                           from '../../../../../viewTemplates/buttons.js';
-import { submitBtn }                        from './buttonLogic.js';
+import { setFunctionError }   from "../../../../../blocks/errors.js";
+import { ServerData }         from "../../../../../blocks/getServerData.js";
+import { Action }             from "../../../../../blocks/commonFunctions.js";
+import { Button }             from '../../../../../viewTemplates/buttons.js';
+import { submitBtn }          from './buttonLogic.js';
 
 const logNameFile = "table => createSpace => dynamicElements => createInputs";
 
@@ -46,64 +47,67 @@ function createTextInput    (i){
 
             }
         }
+    };
+}
+
+
+function dataTemplate(i, valueElem){
+    const template = { 
+            id    : i + 1, 
+            value : valueElem
+        };
+    return template;
+}
+
+function createOptions(content){
+    const dataOptions = [];
+    if (typeof content == "object"){
+        content.forEach(function(name, i) {
+     
+            let title = name;
+            if ( typeof name == "object"){
+                title = name.name;
+            }
+
+            const optionElement = dataTemplate(i, title);
+            dataOptions.push(optionElement); 
+        });
     }
+
+    return dataOptions;
 }
 
 function getOptionData      (){
-    const url = "/init/default/api/" + field.apiname;
 
     return new webix.DataCollection({url:{
         $proxy:true,
         load: function(){
-            return ( webix.ajax().get(url).then(function (data) {   
+            return ( 
+                
+                new ServerData({
+                    id : field.apiname,
+                
+                }).get().then(function(data){
+                
+                    if (data){
+                
+                        const content = data.content;
+                   
+                        if (content && content.length){
+                            return createOptions(content);
+                        } else {
+                            return [
+                                { 
+                                    id    : 1, 
+                                    value : ""
+                                }
+                            ];
+                        }
+                    }
                     
-                const dataSrc     = data.json().content;
-                const dataOptions = [];
-                let optionElement;
+                })
 
-   
-
-                function dataTemplate(i,valueElem){
-                const template = { 
-                        id    : i + 1, 
-                        value : valueElem
-                    };
-                return template;
-                }
-
-      
-                function createOptions(){
-              
-                    try{
-                        dataSrc.forEach(function(data, i) {
-                            const name = dataSrc[0].name;
-                            const title = name ? name : data;
-                            optionElement = dataTemplate(i, title);
-                            dataOptions.push(optionElement); 
-                        });
-                
-                    } catch (err){
-                        setFunctionError(
-                            err,
-                            logNameFile,
-                            "generateCustomInputs => getOptionData"
-                        );
-                    } 
-                }
-
-                createOptions();
-
-                return dataOptions;
-
-            }).catch(err => {
-                console.log(err);
-                setAjaxError(
-                    err,
-                    logNameFile,
-                    "generateCustomInputs => getOptionData"
-                );
-                
-            }));
+            );
             
         
             

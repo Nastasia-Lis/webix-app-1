@@ -38,24 +38,6 @@ class Tables {
                     returnLayoutTables(this.name),
                 5);
  
-                // webix.ui( {
-                //     view : "contextmenu",
-                //     id   : "contextMenuEditProp",
-                //     data : [
-                //             "Добавить",
-                //         ],
-                //     master: $$("editTableFormProperty"),
-                //     on:{
-                //         onMenuItemClick:function(id){
-                         
-                //            // contextLogic(id, this);
-                   
-                //         }
-                //     }
-                // });
-               
-
-
                 $$("filterEmptyTempalte").attachEvent("onViewShow",function(){
                     Action.hideItem($$("templateInfo"));
                 });

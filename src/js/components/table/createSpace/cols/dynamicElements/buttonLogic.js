@@ -1,5 +1,6 @@
 import { setLogValue }                      from '../../../../logBlock.js';
 import { setAjaxError, setFunctionError }   from "../../../../../blocks/errors.js";
+import { ServerData }                       from "../../../../../blocks/getServerData.js"
 
 const logNameFile = 
 "table => createSpace => dynamicElements => buttonLogic";
@@ -63,6 +64,7 @@ function setTableState(tableView, data){
 function setTableCounter(tableView){
     try{
         const count = {full : tableView.count()};
+    
         const findElementView = $$("table-view-findElements");
         const prevCountRows   = JSON.stringify(count);
 
@@ -78,33 +80,29 @@ function setTableCounter(tableView){
 
 function refreshButton(){
     createQueryRefresh();
-    const path    = url + "?" + valuesArray.join("&");
-    const getData = webix.ajax(path);
     
-    getData.then(function(data){
-        const tableView = $$("table-view");
-        data            = data.json().content;
-  
-        if (data.json().err_type == "i"){
-            setTableState   (tableView, data);
-            setTableCounter (tableView);
+    new ServerData({
+        
+        id           : `${url}?${valuesArray.join("&")}`,
+        isFullPath   : true,
+    
+    }).get().then(function(data){
 
-        } else {
-            setFunctionError(
-                data.err, 
-                logNameFile, 
-                "refreshButton"
-            );
+        if (data){
+
+            const content = data.content;
+
+            if (content){
+
+                const tableView = $$("table-view");
+              
+                setTableState   (tableView, content);
+                setTableCounter (tableView);
+            }
         }
+        
     });
 
-    getData.fail(function(err){
-        setAjaxError(
-            err, 
-            logNameFile,
-            "refreshButton"
-        );
-    });
 }
 
 function downloadButton(){

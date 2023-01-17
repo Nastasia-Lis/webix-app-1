@@ -1,12 +1,11 @@
-import { setLogValue }                      from "../../logBlock.js";
-import { setStorageData }                   from "../../../blocks/storageSetting.js";
-import { ServerData }                       from "../../../blocks/getServerData.js";
-import { Button }                           from "../../../viewTemplates/buttons.js";
+import { setLogValue }       from "../../logBlock.js";
+import { setStorageData }    from "../../../blocks/storageSetting.js";
+import { ServerData }        from "../../../blocks/getServerData.js";
+import { Button }            from "../../../viewTemplates/buttons.js";
 
-import { defaultValue }                     from "./commonTab.js";
+import { defaultValue }      from "./commonTab.js";
 
-import { pushUserDataStorage, 
-         getUserDataStorage }               from "../../../blocks/commonFunctions.js";
+import { returnOwner}        from "../../../blocks/commonFunctions.js";
 
 
 let tabbar;
@@ -81,12 +80,7 @@ function createSentObj(owner, values){
 
 
 async function savePrefs(){
-    let ownerId = getUserDataStorage();
-
-    if (!ownerId){
-        await pushUserDataStorage();
-        ownerId = getUserDataStorage();
-    }
+    const ownerId = await returnOwner();
 
     return new ServerData({
         id : `smarts?query=userprefs.name='${tabbarVal}'+and+userprefs.owner=${ownerId.id}&limit=80&offset=0`

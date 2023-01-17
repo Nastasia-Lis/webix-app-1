@@ -1,7 +1,7 @@
 import { Action }                           from "../../../../blocks/commonFunctions.js";
-import { setAjaxError, setFunctionError }   from "../../../../blocks/errors.js";
+import { setFunctionError }                 from "../../../../blocks/errors.js";
+import { ServerData }                       from "../../../../blocks/getServerData.js";
 
-import { getUserPrefsContext }              from './userContext.js';
 import {  formattingBoolVals,
           formattingDateVals, }             from './formattingData.js';
 
@@ -13,8 +13,6 @@ import { returnSortData }                   from '../returnSortData.js';
 import { returnLostFilter }                 from '../returnLostFilter.js';
 import { returnDashboardFilter }            from '../returnDashboardFilter.js';
 
-import { Filter }                           from '../../filterForm/actions/_FilterActions.js';
-
 const logNameFile = "table => createSpace => loadData";
 
 
@@ -24,7 +22,7 @@ let itemTreeId;
 
 let idFindElem;
 
-let firstError = false;
+//let firstError = false;
 function setTableState(table){
      
     if (table == "table"){
@@ -127,31 +125,15 @@ function setCounterVal (data, idTable){
 }
 
 
-function getLinkParams(param){
-    const  params = new URLSearchParams (window.location.search);
-    return params.get(param);
-}
-
-function filterParam(){
-    const  value = getLinkParams("prefs");
-    return value;
-}
-
 
 async function returnFilter(tableElem){
  
     const filterString = tableElem.config.filter;
-    const urlParameter = filterParam();
  
     const result = {
         prefs : true
     };
 
- 
-    if (urlParameter){
-        result.filter = await getUserPrefsContext(urlParameter, "filter");
-        Filter.showApplyNotify();
-    }
 
     if (!result.filter){
         result.prefs = false;
@@ -203,9 +185,11 @@ function returnPath(tableElem, query){
     let path;
      
     if (tableType == "table"){
-        path = "/init/default/api/smarts?"+ query.join("&");
+        //path = "/init/default/api/smarts?"+ query.join("&");
+        path = `smarts?${query.join("&")}`;
     } else {
-        path = "/init/default/api/" + itemTreeId;
+        //path = "/init/default/api/" + itemTreeId;
+        path = itemTreeId;
     }
 
     return path;
@@ -279,96 +263,51 @@ async function loadTableData(table, id, idsParam, offset){
                     "offset="+ offsetParam
     ];
 
+
     tableElem.load({
         $proxy : true,
         load   : function(){
+            const path = returnPath (tableElem, query);
+
+            new ServerData({
+                id           : path,
+                isFullPath   : false,
+                errorActions : tableErrorState
             
-          
-            const path      = returnPath (tableElem, query);
-     
-            const getData = webix.ajax().get( path );
-      
-    
-            getData.then(function(data){
-                data = data.json();
-
-                const reccount = data.reccount ? data.reccount : data.content.length;
+            }).get().then(function(data){
             
+                if (data){
 
-                setConfigTable(tableElem, data, limitLoad);
+                    const reccount = data.reccount ? data.reccount : data.content.length;
+                    const content  = data.content;
 
-                const type = data.err_type;
-   
-                if (type && type =="i" || !type){
+                    setConfigTable(tableElem, data, limitLoad);
 
-              
-
-                    data  = data.content;
-    
-                    // data = [
-                    //     {
-                    //         "created_on": "2022-11-23 17:33:03",
-                    //         "id": 2,
-                    //         "renew": true,
-                    //         "service": "fffs",
-                    //         "ticket": "ddddafa",
-                    //         "user_id": 1,
-                    //     },
-                    //     {
-                    //        // "created_on": "2021-02-13 20:33:03",
-                    //         "id": 3,
-                    //         "renew": true,
-                    //         "service": "22233323",
-                    //         "ticket": "fffffff",
-                    //         "user_id": 2,
-                    //     }
-                    // ]
-        
-                    setTableState(table);
-                    parseRowData (data);
-         
-                    if (!offsetParam){
-                    
-                        selectContextId      ();  
-                      //  returnLostData       ();
-                 
-                        returnLostData   ();
-                        returnLostFilter (itemTreeId);
-                               
+                    if (content){
+                        data  = data.content;
             
-                      //  returnLostFilter     (itemTreeId);
-                        if (isPrefs){
-                            returnDashboardFilter(filter);
+                        setTableState(table);
+                        parseRowData (data);
+             
+                        if (!offsetParam){
+                        
+                            selectContextId      ();  
+                     
+                            returnLostData   ();
+                            returnLostFilter (itemTreeId);
+
+                            if (isPrefs){
+                                returnDashboardFilter(filter);
+                            }
                         }
-                    }
-       
-                   
-                 
 
-                    setCounterVal (reccount, tableElem);
-                } else {
-                    setFunctionError(
-                        data.err, 
-                        "loadRows", 
-                        "getData"
-                    );
-                    tableErrorState ();
-                    
-                }
-            });
+                        setCounterVal (reccount, tableElem);
             
-            getData.fail(function(err){
-          
-                tableErrorState ();
-
-                if (err.status == 401 && !($$("popupNotAuth")) && !firstError){
-                    firstError = true;
-                    Backbone.history.navigate("/", { trigger:true});
-                    window.location.reload();
-                } 
-
-                setAjaxError(err, "loadRows", "getData");
+                    }
+                }
+                
             });
+          
 
         }
     });

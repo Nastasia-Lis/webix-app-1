@@ -20,11 +20,11 @@ const action = {
 };
 
 const action2 = {
-    navigate: false,
+    navigate: true,
     field   : "auth_group", 
     context : true,
     params  : {
-       filter : "auth_group.id = 11" 
+       filter : "auth_group.id = 1" 
     // filter : "auth_group.id != '1' or auth_group.id != '3' and auth_group.role contains 'р' or auth_group.role = 'а'" 
        // filter:"auth_user.registration_key != '3dg' and auth_user.registration_id = 'dfgg'"
     } 

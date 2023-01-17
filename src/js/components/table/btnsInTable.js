@@ -1,8 +1,9 @@
 
-import { popupExec }                     from "../../blocks/notifications.js";
-import { setLogValue }                   from '../logBlock.js';
-import { setAjaxError,setFunctionError } from "../../blocks/errors.js";
-import { Action, getItemId }             from "../../blocks/commonFunctions.js";
+import { popupExec }            from "../../blocks/notifications.js";
+import { setLogValue }          from '../logBlock.js';
+import { setFunctionError }     from "../../blocks/errors.js";
+import { ServerData }           from "../../blocks/getServerData.js";
+import { Action, getItemId }    from "../../blocks/commonFunctions.js";
 
 const logNameFile = "table => btnsIntable";
 
@@ -12,36 +13,22 @@ function trashBtn(config,idTable){
         const table      = $$(idTable);
         const formValues = table.getItem(config.row);
         const itemTreeId = getItemId ();
-        const url        = "/init/default/api/" + itemTreeId + "/" + formValues.name + ".json" ;
- 
-        const delData    = webix.ajax().del(url, formValues);
 
-        delData.then(function(data){
-            data = data.json();
-            if (data.err_type == "i"){
-                try {
-                    const selectEl = table.getSelectedId();
-                    table.remove(selectEl);
-                } catch (err){
-                    setFunctionError(
-                        err,
-                        logNameFile,
-                        "wxi-trash => delData"
-                    );
-                }
+
+        new ServerData({
+    
+            id : `${itemTreeId}/${formValues.name}`
+           
+        }).del(formValues).then(function(data){
+        
+            if (data){
+                const selectEl = table.getSelectedId();
+                table.remove(selectEl);
                 setLogValue("success", "Данные успешно удалены");
-            } else {
-                setLogValue("error", data.err);
             }
+             
         });
 
-        delData.fail(function(err){
-            setAjaxError(
-                err, 
-                logNameFile,
-                "wxi-trash => delElem"
-            );
-        });
     }
 
   
@@ -75,14 +62,16 @@ function createUrl(cell){
         const id      = cell.row;
         const columns = $$("table-view").getColumns();
 
-
-        columns.forEach(function(el,i){
+        if (typeof columns == "object"){
+            columns.forEach(function(el,i){
             if (el.id == cell.column){
                 url           = el.src;
                 let urlArgEnd = url.search("{");
                 url           = url.slice(0,urlArgEnd) + id + ".json"; 
             }
-        });  
+        }); 
+        }
+        
     } catch (err){
         setFunctionError(err, logNameFile, "createUrl");
     }
@@ -137,36 +126,26 @@ function resizeProp(propertyElem){
 
 
 function getProp(propertyElem, cell){
-    const url       = createUrl(cell);
-    const getData   = webix.ajax(url);
-
-    getData.then(function(data){
-
-        data = data.json().content;
-
-        if (data.length){
-            setProps    (propertyElem, data);
-            initSpace   (propertyElem);
-            resizeProp  (propertyElem);
-
-        } else {
-            setFunctionError(
-                "Данные отсутствуют", 
-                logNameFile, 
-                "getProp"
-            );
+  
+    const path = createUrl(cell);
+    new ServerData({
+        id         : path,
+        isFullPath : true,
+    
+    }).get().then(function(data){
+    
+        if (data){
+            const content = data.content;
+            if (content && content.length){
+                setProps    (propertyElem, content);
+                initSpace   (propertyElem);
+                resizeProp  (propertyElem);
+            }
+        
         }
-       
-
+         
     });
 
-    getData.fail(function(err){
-        setAjaxError(
-            err, 
-            logNameFile,
-            "getProp"
-        );
-    });
 }
 
 

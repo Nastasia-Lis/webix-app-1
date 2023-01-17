@@ -1,9 +1,12 @@
 
 import { setLogValue }                          from '../../logBlock.js';
-import { setFunctionError, setAjaxError }       from "../../../blocks/errors.js";
-import { createChildFields }                    from "./createElements/childFilter.js";
-import { getItemId, Action, getTable }          from "../../../blocks/commonFunctions.js";
-import { Filter }                               from "./actions/_FilterActions.js";
+import { setFunctionError }                 from "../../../blocks/errors.js";
+import { ServerData }                       from "../../../blocks/getServerData.js";
+import { createChildFields }                from "./createElements/childFilter.js";
+import { getItemId, Action, getTable }      from "../../../blocks/commonFunctions.js";
+import { Filter }                           from "./actions/_FilterActions.js";
+
+import { returnOwner }                      from "../../../blocks/commonFunctions.js";
 
 const logNameFile     = "tableFilter => userTemplate";
 
@@ -123,39 +126,19 @@ function createWorkspace(prefs){
  
 }
 
-
-function createFiltersByTemplate(data) {
-    const currId     = getItemId ();
-
-    data             = data.json().content;
-
+function getOption(){
     const lib        = $$("filterEditLib");
     const libValue   = lib.getValue ();
-    const radioValue = lib.getOption(libValue);
- 
-    try{
-        data.forEach(function (el){
-            const value = radioValue.value;
+    return lib.getOption(libValue);
+}
 
-            const name = 
-            currId + "_filter-template_" + value;
-      
-            if (el.name == name){
-                const prefs = JSON.parse(el.prefs);
-                createWorkspace(prefs.values);
+function createFiltersByTemplate(item) {
+    const radioValue = getOption();
+    const prefs      = JSON.parse(item.prefs);
+    createWorkspace(prefs.values);
 
-                Action.destructItem($$("popupFilterEdit"));
-                Filter.setActiveTemplate(radioValue);
-            }
-
-        });
-    } catch(err){
-        setFunctionError(
-            err, 
-            logNameFile, 
-            "createFiltersByTemplate"
-        );
-    }
+    Action.destructItem($$("popupFilterEdit"));
+    Filter.setActiveTemplate(radioValue);
 }
 
 
@@ -173,30 +156,41 @@ function showHtmlContainers(){
 
 
 
-function getLibraryData(){
+async function getLibraryData(){
+    const currId     = getItemId ();
+    const radioValue = getOption();
+    const value = radioValue.value;
+    const name = 
+    currId + "_filter-template_" + value;
 
-    const userprefsData = webix.ajax("/init/default/api/userprefs/");
+    const owner = await returnOwner();
 
-    userprefsData.then(function(data){
-        createFiltersByTemplate  (data);
-        showHtmlContainers       ();
-        Filter.setStateToStorage ();
-        Filter.enableSubmitButton();
-        Action.hideItem($$("templateInfo"));
-        setLogValue(
-            "success", 
-            "Рабочая область фильтра обновлена"
-        );
+    new ServerData({
+        id : `smarts?query=userprefs.name=${name}+and+userprefs.owner=${owner.id}`
+    }).get().then(function(data){
+    
+        if (data){
+    
+            const content = data.content;
+    
+            if (content && content.length){
+                const item = content[0];
+                createFiltersByTemplate  (item);
 
+                showHtmlContainers       ();
+                Filter.setStateToStorage ();
+                Filter.enableSubmitButton();
+                Action.hideItem($$("templateInfo"));
+                setLogValue(
+                    "success", 
+                    "Рабочая область фильтра обновлена"
+                );
+                
+            }
+        }
+         
     });
 
-    userprefsData.fail(function(err){
-        setAjaxError(
-            err, 
-            logNameFile, 
-            "getLibraryData"
-        );
-    });
 
 }
 

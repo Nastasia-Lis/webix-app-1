@@ -1,10 +1,9 @@
 
-import { getComboOptions, Action }  from "../../../../blocks/commonFunctions.js";
+import { Action }                   from "../../../../blocks/commonFunctions.js";
 import { setFunctionError }         from "../../../../blocks/errors.js";
 
 import { createBtns }               from "./buttons/_layoutBtns.js";
 import { segmentBtn }               from "./segmentBtn.js";
-import { Filter }                   from "../actions/_FilterActions.js";
 import { field }                    from "../createElements/field.js";
 
 const logNameFile = "tableFilter => createElements => parentFilter";

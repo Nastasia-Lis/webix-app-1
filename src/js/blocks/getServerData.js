@@ -1,5 +1,6 @@
 import { setFunctionError, setAjaxError } from "./errors.js";
 
+
 const logNameFile = "getServerData";
 
 
@@ -74,7 +75,7 @@ class ServerData {
                 setAjaxError(
                     err, 
                     logNameFile, 
-                    "getServerData"
+                    "get server data"
                 );
             });   
         }  
@@ -99,7 +100,7 @@ class ServerData {
                 setAjaxError(
                     err, 
                     logNameFile, 
-                    "getServerData"
+                    "put server data"
                 );
             });   
         }  
@@ -124,7 +125,32 @@ class ServerData {
                 setAjaxError(
                     err, 
                     logNameFile, 
-                    "getServerData"
+                    "post server data"
+                );
+            });   
+        }  
+    }
+
+    del(delObj){
+        const self = this;
+
+        if (self.id){
+        
+            const path = self.returnPath();
+    
+            return webix.ajax().del(path, delObj)
+            .then(function(data){
+                return self.validate(data);
+            })
+
+    
+            .fail(function (err){
+                self.errorActions();
+    
+                setAjaxError(
+                    err, 
+                    logNameFile, 
+                    "del server data"
                 );
             });   
         }  
@@ -145,9 +171,9 @@ class ServerData {
 
 //     if (data){
 
-//         const charts = data.charts;
+//         const content = data.content;
 
-//         if (charts){
+//         if (content){
 
 
 //         }
