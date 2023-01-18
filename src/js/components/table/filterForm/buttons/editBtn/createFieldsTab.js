@@ -3,7 +3,8 @@
 import { Action }             from "../../../../../blocks/commonFunctions.js";
 import { setFunctionError }   from "../../../../../blocks/errors.js";
 
-const logNameFile = "tableFilter => buttons => editBtn => createFieldsTab";
+const logNameFile = "tableFilter/buttons/editBtn/createFieldsTab";
+
 
 function popupSizeAdaptive(){
     const k     = 0.89;
@@ -23,28 +24,28 @@ function popupSizeAdaptive(){
 
 function setValueCheckbox(){
     const content     = $$("editFormPopupScrollContent");
-    const checkboxes  = content.getChildViews();
-    const isSelectAll = $$("selectAll").getValue();
-    try{
-        checkboxes.forEach(function(el){
-            const isCheckbox = el.config.id.includes("checkbox");
 
-            if (isCheckbox){
-                if(isSelectAll){
-                    el.setValue(1);
-                } else {
-                    el.setValue(0);
+    if (content){
+        const checkboxes  = content.getChildViews();
+        const isSelectAll = $$("selectAll").getValue();
+    
+        if(checkboxes && checkboxes.length){
+            checkboxes.forEach(function(el){
+                const isCheckbox = el.config.id.includes("checkbox");
+    
+                if (isCheckbox){
+                    if(isSelectAll){
+                        el.setValue(1);
+                    } else {
+                        el.setValue(0);
+                    }
                 }
-            }
-
-        });
-    } catch (err){
-        setFunctionError(
-            err,
-            logNameFile,
-            "setValueCheckbox"
-        );
+    
+            });
+        } 
     }
+      
+  
 }
 
 function returnSelectAllCheckbox(){
@@ -76,23 +77,25 @@ function createCheckboxData(config){
 
 function getAllCheckboxes(){
     const checkboxes           = [];
-    const filterTableElements  = $$("filterTableForm").elements;
+    const form = $$("filterTableForm");
+    if (form){
+        const filterTableElements  = form.elements;
 
-    const values = Object.values(filterTableElements);
-    try{
-        values.forEach(function(el){
-            checkboxes.push(
-                createCheckboxData(el.config)
-            );
-        });
-    } catch (err){
-        setFunctionError( 
-            err, 
-            logNameFile, 
-            "getAllCheckboxes" 
-        );
+        if (filterTableElements){
+            const values = Object.values(filterTableElements);
+    
+            if (values && values.length){
+                values.forEach(function(el){
+                    checkboxes.push(
+                        createCheckboxData(el.config)
+                    );
+                });
+            } 
+        }
+     
     }
- 
+  
+
     return checkboxes;
 }
 
@@ -100,7 +103,8 @@ function getAllCheckboxes(){
 function getStatusCheckboxes(array){
     let counter = 0;
 
-    try{
+    
+    if (array && array.length){
         array.forEach(function(el){
             const isCheckbox = el.config.id.includes("checkbox");
             
@@ -108,18 +112,14 @@ function getStatusCheckboxes(array){
                 const value = el.config.value;
 
                 if ( !(value) || value == "" ){
-                   counter ++;
+                    counter ++;
                 }
             }
-           
+            
         });
-    } catch (err){
-        setFunctionError(
-            err,
-            logNameFile,
-            "getStatusCheckboxes"
-        );
-    }
+    } 
+    
+   
 
     return counter;
 }
@@ -241,9 +241,10 @@ function createCheckboxes(){
         returnSelectAllCheckbox()
     ];
 
-    try {  
-        const formData = getAllCheckboxes();
 
+    const formData = getAllCheckboxes();
+
+    if (formData && formData.length){
         formData.forEach(function (el){
             const isChild  = el.id.includes("child");
 
@@ -255,14 +256,9 @@ function createCheckboxes(){
         });
 
         addCheckboxesToLayout(checkboxesLayout);
-
-    } catch (err){
-        setFunctionError(
-            err, 
-            logNameFile, 
-            "createCheckboxes"
-        );
-    }
+    } 
+  
+ 
 }
 
 

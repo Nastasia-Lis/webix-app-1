@@ -78,10 +78,13 @@ class Popup {
         const popup  = this.popupView; 
         const values = this.values;
 
-        this.keys.forEach(function(option,i){
-            popup[option] = values[i];
-
-        });
+        if (this.keys && this.keys.length){
+            this.keys.forEach(function(option,i){
+                popup[option] = values[i];
+    
+            });
+        }
+     
      
         return popup;
 
@@ -91,10 +94,13 @@ class Popup {
         const popup  = this.popupView; 
         const values = this.values;
 
-        this.keys.forEach(function(option,i){
-            popup[option] = values[i];
-
-        });
+        if (this.keys && this.keys.length){
+            this.keys.forEach(function(option,i){
+                popup[option] = values[i];
+    
+            });
+        }
+     
 
       
         return webix.ui(this.addConfig());

@@ -40,31 +40,37 @@ function pushValues(id, logic, index){
 }
 
 function setOperation(arr){
-    arr.forEach(function(el, i){
-   
-        const segmentBtn = $$( el + "_segmentBtn" );
 
-        if(segmentBtn){
-            try{
-            let logic = null;
+    if (arr && arr.length){
+        arr.forEach(function(el, i){
 
-            if (segmentBtn.isVisible()){
-                logic = segmentBtn.getValue();
-            }
-
-            pushValues(el, logic,  i);
-
-            } catch(err){
-                setFunctionError(
-                    err,
-                    logNameFile,
-                    "setOperation"
-                );
-            }
+            const segmentBtn = $$( el + "_segmentBtn" );
+    
+            if(segmentBtn){
+                try{
+                let logic = null;
+    
+                if (segmentBtn.isVisible()){
+                    logic = segmentBtn.getValue();
+                }
+    
+                pushValues(el, logic,  i);
+    
+                } catch(err){
+                    setFunctionError(
+                        err,
+                        logNameFile,
+                        "setOperation"
+                    );
+                }
+                
+            }  
             
-        }  
-     
-    });
+        });
+    }
+
+  
+
 }
 
 

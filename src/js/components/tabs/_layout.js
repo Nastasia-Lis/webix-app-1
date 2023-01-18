@@ -67,7 +67,7 @@ function restoreTabbar(data){
     const tabs   = data.tabs;
     const select = data.select;
 
-    if (tabs){
+    if (tabs && tabs.length){
         tabs.forEach(function(option){
             tabbar.addOption(option, false); 
         });

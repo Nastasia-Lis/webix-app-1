@@ -38,7 +38,8 @@ function setRefTable (srcTable){
         const cols  = table.getColumns();
  
 
-        try {
+    
+        if (cols && cols.length){
             cols.forEach(function(col){
 
                 if ( col.id == srcTable ){
@@ -52,15 +53,17 @@ function setRefTable (srcTable){
                 }
 
             });
-        } catch (err){
+        } else {
             setFunctionError(
-                err, 
+                "array length is null", 
                 logNameFile, 
                 "setRefTable"
             );
 
-            Action.hideItem($$("EditEmptyTempalte"));
+            Action.hideItem($$("EditEmptyTempalte")); 
         }
+           
+      
 
     }
 

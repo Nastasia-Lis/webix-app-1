@@ -55,6 +55,14 @@ function createBtnsContainer(refBtns){
     }
 }
 
+function returnArrayError(func){
+    setFunctionError(
+        "array length is null", 
+        logNameFile, 
+        func
+    );
+}
+
 function setToolBtns(){
     const property      = $$("editTableFormProperty");
     const refBtns       = $$("propertyRefbtns");
@@ -64,7 +72,7 @@ function setToolBtns(){
 
     createBtnsContainer(refBtns);
 
-    if (propertyElems){
+    if (propertyElems && propertyElems.length){
         propertyElems.forEach(function(el){
         
             if (el.type == "combo"){
@@ -81,6 +89,8 @@ function setToolBtns(){
     
             }
         });
+    } else {
+        returnArrayError("setToolBtns");
     }
 
 }
@@ -194,7 +204,7 @@ function returnPropElem(el){
 }
 function findContentHeight(arr){
     let result = 0;
-    if (arr){
+    if (arr && arr.length){
      
         arr.forEach(function(el, i){
             const height = el.$height;
@@ -203,6 +213,8 @@ function findContentHeight(arr){
             }
       
         });
+    } else {
+        returnArrayError("findContentHeight");
     }
   
  
@@ -246,17 +258,22 @@ function createProperty (parentElement) {
         if ( !propertyLength ){
             const propElems = [];
 
-            columnsData.forEach((el) => {
+            if (columnsData && columnsData.length){
+                columnsData.forEach((el) => {
 
-                const propElem = returnPropElem(el);
-                propElems.push(propElem);
-
-            });
-
-        
-            createDateEditor();
-            addEditInputs   (propElems);
-            setToolBtns     ();
+                    const propElem = returnPropElem(el);
+                    propElems.push(propElem);
+    
+                });
+    
+            
+                createDateEditor();
+                addEditInputs   (propElems);
+                setToolBtns     ();
+            } else {
+                returnArrayError("createProperty");
+            }
+          
     
 
         } else {

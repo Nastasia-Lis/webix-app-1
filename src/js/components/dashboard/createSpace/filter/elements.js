@@ -275,6 +275,7 @@ function createInputs( input ){
 }
 
 function createFilter (inputs, el, ids){
+ 
     idsParam           = ids;
     inputsArray.length = 0;
 

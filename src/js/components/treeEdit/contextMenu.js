@@ -39,11 +39,14 @@ class Option {
         const data       = this.returnComboData();
         const pullValues = this.returnPullValues();
 
-        pullValues.forEach(function(el,i){
-            if (el.id !== option.id){
-                data.parse(option);
-            }
-        });
+        if (pullValues && pullValues.length){
+            pullValues.forEach(function(el,i){
+                if (el.id !== option.id){
+                    data.parse(option);
+                }
+            });
+        }
+       
 
     }
 
@@ -51,13 +54,15 @@ class Option {
         const data       = this.returnComboData();
         const pullValues = this.returnPullValues();
    
-        pullValues.forEach(function (el){
+        if (pullValues && pullValues.length){
+            pullValues.forEach(function (el){
 
-            if (el.id == option.id){
-                data.parse(option);
-            }
-           
-        });
+                if (el.id == option.id){
+                    data.parse(option);
+                }
+            
+            });
+        }
       
     }
 
@@ -77,22 +82,26 @@ class Option {
 
         function isExists(element){
             let check = false;
-            pullValues.forEach(function (el){
+            if (pullValues && pullValues.length){
+                pullValues.forEach(function (el){
 
-                if (el.id == element){
-                    check = true;
-                }
-            });
+                    if (el.id == element){
+                        check = true;
+                    }
+                });
+            }
             return check;
         }
 
         const removeItems = removeSubItemOptions(option.id);
-        removeItems.forEach(function (item){
-            if (isExists(item)){
-                data.remove(item);
-            }
+        if (removeItems && removeItems.length){
+            removeItems.forEach(function (item){
+                if (isExists(item)){
+                    data.remove(item);
+                }
 
-        });
+            });
+        }
     
     }
 

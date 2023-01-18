@@ -56,14 +56,15 @@ function returnFilter(el){
 function generateElements(){
     const inputsArray = [];
     const columnsData = $$("table").getColumns(true);
-    try{
+    
+    if (columnsData.length){
         columnsData.forEach((el) => {
             const id = el.id;
 
             const idFullContainer  = id + "_filter_rows";
             const idInnerContainer = id + "_filter-container";
             const cssContainer     = id + " webix_filter-inputs";
-         
+            
             const filter  =  {   
                 id  : idFullContainer,
                 idCol:id,
@@ -87,14 +88,10 @@ function generateElements(){
 
         });
 
-        return inputsArray;
-    } catch (err){ 
-        setFunctionError(
-            err,
-            logNameFile,
-            "generateElements"
-        );
     }
+    
+    return inputsArray;
+    
 
 }
 

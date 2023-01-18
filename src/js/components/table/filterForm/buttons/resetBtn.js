@@ -10,10 +10,9 @@ import { Filter }               from "../actions/_FilterActions.js";
 const logNameFile   = "filterForm => buttons => resetBtn";
 
 
-
 function removeValues(collection){
 
-    if (collection){
+    if (collection && collection.length){
 
         collection.forEach(function(el){
             const idChild = el.includes("_filter-child-");
@@ -23,17 +22,19 @@ function removeValues(collection){
             }
      
         });
-    }
+    } 
     
 }
 
 function removeChilds(){
    const keys = Filter.getItems();
 
-    keys.forEach(function(key){ 
-        const item = Filter.getItem(key);
-        removeValues(item);
-    });
+    if (keys && keys.length){
+        keys.forEach(function(key){ 
+            const item = Filter.getItem(key);
+            removeValues(item);
+        });
+    } 
 
 }
 
@@ -51,17 +52,14 @@ function hideInputsContainer(){
     const inputs    = document.querySelectorAll(css);
     const hideClass = "webix_hide-content";
 
-    try{
+
+    if (inputs && inputs.length){
         inputs.forEach(function(elem){
             Filter.addClass(elem, hideClass);
         });
-    } catch (err){
-        setFunctionError(
-            err,
-            logNameFile,
-            "hideInputsContainer"
-        );
-    }
+    } 
+      
+  
 }
 
 

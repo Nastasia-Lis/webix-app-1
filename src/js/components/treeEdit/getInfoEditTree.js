@@ -35,13 +35,16 @@ function isParent(el){
 function findParents(treeData){
     const parents = [];
 
-    treeData.forEach(function(item,i){
+    if (treeData && treeData.length){
+        treeData.forEach(function(item,i){
 
-        if (isParent(item.id)){
-            parents.push(item);
-        }
-       
-    });
+            if (isParent(item.id)){
+                parents.push(item);
+            }
+           
+        });
+    
+    }
 
     return parents;
 }
@@ -49,20 +52,26 @@ function findParents(treeData){
 
 function setComboValues(treeData){
     const parents = findParents(treeData);
-    const options = returnEmptyOption();
-    const combo   = $$("editTreeCombo");
+ 
 
-    parents.forEach(function(parent){
-        options.push({
-            id    : parent.id,
-            value : parent.value
+    if (parents && parents.length){
+
+        const options = returnEmptyOption();
+        const combo   = $$("editTreeCombo");
+
+        parents.forEach(function(parent){
+            options.push({
+                id    : parent.id,
+                value : parent.value
+            });
         });
-    });
+    
+        combo.getPopup().getList().parse(options);
+    
+        const firstOption = options[0].id;
+        combo.setValue(firstOption);
+    }
 
-    combo.getPopup().getList().parse(options);
-
-    const firstOption = options[0].id;
-    combo.setValue(firstOption);
 
 }
 
@@ -81,12 +90,15 @@ async function getRefField(){
 function getOptions(data){
     const options = returnEmptyOption();
 
-    data.forEach(function(el){
-        options.push({
-            id    : el.id, 
-            value : el.first_name
+    if (data && data.length){
+        data.forEach(function(el){
+            options.push({
+                id    : el.id, 
+                value : el.first_name
+            });
         });
-    });
+    }
+ 
 
     return options;
 }
@@ -135,8 +147,10 @@ function createTreeItem(el){
 
 function pushTreeData(data){
     const treeData = [];       
-    try{
-        data.forEach(function(el,i){
+ 
+
+    if (data && data.length){
+        data.forEach(function(el){
             if (el.pid == 0){
                 const rootElement = createTreeItem(el);
 
@@ -149,9 +163,8 @@ function pushTreeData(data){
                 treeData.push (element );
             }
         });
-    } catch (err) {
-        setFunctionError(err,logNameFile,"pushTreeData");
     }
+
 
     return treeData;
 }
@@ -160,16 +173,20 @@ function createStruct(treeData){
     const treeStruct = [];
     const map        = {};
     try{
-        treeData.forEach(function(el, i){
 
-            map[el.id] = i; 
+        if (treeData && treeData.length){
+            treeData.forEach(function(el, i){
 
-            if ( el.pid !== 0 && el.pid !== el.id && el.pid !== null ) {
-                treeData[map[el.pid]].data.push(el);
-            } else {
-                treeStruct.push(el);
-            }
-        });
+                map[el.id] = i; 
+    
+                if ( el.pid !== 0 && el.pid !== el.id && el.pid !== null ) {
+                    treeData[map[el.pid]].data.push(el);
+                } else {
+                    treeStruct.push(el);
+                }
+            });
+        }
+    
     } catch (err) {
         setFunctionError(err, logNameFile, "createStruct");
     }

@@ -1,7 +1,7 @@
 import { setFunctionError }         from "../../blocks/errors.js";
 import { mediator }                 from "../../blocks/_mediator.js";
 import { ServerData }               from "../../blocks/getServerData.js";
-import { Action }                   from "../../blocks/commonFunctions.js";
+import { Action, isArray }          from "../../blocks/commonFunctions.js";
 import { RouterActions }            from "./actions/_RouterActions.js";
 
 const logNameFile = "router => settings";
@@ -29,10 +29,8 @@ function setUserprefsNameValue (){
 
 
 function setTemplateValue(data){
-
-    const type = typeof data;
-
-    if (type == "object"){
+ 
+    if (isArray(data, logNameFile, "setTemplateValue")){
         data.forEach(function(el){
             const name    = el.name;
             const prefsId = "userprefs";
@@ -45,15 +43,7 @@ function setTemplateValue(data){
                 form.config.storagePrefs = prefs;
             }
         });
-    } else {
-        setFunctionError(
-            `error type of data : ${type}`, 
-            logNameFile, 
-            "setTemplateValue"
-        );
-    }
-    
-
+    } 
 
 }
 

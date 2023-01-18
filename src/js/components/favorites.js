@@ -34,14 +34,17 @@ function findFavsInUserData(data, id){
     const collection = [];
     try{
 
-        data.forEach(function(el){
-            if (el.name.includes("fav-link") && id == el.owner){
-                const prefs  = JSON.parse(el.prefs);
-                prefs.dataId = el.id;
-                collection.push(prefs);
-                
-            }
-        });
+        if (data && data.length){
+            data.forEach(function(el){
+                if (el.name.includes("fav-link") && id == el.owner){
+                    const prefs  = JSON.parse(el.prefs);
+                    prefs.dataId = el.id;
+                    collection.push(prefs);
+                    
+                }
+            });
+        }
+       
 
     } catch (err){
         setFunctionError(
@@ -59,7 +62,7 @@ function createOptions(data, user){
     const favCollection = findFavsInUserData(data, user.id);
     const radio         = $$("favCollectionLinks");
     try{
-        if (favCollection.length){
+        if (favCollection && favCollection.length){
             favCollection.forEach(function(el){
          
                 radio.addOption(

@@ -1,12 +1,14 @@
 
 import { getItemId, returnOwner }   from "../../../../../blocks/commonFunctions.js";
-
+import { setFunctionError }         from "../../../../../blocks/errors.js";
 import { ServerData }               from "../../../../../blocks/getServerData.js";
 
 
 let user;
 let prefsData;
 let lib;
+
+ 
 
 function clearOptionsPull() {
     
@@ -15,7 +17,8 @@ function clearOptionsPull() {
     const options     = lib.config.options;
     const isLibExists = options.length;
 
-    if (lib && isLibExists){
+    if (lib && isLibExists && options && oldOptions){
+
         options.forEach(function(el){
             oldOptions.push(el.id);
         });
@@ -59,13 +62,19 @@ function setTemplates(){
    
     clearOptionsPull();
 
-    if (typeof prefsData == "object"){
+    if (prefsData && prefsData.length){
         prefsData.forEach(function(data, i){
             if(isThisOption(data)){
                 createOption(i, data);
             }
         
         });
+    } else {
+        setFunctionError(
+            "array is null",
+            "table/filterForm/buttons/editBtn/createLibTab",
+            "setTemplates"
+        );
     }
 
 

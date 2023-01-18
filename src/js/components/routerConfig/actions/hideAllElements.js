@@ -4,23 +4,25 @@ import { setFunctionError }   from "../../../blocks/errors.js";
 
 function hideAllElements (){
 
-    try {
-        const container = $$("container");
-        const childs    = container.getChildViews();
-        
+  
+    const container = $$("container");
+    const childs    = container.getChildViews();
+    
+    if (childs.length){
         childs.forEach(function(el){
             const view = el.config.view;
             if(view == "scrollview" || view == "layout"){
                 Action.hideItem($$(el.config.id));
             }
         });
-    } catch (err){
+    } else {
         setFunctionError(
-            err,
-            "routerConfig => hideAllElements",
+            "array length is null",
+            "routerConfig/hideAllElements",
             "hideAllElements"
-        );
+        ); 
     }
+
   
      
 }

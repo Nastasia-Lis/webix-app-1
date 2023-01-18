@@ -1,4 +1,5 @@
 import { GetFields }        from "../../../../blocks/globalStorage.js";
+import { isArray }         from "../../../../blocks/commonFunctions.js";
 
 function createDetailAction (columnsData, idsParam, idCurrTable){
     let idCol;
@@ -7,14 +8,16 @@ function createDetailAction (columnsData, idsParam, idCurrTable){
 
     const data          = GetFields.item(idsParam);
     const table         = $$(idCurrTable);
+    if (isArray(columnsData, "table/createSpace/cols/detailAction", "createDetailAction")){
+        columnsData.forEach(function(field, i){
+            if( field.type  == "action" && data.actions[field.id].rtype == "detail"){
+                checkAction = true;
+                idCol       = i;
+                actionKey   = field.id;
+            } 
+        });
+    }
 
-    columnsData.forEach(function(field, i){
-        if( field.type  == "action" && data.actions[field.id].rtype == "detail"){
-            checkAction = true;
-            idCol       = i;
-            actionKey   = field.id;
-        } 
-    });
     
     if (actionKey !== undefined){
         const urlFieldAction = data.actions[actionKey].url;

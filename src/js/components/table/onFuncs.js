@@ -20,21 +20,27 @@ function toEditForm (nextItem) {
     function setViewDate(){
         const parseDate = webix.Date.dateToStr("%d.%m.%y %H:%i:%s");
  
-        const values    = Object.values(valuesTable);
+        if (valuesTable){
+            const values    = Object.values(valuesTable);
     
-        try{
-            values.forEach(function(el, i){
-                if(el instanceof Date){
-           
-                    const key        = Object.keys(valuesTable)[i];
-                    const value      = parseDate(el);
-                    valuesTable[key] = value;
+            if (values.length){
+                try{
+                    values.forEach(function(el, i){
+                        if(el instanceof Date){
+                   
+                            const key        = Object.keys(valuesTable)[i];
+                            const value      = parseDate(el);
+                            valuesTable[key] = value;
+                        }
+                    
+                    });
+                } catch (err){ 
+                    setFunctionError(err, logNameFile, "setViewDate");
                 }
-            
-            });
-        } catch (err){ 
-            setFunctionError(err, logNameFile, "setViewDate");
+            }
+           
         }
+        
     }
 
     
@@ -210,7 +216,7 @@ const onFuncTable = {
             self.setColumnWidth(colId, newWidth);
         }
         
-        if (cols){
+        if (cols && cols.length){
             const lastIndex = cols.length - 1;
             let currColIndex;
 

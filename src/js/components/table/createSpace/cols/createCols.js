@@ -165,9 +165,9 @@ function createTableCols (idsParam, idCurrTable){
   
     const columnsData   = [];
     
-    table               = $$(idCurrTable);
+    table = $$(idCurrTable);
 
-    if (typeof colsName == "object" && colsName.length){
+    if (colsName.length){
         colsName.forEach(function(data) {
             field = dataFields[data]; 
          
@@ -190,6 +190,12 @@ function createTableCols (idsParam, idCurrTable){
         
         refreshCols(columnsData);
         setUserPrefs(table, idsParam); 
+    } else {
+        setFunctionError(
+            "array length is null",
+            logNameFile,
+            "createTableCols"
+        );
     }
           
 

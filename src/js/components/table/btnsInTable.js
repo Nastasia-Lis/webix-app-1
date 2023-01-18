@@ -62,7 +62,7 @@ function createUrl(cell){
         const id      = cell.row;
         const columns = $$("table-view").getColumns();
 
-        if (typeof columns == "object"){
+        if (columns && columns.length){
             columns.forEach(function(el,i){
             if (el.id == cell.column){
                 url           = el.src;
@@ -82,7 +82,8 @@ function createUrl(cell){
 function setProps(propertyElem, data){
     const arrayProperty = [];
 
-    try{
+ 
+    if (data && data.length){
         data.forEach(function(el, i){
             arrayProperty.push({
                 type    : "text", 
@@ -93,13 +94,8 @@ function setProps(propertyElem, data){
         });
 
         propertyElem.define("elements", arrayProperty);
-    } catch (err){
-        setFunctionError(
-            err, 
-            logNameFile, 
-            "setProps"
-        );
     }
+ 
 }
 
 

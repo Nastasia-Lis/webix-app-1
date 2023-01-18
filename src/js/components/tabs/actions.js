@@ -116,12 +116,14 @@ function emptyTabsLogic(lastTab){
     const options = tabbar.config.options;
 
     let conutEmptyTabs = 0;
-    options.forEach(function(el, i){
-        if (el.info && el.info.tree && el.info.tree.none){ // empty tab
-            conutEmptyTabs ++;
-        }
-    });
-
+    if (options && options.length){
+        options.forEach(function(el, i){
+            if (el.info && el.info.tree && el.info.tree.none){ // empty tab
+                conutEmptyTabs ++;
+            }
+        });
+    }
+  
      
     if (options.length == conutEmptyTabs){ // all tabs is empty
         setEmptyTabLink();

@@ -106,20 +106,20 @@ class GetFields extends LoadServerData {
         } 
     }
 
-    static item (key){
-        if (this.fields){
+    static item (key){    
+        if (this.fields && this.fields.content){
             return this.fields.content[key];
         } 
     }
 
     static get keys (){
-        if (this.fields){
+        if (this.fields && typeof this.fields == "object"){
             return Object.keys  (this.fields.content);
         }   
     }
 
     static get values (){
-        if (this.fields){
+        if (this.fields && typeof this.fields == "object"){
             return Object.values(this.fields.content);
         } 
     }

@@ -15,13 +15,16 @@ function createSpace(){
     function findRemoveEl(elem){
         let check = false;
 
-        cols.forEach(function(item,i){
+        if (cols.length){
+            cols.forEach(function(item,i){
             
-            if (elem == item.id){
-                check = true;
-            }
-
-        });
+                if (elem == item.id){
+                    check = true;
+                }
+    
+            });
+        }
+      
 
  
         return check;
@@ -30,20 +33,17 @@ function createSpace(){
     
     function removeListItem(){
 
-        try{
+       
+        if (listPull && listPull.length){
             listPull.forEach(function(el){
                 if (findRemoveEl(el.column)){
                     list.remove(el.id);
                 }
 
             });
-        } catch (err){
-            setFunctionError(
-                err,
-                logNameFile,
-                "createSpace => removeListItem"
-            );
-        }  
+        }
+           
+       
     }
 
     function addListSelectedItem(){
@@ -53,23 +53,18 @@ function createSpace(){
         if (cols.length){
             Action.hideItem(emptyEl);
         }
-        try{
+        if (cols && cols.length){
             cols.forEach(function(col){
                 viewList.add({
                     column  :col.id,
                     label   :col.label,
                 });
             });
-        } catch (err){
-            setFunctionError(
-                err,
-                logNameFile,
-                "createSpace => addListSelectedItem"
-            );
-        } 
+     
+        }
+          
     }
-
-  //  if (listPull.length !== cols.length){
+ 
     if (listPull.length){
         removeListItem();
         addListSelectedItem();
@@ -88,18 +83,21 @@ function createListItems(idTable){
         columns        = currTable.getColumns(true);
         const sortCols = _.sortBy(columns, "label");
 
-        sortCols.forEach(function(col){
+        if (sortCols.length){
+            sortCols.forEach(function(col){
             
-            if(col.css !== "action-column" && !col.hiddenCustomAttr ){
-      
-                $$("visibleList").add({
-                    column  :col.id,
-                    label   :col.label,
-                });
+                if(col.css !== "action-column" && !col.hiddenCustomAttr ){
+          
+                    $$("visibleList").add({
+                        column  :col.id,
+                        label   :col.label,
+                    });
+                    
+                }
                 
-            }
-            
-        });
+            });
+        }
+    
 
     } catch (err){
         setFunctionError(

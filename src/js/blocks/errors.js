@@ -25,9 +25,11 @@ function setAjaxError(err, file, func){
 
 let error;
 function setToLog(msg){
-    console.log(error)
-    if (!error){
 
+   
+    if (error){
+        console.log(error);
+    } else {
         const sentObj = {
             level : 3,
             msg   : msg 
@@ -47,8 +49,9 @@ function setToLog(msg){
                 "errors", 
                 "setToLog"
             );
-        });
+        }); 
     }
+
 }
 
 function setFunctionError(err, file, func){

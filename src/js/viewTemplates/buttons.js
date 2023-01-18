@@ -50,9 +50,12 @@ class Button {
             const names  = Object.keys  (this.onFunc);
             const values = Object.values(this.onFunc);
 
-            names.forEach(function(name,i){
-                button.on[name] = values[i];
-            });
+            if (names && names.length){
+                names.forEach(function(name,i){
+                    button.on[name] = values[i];
+                });
+            }
+          
 
         }
 
@@ -89,18 +92,21 @@ class Button {
         const values = this.values;
         const self   = this;
 
-        this.keys.forEach(function(option,i){
+        if (this.keys && this.keys.length){
+            this.keys.forEach(function(option,i){
 
-            button[option] = values[i];
-
-            if (option === "hotkey"){
-                self.modifyTitle(i);
-            }
-
-        });
-
-        this.addOnFunctions (button);
-     
+                button[option] = values[i];
+    
+                if (option === "hotkey"){
+                    self.modifyTitle(i);
+                }
+    
+            });
+    
+            this.addOnFunctions (button);
+         
+        }
+  
         return button;
 
     }

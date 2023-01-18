@@ -12,8 +12,11 @@ function isErrorsExists(data, errorActions){
 
         if (type !== "i"){
 
-            
-            errorActions();
+            if (errorActions){
+                errorActions();
+            }
+           
+       
 
             setFunctionError(
                 err, 
@@ -70,7 +73,10 @@ class ServerData {
             })
     
             .fail(function (err){
-                self.errorActions();
+                if (self.errorActions){
+                    self.errorActions();
+                }
+               
     
                 setAjaxError(
                     err, 
@@ -95,7 +101,10 @@ class ServerData {
 
     
             .fail(function (err){
-                self.errorActions();
+                if (self.errorActions){
+                    self.errorActions();
+                }
+               
     
                 setAjaxError(
                     err, 
@@ -120,7 +129,10 @@ class ServerData {
 
     
             .fail(function (err){
-                self.errorActions();
+                if (self.errorActions){
+                    self.errorActions();
+                }
+               
     
                 setAjaxError(
                     err, 
@@ -145,7 +157,10 @@ class ServerData {
 
     
             .fail(function (err){
-                self.errorActions();
+                if (self.errorActions){
+                    self.errorActions();
+                }
+               
     
                 setAjaxError(
                     err, 
@@ -181,6 +196,7 @@ class ServerData {
      
 // });
 
+ 
 export {
     ServerData
 };

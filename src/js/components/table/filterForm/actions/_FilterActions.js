@@ -3,8 +3,9 @@ import { clearSpace }       from "./clearSpace.js";
 import { getFilterState }   from "./getFilterState.js";
 import { setState }         from "./setStateToStorage.js";
 import { resetTable }       from "./resetTable.js";
-
-import { Action, getTable } from "../../../../blocks/commonFunctions.js";
+import { setFunctionError } from "../../../../blocks/errors.js";
+import { Action, 
+        getTable }          from "../../../../blocks/commonFunctions.js";
 
 const visibleInputs = {};
 
@@ -49,10 +50,13 @@ class FilterPull {
         const result    = [];
         if(container){
             const childs = container.getChildViews();
-            childs.forEach(function(el, i){
-                result[el.config.idCol] = i;
-              
-            });
+            if (childs.length){
+                childs.forEach(function(el, i){
+                    result[el.config.idCol] = i;
+                  
+                });
+            }
+           
         }
 
         return result;
@@ -80,21 +84,24 @@ class FilterPull {
     
     static clearAll(){
         const keys = this.getItems();
-        if (keys){
+        if (keys.length){
             keys.forEach(function(key){
                 delete visibleInputs[key];
             });
-        }
+        }  
     }
 
     static removeItemChild(key, child){
         const item = this.getItem(key);
 
-        item.forEach(function(id, i){
-            if (id == child){
-                item.splice(i, 1);
-            }
-        });
+        if (item.length){
+            item.forEach(function(id, i){
+                if (id == child){
+                    item.splice(i, 1);
+                }
+            });
+        } 
+       
     }
    
     static spliceChild (key, pos, child){
@@ -167,15 +174,18 @@ class Filter extends FilterPull {
     static hideInputsContainers(visibleInputs){
         const table = getTable();
         const cols  = table.getColumns();
-        cols.forEach(function(col){
-            const found = visibleInputs.find(element => element == col.id);
-    
-            if (!found){
-                const htmlElement = document.querySelector("." + col.id ); 
-                Filter.addClass   (htmlElement, "webix_hide-content");
-                Filter.removeClass(htmlElement, "webix_show-content");
-            }
-        });
+        if (cols && cols.length){
+            cols.forEach(function(col){
+                const found = visibleInputs.find(element => element == col.id);
+        
+                if (!found){
+                    const htmlElement = document.querySelector("." + col.id ); 
+                    Filter.addClass   (htmlElement, "webix_hide-content");
+                    Filter.removeClass(htmlElement, "webix_show-content");
+                }
+            });
+        } 
+        
     }
 
     static enableSubmitButton(){
@@ -184,7 +194,7 @@ class Filter extends FilterPull {
         const inputs   = this.getAllChilds (true);
         let fullValues = true;
     
-        if (inputs){
+        if (inputs.length){
             inputs.forEach(function(input){
                 const isValue = $$(input).getValue();
                 if (!isValue && fullValues){
@@ -197,7 +207,7 @@ class Filter extends FilterPull {
             } else {
                 Action.disableItem(btn);
             }
-        }
+        } 
     }
     
     

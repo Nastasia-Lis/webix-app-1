@@ -1,4 +1,5 @@
 import { LoadServerData, GetMenu, GetFields }   from "../../blocks/globalStorage.js";
+import { isArray }                              from "../../blocks/commonFunctions.js";
 import { setFunctionError }                     from "../../blocks/errors.js";
 
 
@@ -35,20 +36,15 @@ function createNoneEl(uid, idParent){
 function isUniqueItem (menu, data){
     let check  = true;
 
-    try{
+    if (isArray(menu, logNameFile, "isUniqueItem")){
         menu.forEach(function(el, i){
             if (el.name == data){
                 check = false;
                 
             }
         });
-    } catch (err){
-        setFunctionError(
-            err, 
-            logNameFile, 
-            "isUniqueItem"
-        );
     }
+   
     return check;
 }
 
@@ -121,7 +117,7 @@ async function generateMenuData (typeChild, idParent, uid){
 
     let itemsExists = false;
 
-    if (keys){
+    if (keys && keys.length){
         try{
         
             keys.forEach(function(data, i) {

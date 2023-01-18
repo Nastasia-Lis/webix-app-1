@@ -20,7 +20,7 @@ const logNameFile = "filterTable => popup => submitBtn";
 
 
 function returnCollection(value){
-    const colId      = $$(value).config.columnName;
+    const colId = $$(value).config.columnName;
     return Filter.getItem(colId);
 }
 
@@ -28,86 +28,101 @@ function visibleSegmentBtn(selectAll, selectValues){
  
     const selectLength = selectValues.length;
 
-    selectValues.forEach(function(value, i){
-        const collection = returnCollection(value);
+    if (selectValues && selectLength){
+        selectValues.forEach(function(value, i){
+            const collection = returnCollection(value);
+        
+            const length     = collection.length;
+            const lastIndex  = length - 1;
+            const lastId     = collection[lastIndex];
     
-        const length     = collection.length;
-        const lastIndex  = length - 1;
-        const lastId     = collection[lastIndex];
-
-        const segmentBtn = $$(lastId + "_segmentBtn");
-
-        const lastElem   = selectLength - 1;
-        const prevElem   = selectLength - 1;
-
-        if ( i === lastElem){
-          //  скрыть последний элемент
-            Action.hideItem(segmentBtn);
-
-        } else if ( i === prevElem || selectAll){
-            Action.showItem(segmentBtn);
-        }
+            const segmentBtn = $$(lastId + "_segmentBtn");
+    
+            const lastElem   = selectLength - 1;
+            const prevElem   = selectLength - 1;
+    
+            if ( i === lastElem){
+              //  скрыть последний элемент
+                Action.hideItem(segmentBtn);
+    
+            } else if ( i === prevElem || selectAll){
+                Action.showItem(segmentBtn);
+            }
+       
+        });
+    }
    
-    });
 }
 
 
 function createWorkspaceCheckbox (){
-    const values       = $$("editFormPopup").getValues();
-    const selectValues = [];
+    const popup        = $$("editFormPopup");
 
-    try{
-        const keys    = Object.keys(values); 
-     
-        let selectAll = false;
-     
-        keys.forEach(function(el){
-            const isChecked = values[el];
+    if (popup){
+        const values       = popup.getValues();
+        const selectValues = [];
+    
+        try{
+            const keys    = Object.keys(values); 
 
-            if (isChecked && el !== "selectAll"){
-                selectValues.push(el);
-            } else if (el == "selectAll"){
-                selectAll = true;
+            if (keys && keys.length){
+
+                let selectAll = false;
+         
+                keys.forEach(function(el){
+                    const isChecked = values[el];
+        
+                    if (isChecked && el !== "selectAll"){
+                        selectValues.push(el);
+                    } else if (el == "selectAll"){
+                        selectAll = true;
+                    }
+              
+                    const columnName = $$(el).config.columnName;
+        
+               
+                    Filter.setFieldState(values[el], columnName);
+          
+                });
+        
+                visibleSegmentBtn(selectAll, selectValues);
             }
-      
-            const columnName = $$(el).config.columnName;
-
-       
-            Filter.setFieldState(values[el], columnName);
-  
-        });
-
-        visibleSegmentBtn(selectAll, selectValues);
-
-    } catch(err){
-        setFunctionError(
-            err,
-            logNameFile,
-            "createWorkspaceCheckbox"
-        );
+         
+    
+        } catch(err){
+            setFunctionError(
+                err,
+                logNameFile,
+                "createWorkspaceCheckbox"
+            );
+        }
     }
+
 }
 
 function visibleCounter(){
-    const elements      = $$("filterTableForm").elements;
-    const values        = Object.values(elements);
+    const form = $$("filterTableForm");
     let visibleElements = 0;
-    try{
-        values.forEach(function(el){
-            const isVisibleElem = el.config.hidden;
-            if ( !isVisibleElem ){
-                visibleElements++;
-            }
-            
-        });
+    if (form){
+        const elements      = $$("filterTableForm").elements;
 
-    } catch(err){
-        setFunctionError(
-            err,
-            logNameFile,
-            "visibleCounter"
-        );
+        if (elements && elements.length){
+            const values        = Object.values(elements);
+      
+            if (values && values.length){
+                values.forEach(function(el){
+                    const isVisibleElem = el.config.hidden;
+                    if ( !isVisibleElem ){
+                        visibleElements++;
+                    }
+                    
+                });
+            }
+          
+        }
+      
     }
+   
 
     return visibleElements;
 }
@@ -192,25 +207,30 @@ function resultActions(){
 
 function isUnselectAll(){
     const checkboxContainer = $$("editFormPopupScrollContent");
-    const checkboxes        = checkboxContainer.getChildViews();
-
     let isUnchecked = true;
-    
-    checkboxes.forEach(function(el){
-        const id       = el.config.id;
-        const checkbox = $$(id);
+    if (checkboxContainer){
+        const checkboxes = checkboxContainer.getChildViews();
 
-        if (checkbox){
-
-            const value = checkbox.getValue();
-
-            if (value && isUnchecked && id !== "selectAll"){
-                isUnchecked = false;
-            }
+        if (checkboxes && checkboxes.length){
+            checkboxes.forEach(function(el){
+                const id       = el.config.id;
+                const checkbox = $$(id);
+        
+                if (checkbox){
+        
+                    const value = checkbox.getValue();
+        
+                    if (value && isUnchecked && id !== "selectAll"){
+                        isUnchecked = false;
+                    }
+                }
+        
+            });
         }
-
-    });
-
+ 
+    
+    }
+ 
     return isUnchecked;
 
 }

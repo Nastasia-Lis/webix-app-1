@@ -3,7 +3,7 @@ import { setLogValue }                           from '../../../logBlock.js';
 import { setFunctionError }                      from "../../../../blocks/errors.js";
 import { modalBox }                              from "../../../../blocks/notifications.js";
 import { ServerData }                            from "../../../../blocks/getServerData.js";
-import { getItemId, returnOwner }                from "../../../../blocks/commonFunctions.js";
+import { getItemId, returnOwner, isArray }       from "../../../../blocks/commonFunctions.js";
 
 import { Button }                                from "../../../../viewTemplates/buttons.js";
 import { Filter }                                from "../actions/_FilterActions.js";
@@ -30,7 +30,7 @@ async function isTemplateExists(owner){
     
             const content = data.content;
     
-            if (content && typeof content == "object" && content.length){
+            if (isArray(content, logNameFile, "isTemplateExists")){
     
                 content.forEach(function(el){
    

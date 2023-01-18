@@ -21,7 +21,7 @@ const action = {
 
 const action2 = {
     navigate: true,
-    field   : "auth_group", 
+    field   : "protocols", 
     context : true,
     params  : {
        filter : "auth_group.id = 1" 

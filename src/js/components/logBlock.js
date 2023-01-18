@@ -87,11 +87,15 @@ function returnName(srcTable){
     const names = GetFields.names;
     let name;
     try{
-        names.forEach(function(el){
-            if (el.id == srcTable){
-                name = el.name;
-            }
-        });
+
+        if (names && names.length){
+            names.forEach(function(el){
+                if (el.id == srcTable){
+                    name = el.name;
+                }
+            });
+        }
+        
 
     } catch (err){
         setFunctionError(
@@ -108,7 +112,7 @@ async function createLogMessage(srcTable) {
     let name;
 
     if (srcTable == "version"){
-        name = 'Expa v1.0.79';
+        name = 'Expa v1.0.80';
 
     } else if (srcTable == "cp"){
         name = 'Смена пароля';

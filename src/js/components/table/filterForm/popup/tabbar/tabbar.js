@@ -73,23 +73,21 @@ function filterLibrary(){
 function editFilter (){
     
     const checkboxes = $$("editFormPopup").getValues();
-    const values     = Object.values(checkboxes);
+
     let counter = 0;
-    
+        
+
     function countChecked(){
-        try{
-            values.forEach(function(el,i){
+        const values = Object.values(checkboxes);
+        if (values && values.length){
+            values.forEach(function(el){
                 if (el){
                     counter++;
                 }
             });
-        } catch(err){
-            setFunctionError(
-                err, 
-                logNameFile, 
-                "countChecked"
-            );
         }
+           
+        
     }
     
     function setStateSubmitBtn(){
@@ -100,11 +98,13 @@ function editFilter (){
         }
     }
 
-    
+    if (checkboxes){
 
-    countChecked     ();
-    visibleRemoveBtn (false);
-    setStateSubmitBtn();
+        countChecked     ();
+        visibleRemoveBtn (false);
+        setStateSubmitBtn();
+    }
+   
    
 }
 

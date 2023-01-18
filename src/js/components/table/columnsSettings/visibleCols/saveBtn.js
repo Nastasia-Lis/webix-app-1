@@ -42,36 +42,45 @@ function visibleColsSubmitClick (){
         const widthCols = [];
         const lastColumn = {};
  
+        if (listItems.length){
+            listItems.forEach(function(el){
+                const positionElem = list.getIndexById(el.id);
+                const lastCol      = list.getLastId();
+             
+                let colWidth;
+    
+                if ( el.id !== lastCol){
+                    colWidth = table.getColumnConfig(el.column).width;
+                  
+                    if ( colWidth >= containerWidth ){
+                        colWidth = returnMinSize();
+                    }
+                
+                    widthCols.push(colWidth);
+               
+                    values.push({
+                        column   : el.column, 
+                        position : positionElem,
+                        width    : Number(colWidth)
+                    });
+                } else {
+                    lastColumn.column   = el.column;
+                    lastColumn.position = positionElem;
+                } 
+     
+          
+    
+            });
+            setLastColWidth(lastColumn,widthCols);
+        } else {
+            setFunctionError(
+                "array length is null", 
+                logNameFile, 
+                "visibleColsSubmitClick"
+            ); 
+        }
         
-        listItems.forEach(function(el){
-            const positionElem = list.getIndexById(el.id);
-            const lastCol      = list.getLastId();
-         
-            let colWidth;
-
-            if ( el.id !== lastCol){
-                colWidth = table.getColumnConfig(el.column).width;
-              
-                if ( colWidth >= containerWidth ){
-                    colWidth = returnMinSize();
-                }
-            
-                widthCols.push(colWidth);
-           
-                values.push({
-                    column   : el.column, 
-                    position : positionElem,
-                    width    : Number(colWidth)
-                });
-            } else {
-                lastColumn.column   = el.column;
-                lastColumn.position = positionElem;
-            } 
- 
-      
-
-        });
-        setLastColWidth(lastColumn,widthCols);
+   
 
     } catch (err){
         setFunctionError(

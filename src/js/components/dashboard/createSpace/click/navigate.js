@@ -1,5 +1,5 @@
-import { mediator }             from "../../../../blocks/_mediator.js";
-
+import { mediator }                  from "../../../../blocks/_mediator.js";
+import { GetFields, LoadServerData } from "../../../../blocks/globalStorage.js";
 
 function returnConditions(filter){
     const array = filter.split(' ');
@@ -113,34 +113,75 @@ function returnFilter(query){
  
     iterateConditions(conditions);
 }
+function checkFieldType(field){
+
+    const item = GetFields.item(field);
+
+    if (item){
+        return item.type;
+    } else {
+        LoadServerData("fields").then(function(data){
+            checkFieldType(field);
+        });
+    }
+ 
+}
 
 function navigate(field, filter){
- 
+    const type = checkFieldType(field);
+  
+    if (type){
+        let infoData ;
 
-    filterArr.length = 0;
-    ids.length       = 0;
-
-    if (field){
-
-        returnFilter(filter);
-    
-        const infoData = {
-            tree:{
-                field : field,
-                type  : "dbtable" // ??
-            },
-            temp:{
-                filter     : {
-                    id     : field, 
-                    values : {values : filterArr}
+        if (type == "dbtable"){
+            filterArr.length = 0;
+            ids.length       = 0;
+        
+            if (field){
+        
+                returnFilter(filter);
+            
+                infoData = {
+                    tree:{
+                        field : field,
+                        type  : "dbtable"
+                    },
+                    temp:{
+                        filter     : {
+                            id     : field, 
+                            values : {values : filterArr}
+                        },
+                        queryFilter :  filter
+                    }
+                };
+        
+              
+        
+            } 
+        } else if (type == "tform"){
+            infoData = {
+                tree:{
+                    field : field,
+                    type  : "tform"
                 },
-                queryFilter :  filter
-            }
-        };
+            };
+        } else if (type == "dashboard"){
+            infoData = {
+                tree:{
+                    field : field,
+                    type  : "dashboard"
+                },
+            };
+        }
+    
+        if (infoData){
+            mediator.tabs.openInNewTab(infoData);
+        }
+    
 
-        mediator.tabs.openInNewTab(infoData);
-
-    } 
+    }
+  
+  
 }
 
 

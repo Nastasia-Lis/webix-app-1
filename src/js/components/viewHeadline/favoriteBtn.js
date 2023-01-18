@@ -15,14 +15,18 @@ function findName (id, names){
 
     try{
         const nameTemplate = $$("favNameLink");
-        names.forEach(function(el){
-            if (el.id == id){
-                if(nameTemplate){
-                    nameTemplate.setValues(el.name);
+
+        if (names && names.length){
+            names.forEach(function(el){
+                if (el.id == id){
+                    if(nameTemplate){
+                        nameTemplate.setValues(el.name);
+                    }
                 }
-            }
-            
-        });
+                
+            });
+        }
+      
     } catch (err){
         setFunctionError(
             err, 
@@ -140,7 +144,8 @@ async function postContent(namePref){
 
 function getFavPrefs(data){
     const prefs = [];
-    try{
+
+    if (data && data.length){
         data.forEach(function(pref){
 
             if (pref.name.includes("fav-link")){
@@ -148,13 +153,9 @@ function getFavPrefs(data){
             }
     
         });
-    } catch (err){
-        setFunctionError(
-            err,
-            logNameFile,
-            "getFavPrefs"
-        );
     }
+     
+
     return prefs;
 }
 
@@ -165,20 +166,24 @@ function returnId(el){
 
 function getNotUniquePref(favPrefs, namePref){
     let unique = true;
-    favPrefs.forEach(function(el){
-                
-        if (el.includes(namePref)){
-            const id = returnId(el);
 
-            if (id == namePref && unique){
-                unique = false;
-                setLogValue(
-                    "success", 
-                    "Такая ссылка уже есть в избранном"
-                );
+    if (favPrefs && favPrefs.length){
+        favPrefs.forEach(function(el){
+                
+            if (el.includes(namePref)){
+                const id = returnId(el);
+    
+                if (id == namePref && unique){
+                    unique = false;
+                    setLogValue(
+                        "success", 
+                        "Такая ссылка уже есть в избранном"
+                    );
+                } 
             } 
-        } 
-    });
+        });
+    
+    }
 
     return unique;
 }

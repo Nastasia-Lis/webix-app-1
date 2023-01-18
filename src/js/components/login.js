@@ -63,6 +63,8 @@ function postLoginData(){
                 Backbone.history.navigate("content", { trigger:true});
                 window.location.reload();
             }
+        } else {
+            errorActions (); 
         }
          
     });
@@ -125,12 +127,16 @@ function returnPass(){
         name            : "password",
         invalidMessage  : invalidMsgText,
         type            : "password",
-        icon            : "password-icon wxi-eye",   
+        icon            : "password-icon wxi-eye", 
+        keyPressTimeout :  120000,  // 120000  = 2 min
         on              : {
             onItemClick:function(id, event){
                 clickPass(event, this);
      
             },
+            onTimedKeyPress:function(){
+                this.setValue(""); // auto clear
+            }
         } 
     };
 

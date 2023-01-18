@@ -1,6 +1,6 @@
 import { checkFonts }               from "../../blocks/checkFonts.js";
 import { setFunctionError }         from "../../blocks/errors.js";
-import { Action }                   from "../../blocks/commonFunctions.js";
+import { Action, isArray }          from "../../blocks/commonFunctions.js";
 
 const logNameFile = "header => collapseBtn";
 
@@ -17,17 +17,21 @@ function isIdIncludes(el){
 function setSearchInputState(visible = false){
     const headerChilds = $$("header").getChildViews();
 
-    headerChilds.forEach(function(el){
-        if (isIdIncludes(el)){
-            
-            if(visible){
-                el.show();
-            } else {
-                el.hide();
+    if (isArray(headerChilds, logNameFile, "setSearchInputState")){
+        headerChilds.forEach(function(el){
+            if (isIdIncludes(el)){
+                
+                if(visible){
+                    el.show();
+                } else {
+                    el.hide();
+                }
+                
             }
-            
-        }
-    });
+        });
+    }
+
+   
 }
 
 

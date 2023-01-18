@@ -1,26 +1,24 @@
 import { setFunctionError }   from "../../blocks/errors.js";
-import { Action }             from "../../blocks/commonFunctions.js";
+import { Action, isArray }    from "../../blocks/commonFunctions.js";
 
 const logNameFile = " treeSidebar => loadMenu";
 
 function generateChildsTree  (el){
     let childs = [];
 
-    try {
-        el.childs.forEach(function(child,i){
+    
+    const childsElems = el.childs;
+    if (childsElems && childsElems.length){
+        childsElems.forEach(function(child){
             childs.push({
                 id     : child.name, 
                 value  : child.title,
                 action : child.action
             });
         });
-    } catch (err){
-        setFunctionError(
-            err,
-            logNameFile,
-            "generateChildsTree"
-        );
     }
+      
+    
     return childs;
 }
 
@@ -79,41 +77,47 @@ function generateMenuTree (menu){
     //     "childs": []
     // });
 
-    menu.forEach(function(el,i){
-        if (el.mtype !== 3){
-            menuTree.push  ( generateParentTree (el, menu, menuTree  ) );
-            if (el.childs.length !==0){
-                //menuHeader = generateHeaderMenu (el, menu, menuHeader);
+    if(isArray(menu, logNameFile, "generateMenuTree")){
+        menu.forEach(function(el,i){
+            if (el.mtype !== 3){
+                menuTree.push  ( generateParentTree (el, menu, menuTree  ) );
+                if (el.childs.length !==0){
+                    //menuHeader = generateHeaderMenu (el, menu, menuHeader);
+                }
+            } else {
+                delims.push(el.name);
+                menuTree.push({
+                    id       : el.name, 
+                    disabled : true,
+                    value    : ""
+                });
             }
-        } else {
-            delims.push(el.name);
-            menuTree.push({
-                id       : el.name, 
-                disabled : true,
-                value    : ""
+        
+        });
+  
+ 
+
+
+        tree.clearAll();
+        tree.parse(menuTree);
+        Action.hideItem($$("loadTreeOverlay"));
+
+        let popupData = btnContext.config.popup.data;
+        if (popupData !== undefined){
+            popupData = menuHeader;
+            btnContext.enable();
+        }
+
+
+        if (delims && delims.length){
+            delims.forEach(function(el){
+                tree.addCss(el, "tree_delim-items");
+    
             });
         }
-    
-    });
+      
 
-
-    tree.clearAll();
-    tree.parse(menuTree);
-    Action.hideItem($$("loadTreeOverlay"));
-
-    let popupData = btnContext.config.popup.data;
-    if (popupData !== undefined){
-        popupData = menuHeader;
-        btnContext.enable();
     }
-
-
-    delims.forEach(function(el){
-        tree.addCss(el, "tree_delim-items");
-
-    });
-
-
 }
 
 export {

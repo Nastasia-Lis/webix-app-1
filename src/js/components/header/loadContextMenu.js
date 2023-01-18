@@ -1,3 +1,4 @@
+import { isArray }          from "../../blocks/commonFunctions.js";
 function createItems (){
 
     const items = [];
@@ -33,20 +34,23 @@ function generateHeaderMenu (menu){
     const btnContext = $$("button-context-menu");
     let menuHeader;
 
-    menu.forEach(function(el,i){
-        if (el.mtype !== 3){
-            if (el.mtype !== 3 && el.childs.length !==0){
-                menuHeader = createItems (el, menu, menuHeader);
+    if (isArray(menu, "header/loadContextMenu", "generateHeaderMenu")){
+        menu.forEach(function(el,i){
+            if (el.mtype !== 3){
+                if (el.mtype !== 3 && el.childs.length !==0){
+                    menuHeader = createItems (el, menu, menuHeader);
+                }
             }
+        
+        });
+    
+        if (btnContext.config.popup.data !== undefined){
+            btnContext.config.popup.data = menuHeader;
+            btnContext.enable();
         }
     
-    });
-
-    if (btnContext.config.popup.data !== undefined){
-        btnContext.config.popup.data = menuHeader;
-        btnContext.enable();
     }
-
+ 
 
 }
 

@@ -3,23 +3,35 @@ let tree;
 const cssDisable = "tree_disabled-item";
 
 function cssItems(action, selectItems){
-    const pull       = tree.data.pull;
-    const values     = Object.values(pull);
-    values.forEach(function(item, i){
 
-        if (action == "remove"){
-            tree.removeCss(item.id, cssDisable);
+    if (tree){
+        const pull = tree.data.pull;
 
-        } else if (action == "add" && selectItems) {
-            const result = 
-            selectItems.find((id) => id == item.id);
+        if (pull){
+            const values = Object.values(pull);
 
-            if (!result){
-                tree.addCss   (item.id, cssDisable);
+            if (values && values.length){
+                values.forEach(function(item){
+        
+                    if (action == "remove"){
+                        tree.removeCss(item.id, cssDisable);
+            
+                    } else if (action == "add" && selectItems) {
+                        const result = 
+                        selectItems.find((id) => id == item.id);
+            
+                        if (!result){
+                            tree.addCss   (item.id, cssDisable);
+                        }
+                    }
+                
+                });
             }
+          
         }
-    
-    });
+    }
+   
+   
 }
 
 
@@ -92,26 +104,33 @@ function ownersLogic(value, topParent){
     if (topParent){ // если уже выбран элемент для редактирования
         const items = getAvailableItems(topParent);
 
-        items.forEach(function(id, i){
-            const item  = tree.getItem(id);
-            const owner = item.owner;
+        if (items && items.length){
+            items.forEach(function(id, i){
+                const item  = tree.getItem(id);
+                const owner = item.owner;
+        
+                if (owner == value){
+                    resultItems.push(id);
+                  
+                }
     
-            if (owner == value){
-                resultItems.push(id);
-              
-            }
-
-        });
-
-        cssItems("add", resultItems);
+            });
+    
+            cssItems("add", resultItems);
+        }
+        
     } else {
-        values.forEach(function(el){
-            const owner = el.owner; 
-            if (owner && owner == value){
-                resultItems.push(el.id);
-            
-            }
-        });
+
+        if (values && values.length){
+            values.forEach(function(el){
+                const owner = el.owner; 
+                if (owner && owner == value){
+                    resultItems.push(el.id);
+                
+                }
+            });
+        }
+   
 
     }
 
@@ -119,9 +138,12 @@ function ownersLogic(value, topParent){
 
     showLastItem(resultItems);
 
-    resultItems.forEach(function(id){
-        openFullBranch(id);
-    });
+    if (resultItems && resultItems.length){
+        resultItems.forEach(function(id){
+            openFullBranch(id);
+        });
+    }
+   
  
 }   
 

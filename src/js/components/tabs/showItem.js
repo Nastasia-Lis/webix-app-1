@@ -24,7 +24,7 @@ function hideOtherElems(selectElem){
     const visiualElements = mediator.getViews();
 
 
-    if (visiualElements){
+    if (visiualElements && visiualElements.length){
         visiualElements.forEach(function(elem){
             if (elem !== selectElem){
                 Action.hideItem($$(elem));

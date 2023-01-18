@@ -1,15 +1,21 @@
+import { isArray } from "../../../../blocks/commonFunctions.js";
+
 let table; 
 let idsParam;
 let storageData;
 
+const logNameFile = "table/createSpace/cols/columnsWidth";
 
 function setColsUserSize(){
     const sumWidth = [];
-    storageData.values.forEach(function (el){
-        sumWidth.push(el.width);
-        table.setColumnWidth(el.column, el.width);
-    }); 
-
+    if (isArray(storageData, logNameFile, "setColsUserSize")){
+        storageData.values.forEach(function (el){
+            sumWidth.push(el.width);
+            table.setColumnWidth(el.column, el.width);
+        }); 
+    
+    }
+  
     return sumWidth;  
 }
 
@@ -58,13 +64,16 @@ function setColsSize(col){
 function findUniqueCols(col){
     let result = false;
 
-    storageData.values.forEach(function(el){
+    if (isArray(storageData, logNameFile, "findUniqueCols")){
+        storageData.values.forEach(function(el){
 
-        if (el.column == col){
-            result = true;
-        }
-
-    });
+            if (el.column == col){
+                result = true;
+            }
+    
+        });
+    }
+  
     return result;
 }
 
@@ -107,28 +116,34 @@ function setWidthLastCol(){
 
 function setVisibleCols(allCols){
 
-    allCols.forEach(function(el,i){
+    if (isArray(allCols, logNameFile, "setVisibleCols")){
+        allCols.forEach(function(el,i){
 
-        if (findUniqueCols(el.id)){
-            if( !( table.isColumnVisible(el.id) ) ){
-                table.showColumn(el.id);
+            if (findUniqueCols(el.id)){
+                if( !( table.isColumnVisible(el.id) ) ){
+                    table.showColumn(el.id);
+                }
+            } else {
+                const colIndex = table.getColumnIndex(el.id);
+                if(table.isColumnVisible(el.id) && colIndex !== -1){
+                    table.hideColumn(el.id);
+                }
             }
-        } else {
-            const colIndex = table.getColumnIndex(el.id);
-            if(table.isColumnVisible(el.id) && colIndex !== -1){
-                table.hideColumn(el.id);
-            }
-        }
-            
-    });
+                
+        });
+    }
+  
 }
 
 
 function setPositionCols(){
-    storageData.values.forEach(function(el){
-        table.moveColumn(el.column,el.position);
-            
-    });
+    if (isArray(storageData.values, logNameFile, "setPositionCols")){
+        storageData.values.forEach(function(el){
+            table.moveColumn(el.column,el.position);
+                
+        });
+    }
+   
 } 
 
 function setUserPrefs(idTable, ids){
@@ -149,9 +164,12 @@ function setUserPrefs(idTable, ids){
 
     } else {   
    
-        allCols.forEach(function(el){
-            setColsSize(el.id);  
-        });
+        if (isArray(allCols, logNameFile, "setUserPrefs")){
+            allCols.forEach(function(el){
+                setColsSize(el.id);  
+            });
+        }
+      
        
     }
 

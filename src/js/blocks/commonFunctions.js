@@ -288,6 +288,20 @@ async function returnOwner(){
     return ownerId;
 }
 
+function isArray(arr, logNameFile, func){
+ 
+    if (arr && typeof arr == "object"){
+        return true;
+    } else {
+        setFunctionError(
+            `type of content is not a array 
+            or array does not exists : ${arr}`, 
+            logNameFile, 
+            func
+        ); 
+    }
+}
+
 
 export {
     getItemId,
@@ -297,8 +311,7 @@ export {
     
     getComboOptions,
 
-    pushUserDataStorage,
-    //getUserDataStorage,
+    isArray,
     returnOwner,
 
     Action,

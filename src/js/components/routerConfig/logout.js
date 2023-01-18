@@ -2,10 +2,10 @@ import { setFunctionError }     from "../../blocks/errors.js";
 import { mediator }             from "../../blocks/_mediator.js";
 import { ServerData }           from "../../blocks/getServerData.js";
 
-import { returnOwner }          from "../../blocks/commonFunctions.js";
+import { returnOwner, isArray } from "../../blocks/commonFunctions.js";
 
 
-const logNameFile = "router => logout";
+const logNameFile = "router/logout";
 
 function clearStorage(){
     try{
@@ -33,20 +33,16 @@ function isPrefExists(data, name){
         exists : false
     };
  
-    try{
+    if (isArray(data, logNameFile, "isPrefExists")){
         data.forEach(function(el){
             if (el.name == name){
                 result.exists = true;
                 result.id     = el.id;
             } 
-        });  
-    }   catch(err){
-        setFunctionError(
-            err, 
-            logNameFile, 
-            "isPrefExists"
-        );
+        }); 
     }
+        
+  
     
     return result;
 }

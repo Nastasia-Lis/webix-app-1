@@ -1,12 +1,12 @@
 
-import { favsPopup }    from "../favorites.js";
+import { favsPopup }         from "../favorites.js";
 
-import { returnOwner }  from "../../blocks/commonFunctions.js";
+import { returnOwner }       from "../../blocks/commonFunctions.js";
+import { setFunctionError }  from "../../blocks/errors.js";
+import { Button }            from "../../viewTemplates/buttons.js";
 
-import { Button }       from "../../viewTemplates/buttons.js";
-
-import { mediator }     from "../../blocks/_mediator.js";
-import { ServerData }   from "../../blocks/getServerData.js";
+import { mediator }          from "../../blocks/_mediator.js";
+import { ServerData }        from "../../blocks/getServerData.js";
 
 
 function navigateTo (path){
@@ -76,7 +76,7 @@ function postUserprefsData (sentObj){
 
 
 async function onItemClickBtn(){
-    const ownerId     = await returnOwner().id;
+    const owner       = await returnOwner();
 
     const localUrl    = "/index.html/content";
     const spawUrl     = "/init/default/spaw/content";
@@ -84,35 +84,44 @@ async function onItemClickBtn(){
 
     const prefName    = "userLocationHref";
 
-    new ServerData({
-        id : `smarts?query=userprefs.name=${prefName}+and+userprefs.owner=${ownerId}&limit=80&offset=0`
-       
-    }).get().then(function(data){
-      
-
-        if (data && path !== localUrl && path !== spawUrl){
+    if (owner && owner.id){
+        new ServerData({
+            id : `smarts?query=userprefs.name=${prefName}+and+userprefs.owner=${owner.id}&limit=80&offset=0`
            
-            const location = {
-                href : window.location.href
-            };
-
-            const sentObj = {
-                name  : prefName,
-                owner : ownerId.id,
-                prefs : location
-            };
-
-            const content = data.content;
+        }).get().then(function(data){
+          
     
-            if (content && content.length){ // запись с таким именем уже существует
-                const id = content[0].id;
-                putUserprefs(id, sentObj);
-            } else {
-                postUserprefsData (sentObj);
+            if (data && path !== localUrl && path !== spawUrl){
+               
+                const location = {
+                    href : window.location.href
+                };
+    
+                const sentObj = {
+                    name  : prefName,
+                    owner : ownerId.id,
+                    prefs : location
+                };
+    
+                const content = data.content;
+        
+                if (content && content.length){ // запись с таким именем уже существует
+                    const id = content[0].id;
+                    putUserprefs(id, sentObj);
+                } else {
+                    postUserprefsData (sentObj);
+                }
             }
-        }
-         
-    });
+             
+        });
+    } else {
+        setFunctionError(
+            `owner is not defined`, 
+            "commonFunctions", 
+            "onItemClickBtn"
+        );
+    }
+    
 
  
 }

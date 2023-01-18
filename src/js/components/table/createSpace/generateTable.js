@@ -6,7 +6,7 @@ import { createTableRows }                  from './rows/createRows.js';
 import { createTableCols }                  from './cols/createCols.js';
 import { createDetailAction }               from './cols/detailAction.js';
 import { createDynamicElems }               from './cols/dynamicElements/createElements.js';
-import { Action }                           from '../../../blocks/commonFunctions.js';
+import { Action, isArray }                  from '../../../blocks/commonFunctions.js';
 
 const logNameFile = "getContent => getInfoTable";
 
@@ -19,7 +19,7 @@ function setTableName(idCurrTable, idsParam) {
     try{
         const names = GetFields.names;
 
-        if (names){
+        if (isArray(names, logNameFile, "setTableName")){
 
             names.forEach(function(el){
                 if (el.id == idsParam){  
@@ -29,7 +29,7 @@ function setTableName(idCurrTable, idsParam) {
                 }
             });
         }
-       // $$("tree").callEvent("onBeforeOpen", [ "","auth_group" ]);
+ 
 
         
     } catch (err){  

@@ -9,9 +9,13 @@ function returnCol(index){
 
 function returnSumWidthCols(){
     let sum = 0;
-    cols.forEach(function(col){
-        sum += col.width;
-    });
+    
+    if (cols && cols.length){
+        cols.forEach(function(col){
+            sum += col.width;
+        });
+    }
+ 
     return sum;
 }
 

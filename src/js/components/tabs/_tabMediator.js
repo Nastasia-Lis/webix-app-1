@@ -3,7 +3,7 @@ import { add, remove }          from "./actions.js";
 import { GetFields }            from "../../blocks/globalStorage.js";
 import { setFunctionError }     from "../../blocks/errors.js";
 import { mediator }             from "../../blocks/_mediator.js";
- 
+import { Action }               from "../../blocks/commonFunctions.js";
  
 const TABS_HISTORY  = [];
 const TABS_REMOVED  = [];
@@ -87,7 +87,7 @@ function hasDirtyForms(){
         dirty:false
     };
 
-    if (forms){
+    if (forms && forms.length){
         forms.forEach(function(form){
 
             if (form && form.isDirty() && !check.dirty){
@@ -124,7 +124,7 @@ function checkAlreadyExists(history, currLastPage){
  
     const lastIndex = history.length - 1;
     const lastElem  = history[lastIndex];
- 
+
     if (lastElem && lastElem.field == currLastPage.field){
         return true;
     }
@@ -133,11 +133,11 @@ function checkAlreadyExists(history, currLastPage){
 
 function addLastPage(treeData, history){
     const lastPage = treeData;
- 
+    
     if (treeData && !treeData.none){ // isn't empty page
-
+      
         const alreadyExists = checkAlreadyExists(history, lastPage);  //already exists in history
-       
+      
         if (!alreadyExists){
             mediator.tabs.addTabHistory(lastPage);
             history.push               (lastPage);  
@@ -154,7 +154,7 @@ function returnHistory(tabbar, tabIndex){
     const currHistory = conf.history;
 
     let history     = [];
-   
+
     if (currHistory){
         history = copyHistory(currHistory); 
     } 
@@ -163,7 +163,39 @@ function returnHistory(tabbar, tabIndex){
 
     return history;
 }
+function getTabConfig(){
+    const tabbar = $$("globalTabbar");
+    const id     = tabbar.getValue();
+    return tabbar.getOption(id);
+}
 
+function unblockHistoryBtns(){
+    const prevBtn = document.querySelector('.historyBtnLeft');
+    const nextBtn = document.querySelector('.historyBtnRight');
+
+    if (prevBtn && nextBtn){
+        const option = getTabConfig();
+
+        if (option){
+            const history = option.info.history;
+           
+             if (history.length > 1){
+                const id = prevBtn.getAttribute("view_id");
+                
+                Action.enableItem($$(id));
+                
+
+
+                // prev btn
+            }
+
+ 
+        }
+       
+    }
+}
+
+ 
 class Tabs {
     addTab(isNull, open = true){
         return add(isNull, open);
@@ -234,16 +266,23 @@ class Tabs {
  
         if (tabIndex > -1){
 
+           
+            const oldHistory = tabbar.config.options[tabIndex].info.history;
+        
+            tabbar.config.options[tabIndex].info = values;
+            tabbar.refresh();
+
+
+            changeName(this, values);
+
+
+            
             if (addHistory){
+                values.history = oldHistory;
                 const history  = returnHistory(tabbar, tabIndex);
                 values.history = history;
                 
             }
-           
-            tabbar.config.options[tabIndex].info = values;
-            tabbar.refresh();
-
-            changeName(this, values);
         
             this.setDataToStorage(tabbar, tabId);
         }
@@ -259,7 +298,7 @@ class Tabs {
     }
     
     changeTabName(id, value){
-  
+
         let name;
  
         if (!id && !value){
@@ -270,6 +309,8 @@ class Tabs {
             } else {
                 name = value;
             }
+
+         
       
         }
  
@@ -312,9 +353,15 @@ class Tabs {
     }
 
     addTabHistory(page){
+
+        console.log()
+      
         if (TABS_HISTORY.length > 10){
             TABS_HISTORY.shift();
         }
+
+       
+        unblockHistoryBtns();
         TABS_HISTORY.push(page);
 
         this.saveTabHistory();

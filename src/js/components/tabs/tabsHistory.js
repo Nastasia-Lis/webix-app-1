@@ -30,7 +30,7 @@ function returnItem(config, index){
     const name = item.plural ? item.plural : item.singular;
   
     return {
-        id    : config.field,
+        id    : webix.uid(),
         value : name,
         config: config,
         index : index
@@ -42,7 +42,7 @@ function returnListItems(){
     const history = mediator.tabs.getTabHistory();
     const items = [];
 
-    if (history.length){
+    if (history && history.length){
      
         history.forEach(function(el, i){
             items.push(returnItem(el, i));

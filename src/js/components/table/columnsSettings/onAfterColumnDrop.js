@@ -1,19 +1,26 @@
-import { postPrefsValues } from "./userprefsPost.js";
-
+import { postPrefsValues }  from "./userprefsPost.js";
+import { setFunctionError } from "../../../blocks/errors.js";
  
 function createValues(table){
     const cols = table.getColumns();
     const values = [];
 
-    cols.forEach(function(col, i){
-        values.push({
-            column   : col.id, 
-            position : i,
-            width    : Number(col.width)
+    if (cols.length){
+        cols.forEach(function(col, i){
+            values.push({
+                column   : col.id, 
+                position : i,
+                width    : Number(col.width)
+            });
         });
-    });
+    } else {
+        setFunctionError(
+            "array length is null", 
+            "table/columnsSettings/onAfterColumnDrop", 
+            "visibleColsSubmitClick"
+        ); 
+    }
 
- 
     return values;
 }
 

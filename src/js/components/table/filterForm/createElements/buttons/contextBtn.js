@@ -23,12 +23,15 @@ function getVisibleInfo(lastIndex = false){
     
     let counter = 0;
 
-    values.forEach(function(value, i){
-        if (value.length){
-            counter ++;
-            fillElements.push(i);
-        }
-    });
+    if (values && values.length){
+        values.forEach(function(value, i){
+            if (value.length){
+                counter ++;
+                fillElements.push(i);
+            }
+        });
+    }
+ 
 
     if (lastIndex){
         return fillElements.pop();
@@ -99,7 +102,7 @@ function returnLastItem(array){
     const indexes       = Filter.getIndexFilters();
     const selectIndexes = [];
 
-    if (array){
+    if (array && array.length){
 
         array.forEach(function(el){
             selectIndexes.push(indexes[el]);
@@ -128,13 +131,17 @@ function returnLastItem(array){
 
 function isLastKey(inputsKey, keys) {
     const currInputs = [];
-    keys.forEach(function(key){
-        const item = Filter.getItem(key);
-        if (item.length){
-            currInputs.push(key)
-        }    
-    });
 
+    if (keys && keys.length){
+        keys.forEach(function(key){
+            const item = Filter.getItem(key);
+            if (item.length){
+                currInputs.push(key)
+            }    
+        });
+    
+    }
+ 
 
     const lastKey = returnLastItem(currInputs);
   
@@ -243,20 +250,26 @@ function hideHtmlEl(id){
 function hideMainInput(thisInput, mainInput){
     const btnOperations = $$(thisInput + "-btnFilterOperations");
 
-    try{
+
+    if (mainInput && mainInput.length){
         mainInput.forEach(function(el){
             Action.hideItem(el);
         });
 
-        btnOperations.setValue(" = ");
-
-    } catch(err){ 
-        setFunctionError(
-            err, 
-            logNameFile, 
-            "contextBtn remove => hideMainInput"
-        );
+        if (btnOperations){
+            btnOperations.setValue(" = ");
+        } else {
+            setFunctionError(
+                `button is not defined`, 
+                logNameFile, 
+                "hideMainInput"
+            ); 
+        }
+      
     }
+    
+
+     
 }
 
 
@@ -336,16 +349,19 @@ function returnInputPosition(id, thisContainer){
 
     let childPosition = 0;
 
-    item.forEach(function(input, i){
-        const inputContainer = input + "-container";
-
-        if (inputContainer === thisContainer){
-            childPosition = i + 1;
+    if (item && item.length){
+        item.forEach(function(input, i){
+            const inputContainer = input + "-container";
+    
+            if (inputContainer === thisContainer){
+                childPosition = i + 1;
+            }
+        });
+    
+        if (!isVisibleParent){
+            childPosition++;
         }
-    });
-
-    if (!isVisibleParent){
-        childPosition++;
+    
     }
 
     return childPosition;

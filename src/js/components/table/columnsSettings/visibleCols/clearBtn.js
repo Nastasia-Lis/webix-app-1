@@ -1,9 +1,9 @@
-import { Button }            from "../../../../viewTemplates/buttons.js";
-import { setFunctionError }  from "../../../../blocks/errors.js";
-import { setLogValue }       from "../../../logBlock.js";
-import { modalBox }          from "../../../../blocks/notifications.js";
-import { Action, getTable }  from "../../../../blocks/commonFunctions.js";
-import { postPrefsValues }   from "../userprefsPost.js";
+import { Button }                       from "../../../../viewTemplates/buttons.js";
+import { setFunctionError }             from "../../../../blocks/errors.js";
+import { setLogValue }                  from "../../../logBlock.js";
+import { modalBox }                     from "../../../../blocks/notifications.js";
+import { Action, getTable, isArray }    from "../../../../blocks/commonFunctions.js";
+import { postPrefsValues }              from "../userprefsPost.js";
 
 let table;
 let values;
@@ -42,6 +42,13 @@ function returnWidthCol(){
 
     return colWidth.toFixed(2);
 }
+function returnArrayError(){
+    setFunctionError(
+        "array length is null",
+        logNameFile,
+        "returnPosition"
+    );
+}
 
 function returnPosition(column){
     let position;
@@ -50,43 +57,54 @@ function returnPosition(column){
     if (pull){
         const defaultColsPosition = Object.keys(pull);
         
-        defaultColsPosition.forEach(function(el, i){
-            if (el == column){
-                position = i;
-            }
-        });
+        if (defaultColsPosition.length){
+            defaultColsPosition.forEach(function(el, i){
+                if (el == column){
+                    position = i;
+                }
+            });
+        } else {
+            returnArrayError(); 
+        }
+        
 
     }
 
     return position;
 }
-
+ 
 function showCols(){
     const cols = table.getColumns(true);
     try{
-        cols.forEach(function(el,i){
-            const colWidth    = returnWidthCol();
-            const positionCol = returnPosition(el.id);
 
-            setColsSize(el.id,cols);
-            
-            if( !( table.isColumnVisible(el.id) ) ){
-                table.showColumn(el.id);
-            }
-       
-            table.setColumnWidth(el.id, colWidth);
-
-            values.push({
-                column   : el.id,
-                position : positionCol,
-                width    : colWidth 
+        if (cols.length){
+            cols.forEach(function(el,i){
+                const colWidth    = returnWidthCol();
+                const positionCol = returnPosition(el.id);
+    
+                setColsSize(el.id,cols);
+                
+                if( !( table.isColumnVisible(el.id) ) ){
+                    table.showColumn(el.id);
+                }
+           
+                table.setColumnWidth(el.id, colWidth);
+    
+                values.push({
+                    column   : el.id,
+                    position : positionCol,
+                    width    : colWidth 
+                });
             });
-        });
+        } else {
+            returnArrayError();
+        }
+       
     } catch(err){
         setFunctionError(
             err,
             logNameFile,
-            "clearBtnColsClick => showCols"
+            "clearBtnColsClick / showCols"
         );
     }
 }

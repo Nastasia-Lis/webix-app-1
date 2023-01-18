@@ -69,7 +69,7 @@ function returnLastItem(array){
     const indexes       = Filter.getIndexFilters();
     const selectIndexes = [];
 
-    if (array){
+    if (array && array.length){
 
         array.forEach(function(el){
             selectIndexes.push(indexes[el]);
@@ -113,16 +113,19 @@ function createWorkspace(prefs){
 
     Filter.clearFilter();
  
-    prefs.forEach(function(el){
-        if (!el.parent){
-            showParentField  (el);
-        } else {
-            createChildField(el);
-        }
-   
-    });
-
-    hideSegmentBtn();
+    if (prefs && prefs.length){
+        prefs.forEach(function(el){
+            if (!el.parent){
+                showParentField  (el);
+            } else {
+                createChildField(el);
+            }
+       
+        });
+    
+        hideSegmentBtn();
+     
+    }
  
 }
 
@@ -145,13 +148,16 @@ function createFiltersByTemplate(item) {
 function showHtmlContainers(){
     const keys = Filter.getItems();
 
-    keys.forEach(function(el){
-        const htmlElement = document.querySelector("." + el ); 
-        Filter.addClass   (htmlElement, "webix_show-content");
-        Filter.removeClass(htmlElement, "webix_hide-content");
-    });
+    if (keys && keys.length){
+        keys.forEach(function(el){
+            const htmlElement = document.querySelector("." + el ); 
+            Filter.addClass   (htmlElement, "webix_show-content");
+            Filter.removeClass(htmlElement, "webix_hide-content");
+        });
+    
+        Filter.hideInputsContainers(keys); // hidden inputs
+    }
 
-    Filter.hideInputsContainers(keys); // hidden inputs
 }
 
 

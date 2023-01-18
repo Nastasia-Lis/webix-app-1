@@ -1,7 +1,7 @@
-import { setFunctionError } from "./errors.js";
-import { ServerData }       from "./getServerData.js"
-import { returnOwner }      from "./commonFunctions.js";
-import { mediator }         from "./_mediator.js";
+ 
+import { ServerData }               from "./getServerData.js"
+import { returnOwner, isArray }     from "./commonFunctions.js";
+import { mediator }                 from "./_mediator.js";
 
 const logNameFile = "storageSettings";
 function setStorageData (name, value){
@@ -72,9 +72,9 @@ function deletePrefs(id, obj){
 
 
 function setDataToStorage(data, user){
+    
  
-        
-    if (data && typeof data == "object"){
+    if (isArray(data, logNameFile, "setDataToStorage")){
         data.forEach(function(el){
             const owner = el.owner;
             const name  = el.name;
@@ -95,23 +95,16 @@ function setDataToStorage(data, user){
             }
 
         });
-    } else {
-        setFunctionError(
-            `type of content is not a array: 
-            ${data} or array does not exists`, 
-            logNameFile, 
-            "createComboValues"
-        ); 
-    }
+    } 
 }
 
 function setTabHistory(){
     const data = webix.storage.local.get("tabsHistory"); 
- 
+  
     if (data){
         const history = data.history;
         
-        if (history.length){
+        if (isArray(data, logNameFile, "setDataToStorage")){
             history.forEach(function(el){
         
                 mediator.tabs.addTabHistory(el);
@@ -132,19 +125,19 @@ async function setUserPrefs (userData){
     const userprefsData = webix.ajax(path);
   
     userprefsData.then( function (data) {
-  
-        let user = webix.storage.local.get("user");
-        data     = data.json().content;
-
-        if (userData){
-            user = userData;
-        }
  
-        setDataToStorage(data, user);
-        setLogPref      ();
-        setTabHistory   ();
-  
-        $$("globalTabbar").callEvent("setStorageData", [ '1' ]);
+        data = data.json();
+
+        if (data && data.content){
+     
+            const content = data.content;
+            setDataToStorage(content, user);
+            setLogPref      ();
+            setTabHistory   ();
+      
+            $$("globalTabbar").callEvent("setStorageData", [ '1' ]);
+        }
+
         
     });
 

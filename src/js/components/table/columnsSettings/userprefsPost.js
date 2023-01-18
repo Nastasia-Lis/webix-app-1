@@ -1,6 +1,6 @@
 
 import { getItemId, returnOwner, 
-        getTable, Action }          from "../../../blocks/commonFunctions.js";
+        getTable, Action, isArray } from "../../../blocks/commonFunctions.js";
 import { setFunctionError }         from "../../../blocks/errors.js";
 import { setLogValue }              from "../../logBlock.js";
 import { setStorageData }           from "../../../blocks/storageSetting.js";
@@ -15,12 +15,15 @@ let userData;
 function findUniqueCols(sentVals, col){
     let result = false;
 
-    sentVals.values.forEach(function(el){
-        if (el.column == col){
-            result = true;
-        }
-        
-    });
+    if (isArray(sentVals, logNameFile, "findUniqueCols")){
+        sentVals.values.forEach(function(el){
+            if (el.column == col){
+                result = true;
+            }
+            
+        });
+    }
+  
 
     return result;
 }
@@ -29,20 +32,30 @@ function findUniqueCols(sentVals, col){
 function setVisibleState(sentVals, table){
     const columns = table.getColumns(true);
     try{
-        columns.forEach(function(el){
+
+        if (columns.length){
+            columns.forEach(function(el){
             
-            if (findUniqueCols(sentVals, el.id)){
-                if( !( table.isColumnVisible(el.id) ) ){
-                    table.showColumn(el.id);
+                if (findUniqueCols(sentVals, el.id)){
+                    if( !( table.isColumnVisible(el.id) ) ){
+                        table.showColumn(el.id);
+                    }
+                 
+                } else {
+                    const colIndex = table.getColumnIndex(el.id);
+                    if(table.isColumnVisible(el.id) && colIndex !== -1){
+                        table.hideColumn(el.id);
+                    }
                 }
-             
-            } else {
-                const colIndex = table.getColumnIndex(el.id);
-                if(table.isColumnVisible(el.id) && colIndex !== -1){
-                    table.hideColumn(el.id);
-                }
-            }
-        });
+            });
+        } else {
+            setFunctionError(
+                "array length is null",
+                logNameFile,
+                "setVisibleState"
+            );
+        }
+        
 
 
     } catch(err){
@@ -56,9 +69,12 @@ function setVisibleState(sentVals, table){
 
 
 function moveListItem(sentVals, table){
-    sentVals.values.forEach(function(el){
-        table.moveColumn(el.column, el.position);
-    });  
+    if (isArray(sentVals.values, logNameFile, "moveListItem")){
+        sentVals.values.forEach(function(el){
+            table.moveColumn(el.column, el.position);
+        }); 
+    }
+   
 }
 
 function setUpdateCols(sentVals){
@@ -82,9 +98,12 @@ function setSize(sentVals){
         );
     }
 
-    sentVals.values.forEach(function(el){
-        setColWidth(el);
-    });
+    if (isArray(sentVals.values, logNameFile, "setSize")){
+        sentVals.values.forEach(function(el){
+            setColWidth(el);
+        });
+    }
+  
 }
 
 

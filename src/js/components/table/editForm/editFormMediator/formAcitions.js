@@ -1,6 +1,6 @@
-import { getItemId }                from "../../../../blocks/commonFunctions.js";
+import { getItemId, isArray }       from "../../../../blocks/commonFunctions.js";
 import { validateProfForm, 
-        setLogError, uniqueData }   from "../validation.js";
+        setLogError, uniqueData}    from "../validation.js";
 
 import { setFunctionError }         from "../../../../blocks/errors.js";
 
@@ -38,19 +38,31 @@ function updateTable (itemData){
 
 
 function dateFormatting(arr){
-    const vals          = Object.values(arr);
-    const keys          = Object.keys(arr);
     const formattingArr = arr;
-
-    keys.forEach(function(el, i){
-        const prop       = $$("editTableFormProperty");
-        const item       = prop.getItem(el);
-        const formatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
-
-        if ( item.type == "customDate" ){
-            formattingArr[el] = formatData(vals[i]);
+    if (isArray(formattingArr, logNameFile, "dateFormatting")){
+        const vals          = Object.values(arr);
+        const keys          = Object.keys(arr);
+      
+        if (keys.length){
+            keys.forEach(function(el, i){
+                const prop       = $$("editTableFormProperty");
+                const item       = prop.getItem(el);
+                const formatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
+        
+                if ( item.type == "customDate" ){
+                    formattingArr[el] = formatData(vals[i]);
+                }
+            });
+        } else {
+            setFunctionError(
+                "array length is null",
+                logNameFile,
+                "dateFormatting"
+            );
         }
-    });
+      
+    }
+  
 
 
     return formattingArr;
@@ -59,16 +71,19 @@ function dateFormatting(arr){
 function formattingBoolVals(arr){
     const table = $$( "table" );
     const cols  = table.getColumns();
-    cols.forEach(function(el,i){
+    if (isArray(cols, logNameFile, "formattingBoolVals")){
+        cols.forEach(function(el,i){
 
-        if ( arr[el.id] && el.type == "boolean" ){
-            if (arr[el.id] == 2){
-                arr[el.id] = false;
-            } else {
-                arr[el.id] = true;
+            if ( arr[el.id] && el.type == "boolean" ){
+                if (arr[el.id] == 2){
+                    arr[el.id] = false;
+                } else {
+                    arr[el.id] = true;
+                }
             }
-        }
-    });
+        });
+    }
+    
 
     return arr;
 
@@ -159,12 +174,15 @@ function removeNullFields(arr){
     const keys    = Object.keys(arr);
     const sentObj = {};
 
-    vals.forEach(function(el,i){
-        if (el){
-            sentObj[keys[i]]= el;
-        }
-        dateFormatting(arr);
-    });
+    if (isArray(vals, logNameFile, "removeNullFields")){
+        vals.forEach(function(el,i){
+            if (el){
+                sentObj[keys[i]]= el;
+            }
+            dateFormatting(arr);
+        });
+    }
+   
 
     return sentObj;
 }

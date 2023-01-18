@@ -83,57 +83,52 @@ function setHtmlState(add, remove){
     const css = ".webix_filter-inputs";
     const htmlElement = document.querySelectorAll(css);
     
-    try{
+    if (htmlElement && htmlElement.length){
         htmlElement.forEach(function (elem){
             const isClassExists = elem.classList.contains(elementClass);
-     
+    
             if (isClassExists){
                 Filter.addClass   (elem, add   );
                 Filter.removeClass(elem, remove);
             } 
 
         });
-
-        
-
-    } catch(err){
-        setFunctionError(
-            err,
-            logNameFile,
-            "hideHtmlEl"
-        );
     }
+
 }
 
 function removeChilds(){
-    const container       = $$(el + "_rows");
-    const containerChilds = container.getChildViews();
+    const container  = $$(el + "_rows");
 
-    const values = Object.values(containerChilds);
-    const childs = [];
+    if (container){
+        const containerChilds = container.getChildViews();
 
-    try{
-       
-        values.forEach(function(elem){
-            const id = elem.config.id;
-
-            if (id.includes("child")){
-                childs.push($$(id));
+        if (containerChilds && containerChilds.length){
+            const values = Object.values(containerChilds);
+            const childs = [];
+        
+          
+            if (values && values.length){
+                values.forEach(function(elem){
+                    const id = elem.config.id;
+        
+                    if (id.includes("child")){
+                        childs.push($$(id));
+                    }
+        
+                });
+            } 
+        
+            if (childs && childs.length){
+                
+                childs.forEach(function(el){
+                    Action.removeItem(el);
+                });
             }
-
-        });
-
-        childs.forEach(function(el){
-            Action.removeItem(el);
-        });
-
-    } catch(err) {
-        setFunctionError(
-            err,
-            logNameFile,
-            "removeChids"
-        );
+        }
     }
+
+  
 }
 
 function isChildExists(){

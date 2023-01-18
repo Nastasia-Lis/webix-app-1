@@ -14,30 +14,27 @@ import { Button }            from "../../../../viewTemplates/buttons.js";
 import { Filter }            from "../actions/_FilterActions.js";
 
 
-const logNameFile = "filterTable => popup => removeBtn";
 
 let lib;
 let radioValue;
 
 function removeOptionState (){
-    const id      = radioValue.id;
-    const options = lib.config.options;
-    try{
-        options.forEach(function(el){
-            if (el.id == id){
-                el.value = el.value + " (шаблон удалён)";
-                lib.refresh();
-                lib.disableOption(lib.getValue());
-                lib.setValue("");
-            }
-        });
-    } catch (err){
-        setFunctionError(
-            err, 
-            logNameFile, 
-            "removeOptionState"
-        );
+
+    if (lib){
+        const id      = radioValue.id;
+        const options = lib.config.options;
+        if (options){
+            options.forEach(function(el){
+                if (el.id == id){
+                    el.value = el.value + " (шаблон удалён)";
+                    lib.refresh();
+                    lib.disableOption(lib.getValue());
+                    lib.setValue("");
+                }
+            });
+        }
     }
+
 }
 
 function deleteElement(){

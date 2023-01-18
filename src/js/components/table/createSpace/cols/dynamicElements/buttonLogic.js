@@ -1,6 +1,7 @@
 import { setLogValue }                      from '../../../../logBlock.js';
 import { setAjaxError, setFunctionError }   from "../../../../../blocks/errors.js";
 import { ServerData }                       from "../../../../../blocks/getServerData.js"
+import { isArray }                          from "../../../../../blocks/commonFunctions.js"
 
 const logNameFile = 
 "table => createSpace => dynamicElements => buttonLogic";
@@ -13,7 +14,8 @@ let rtype;
 const valuesArray = [];
 
 function createQueryRefresh(){
-    try{
+
+    if (isArray(idElements, logNameFile, "createQueryRefresh")){
         idElements.forEach((el) => {
             const val = $$(el.id).getValue();
             
@@ -29,13 +31,9 @@ function createQueryRefresh(){
 
             }   
         });
-    } catch (err){  
-        setFunctionError(
-            err, 
-            logNameFile, 
-            "createQueryRefresh"
-        );
     }
+    
+   
 }
 
 function setTableState(tableView, data){
@@ -180,22 +178,25 @@ function addLoadEl(container){
 function postButton(){
     try{
    
-        idElements.forEach((el,i) => {
-            if (el.id.includes("customUploader")){
-                const tablePull = $$(el.id).files.data.pull;
-                const value     = Object.values(tablePull)[0];
-                const link      = $$(el.id).config.upload;
-
-                let formData = new FormData();  
-                let container = $$(el.id).getParentView();
-                addLoadEl(container);
-
-                formData.append("file", value.file);
-
-                uploadData(formData, link);
-               
-            }
-        });
+        if (isArray(idElements, logNameFile, "postButton")){
+            idElements.forEach((el,i) => {
+                if (el.id.includes("customUploader")){
+                    const tablePull = $$(el.id).files.data.pull;
+                    const value     = Object.values(tablePull)[0];
+                    const link      = $$(el.id).config.upload;
+    
+                    let formData = new FormData();  
+                    let container = $$(el.id).getParentView();
+                    addLoadEl(container);
+    
+                    formData.append("file", value.file);
+    
+                    uploadData(formData, link);
+                   
+                }
+            });
+        }
+        
     } catch (err){  
         setFunctionError(err, logNameFile, "postButton");
     } 

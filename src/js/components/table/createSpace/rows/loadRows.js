@@ -1,4 +1,4 @@
-import { Action }                           from "../../../../blocks/commonFunctions.js";
+import { Action, isArray }                  from "../../../../blocks/commonFunctions.js";
 import { setFunctionError }                 from "../../../../blocks/errors.js";
 import { ServerData }                       from "../../../../blocks/getServerData.js";
 
@@ -55,11 +55,14 @@ function checkNotUnique(idAddRow){
     const tablePool = idCurrView.data.pull;
     const values    = Object.values(tablePool);
     
-    values.forEach(function(el){
-        if ( el.id == idAddRow ){
-            idCurrView.remove(el.id);
-        }
-    });
+    if (isArray(values, logNameFile, "checkNotUnique")){
+        values.forEach(function(el){
+            if ( el.id == idAddRow ){
+                idCurrView.remove(el.id);
+            }
+        });
+    }
+    
 }
 
 
@@ -80,11 +83,14 @@ function changeFullTable(data){
 }
 
 function changePart(data){
-    data.forEach(function(el){
-        checkNotUnique(el.id);
-        idCurrView.add(el);
-    });
-}
+    if (isArray(data, logNameFile, "changePart")){
+        data.forEach(function(el){
+            checkNotUnique(el.id);
+            idCurrView.add(el);
+        });
+    }
+    }
+
 
 function parseRowData (data){
 

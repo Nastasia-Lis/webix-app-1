@@ -17,8 +17,11 @@ function isErrorsExists(data, errorActions){
 
         if (type !== "i"){
 
-            
-            errorActions();
+            if (errorActions){
+                errorActions();
+            }
+           
+       
 
             errors_setFunctionError(
                 err, 
@@ -75,7 +78,10 @@ class ServerData {
             })
     
             .fail(function (err){
-                self.errorActions();
+                if (self.errorActions){
+                    self.errorActions();
+                }
+               
     
                 setAjaxError(
                     err, 
@@ -100,7 +106,10 @@ class ServerData {
 
     
             .fail(function (err){
-                self.errorActions();
+                if (self.errorActions){
+                    self.errorActions();
+                }
+               
     
                 setAjaxError(
                     err, 
@@ -125,7 +134,10 @@ class ServerData {
 
     
             .fail(function (err){
-                self.errorActions();
+                if (self.errorActions){
+                    self.errorActions();
+                }
+               
     
                 setAjaxError(
                     err, 
@@ -150,7 +162,10 @@ class ServerData {
 
     
             .fail(function (err){
-                self.errorActions();
+                if (self.errorActions){
+                    self.errorActions();
+                }
+               
     
                 setAjaxError(
                     err, 
@@ -186,6 +201,7 @@ class ServerData {
      
 // });
 
+ 
 
 ;// CONCATENATED MODULE: ./src/js/components/dashboard/_layout.js
 function returnTemplate(id){
@@ -388,20 +404,20 @@ class GetFields extends LoadServerData {
         } 
     }
 
-    static item (key){
-        if (this.fields){
+    static item (key){    
+        if (this.fields && this.fields.content){
             return this.fields.content[key];
         } 
     }
 
     static get keys (){
-        if (this.fields){
+        if (this.fields && typeof this.fields == "object"){
             return Object.keys  (this.fields.content);
         }   
     }
 
     static get values (){
-        if (this.fields){
+        if (this.fields && typeof this.fields == "object"){
             return Object.values(this.fields.content);
         } 
     }
@@ -535,9 +551,12 @@ class Button {
             const names  = Object.keys  (this.onFunc);
             const values = Object.values(this.onFunc);
 
-            names.forEach(function(name,i){
-                button.on[name] = values[i];
-            });
+            if (names && names.length){
+                names.forEach(function(name,i){
+                    button.on[name] = values[i];
+                });
+            }
+          
 
         }
 
@@ -574,18 +593,21 @@ class Button {
         const values = this.values;
         const self   = this;
 
-        this.keys.forEach(function(option,i){
+        if (this.keys && this.keys.length){
+            this.keys.forEach(function(option,i){
 
-            button[option] = values[i];
-
-            if (option === "hotkey"){
-                self.modifyTitle(i);
-            }
-
-        });
-
-        this.addOnFunctions (button);
-     
+                button[option] = values[i];
+    
+                if (option === "hotkey"){
+                    self.modifyTitle(i);
+                }
+    
+            });
+    
+            this.addOnFunctions (button);
+         
+        }
+  
         return button;
 
     }
@@ -657,15 +679,68 @@ function selectPage(config, id, changeHistory=false){
     tabbarClick("onAfterTabClick" , id);
 }
 
-function returnPrevPageConfig(history){
-    if (history && history.length){
-        const lastIndex     = history.length - 1;
-        const modifyHistory = history.slice(0, lastIndex);
+function blockBtn(css){
+    const prevBtn = document.querySelector('.' + css);
 
-        return{ 
-            tree    : history[lastIndex],
-            history : modifyHistory,
-        };
+    if (prevBtn){
+        const id = prevBtn.getAttribute("view_id");
+                
+        Action.disableItem($$(id));
+                
+    }
+}
+
+
+function unblockBtn(css){
+    const nextBtn = document.querySelector('.' + css);
+
+    if (nextBtn){
+        const id  = nextBtn.getAttribute("view_id");
+
+        Action.enableItem($$(id));
+       
+    }
+}
+
+function isThisPage(history){
+    const lastHistory = history[history.length - 1];
+    const tabConfig   = mediator.tabs.getInfo();
+
+    if (tabConfig && lastHistory){
+        const id        = tabConfig.tree ? tabConfig.tree.field : null;
+        const historyId = lastHistory.field;
+
+        if (id == historyId){
+            return true;
+        }
+   
+    }
+   
+}
+function returnPrevPageConfig(history){
+  
+    if (history && history.length){
+
+        let index = 1;
+
+        if (isThisPage(history)){
+            index = 2;
+        }
+        const lastIndex     = history.length - index;
+        const modifyHistory = history.slice(0, lastIndex);
+        console.log(lastIndex)
+        if (lastIndex <= 1){
+            blockBtn  ("historyBtnLeft");
+            unblockBtn("historyBtnRight");
+        }
+       
+        if (history[lastIndex]){
+            return{ 
+                tree    : history[lastIndex],
+                history : modifyHistory,
+            };
+        }
+     
     }
 
 }
@@ -685,6 +760,7 @@ function addNextPageConfig(prevPageConfig){
     prevPageConfig.nextPage = tree;
 }
 
+
 function prevBtnClick (){
     const tabId          = returnSelectTabId    ();
     const history        = returnProp           ("history");
@@ -693,6 +769,7 @@ function prevBtnClick (){
     if (prevPageConfig){
         addNextPageConfig(prevPageConfig);
         selectPage(prevPageConfig, tabId);
+        
     }
 }
 
@@ -718,6 +795,9 @@ function nextBtnClick (){
         const nextPageConfig = returnNextPageConfig(nextPage);
 
         selectPage(nextPageConfig, tabId, true);
+
+        blockBtn  ("historyBtnRight");
+        unblockBtn("historyBtnLeft");
     }
 
 }   
@@ -728,9 +808,11 @@ function createHistoryBtns(){
     const prevBtn = new Button({
         
         config   : {
-            id       : webix.uid(),
+            id       : `historyBtnLeft_${webix.uid()}`,
             hotkey   : "Ctrl+Shift+P",
-            icon     : "icon-arrow-left", 
+            icon     : "icon-arrow-left",
+            disabled : true, 
+            css      : "historyBtnLeft",
             click    : function(){
                 prevBtnClick();
             },
@@ -743,9 +825,11 @@ function createHistoryBtns(){
     const nextBtn = new Button({
         
         config   : {
-            id       : webix.uid(),
+            id       : `historyBtnRight_${webix.uid()}`,
             hotkey   : "Ctrl+Shift+B",
-            icon     : "icon-arrow-right", 
+            icon     : "icon-arrow-right",
+            css      : "historyBtnRight",
+            disabled : true, 
             click    : function(){
                 nextBtnClick();
             },
@@ -849,10 +933,13 @@ class Popup {
         const popup  = this.popupView; 
         const values = this.values;
 
-        this.keys.forEach(function(option,i){
-            popup[option] = values[i];
-
-        });
+        if (this.keys && this.keys.length){
+            this.keys.forEach(function(option,i){
+                popup[option] = values[i];
+    
+            });
+        }
+     
      
         return popup;
 
@@ -862,10 +949,13 @@ class Popup {
         const popup  = this.popupView; 
         const values = this.values;
 
-        this.keys.forEach(function(option,i){
-            popup[option] = values[i];
-
-        });
+        if (this.keys && this.keys.length){
+            this.keys.forEach(function(option,i){
+                popup[option] = values[i];
+    
+            });
+        }
+     
 
       
         return webix.ui(this.addConfig());
@@ -898,14 +988,18 @@ function findName (id, names){
 
     try{
         const nameTemplate = $$("favNameLink");
-        names.forEach(function(el){
-            if (el.id == id){
-                if(nameTemplate){
-                    nameTemplate.setValues(el.name);
+
+        if (names && names.length){
+            names.forEach(function(el){
+                if (el.id == id){
+                    if(nameTemplate){
+                        nameTemplate.setValues(el.name);
+                    }
                 }
-            }
-            
-        });
+                
+            });
+        }
+      
     } catch (err){
         errors_setFunctionError(
             err, 
@@ -1023,7 +1117,8 @@ async function postContent(namePref){
 
 function getFavPrefs(data){
     const prefs = [];
-    try{
+
+    if (data && data.length){
         data.forEach(function(pref){
 
             if (pref.name.includes("fav-link")){
@@ -1031,13 +1126,9 @@ function getFavPrefs(data){
             }
     
         });
-    } catch (err){
-        errors_setFunctionError(
-            err,
-            favoriteBtn_logNameFile,
-            "getFavPrefs"
-        );
     }
+     
+
     return prefs;
 }
 
@@ -1048,20 +1139,24 @@ function returnId(el){
 
 function getNotUniquePref(favPrefs, namePref){
     let unique = true;
-    favPrefs.forEach(function(el){
-                
-        if (el.includes(namePref)){
-            const id = returnId(el);
 
-            if (id == namePref && unique){
-                unique = false;
-                setLogValue(
-                    "success", 
-                    "Такая ссылка уже есть в избранном"
-                );
+    if (favPrefs && favPrefs.length){
+        favPrefs.forEach(function(el){
+                
+            if (el.includes(namePref)){
+                const id = returnId(el);
+    
+                if (id == namePref && unique){
+                    unique = false;
+                    setLogValue(
+                        "success", 
+                        "Такая ссылка уже есть в избранном"
+                    );
+                } 
             } 
-        } 
-    });
+        });
+    
+    }
 
     return unique;
 }
@@ -1884,34 +1979,75 @@ function returnFilter(query){
  
     iterateConditions(conditions);
 }
+function checkFieldType(field){
+
+    const item = GetFields.item(field);
+
+    if (item){
+        return item.type;
+    } else {
+        LoadServerData("fields").then(function(data){
+            checkFieldType(field);
+        });
+    }
+ 
+}
 
 function navigate_navigate(field, filter){
- 
+    const type = checkFieldType(field);
+  
+    if (type){
+        let infoData ;
 
-    filterArr.length = 0;
-    ids.length       = 0;
-
-    if (field){
-
-        returnFilter(filter);
-    
-        const infoData = {
-            tree:{
-                field : field,
-                type  : "dbtable" // ??
-            },
-            temp:{
-                filter     : {
-                    id     : field, 
-                    values : {values : filterArr}
+        if (type == "dbtable"){
+            filterArr.length = 0;
+            ids.length       = 0;
+        
+            if (field){
+        
+                returnFilter(filter);
+            
+                infoData = {
+                    tree:{
+                        field : field,
+                        type  : "dbtable"
+                    },
+                    temp:{
+                        filter     : {
+                            id     : field, 
+                            values : {values : filterArr}
+                        },
+                        queryFilter :  filter
+                    }
+                };
+        
+              
+        
+            } 
+        } else if (type == "tform"){
+            infoData = {
+                tree:{
+                    field : field,
+                    type  : "tform"
                 },
-                queryFilter :  filter
-            }
-        };
+            };
+        } else if (type == "dashboard"){
+            infoData = {
+                tree:{
+                    field : field,
+                    type  : "dashboard"
+                },
+            };
+        }
+    
+        if (infoData){
+            mediator.tabs.openInNewTab(infoData);
+        }
+    
 
-        mediator.tabs.openInNewTab(infoData);
-
-    } 
+    }
+  
+  
 }
 
 
@@ -1940,7 +2076,7 @@ const action = {
 
 const action2 = {
     navigate: true,
-    field   : "auth_group", 
+    field   : "protocols", 
     context : true,
     params  : {
        filter : "auth_group.id = 1" 
@@ -2189,6 +2325,17 @@ const chartsLayout_action = {
     } 
 };
 
+function returnDefaultWidthChart(){
+    const container = $$("dashboardInfoContainer");
+    if (container){
+        const width = container.$width;
+        const k     = 2;
+
+        return width/k;
+    } else {
+        return 500;
+    }
+}
 function createChart(dataCharts){
     const layout = [];
   
@@ -2266,6 +2413,7 @@ function createChart(dataCharts){
         //     "view": "datatable",
         //     "id"  : "auth_group",
         //     "height": 300,
+        //     "minWidth":200,
         //     "scroll": "xy",
         //     "columns": [
         //         {
@@ -2311,7 +2459,7 @@ function createChart(dataCharts){
         // };
      
         //  dataCharts.push(table);
-        // dataCharts.push(res);
+       // dataCharts.push(res);
       
         dataCharts.forEach(function(el){
           
@@ -2328,16 +2476,21 @@ function createChart(dataCharts){
             const titleTemplate = el.title;
 
             delete el.title;
-         
+       
+            const heightElem = el.height   ? el.height   : 300;
+            const widthElem  = el.minWidth ? el.minWidth : returnDefaultWidthChart();
+    
+ 
             layout.push({
                 css : "webix_dash-chart",
              
                 rows: [ 
                     {template:' ', height:20, css:"dash-delim"},
                     chartsLayout_returnHeadline (titleTemplate),
-                    {   margin     : 10,
-                        minHeight  : 300,
-                        padding    : 10,
+                    {   margin     : 4,
+                        minHeight  : heightElem,
+                        minWidth   : widthElem,
+                        padding    : 4,
                         borderless : true,
                         rows       : [
                             {   
@@ -2378,18 +2531,18 @@ function setIdAttribute(idsParam){
 function createDashLayout(dataCharts){
     const layout = createChart(dataCharts);
  
-    const dashLayout = [
-        {  
-            rows : layout
+    // const dashLayout = [
+    //     {  
+    //         cols : layout
             
-        }
-    ];
+    //     }
+    // ];
  
     const dashCharts = {
         id  : "dashboard-charts",
         view: "flexlayout",
         css : "webix_dash-charts-flex",
-        rows: dashLayout,
+        cols: layout,
     };
 
     return dashCharts;
@@ -3342,6 +3495,7 @@ function createInputs( input ){
 }
 
 function createFilter (inputs, el, ids){
+ 
     elements_idsParam           = ids;
     elements_inputsArray.length = 0;
 
@@ -3622,7 +3776,7 @@ function autorefresh_setIntervalConfig(type, counter){
     interval = setInterval(
         () => {
         
-            const table         = commonFunctions_getTable();
+            const table         = getTable();
             const isAutoRefresh = table.config.autorefresh;
              
             if (isAutoRefresh){
@@ -3656,7 +3810,7 @@ function autorefresh_autorefresh (data){
 
     clearPastIntervals();
 
-    const table = commonFunctions_getTable();
+    const table = getTable();
 
 
     if (data.autorefresh){
@@ -3692,6 +3846,7 @@ function autorefresh_autorefresh (data){
 
 ;// CONCATENATED MODULE: ./src/js/components/table/createSpace/rows/formattingData.js
 
+
 const formattingData_logNameFile = "table => createSpace => formattingData";
 
 let idCurrView;
@@ -3700,27 +3855,30 @@ let idCurrView;
 
 function findDateCols (columns){
     const dateCols = [];
-    try{
+    if (isArray(columns, formattingData_logNameFile, "findDateCols")){
         columns.forEach(function(col,i){
             if ( col.type == "datetime" ){
                 dateCols.push( col.id );
             }
         });
-    } catch (err){
-        errors_setFunctionError(err, formattingData_logNameFile, "findDateCols");
     }
+       
+   
 
     return dateCols;
 }
 
 function changeDateFormat (data, elType){
-    data.forEach(function(el){
-        if ( el[elType] ){
-            const dateFormat = new Date( el[elType] );
-            el[elType]       = dateFormat;
-            
-        }
-    });
+    if (isArray(data, formattingData_logNameFile, "changeDateFormat")){
+        data.forEach(function(el){
+            if ( el[elType] ){
+                const dateFormat = new Date( el[elType] );
+                el[elType]       = dateFormat;
+                
+            }
+        });
+    }
+  
 }
 
 function formattingDateVals (table, data){
@@ -3729,9 +3887,12 @@ function formattingDateVals (table, data){
     const dateCols = findDateCols (columns);
 
     function setDateFormatting (){
-        dateCols.forEach(function(el,i){
-            changeDateFormat (data, el);
-        });
+        if (isArray(dateCols, formattingData_logNameFile, "formattingDateVals")){
+            dateCols.forEach(function(el,i){
+                changeDateFormat (data, el);
+            });
+        }
+       
     }
 
     setDateFormatting ();
@@ -3746,11 +3907,14 @@ function formattingDateVals (table, data){
 function findBoolColumns(cols){
     const boolsArr = [];
 
-    cols.forEach(function(el,i){
-        if (el.type == "boolean"){
-            boolsArr.push(el.id);
-        }
-    });
+    if (isArray(cols, formattingData_logNameFile, "findBoolColumns")){
+        cols.forEach(function(el,i){
+            if (el.type == "boolean"){
+                boolsArr.push(el.id);
+            }
+        });
+    }
+   
 
     return boolsArr;
 }
@@ -3760,11 +3924,14 @@ function findBoolColumns(cols){
 function isBoolField(cols, key){
     const boolsArr = findBoolColumns(cols);
     let check      = false;
-    boolsArr.forEach(function(el,i){
-        if (el == key){
-            check = true;
-        } 
-    });
+    if (isArray(boolsArr, formattingData_logNameFile, "isBoolField")){
+        boolsArr.forEach(function(el,i){
+            if (el == key){
+                check = true;
+            } 
+        });
+    }
+ 
 
     return check;
 }
@@ -3774,13 +3941,16 @@ function getBoolFieldNames(){
     const boolKeys = [];
     const cols     = idCurrView.getColumns(true);
 
-    cols.forEach(function(key){
+    if (isArray(cols, formattingData_logNameFile, "getBoolFieldNames")){
+        cols.forEach(function(key){
     
-        if( isBoolField(cols, key.id)){
-            boolKeys.push(key.id);
-    
-        }
-    });
+            if( isBoolField(cols, key.id)){
+                boolKeys.push(key.id);
+        
+            }
+        });
+    }
+  
 
     return boolKeys;
 }
@@ -3788,26 +3958,32 @@ function getBoolFieldNames(){
 function setBoolValues(element){
     const boolFields = getBoolFieldNames();
 
-    boolFields.forEach(function(el){
+    if (isArray(boolFields, formattingData_logNameFile, "setBoolValues")){
+        boolFields.forEach(function(el){
  
-        if (element[el] !== undefined){
-            if ( element[el] == false ){
-                element[el] = 2;
-            } else {
-                element[el] = 1;
+            if (element[el] !== undefined){
+                if ( element[el] == false ){
+                    element[el] = 2;
+                } else {
+                    element[el] = 1;
+                }
             }
-        }
-      
-    });
+          
+        });
+    }
+   
 
 }
 
 function formattingBoolVals(id, data){
     idCurrView = id;
 
-    data.forEach(function(el,i){
-        setBoolValues(el);
-    });
+    if (isArray(data, formattingData_logNameFile, "formattingBoolVals")){
+        data.forEach(function(el,i){
+            setBoolValues(el);
+        });
+    }
+ 
 
 }
 
@@ -3877,6 +4053,7 @@ function returnDefaultValue (el){
 
 
 
+const setDefaultValues_logNameFile = "table/createSpace/rows/setDefaultValues";
 
 function isExists(value){
     if (value){
@@ -3887,27 +4064,32 @@ function isExists(value){
 
 
 function returnValue(fieldValue){
-    const table = commonFunctions_getTable();
+    const table = getTable();
     const cols  = table.getColumns(true);
     
-   
-    cols.forEach(function(el){
-        const defValue =  returnDefaultValue(el);
-       
-        const value = fieldValue[el.id];
+    if (isArray(cols, setDefaultValues_logNameFile, "returnValue")){
+        cols.forEach(function(el){
+            const defValue =  returnDefaultValue(el);
+        
+            const value = fieldValue[el.id];
 
-        if (isExists(defValue) && !value){
-            fieldValue[el.id] = returnDefaultValue(el);
-        }
+            if (isExists(defValue) && !value){
+                fieldValue[el.id] = returnDefaultValue(el);
+            }
 
-    });
+        });
+    }
+  
 }
 
 function setDefaultValues (data){
 
-    data.forEach(function(el){
-        returnValue(el);
-    });
+    if (isArray(data, setDefaultValues_logNameFile, "setDefaultValues")){
+        data.forEach(function(el){
+            returnValue(el);
+        });
+    }
+   
 
 }
 
@@ -3924,7 +4106,7 @@ function createContextSpace_getLinkParams(param){
 
 function createContextSpace_selectContextId(){
     const idParam = createContextSpace_getLinkParams("id");
-    const table   = commonFunctions_getTable();
+    const table   = getTable();
     
     if (table && table.exists(idParam)){
         table.select(idParam);
@@ -4080,7 +4262,7 @@ function returnSortData(){
     const values = webix.storage.local.get("tableSortData");
 
     if (values){
-        const table = commonFunctions_getTable();
+        const table = getTable();
         table.config.sort = {
             idCol : values.idCol,
             type  : values.type
@@ -4176,57 +4358,52 @@ function setHtmlState(add, remove){
     const css = ".webix_filter-inputs";
     const htmlElement = document.querySelectorAll(css);
     
-    try{
+    if (htmlElement && htmlElement.length){
         htmlElement.forEach(function (elem){
             const isClassExists = elem.classList.contains(elementClass);
-     
+    
             if (isClassExists){
                 Filter.addClass   (elem, add   );
                 Filter.removeClass(elem, remove);
             } 
 
         });
-
-        
-
-    } catch(err){
-        errors_setFunctionError(
-            err,
-            visibleField_logNameFile,
-            "hideHtmlEl"
-        );
     }
+
 }
 
 function removeChilds(){
-    const container       = $$(el + "_rows");
-    const containerChilds = container.getChildViews();
+    const container  = $$(el + "_rows");
 
-    const values = Object.values(containerChilds);
-    const childs = [];
+    if (container){
+        const containerChilds = container.getChildViews();
 
-    try{
-       
-        values.forEach(function(elem){
-            const id = elem.config.id;
-
-            if (id.includes("child")){
-                childs.push($$(id));
+        if (containerChilds && containerChilds.length){
+            const values = Object.values(containerChilds);
+            const childs = [];
+        
+          
+            if (values && values.length){
+                values.forEach(function(elem){
+                    const id = elem.config.id;
+        
+                    if (id.includes("child")){
+                        childs.push($$(id));
+                    }
+        
+                });
+            } 
+        
+            if (childs && childs.length){
+                
+                childs.forEach(function(el){
+                    Action.removeItem(el);
+                });
             }
-
-        });
-
-        childs.forEach(function(el){
-            Action.removeItem(el);
-        });
-
-    } catch(err) {
-        errors_setFunctionError(
-            err,
-            visibleField_logNameFile,
-            "removeChids"
-        );
+        }
     }
+
+  
 }
 
 function isChildExists(){
@@ -4301,39 +4478,40 @@ function visibleField (visible, cssClass){
 
 
  
+
 function hideElements(arr){
-    arr.forEach(function(el){
-        if ( !el.includes("_filter-child-") ){
+    if (arr && arr.length){
+        arr.forEach(function(el){
+            if ( !el.includes("_filter-child-") ){
+    
+                const colId      = $$(el).config.columnName;
+                const segmentBtn = $$(el + "_segmentBtn");
+    
+                Filter.setFieldState(0, colId, el);
+                segmentBtn.setValue (1);
+                Action.hideItem     (segmentBtn);
+            }   
+        });
+    } 
 
-            const colId      = $$(el).config.columnName;
-            const segmentBtn = $$(el + "_segmentBtn");
-
-            Filter.setFieldState(0, colId, el);
-            segmentBtn.setValue (1);
-            Action.hideItem     (segmentBtn);
-        }   
-    });
 }
 
-function clearTableFilter(){
-    const table = getTable();
-    table.config.filter = null;
-}
 
 function clearSpace(){
 
-//    clearTableFilter();
-
     const values = Filter.getAllChilds ();
  
-    values.forEach(function(el){
+    if (values && values.length){
+        values.forEach(function(el){
     
-        if (el.length){
-            hideElements(el);
-        }
-    });
+            if (el.length){
+                hideElements(el);
+            }
+        });
+    
+        Action.disableItem($$("btnFilterSubmit"));
+    }
 
-    Action.disableItem($$("btnFilterSubmit"));
 }
 
 
@@ -4380,31 +4558,37 @@ function pushValues(id, logic, index){
 }
 
 function setOperation(arr){
-    arr.forEach(function(el, i){
-   
-        const segmentBtn = $$( el + "_segmentBtn" );
 
-        if(segmentBtn){
-            try{
-            let logic = null;
+    if (arr && arr.length){
+        arr.forEach(function(el, i){
 
-            if (segmentBtn.isVisible()){
-                logic = segmentBtn.getValue();
-            }
-
-            pushValues(el, logic,  i);
-
-            } catch(err){
-                errors_setFunctionError(
-                    err,
-                    getFilterState_logNameFile,
-                    "setOperation"
-                );
-            }
+            const segmentBtn = $$( el + "_segmentBtn" );
+    
+            if(segmentBtn){
+                try{
+                let logic = null;
+    
+                if (segmentBtn.isVisible()){
+                    logic = segmentBtn.getValue();
+                }
+    
+                pushValues(el, logic,  i);
+    
+                } catch(err){
+                    errors_setFunctionError(
+                        err,
+                        getFilterState_logNameFile,
+                        "setOperation"
+                    );
+                }
+                
+            }  
             
-        }  
-     
-    });
+        });
+    }
+
+  
+
 }
 
 
@@ -4518,7 +4702,7 @@ function setFilterCounterVal(table){
 
 async function resetTable(){
     const itemTreeId = getItemId ();
-    const table      = commonFunctions_getTable  ();
+    const table      = getTable  ();
 
  
     const query      = [
@@ -4603,10 +4787,13 @@ class FilterPull {
         const result    = [];
         if(container){
             const childs = container.getChildViews();
-            childs.forEach(function(el, i){
-                result[el.config.idCol] = i;
-              
-            });
+            if (childs.length){
+                childs.forEach(function(el, i){
+                    result[el.config.idCol] = i;
+                  
+                });
+            }
+           
         }
 
         return result;
@@ -4634,21 +4821,24 @@ class FilterPull {
     
     static clearAll(){
         const keys = this.getItems();
-        if (keys){
+        if (keys.length){
             keys.forEach(function(key){
                 delete visibleInputs[key];
             });
-        }
+        }  
     }
 
     static removeItemChild(key, child){
         const item = this.getItem(key);
 
-        item.forEach(function(id, i){
-            if (id == child){
-                item.splice(i, 1);
-            }
-        });
+        if (item.length){
+            item.forEach(function(id, i){
+                if (id == child){
+                    item.splice(i, 1);
+                }
+            });
+        } 
+       
     }
    
     static spliceChild (key, pos, child){
@@ -4698,7 +4888,7 @@ class Filter extends FilterPull {
     }
 
     static showApplyNotify(show = true){
-        const table   = commonFunctions_getTable();
+        const table   = getTable();
 
         if (table){
             const tableId = table.config.id;
@@ -4719,17 +4909,20 @@ class Filter extends FilterPull {
     }
 
     static hideInputsContainers(visibleInputs){
-        const table = commonFunctions_getTable();
+        const table = getTable();
         const cols  = table.getColumns();
-        cols.forEach(function(col){
-            const found = visibleInputs.find(element => element == col.id);
-    
-            if (!found){
-                const htmlElement = document.querySelector("." + col.id ); 
-                Filter.addClass   (htmlElement, "webix_hide-content");
-                Filter.removeClass(htmlElement, "webix_show-content");
-            }
-        });
+        if (cols && cols.length){
+            cols.forEach(function(col){
+                const found = visibleInputs.find(element => element == col.id);
+        
+                if (!found){
+                    const htmlElement = document.querySelector("." + col.id ); 
+                    Filter.addClass   (htmlElement, "webix_hide-content");
+                    Filter.removeClass(htmlElement, "webix_show-content");
+                }
+            });
+        } 
+        
     }
 
     static enableSubmitButton(){
@@ -4738,7 +4931,7 @@ class Filter extends FilterPull {
         const inputs   = this.getAllChilds (true);
         let fullValues = true;
     
-        if (inputs){
+        if (inputs.length){
             inputs.forEach(function(input){
                 const isValue = $$(input).getValue();
                 if (!isValue && fullValues){
@@ -4751,7 +4944,7 @@ class Filter extends FilterPull {
             } else {
                 Action.disableItem(btn);
             }
-        }
+        } 
     }
     
     
@@ -4978,12 +5171,15 @@ function getVisibleInfo(lastIndex = false){
     
     let counter = 0;
 
-    values.forEach(function(value, i){
-        if (value.length){
-            counter ++;
-            fillElements.push(i);
-        }
-    });
+    if (values && values.length){
+        values.forEach(function(value, i){
+            if (value.length){
+                counter ++;
+                fillElements.push(i);
+            }
+        });
+    }
+ 
 
     if (lastIndex){
         return fillElements.pop();
@@ -5054,7 +5250,7 @@ function returnLastItem(array){
     const indexes       = Filter.getIndexFilters();
     const selectIndexes = [];
 
-    if (array){
+    if (array && array.length){
 
         array.forEach(function(el){
             selectIndexes.push(indexes[el]);
@@ -5083,13 +5279,17 @@ function returnLastItem(array){
 
 function isLastKey(inputsKey, keys) {
     const currInputs = [];
-    keys.forEach(function(key){
-        const item = Filter.getItem(key);
-        if (item.length){
-            currInputs.push(key)
-        }    
-    });
 
+    if (keys && keys.length){
+        keys.forEach(function(key){
+            const item = Filter.getItem(key);
+            if (item.length){
+                currInputs.push(key)
+            }    
+        });
+    
+    }
+ 
 
     const lastKey = returnLastItem(currInputs);
   
@@ -5198,20 +5398,26 @@ function hideHtmlEl(id){
 function hideMainInput(thisInput, mainInput){
     const btnOperations = $$(thisInput + "-btnFilterOperations");
 
-    try{
+
+    if (mainInput && mainInput.length){
         mainInput.forEach(function(el){
             Action.hideItem(el);
         });
 
-        btnOperations.setValue(" = ");
-
-    } catch(err){ 
-        errors_setFunctionError(
-            err, 
-            contextBtn_logNameFile, 
-            "contextBtn remove => hideMainInput"
-        );
+        if (btnOperations){
+            btnOperations.setValue(" = ");
+        } else {
+            errors_setFunctionError(
+                `button is not defined`, 
+                contextBtn_logNameFile, 
+                "hideMainInput"
+            ); 
+        }
+      
     }
+    
+
+     
 }
 
 
@@ -5291,16 +5497,19 @@ function returnInputPosition(id, thisContainer){
 
     let childPosition = 0;
 
-    item.forEach(function(input, i){
-        const inputContainer = input + "-container";
-
-        if (inputContainer === thisContainer){
-            childPosition = i + 1;
+    if (item && item.length){
+        item.forEach(function(input, i){
+            const inputContainer = input + "-container";
+    
+            if (inputContainer === thisContainer){
+                childPosition = i + 1;
+            }
+        });
+    
+        if (!isVisibleParent){
+            childPosition++;
         }
-    });
-
-    if (!isVisibleParent){
-        childPosition++;
+    
     }
 
     return childPosition;
@@ -5820,7 +6029,7 @@ function showParentField (el){
 }
 
 function createChildField(el){
-    const table = commonFunctions_getTable();
+    const table = getTable();
     const col   = table.getColumnConfig(el.parent);
  
     const idField = createChildFields  (col, el.index);
@@ -5840,7 +6049,7 @@ function userTemplate_returnLastItem(array){
     const indexes       = Filter.getIndexFilters();
     const selectIndexes = [];
 
-    if (array){
+    if (array && array.length){
 
         array.forEach(function(el){
             selectIndexes.push(indexes[el]);
@@ -5884,16 +6093,19 @@ function createWorkspace(prefs){
 
     Filter.clearFilter();
  
-    prefs.forEach(function(el){
-        if (!el.parent){
-            showParentField  (el);
-        } else {
-            createChildField(el);
-        }
-   
-    });
-
-    userTemplate_hideSegmentBtn();
+    if (prefs && prefs.length){
+        prefs.forEach(function(el){
+            if (!el.parent){
+                showParentField  (el);
+            } else {
+                createChildField(el);
+            }
+       
+        });
+    
+        userTemplate_hideSegmentBtn();
+     
+    }
  
 }
 
@@ -5916,13 +6128,16 @@ function createFiltersByTemplate(item) {
 function showHtmlContainers(){
     const keys = Filter.getItems();
 
-    keys.forEach(function(el){
-        const htmlElement = document.querySelector("." + el ); 
-        Filter.addClass   (htmlElement, "webix_show-content");
-        Filter.removeClass(htmlElement, "webix_hide-content");
-    });
+    if (keys && keys.length){
+        keys.forEach(function(el){
+            const htmlElement = document.querySelector("." + el ); 
+            Filter.addClass   (htmlElement, "webix_show-content");
+            Filter.removeClass(htmlElement, "webix_hide-content");
+        });
+    
+        Filter.hideInputsContainers(keys); // hidden inputs
+    }
 
-    Filter.hideInputsContainers(keys); // hidden inputs
 }
 
 
@@ -5983,16 +6198,25 @@ function isDataExists(data){
 function hideHtmlContainers(){
     const container = $$("inputsFilter").getChildViews();
 
-    container.forEach(function(el){
+    if (container && container.length){
+        container.forEach(function(el){
 
-        const node = el.getNode();
-
-        const isShowContainer = node.classList.contains("webix_show-content");
-        if (!isShowContainer){
-            Filter.addClass(node, "webix_hide-content");
-        }
-       
-    });
+            const node = el.getNode();
+    
+            const isShowContainer = node.classList.contains("webix_show-content");
+            if (!isShowContainer){
+                Filter.addClass(node, "webix_hide-content");
+            }
+           
+        });
+    } else {
+        setFunctionError(
+            `array length is null`, 
+            "table/createSpace/returnLostFilter", 
+            "hideHtmlContainers"
+        ); 
+    }
+ 
 
 }
 
@@ -6048,6 +6272,8 @@ function returnLostFilter_returnLostFilter(id){
 
 let conditions;
 
+const returnDashboardFilter_logNameFile = "tables/createSpace/returnDashboardFilter";
+
 function returnInputId(id){
     const index = id.lastIndexOf(".");
     return id.slice(index + 1);
@@ -6095,7 +6321,7 @@ function returnDashboardFilter_checkCondition(array){
         Filter.setFieldState(1, id);
 
     } else {
-        const table = commonFunctions_getTable();
+        const table = getTable();
         const col   = table.getColumnConfig(id);
         inputId     = createChildFields(col);
 
@@ -6111,10 +6337,13 @@ function returnDashboardFilter_checkCondition(array){
 // array[4] - and/or
 function returInputsId(ids){
     const result = [];
-    ids.forEach(function(el, i){
-        const index = el.lastIndexOf(".") + 1;
-        result.push(el.slice(index));
-    });
+    if (isArray(ids, returnDashboardFilter_logNameFile, "returInputsId")){
+        ids.forEach(function(el, i){
+            const index = el.lastIndexOf(".") + 1;
+            result.push(el.slice(index));
+        });
+    }
+  
     
     
     return result;
@@ -6123,15 +6352,18 @@ function returInputsId(ids){
 
 function returnDashboardFilter_iterateConditions(){
     const ids = [];
-    conditions.forEach(function(el){
-        const arr = el.split(' ');
-        returnDashboardFilter_checkCondition(arr);
-        ids.push(arr[1]);
-     
-    });
-    
-    const inputsId = returInputsId(ids);
-    Filter.hideInputsContainers(inputsId);
+    if (isArray(conditions, returnDashboardFilter_logNameFile, "iterateConditions")){
+        conditions.forEach(function(el){
+            const arr = el.split(' ');
+            returnDashboardFilter_checkCondition(arr);
+            ids.push(arr[1]);
+         
+        });
+        
+        const inputsId = returInputsId(ids);
+        Filter.hideInputsContainers(inputsId);
+    }
+
 }
 
 
@@ -6142,27 +6374,30 @@ function returnDashboardFilter_returnConditions(filter){
     let r            = "";
     let counter      = 0;
 
-    array.forEach(function(el, i){
-        const length = array.length;
-
-        if (length - 1 === i){
-            r += " " + el;
-            counter ++;
-        }
-
-        if (counter >= 4 || length - 1 === i){
-            conditions.push(r);
-            r       = "";
-            counter = 0;
-        }
-
-        if (counter < 4){
-            r += " " + el;
-            counter ++;
-        }
-
-        
-    });
+    if (isArray(array, returnDashboardFilter_logNameFile, "returnConditions")){
+        array.forEach(function(el, i){
+            const length = array.length;
+    
+            if (length - 1 === i){
+                r += " " + el;
+                counter ++;
+            }
+    
+            if (counter >= 4 || length - 1 === i){
+                conditions.push(r);
+                r       = "";
+                counter = 0;
+            }
+    
+            if (counter < 4){
+                r += " " + el;
+                counter ++;
+            }
+    
+            
+        });
+    }
+  
    
 
     return conditions;
@@ -6179,17 +6414,30 @@ function lastItem(result){
 }
 
 function returnCurrIndexes(indexes){
- 
-    const inputs  = Filter.getItems();
     const result = [];
-    Object.keys(indexes).forEach(function(el){
+    if (isArray(indexes, returnDashboardFilter_logNameFile, "returnCurrIndexes")){
+        const inputs  = Filter.getItems();
 
-        if (inputIsVisible(inputs, el)){
-            result.push(indexes[el]);
+        const keys = Object.keys(indexes);
+        if (keys.length){
+            keys.forEach(function(el){
+    
+                if (inputIsVisible(inputs, el)){
+                    result.push(indexes[el]);
+                }
+              
+            });
+        } else {
+            errors_setFunctionError(
+                `array length is null`, 
+                returnDashboardFilter_logNameFile, 
+                "returnCurrIndexes"
+            ); 
         }
-      
-    });
-
+       
+    
+    }
+ 
     return result;
 
 }
@@ -6300,11 +6548,14 @@ function checkNotUnique(idAddRow){
     const tablePool = loadRows_idCurrView.data.pull;
     const values    = Object.values(tablePool);
     
-    values.forEach(function(el){
-        if ( el.id == idAddRow ){
-            loadRows_idCurrView.remove(el.id);
-        }
-    });
+    if (isArray(values, loadRows_logNameFile, "checkNotUnique")){
+        values.forEach(function(el){
+            if ( el.id == idAddRow ){
+                loadRows_idCurrView.remove(el.id);
+            }
+        });
+    }
+    
 }
 
 
@@ -6325,11 +6576,14 @@ function changeFullTable(data){
 }
 
 function changePart(data){
-    data.forEach(function(el){
-        checkNotUnique(el.id);
-        loadRows_idCurrView.add(el);
-    });
-}
+    if (isArray(data, loadRows_logNameFile, "changePart")){
+        data.forEach(function(el){
+            checkNotUnique(el.id);
+            loadRows_idCurrView.add(el);
+        });
+    }
+    }
+
 
 function parseRowData (data){
 
@@ -6615,18 +6869,24 @@ function createTableRows (id, idsParam, offset = 0){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/table/createSpace/cols/columnsWidth.js
+
+
 let table; 
 let columnsWidth_idsParam;
 let storageData;
 
+const columnsWidth_logNameFile = "table/createSpace/cols/columnsWidth";
 
 function setColsUserSize(){
     const sumWidth = [];
-    storageData.values.forEach(function (el){
-        sumWidth.push(el.width);
-        table.setColumnWidth(el.column, el.width);
-    }); 
-
+    if (isArray(storageData, columnsWidth_logNameFile, "setColsUserSize")){
+        storageData.values.forEach(function (el){
+            sumWidth.push(el.width);
+            table.setColumnWidth(el.column, el.width);
+        }); 
+    
+    }
+  
     return sumWidth;  
 }
 
@@ -6675,13 +6935,16 @@ function setColsSize(col){
 function findUniqueCols(col){
     let result = false;
 
-    storageData.values.forEach(function(el){
+    if (isArray(storageData, columnsWidth_logNameFile, "findUniqueCols")){
+        storageData.values.forEach(function(el){
 
-        if (el.column == col){
-            result = true;
-        }
-
-    });
+            if (el.column == col){
+                result = true;
+            }
+    
+        });
+    }
+  
     return result;
 }
 
@@ -6724,28 +6987,34 @@ function setWidthLastCol(){
 
 function setVisibleCols(allCols){
 
-    allCols.forEach(function(el,i){
+    if (isArray(allCols, columnsWidth_logNameFile, "setVisibleCols")){
+        allCols.forEach(function(el,i){
 
-        if (findUniqueCols(el.id)){
-            if( !( table.isColumnVisible(el.id) ) ){
-                table.showColumn(el.id);
+            if (findUniqueCols(el.id)){
+                if( !( table.isColumnVisible(el.id) ) ){
+                    table.showColumn(el.id);
+                }
+            } else {
+                const colIndex = table.getColumnIndex(el.id);
+                if(table.isColumnVisible(el.id) && colIndex !== -1){
+                    table.hideColumn(el.id);
+                }
             }
-        } else {
-            const colIndex = table.getColumnIndex(el.id);
-            if(table.isColumnVisible(el.id) && colIndex !== -1){
-                table.hideColumn(el.id);
-            }
-        }
-            
-    });
+                
+        });
+    }
+  
 }
 
 
 function setPositionCols(){
-    storageData.values.forEach(function(el){
-        table.moveColumn(el.column,el.position);
-            
-    });
+    if (isArray(storageData.values, columnsWidth_logNameFile, "setPositionCols")){
+        storageData.values.forEach(function(el){
+            table.moveColumn(el.column,el.position);
+                
+        });
+    }
+   
 } 
 
 function setUserPrefs(idTable, ids){
@@ -6766,9 +7035,12 @@ function setUserPrefs(idTable, ids){
 
     } else {   
    
-        allCols.forEach(function(el){
-            setColsSize(el.id);  
-        });
+        if (isArray(allCols, columnsWidth_logNameFile, "setUserPrefs")){
+            allCols.forEach(function(el){
+                setColsSize(el.id);  
+            });
+        }
+      
        
     }
 
@@ -6944,9 +7216,9 @@ function createTableCols (idsParam, idCurrTable){
   
     const columnsData   = [];
     
-    createCols_table               = $$(idCurrTable);
+    createCols_table = $$(idCurrTable);
 
-    if (typeof colsName == "object" && colsName.length){
+    if (colsName.length){
         colsName.forEach(function(data) {
             createCols_field = dataFields[data]; 
          
@@ -6969,6 +7241,12 @@ function createTableCols (idsParam, idCurrTable){
         
         refreshCols(columnsData);
         setUserPrefs(createCols_table, idsParam); 
+    } else {
+        errors_setFunctionError(
+            "array length is null",
+            createCols_logNameFile,
+            "createTableCols"
+        );
     }
           
 
@@ -6979,6 +7257,7 @@ function createTableCols (idsParam, idCurrTable){
 ;// CONCATENATED MODULE: ./src/js/components/table/createSpace/cols/detailAction.js
 
 
+
 function createDetailAction (columnsData, idsParam, idCurrTable){
     let idCol;
     let actionKey;
@@ -6986,14 +7265,16 @@ function createDetailAction (columnsData, idsParam, idCurrTable){
 
     const data          = GetFields.item(idsParam);
     const table         = $$(idCurrTable);
+    if (isArray(columnsData, "table/createSpace/cols/detailAction", "createDetailAction")){
+        columnsData.forEach(function(field, i){
+            if( field.type  == "action" && data.actions[field.id].rtype == "detail"){
+                checkAction = true;
+                idCol       = i;
+                actionKey   = field.id;
+            } 
+        });
+    }
 
-    columnsData.forEach(function(field, i){
-        if( field.type  == "action" && data.actions[field.id].rtype == "detail"){
-            checkAction = true;
-            idCol       = i;
-            actionKey   = field.id;
-        } 
-    });
     
     if (actionKey !== undefined){
         const urlFieldAction = data.actions[actionKey].url;
@@ -7023,6 +7304,7 @@ function createDetailAction (columnsData, idsParam, idCurrTable){
 
 
 
+
 const buttonLogic_logNameFile = 
 "table => createSpace => dynamicElements => buttonLogic";
 
@@ -7034,7 +7316,8 @@ let rtype;
 const valuesArray = [];
 
 function createQueryRefresh(){
-    try{
+
+    if (isArray(idElements, buttonLogic_logNameFile, "createQueryRefresh")){
         idElements.forEach((el) => {
             const val = $$(el.id).getValue();
             
@@ -7050,13 +7333,9 @@ function createQueryRefresh(){
 
             }   
         });
-    } catch (err){  
-        errors_setFunctionError(
-            err, 
-            buttonLogic_logNameFile, 
-            "createQueryRefresh"
-        );
     }
+    
+   
 }
 
 function buttonLogic_setTableState(tableView, data){
@@ -7201,22 +7480,25 @@ function addLoadEl(container){
 function postButton(){
     try{
    
-        idElements.forEach((el,i) => {
-            if (el.id.includes("customUploader")){
-                const tablePull = $$(el.id).files.data.pull;
-                const value     = Object.values(tablePull)[0];
-                const link      = $$(el.id).config.upload;
-
-                let formData = new FormData();  
-                let container = $$(el.id).getParentView();
-                addLoadEl(container);
-
-                formData.append("file", value.file);
-
-                uploadData(formData, link);
-               
-            }
-        });
+        if (isArray(idElements, buttonLogic_logNameFile, "postButton")){
+            idElements.forEach((el,i) => {
+                if (el.id.includes("customUploader")){
+                    const tablePull = $$(el.id).files.data.pull;
+                    const value     = Object.values(tablePull)[0];
+                    const link      = $$(el.id).config.upload;
+    
+                    let formData = new FormData();  
+                    let container = $$(el.id).getParentView();
+                    addLoadEl(container);
+    
+                    formData.append("file", value.file);
+    
+                    uploadData(formData, link);
+                   
+                }
+            });
+        }
+        
     } catch (err){  
         errors_setFunctionError(err, buttonLogic_logNameFile, "postButton");
     } 
@@ -7269,6 +7551,13 @@ function createInputs_setAdaptiveWidth(elem){
     inp.style.width   = elem.$width - 5 + "px";
 }
 
+function returnArrayError(func){
+    errors_setFunctionError(
+        "array length is null",
+        createInputs_logNameFile,
+        func
+    );
+}
 function createTextInput    (i){
     return {   
         view            : "text",
@@ -7284,14 +7573,19 @@ function createTextInput    (i){
             onChange:function(){
                 const inputs = $$("customInputs").getChildViews();
 
-                inputs.forEach(function(el){
-                    const view = el.config.view;
-                    const btn  = $$(el.config.id);
-
-                    if (view == "button"){
-                        Action.enableItem(btn);
-                    }
-                });
+                if (inputs.length){
+                    inputs.forEach(function(el){
+                        const view = el.config.view;
+                        const btn  = $$(el.config.id);
+    
+                        if (view == "button"){
+                            Action.enableItem(btn);
+                        }
+                    });
+                } else {
+                    returnArrayError("createTextInput");
+                }
+               
 
             }
         }
@@ -7309,7 +7603,7 @@ function dataTemplate(i, valueElem){
 
 function createOptions(content){
     const dataOptions = [];
-    if (typeof content == "object"){
+    if (isArray(content, createInputs_logNameFile, "createOptions")){
         content.forEach(function(name, i) {
      
             let title = name;
@@ -7409,14 +7703,14 @@ function createDeleteAction (i){
     } 
 
 }
-
+ 
 function getInputsId        (element){
 
     const parent     = element.getParentView();
     const childs     = parent .getChildViews();
     const idElements = [];
 
-    try{
+    if (childs.length){
         childs.forEach((el,i) => {
             const view = el.config.view;
             const id   = el.config.id;
@@ -7441,13 +7735,11 @@ function getInputsId        (element){
             }
 
         });
-    } catch (err){
-        errors_setFunctionError(
-            err,
-            createInputs_logNameFile,
-            "generateCustomInputs => getInputsId"
-        );
-    } 
+    } else {
+        returnArrayError("getInputsId");
+    }
+       
+    
     return idElements;
 }
 
@@ -7560,11 +7852,16 @@ function createUpload       (i){
                 const parent = this  .getParentView();
                 const childs = parent.getChildViews();
 
-                childs.forEach(function(el,i){
-                    if (el.config.id.includes("customBtn")){
-                        el.disable();
-                    }
-                });
+                if (childs.length){
+                    childs.forEach(function(el,i){
+                        if (el.config.id.includes("customBtn")){
+                            el.disable();
+                        }
+                    });
+                } else {
+                    returnArrayError("createUpload");
+                }
+               
             },
             onBeforeFileAdd:function(){
                 const loadEl = $$("templateLoad");
@@ -7576,11 +7873,16 @@ function createUpload       (i){
                 const parent = this  .getParentView();
                 const childs = parent.getChildViews();
 
-                childs.forEach(function(el){
-                    if (el.config.id.includes("customBtn")){
-                        el.enable();
-                    }
-                });
+                if (childs.length){
+                    childs.forEach(function(el){
+                        if (el.config.id.includes("customBtn")){
+                            el.enable();
+                        }
+                    });
+                } else {
+                    returnArrayError("createUpload");
+                }
+                
             }
 
         }
@@ -7604,13 +7906,19 @@ function createInputs_createDatepicker   (i){
             onChange:function(){
                 try{
                     const inputs = $$("customInputs").getChildViews();
-                    inputs.forEach(function(el,i){
-                        const btn  = $$(el.config.id);
-                        const view = el.config.view;
-                        if ( view == "button" && !(btn.isEnabled()) ){
-                            btn.enable();
-                        }
-                    });
+
+                    if (inputs.length){
+                        inputs.forEach(function(el,i){
+                            const btn  = $$(el.config.id);
+                            const view = el.config.view;
+                            if ( view == "button" && !(btn.isEnabled()) ){
+                                btn.enable();
+                            }
+                        });
+                    } else {
+                        returnArrayError("createDatepicker");
+                    }
+                  
                 } catch (err){
                     errors_setFunctionError(
                         err,
@@ -7639,13 +7947,18 @@ function createCheckbox     (i){
             onChange:function(){
                 try{
                     const inputs = $$("customInputs").getChildViews();
-                    inputs.forEach(function(el,i){
-                        const view = el.config.view;
-                        const btn  = $$(el.config.id);
-                        if (view == "button" && !(btn.isEnabled())){
-                            btn.enable();
-                        }
-                    });
+                    if (inputs.length){
+                        inputs.forEach(function(el,i){
+                            const view = el.config.view;
+                            const btn  = $$(el.config.id);
+                            if (view == "button" && !(btn.isEnabled())){
+                                btn.enable();
+                            }
+                        });
+                    } else {
+                        returnArrayError("createCheckbox");
+                    }
+                
                 } catch (err){
                     errors_setFunctionError(
                         err,
@@ -7667,52 +7980,57 @@ function generateCustomInputs (dataFields, id){
     const customInputs  = [];
     const objInuts      = Object.keys(data.inputs);
 
-    objInuts.forEach((el,i) => {
-        createInputs_field = dataInputsArray[el];
-        if ( createInputs_field.type == "string" ){
-            customInputs.push(
-                createTextInput(i)
-            );
-        } else if ( createInputs_field.type == "apiselect" ) {
-           
-            customInputs.push(
-                createSelectInput(el, i, dataInputsArray)
-            );
-
-        } else if ( createInputs_field.type == "submit" || 
-                    createInputs_field.type == "button" ){
-
-            const actionType = createInputs_field.action;
-            const findAction = data.actions[actionType];
-        
-            if ( findAction.verb == "DELETE" && actionType !== "submit" ){
-                createDeleteAction (i);
-            } else if ( findAction.verb == "DELETE" ) {
+    if (objInuts.length){
+        objInuts.forEach((el,i) => {
+            createInputs_field = dataInputsArray[el];
+            if ( createInputs_field.type == "string" ){
                 customInputs.push(
-                    createDeleteBtn(findAction, i)
+                    createTextInput(i)
                 );
-            } else {
+            } else if ( createInputs_field.type == "apiselect" ) {
+               
                 customInputs.push(
-                    createCustomBtn(findAction, i)
-                        
+                    createSelectInput(el, i, dataInputsArray)
                 );
-            }
-        } else if ( createInputs_field.type == "upload" ){
-            customInputs.push(
-                createUpload(i)
-            );
-        } else if ( createInputs_field.type == "datetime" ){
-            customInputs.push(
-                createInputs_createDatepicker(i)
-            );
-        }else if ( createInputs_field.type == "checkbox" ){
-            customInputs.push(
-                createCheckbox(i)
-            );
-
-        } 
-    });
-
+    
+            } else if ( createInputs_field.type == "submit" || 
+                        createInputs_field.type == "button" ){
+    
+                const actionType = createInputs_field.action;
+                const findAction = data.actions[actionType];
+            
+                if ( findAction.verb == "DELETE" && actionType !== "submit" ){
+                    createDeleteAction (i);
+                } else if ( findAction.verb == "DELETE" ) {
+                    customInputs.push(
+                        createDeleteBtn(findAction, i)
+                    );
+                } else {
+                    customInputs.push(
+                        createCustomBtn(findAction, i)
+                            
+                    );
+                }
+            } else if ( createInputs_field.type == "upload" ){
+                customInputs.push(
+                    createUpload(i)
+                );
+            } else if ( createInputs_field.type == "datetime" ){
+                customInputs.push(
+                    createInputs_createDatepicker(i)
+                );
+            }else if ( createInputs_field.type == "checkbox" ){
+                customInputs.push(
+                    createCheckbox(i)
+                );
+    
+            } 
+        });
+    
+    } else {
+        returnArrayError("generateCustomInputs");
+    }
+   
 
     return customInputs;
 }
@@ -7913,7 +8231,7 @@ function setTableName(idCurrTable, idsParam) {
     try{
         const names = GetFields.names;
 
-        if (names){
+        if (isArray(names, generateTable_logNameFile, "setTableName")){
 
             names.forEach(function(el){
                 if (el.id == idsParam){  
@@ -7923,7 +8241,7 @@ function setTableName(idCurrTable, idsParam) {
                 }
             });
         }
-       // $$("tree").callEvent("onBeforeOpen", [ "","auth_group" ]);
+ 
 
         
     } catch (err){  
@@ -8080,7 +8398,7 @@ function createUrl(cell){
         const id      = cell.row;
         const columns = $$("table-view").getColumns();
 
-        if (typeof columns == "object"){
+        if (columns && columns.length){
             columns.forEach(function(el,i){
             if (el.id == cell.column){
                 url           = el.src;
@@ -8100,7 +8418,8 @@ function createUrl(cell){
 function setProps(propertyElem, data){
     const arrayProperty = [];
 
-    try{
+ 
+    if (data && data.length){
         data.forEach(function(el, i){
             arrayProperty.push({
                 type    : "text", 
@@ -8111,13 +8430,8 @@ function setProps(propertyElem, data){
         });
 
         propertyElem.define("elements", arrayProperty);
-    } catch (err){
-        errors_setFunctionError(
-            err, 
-            btnsInTable_logNameFile, 
-            "setProps"
-        );
     }
+ 
 }
 
 
@@ -8196,12 +8510,15 @@ let userData;
 function userprefsPost_findUniqueCols(sentVals, col){
     let result = false;
 
-    sentVals.values.forEach(function(el){
-        if (el.column == col){
-            result = true;
-        }
-        
-    });
+    if (isArray(sentVals, userprefsPost_logNameFile, "findUniqueCols")){
+        sentVals.values.forEach(function(el){
+            if (el.column == col){
+                result = true;
+            }
+            
+        });
+    }
+  
 
     return result;
 }
@@ -8210,20 +8527,30 @@ function userprefsPost_findUniqueCols(sentVals, col){
 function setVisibleState(sentVals, table){
     const columns = table.getColumns(true);
     try{
-        columns.forEach(function(el){
+
+        if (columns.length){
+            columns.forEach(function(el){
             
-            if (userprefsPost_findUniqueCols(sentVals, el.id)){
-                if( !( table.isColumnVisible(el.id) ) ){
-                    table.showColumn(el.id);
+                if (userprefsPost_findUniqueCols(sentVals, el.id)){
+                    if( !( table.isColumnVisible(el.id) ) ){
+                        table.showColumn(el.id);
+                    }
+                 
+                } else {
+                    const colIndex = table.getColumnIndex(el.id);
+                    if(table.isColumnVisible(el.id) && colIndex !== -1){
+                        table.hideColumn(el.id);
+                    }
                 }
-             
-            } else {
-                const colIndex = table.getColumnIndex(el.id);
-                if(table.isColumnVisible(el.id) && colIndex !== -1){
-                    table.hideColumn(el.id);
-                }
-            }
-        });
+            });
+        } else {
+            errors_setFunctionError(
+                "array length is null",
+                userprefsPost_logNameFile,
+                "setVisibleState"
+            );
+        }
+        
 
 
     } catch(err){
@@ -8237,13 +8564,16 @@ function setVisibleState(sentVals, table){
 
 
 function moveListItem(sentVals, table){
-    sentVals.values.forEach(function(el){
-        table.moveColumn(el.column, el.position);
-    });  
+    if (isArray(sentVals.values, userprefsPost_logNameFile, "moveListItem")){
+        sentVals.values.forEach(function(el){
+            table.moveColumn(el.column, el.position);
+        }); 
+    }
+   
 }
 
 function setUpdateCols(sentVals){
-    const table   = commonFunctions_getTable();
+    const table   = getTable();
 
     setVisibleState (sentVals, table);
     moveListItem    (sentVals, table);
@@ -8252,7 +8582,7 @@ function setUpdateCols(sentVals){
 
 
 function setSize(sentVals){
-    const table = commonFunctions_getTable();
+    const table = getTable();
     function setColWidth(el){
         table.eachColumn( 
             function (columnId){ 
@@ -8263,9 +8593,12 @@ function setSize(sentVals){
         );
     }
 
-    sentVals.values.forEach(function(el){
-        setColWidth(el);
-    });
+    if (isArray(sentVals.values, userprefsPost_logNameFile, "setSize")){
+        sentVals.values.forEach(function(el){
+            setColWidth(el);
+        });
+    }
+  
 }
 
 
@@ -8417,7 +8750,7 @@ const clearBtn_logNameFile = "table => columnsSettings => visibleCols => clearBt
 
 
 function returnContainer(){
-    const tableId = commonFunctions_getTable().config.id;
+    const tableId = getTable().config.id;
     if (tableId == "table"){
         return $$("tableContainer");
     } else if (tableId == "table-view"){
@@ -8429,7 +8762,7 @@ function returnContainer(){
 function clearBtn_setColsSize(col, listItems){
     const container  = returnContainer();
 
-    const table      = commonFunctions_getTable();
+    const table      = getTable();
     const countCols  = listItems.length;
     const scroll     = 17;
     const tableWidth = container.$width - scroll;
@@ -8448,6 +8781,13 @@ function returnWidthCol(){
 
     return colWidth.toFixed(2);
 }
+function clearBtn_returnArrayError(){
+    errors_setFunctionError(
+        "array length is null",
+        clearBtn_logNameFile,
+        "returnPosition"
+    );
+}
 
 function returnPosition(column){
     let position;
@@ -8456,49 +8796,60 @@ function returnPosition(column){
     if (pull){
         const defaultColsPosition = Object.keys(pull);
         
-        defaultColsPosition.forEach(function(el, i){
-            if (el == column){
-                position = i;
-            }
-        });
+        if (defaultColsPosition.length){
+            defaultColsPosition.forEach(function(el, i){
+                if (el == column){
+                    position = i;
+                }
+            });
+        } else {
+            clearBtn_returnArrayError(); 
+        }
+        
 
     }
 
     return position;
 }
-
+ 
 function showCols(){
     const cols = clearBtn_table.getColumns(true);
     try{
-        cols.forEach(function(el,i){
-            const colWidth    = returnWidthCol();
-            const positionCol = returnPosition(el.id);
 
-            clearBtn_setColsSize(el.id,cols);
-            
-            if( !( clearBtn_table.isColumnVisible(el.id) ) ){
-                clearBtn_table.showColumn(el.id);
-            }
-       
-            clearBtn_table.setColumnWidth(el.id, colWidth);
-
-            values.push({
-                column   : el.id,
-                position : positionCol,
-                width    : colWidth 
+        if (cols.length){
+            cols.forEach(function(el,i){
+                const colWidth    = returnWidthCol();
+                const positionCol = returnPosition(el.id);
+    
+                clearBtn_setColsSize(el.id,cols);
+                
+                if( !( clearBtn_table.isColumnVisible(el.id) ) ){
+                    clearBtn_table.showColumn(el.id);
+                }
+           
+                clearBtn_table.setColumnWidth(el.id, colWidth);
+    
+                values.push({
+                    column   : el.id,
+                    position : positionCol,
+                    width    : colWidth 
+                });
             });
-        });
+        } else {
+            clearBtn_returnArrayError();
+        }
+       
     } catch(err){
         errors_setFunctionError(
             err,
             clearBtn_logNameFile,
-            "clearBtnColsClick => showCols"
+            "clearBtnColsClick / showCols"
         );
     }
 }
 
 function clearBtnColsClick (){
-    clearBtn_table        = commonFunctions_getTable();
+    clearBtn_table        = getTable();
 
     values = [];
 
@@ -8825,7 +9176,7 @@ function visibleColsSubmitClick (){
     const listPull  = list.data.pull;
     const listItems = Object.values(listPull);
     const values    = [];
-    const table     = commonFunctions_getTable();
+    const table     = getTable();
 
     const containerWidth = window.innerWidth - $$("tree").$width - 77; 
 
@@ -8856,36 +9207,45 @@ function visibleColsSubmitClick (){
         const widthCols = [];
         const lastColumn = {};
  
+        if (listItems.length){
+            listItems.forEach(function(el){
+                const positionElem = list.getIndexById(el.id);
+                const lastCol      = list.getLastId();
+             
+                let colWidth;
+    
+                if ( el.id !== lastCol){
+                    colWidth = table.getColumnConfig(el.column).width;
+                  
+                    if ( colWidth >= containerWidth ){
+                        colWidth = returnMinSize();
+                    }
+                
+                    widthCols.push(colWidth);
+               
+                    values.push({
+                        column   : el.column, 
+                        position : positionElem,
+                        width    : Number(colWidth)
+                    });
+                } else {
+                    lastColumn.column   = el.column;
+                    lastColumn.position = positionElem;
+                } 
+     
+          
+    
+            });
+            setLastColWidth(lastColumn,widthCols);
+        } else {
+            errors_setFunctionError(
+                "array length is null", 
+                saveBtn_logNameFile, 
+                "visibleColsSubmitClick"
+            ); 
+        }
         
-        listItems.forEach(function(el){
-            const positionElem = list.getIndexById(el.id);
-            const lastCol      = list.getLastId();
-         
-            let colWidth;
-
-            if ( el.id !== lastCol){
-                colWidth = table.getColumnConfig(el.column).width;
-              
-                if ( colWidth >= containerWidth ){
-                    colWidth = returnMinSize();
-                }
-            
-                widthCols.push(colWidth);
-           
-                values.push({
-                    column   : el.column, 
-                    position : positionElem,
-                    width    : Number(colWidth)
-                });
-            } else {
-                lastColumn.column   = el.column;
-                lastColumn.position = positionElem;
-            } 
- 
-      
-
-        });
-        setLastColWidth(lastColumn,widthCols);
+   
 
     } catch (err){
         errors_setFunctionError(
@@ -9152,7 +9512,7 @@ function createPopup(){
 const visibleColsBtn_logNameFile = "table => toolbar => visibleColsBtn";
 
 function visibleColsBtn_createSpace(){
-    const table    = commonFunctions_getTable();
+    const table    = getTable();
     const list     = $$("visibleList");
     const listPull = Object.values(list.data.pull);
     const cols     = table.getColumns(); 
@@ -9160,13 +9520,16 @@ function visibleColsBtn_createSpace(){
     function findRemoveEl(elem){
         let check = false;
 
-        cols.forEach(function(item,i){
+        if (cols.length){
+            cols.forEach(function(item,i){
             
-            if (elem == item.id){
-                check = true;
-            }
-
-        });
+                if (elem == item.id){
+                    check = true;
+                }
+    
+            });
+        }
+      
 
  
         return check;
@@ -9175,20 +9538,17 @@ function visibleColsBtn_createSpace(){
     
     function removeListItem(){
 
-        try{
+       
+        if (listPull && listPull.length){
             listPull.forEach(function(el){
                 if (findRemoveEl(el.column)){
                     list.remove(el.id);
                 }
 
             });
-        } catch (err){
-            errors_setFunctionError(
-                err,
-                visibleColsBtn_logNameFile,
-                "createSpace => removeListItem"
-            );
-        }  
+        }
+           
+       
     }
 
     function addListSelectedItem(){
@@ -9198,23 +9558,18 @@ function visibleColsBtn_createSpace(){
         if (cols.length){
             Action.hideItem(emptyEl);
         }
-        try{
+        if (cols && cols.length){
             cols.forEach(function(col){
                 viewList.add({
                     column  :col.id,
                     label   :col.label,
                 });
             });
-        } catch (err){
-            errors_setFunctionError(
-                err,
-                visibleColsBtn_logNameFile,
-                "createSpace => addListSelectedItem"
-            );
-        } 
+     
+        }
+          
     }
-
-  //  if (listPull.length !== cols.length){
+ 
     if (listPull.length){
         removeListItem();
         addListSelectedItem();
@@ -9233,18 +9588,21 @@ function createListItems(idTable){
         columns        = currTable.getColumns(true);
         const sortCols = _.sortBy(columns, "label");
 
-        sortCols.forEach(function(col){
+        if (sortCols.length){
+            sortCols.forEach(function(col){
             
-            if(col.css !== "action-column" && !col.hiddenCustomAttr ){
-      
-                $$("visibleList").add({
-                    column  :col.id,
-                    label   :col.label,
-                });
+                if(col.css !== "action-column" && !col.hiddenCustomAttr ){
+          
+                    $$("visibleList").add({
+                        column  :col.id,
+                        label   :col.label,
+                    });
+                    
+                }
                 
-            }
-            
-        });
+            });
+        }
+    
 
     } catch (err){
         errors_setFunctionError(
@@ -9349,14 +9707,15 @@ function parentFilter_returnFilter(el){
 function generateElements(){
     const inputsArray = [];
     const columnsData = $$("table").getColumns(true);
-    try{
+    
+    if (columnsData.length){
         columnsData.forEach((el) => {
             const id = el.id;
 
             const idFullContainer  = id + "_filter_rows";
             const idInnerContainer = id + "_filter-container";
             const cssContainer     = id + " webix_filter-inputs";
-         
+            
             const filter  =  {   
                 id  : idFullContainer,
                 idCol:id,
@@ -9380,14 +9739,10 @@ function generateElements(){
 
         });
 
-        return inputsArray;
-    } catch (err){ 
-        errors_setFunctionError(
-            err,
-            parentFilter_logNameFile,
-            "generateElements"
-        );
     }
+    
+    return inputsArray;
+    
 
 }
 
@@ -9844,7 +10199,7 @@ function createTemplateCounter(idEl, text){
 
 
             if (keys.length){
-                const table = commonFunctions_getTable();
+                const table = getTable();
               
                 const obj = JSON.parse(values);
 
@@ -10649,7 +11004,7 @@ async function isTemplateExists(owner){
     
             const content = data.content;
     
-            if (content && typeof content == "object" && content.length){
+            if (isArray(content, libSaveBtn_logNameFile, "isTemplateExists")){
     
                 content.forEach(function(el){
    
@@ -10905,7 +11260,7 @@ const submitBtn_logNameFile = "filterTable => popup => submitBtn";
 
 
 function returnCollection(value){
-    const colId      = $$(value).config.columnName;
+    const colId = $$(value).config.columnName;
     return Filter.getItem(colId);
 }
 
@@ -10913,86 +11268,101 @@ function visibleSegmentBtn(selectAll, selectValues){
  
     const selectLength = selectValues.length;
 
-    selectValues.forEach(function(value, i){
-        const collection = returnCollection(value);
+    if (selectValues && selectLength){
+        selectValues.forEach(function(value, i){
+            const collection = returnCollection(value);
+        
+            const length     = collection.length;
+            const lastIndex  = length - 1;
+            const lastId     = collection[lastIndex];
     
-        const length     = collection.length;
-        const lastIndex  = length - 1;
-        const lastId     = collection[lastIndex];
-
-        const segmentBtn = $$(lastId + "_segmentBtn");
-
-        const lastElem   = selectLength - 1;
-        const prevElem   = selectLength - 1;
-
-        if ( i === lastElem){
-          //  скрыть последний элемент
-            Action.hideItem(segmentBtn);
-
-        } else if ( i === prevElem || selectAll){
-            Action.showItem(segmentBtn);
-        }
+            const segmentBtn = $$(lastId + "_segmentBtn");
+    
+            const lastElem   = selectLength - 1;
+            const prevElem   = selectLength - 1;
+    
+            if ( i === lastElem){
+              //  скрыть последний элемент
+                Action.hideItem(segmentBtn);
+    
+            } else if ( i === prevElem || selectAll){
+                Action.showItem(segmentBtn);
+            }
+       
+        });
+    }
    
-    });
 }
 
 
 function createWorkspaceCheckbox (){
-    const values       = $$("editFormPopup").getValues();
-    const selectValues = [];
+    const popup        = $$("editFormPopup");
 
-    try{
-        const keys    = Object.keys(values); 
-     
-        let selectAll = false;
-     
-        keys.forEach(function(el){
-            const isChecked = values[el];
+    if (popup){
+        const values       = popup.getValues();
+        const selectValues = [];
+    
+        try{
+            const keys    = Object.keys(values); 
 
-            if (isChecked && el !== "selectAll"){
-                selectValues.push(el);
-            } else if (el == "selectAll"){
-                selectAll = true;
+            if (keys && keys.length){
+
+                let selectAll = false;
+         
+                keys.forEach(function(el){
+                    const isChecked = values[el];
+        
+                    if (isChecked && el !== "selectAll"){
+                        selectValues.push(el);
+                    } else if (el == "selectAll"){
+                        selectAll = true;
+                    }
+              
+                    const columnName = $$(el).config.columnName;
+        
+               
+                    Filter.setFieldState(values[el], columnName);
+          
+                });
+        
+                visibleSegmentBtn(selectAll, selectValues);
             }
-      
-            const columnName = $$(el).config.columnName;
-
-       
-            Filter.setFieldState(values[el], columnName);
-  
-        });
-
-        visibleSegmentBtn(selectAll, selectValues);
-
-    } catch(err){
-        errors_setFunctionError(
-            err,
-            submitBtn_logNameFile,
-            "createWorkspaceCheckbox"
-        );
+         
+    
+        } catch(err){
+            errors_setFunctionError(
+                err,
+                submitBtn_logNameFile,
+                "createWorkspaceCheckbox"
+            );
+        }
     }
+
 }
 
 function visibleCounter(){
-    const elements      = $$("filterTableForm").elements;
-    const values        = Object.values(elements);
+    const form = $$("filterTableForm");
     let visibleElements = 0;
-    try{
-        values.forEach(function(el){
-            const isVisibleElem = el.config.hidden;
-            if ( !isVisibleElem ){
-                visibleElements++;
-            }
-            
-        });
+    if (form){
+        const elements      = $$("filterTableForm").elements;
 
-    } catch(err){
-        errors_setFunctionError(
-            err,
-            submitBtn_logNameFile,
-            "visibleCounter"
-        );
+        if (elements && elements.length){
+            const values        = Object.values(elements);
+      
+            if (values && values.length){
+                values.forEach(function(el){
+                    const isVisibleElem = el.config.hidden;
+                    if ( !isVisibleElem ){
+                        visibleElements++;
+                    }
+                    
+                });
+            }
+          
+        }
+      
     }
+   
 
     return visibleElements;
 }
@@ -11077,31 +11447,36 @@ function resultActions(){
 
 function isUnselectAll(){
     const checkboxContainer = $$("editFormPopupScrollContent");
-    const checkboxes        = checkboxContainer.getChildViews();
-
     let isUnchecked = true;
-    
-    checkboxes.forEach(function(el){
-        const id       = el.config.id;
-        const checkbox = $$(id);
+    if (checkboxContainer){
+        const checkboxes = checkboxContainer.getChildViews();
 
-        if (checkbox){
-
-            const value = checkbox.getValue();
-
-            if (value && isUnchecked && id !== "selectAll"){
-                isUnchecked = false;
-            }
+        if (checkboxes && checkboxes.length){
+            checkboxes.forEach(function(el){
+                const id       = el.config.id;
+                const checkbox = $$(id);
+        
+                if (checkbox){
+        
+                    const value = checkbox.getValue();
+        
+                    if (value && isUnchecked && id !== "selectAll"){
+                        isUnchecked = false;
+                    }
+                }
+        
+            });
         }
-
-    });
-
+ 
+    
+    }
+ 
     return isUnchecked;
 
 }
 
 function getCheckboxData(){
-    const table          = commonFunctions_getTable();
+    const table          = getTable();
     const isFilterExists = table.config.filter;
  
     if (isUnselectAll() && isFilterExists){
@@ -11137,7 +11512,7 @@ function popupSubmitBtn (){
 
         if (tabbarValue == "editFormPopupLib"){
 
-            const table          = commonFunctions_getTable();
+            const table          = getTable();
             const isFilterExists = table.config.filter;
          
             if (isFilterExists){
@@ -11214,30 +11589,27 @@ const submitBtn_submitBtn = new Button({
 
 
 
-const removeBtn_logNameFile = "filterTable => popup => removeBtn";
 
 let lib;
 let radioValue;
 
 function removeOptionState (){
-    const id      = radioValue.id;
-    const options = lib.config.options;
-    try{
-        options.forEach(function(el){
-            if (el.id == id){
-                el.value = el.value + " (шаблон удалён)";
-                lib.refresh();
-                lib.disableOption(lib.getValue());
-                lib.setValue("");
-            }
-        });
-    } catch (err){
-        errors_setFunctionError(
-            err, 
-            removeBtn_logNameFile, 
-            "removeOptionState"
-        );
+
+    if (lib){
+        const id      = radioValue.id;
+        const options = lib.config.options;
+        if (options){
+            options.forEach(function(el){
+                if (el.id == id){
+                    el.value = el.value + " (шаблон удалён)";
+                    lib.refresh();
+                    lib.disableOption(lib.getValue());
+                    lib.setValue("");
+                }
+            });
+        }
     }
+
 }
 
 function deleteElement(){
@@ -11416,23 +11788,21 @@ function filterLibrary(){
 function editFilter (){
     
     const checkboxes = $$("editFormPopup").getValues();
-    const values     = Object.values(checkboxes);
+
     let counter = 0;
-    
+        
+
     function countChecked(){
-        try{
-            values.forEach(function(el,i){
+        const values = Object.values(checkboxes);
+        if (values && values.length){
+            values.forEach(function(el){
                 if (el){
                     counter++;
                 }
             });
-        } catch(err){
-            errors_setFunctionError(
-                err, 
-                tabbar_logNameFile, 
-                "countChecked"
-            );
         }
+           
+        
     }
     
     function setStateSubmitBtn(){
@@ -11443,11 +11813,13 @@ function editFilter (){
         }
     }
 
-    
+    if (checkboxes){
 
-    countChecked     ();
-    visibleRemoveBtn (false);
-    setStateSubmitBtn();
+        countChecked     ();
+        visibleRemoveBtn (false);
+        setStateSubmitBtn();
+    }
+   
    
 }
 
@@ -11656,6 +12028,8 @@ let user;
 let prefsData;
 let createLibTab_lib;
 
+ 
+
 function clearOptionsPull() {
     
     const oldOptions = [];
@@ -11663,7 +12037,8 @@ function clearOptionsPull() {
     const options     = createLibTab_lib.config.options;
     const isLibExists = options.length;
 
-    if (createLibTab_lib && isLibExists){
+    if (createLibTab_lib && isLibExists && options && oldOptions){
+
         options.forEach(function(el){
             oldOptions.push(el.id);
         });
@@ -11707,13 +12082,19 @@ function setTemplates(){
    
     clearOptionsPull();
 
-    if (typeof prefsData == "object"){
+    if (prefsData && prefsData.length){
         prefsData.forEach(function(data, i){
             if(isThisOption(data)){
                 createOption(i, data);
             }
         
         });
+    } else {
+        errors_setFunctionError(
+            "array is null",
+            "table/filterForm/buttons/editBtn/createLibTab",
+            "setTemplates"
+        );
     }
 
 
@@ -11770,7 +12151,8 @@ async function createLibTab(){
 
 
 
-const createFieldsTab_logNameFile = "tableFilter => buttons => editBtn => createFieldsTab";
+const createFieldsTab_logNameFile = "tableFilter/buttons/editBtn/createFieldsTab";
+
 
 function popupSizeAdaptive(){
     const k     = 0.89;
@@ -11790,28 +12172,28 @@ function popupSizeAdaptive(){
 
 function setValueCheckbox(){
     const content     = $$("editFormPopupScrollContent");
-    const checkboxes  = content.getChildViews();
-    const isSelectAll = $$("selectAll").getValue();
-    try{
-        checkboxes.forEach(function(el){
-            const isCheckbox = el.config.id.includes("checkbox");
 
-            if (isCheckbox){
-                if(isSelectAll){
-                    el.setValue(1);
-                } else {
-                    el.setValue(0);
+    if (content){
+        const checkboxes  = content.getChildViews();
+        const isSelectAll = $$("selectAll").getValue();
+    
+        if(checkboxes && checkboxes.length){
+            checkboxes.forEach(function(el){
+                const isCheckbox = el.config.id.includes("checkbox");
+    
+                if (isCheckbox){
+                    if(isSelectAll){
+                        el.setValue(1);
+                    } else {
+                        el.setValue(0);
+                    }
                 }
-            }
-
-        });
-    } catch (err){
-        errors_setFunctionError(
-            err,
-            createFieldsTab_logNameFile,
-            "setValueCheckbox"
-        );
+    
+            });
+        } 
     }
+      
+  
 }
 
 function returnSelectAllCheckbox(){
@@ -11843,23 +12225,25 @@ function createCheckboxData(config){
 
 function getAllCheckboxes(){
     const checkboxes           = [];
-    const filterTableElements  = $$("filterTableForm").elements;
+    const form = $$("filterTableForm");
+    if (form){
+        const filterTableElements  = form.elements;
 
-    const values = Object.values(filterTableElements);
-    try{
-        values.forEach(function(el){
-            checkboxes.push(
-                createCheckboxData(el.config)
-            );
-        });
-    } catch (err){
-        errors_setFunctionError( 
-            err, 
-            createFieldsTab_logNameFile, 
-            "getAllCheckboxes" 
-        );
+        if (filterTableElements){
+            const values = Object.values(filterTableElements);
+    
+            if (values && values.length){
+                values.forEach(function(el){
+                    checkboxes.push(
+                        createCheckboxData(el.config)
+                    );
+                });
+            } 
+        }
+     
     }
- 
+  
+
     return checkboxes;
 }
 
@@ -11867,7 +12251,8 @@ function getAllCheckboxes(){
 function getStatusCheckboxes(array){
     let counter = 0;
 
-    try{
+    
+    if (array && array.length){
         array.forEach(function(el){
             const isCheckbox = el.config.id.includes("checkbox");
             
@@ -11875,18 +12260,14 @@ function getStatusCheckboxes(array){
                 const value = el.config.value;
 
                 if ( !(value) || value == "" ){
-                   counter ++;
+                    counter ++;
                 }
             }
-           
+            
         });
-    } catch (err){
-        errors_setFunctionError(
-            err,
-            createFieldsTab_logNameFile,
-            "getStatusCheckboxes"
-        );
-    }
+    } 
+    
+   
 
     return counter;
 }
@@ -12008,9 +12389,10 @@ function createCheckboxes(){
         returnSelectAllCheckbox()
     ];
 
-    try {  
-        const formData = getAllCheckboxes();
 
+    const formData = getAllCheckboxes();
+
+    if (formData && formData.length){
         formData.forEach(function (el){
             const isChild  = el.id.includes("child");
 
@@ -12022,14 +12404,9 @@ function createCheckboxes(){
         });
 
         addCheckboxesToLayout(checkboxesLayout);
-
-    } catch (err){
-        errors_setFunctionError(
-            err, 
-            createFieldsTab_logNameFile, 
-            "createCheckboxes"
-        );
-    }
+    } 
+  
+ 
 }
 
 
@@ -12147,7 +12524,7 @@ function setName(value){
 }
 
 function isBool(name){
-    const table = commonFunctions_getTable();
+    const table = getTable();
     const col   = table.getColumnConfig(name);
     const type  = col.type;
 
@@ -12209,26 +12586,40 @@ function segmentBtnValue(input) {
     return value;
 }
 
+function submitBtn_returnArrayError(func){
+    setFunctionError(
+        `array is null`, 
+        buttons_submitBtn_logNameFile, 
+        func
+    ); 
+}
+
+
 function createValuesArray(){
     const valuesArr  = [];
     const inputs     = Filter.getAllChilds(true);
 
-    inputs.forEach(function(input){
+    if (inputs && inputs.length){
+        inputs.forEach(function(input){
         
-        const name       = $$(input).config.columnName;
-        const value      = $$(input)                         .getValue();
-        const operation  = $$(input + "-btnFilterOperations").getValue();
-
-        const logic      = segmentBtnValue(input); 
-
-        valuesArr.push ( { 
-            id        : input,
-            name      : name, 
-            value     : value,
-            operation : operation,
-            logic     : logic  
+            const name       = $$(input).config.columnName;
+            const value      = $$(input)                         .getValue();
+            const operation  = $$(input + "-btnFilterOperations").getValue();
+    
+            const logic      = segmentBtnValue(input); 
+    
+            valuesArr.push ( { 
+                id        : input,
+                name      : name, 
+                value     : value,
+                operation : operation,
+                logic     : logic  
+            });
         });
-    });
+    } 
+
+
+
 
     return valuesArr;
 }
@@ -12241,35 +12632,38 @@ function createGetData(){
     const valuesArr      = createValuesArray();
     const query          = [];
 
-    valuesArr.forEach(function(el){
+    if (valuesArr && valuesArr.length){
+        valuesArr.forEach(function(el){
   
-        const filterEl = $$(el.id);
-
-        let value      = el.value;
-   
-        function formattingDateValue(){
-            const view = filterEl.config.view; 
-            if ( view == "datepicker" ){
-                value = postFormatData(value);
+            const filterEl = $$(el.id);
+    
+            let value      = el.value;
+       
+            function formattingDateValue(){
+                const view = filterEl.config.view; 
+                if ( view == "datepicker" ){
+                    value = postFormatData(value);
+                }
             }
-        }
-
-        function formattingSelectValue(){
-            const text = filterEl.config.text;
-            if ( text && text == "Нет" ){
-                value = 0;
+    
+            function formattingSelectValue(){
+                const text = filterEl.config.text;
+                if ( text && text == "Нет" ){
+                    value = 0;
+                }
             }
-        }
-
-        if (filterEl){
-            formattingDateValue ();
-            formattingSelectValue();
-            query.push(submitBtn_createQuery(el));
-           
-        }
-
-    });
-
+    
+            if (filterEl){
+                formattingDateValue ();
+                formattingSelectValue();
+                query.push(submitBtn_createQuery(el));
+               
+            }
+    
+        });
+    
+    } 
+ 
     return query;
 }
 
@@ -12324,7 +12718,7 @@ function setData(currTableView, data){
 
 function setCounterValue (reccount){
     try{
-        const table   = commonFunctions_getTable();
+        const table   = getTable();
         const id      = table.config.id;
         const counter = $$(id+"-findElements");
 
@@ -12351,7 +12745,7 @@ function filterSubmitBtn (){
 
     if (isValid){
 
-        const currTableView = commonFunctions_getTable();
+        const currTableView = getTable();
         const query         = createSentQuery();
 
         setTableConfig(currTableView, query);
@@ -12421,10 +12815,9 @@ const buttons_submitBtn_submitBtn = new Button({
 const resetBtn_logNameFile   = "filterForm => buttons => resetBtn";
 
 
-
 function removeValues(collection){
 
-    if (collection){
+    if (collection && collection.length){
 
         collection.forEach(function(el){
             const idChild = el.includes("_filter-child-");
@@ -12434,17 +12827,19 @@ function removeValues(collection){
             }
      
         });
-    }
+    } 
     
 }
 
 function resetBtn_removeChilds(){
    const keys = Filter.getItems();
 
-    keys.forEach(function(key){ 
-        const item = Filter.getItem(key);
-        removeValues(item);
-    });
+    if (keys && keys.length){
+        keys.forEach(function(key){ 
+            const item = Filter.getItem(key);
+            removeValues(item);
+        });
+    } 
 
 }
 
@@ -12462,17 +12857,14 @@ function hideInputsContainer(){
     const inputs    = document.querySelectorAll(css);
     const hideClass = "webix_hide-content";
 
-    try{
+
+    if (inputs && inputs.length){
         inputs.forEach(function(elem){
             Filter.addClass(elem, hideClass);
         });
-    } catch (err){
-        errors_setFunctionError(
-            err,
-            resetBtn_logNameFile,
-            "hideInputsContainer"
-        );
-    }
+    } 
+      
+  
 }
 
 
@@ -12512,7 +12904,7 @@ function resetBtn_setToTabStorage(){
 }
 
 function resetFilterBtnClick (){
-    const table = commonFunctions_getTable();
+    const table = getTable();
     try {
 
         modalBox("Все фильтры будут удалены", 
@@ -12564,7 +12956,7 @@ const resetBtn = new Button({
     onFunc: {
         resetFilter: function(){
   
-            const table         = commonFunctions_getTable();
+            const table         = getTable();
             table.config.filter = null;
 
             Filter.resetTable().then(function(result){
@@ -13523,7 +13915,8 @@ function setRefTable (srcTable){
         const cols  = table.getColumns();
  
 
-        try {
+    
+        if (cols && cols.length){
             cols.forEach(function(col){
 
                 if ( col.id == srcTable ){
@@ -13537,15 +13930,17 @@ function setRefTable (srcTable){
                 }
 
             });
-        } catch (err){
+        } else {
             errors_setFunctionError(
-                err, 
+                "array length is null", 
                 reference_logNameFile, 
                 "setRefTable"
             );
 
-            Action.hideItem($$("EditEmptyTempalte"));
+            Action.hideItem($$("EditEmptyTempalte")); 
         }
+           
+      
 
     }
 
@@ -13660,6 +14055,14 @@ function createBtnsContainer(refBtns){
     }
 }
 
+function createProperty_returnArrayError(func){
+    errors_setFunctionError(
+        "array length is null", 
+        createProperty_logNameFile, 
+        func
+    );
+}
+
 function setToolBtns(){
     const property      = $$("editTableFormProperty");
     const refBtns       = $$("propertyRefbtns");
@@ -13669,7 +14072,7 @@ function setToolBtns(){
 
     createBtnsContainer(refBtns);
 
-    if (propertyElems){
+    if (propertyElems && propertyElems.length){
         propertyElems.forEach(function(el){
         
             if (el.type == "combo"){
@@ -13686,6 +14089,8 @@ function setToolBtns(){
     
             }
         });
+    } else {
+        createProperty_returnArrayError("setToolBtns");
     }
 
 }
@@ -13799,7 +14204,7 @@ function returnPropElem(el){
 }
 function findContentHeight(arr){
     let result = 0;
-    if (arr){
+    if (arr && arr.length){
      
         arr.forEach(function(el, i){
             const height = el.$height;
@@ -13808,6 +14213,8 @@ function findContentHeight(arr){
             }
       
         });
+    } else {
+        createProperty_returnArrayError("findContentHeight");
     }
   
  
@@ -13851,17 +14258,22 @@ function createProperty (parentElement) {
         if ( !propertyLength ){
             const propElems = [];
 
-            columnsData.forEach((el) => {
+            if (columnsData && columnsData.length){
+                columnsData.forEach((el) => {
 
-                const propElem = returnPropElem(el);
-                propElems.push(propElem);
-
-            });
-
-        
-            createDateEditor();
-            addEditInputs   (propElems);
-            setToolBtns     ();
+                    const propElem = returnPropElem(el);
+                    propElems.push(propElem);
+    
+                });
+    
+            
+                createDateEditor();
+                addEditInputs   (propElems);
+                setToolBtns     ();
+            } else {
+                createProperty_returnArrayError("createProperty");
+            }
+          
     
 
         } else {
@@ -14088,243 +14500,268 @@ function validateProfForm (){
     
     function checkConditions (){ 
        
-        const propVals = Object.keys(property.getValues());
+        const values = property.getValues();
+        if (values){
+            const propVals = Object.keys(values);
 
-        propVals.forEach(function(el){
-
-
-            const propElement = property.getItem(el);
-            const values      = property.getValues();
-
-            let propValue  = values[el];
-            errors[el] = {};
-
-            function numberField(){
-                
-                function containsText(str) {
-                    return /\D/.test(str);
-                }
-
-       
-                if (propElement.customType              &&
-                    propElement.customType == "integer" ){
-
-                    const check =  containsText(propValue) ;
-
-                    if ( check ){
-                        errors[el].isNum = "Данное поле должно содержать только числа";
-                    } else {
-                        errors[el].isNum = null;
-                    }
-                       
-                }
-            }
-
-            function dateField(){
-
-                function getAllIndexes(arr, val) {
-                    let indexes = [], i;
-                    for(i = 0; i < arr.length; i++){
-                        if (arr[i] === val){
-                            indexes.push(i);
-                        }
-                    }
-                         
-                    return indexes;
-                }
-
-                function isTrueLength(arr){
-                    if (arr.length === 2){
-                        return true;
-                    }
-                }
-
-                function isTrueIndexes(arr, first, second){
-                    if (arr[0] == first && arr[1] == second){
-                        return true;
-                    }
-                }
-
-                function checkArr(arr, firstIndex, secondIndex){
-                    if (isTrueLength(arr) && 
-                        isTrueIndexes(arr, firstIndex, secondIndex )){
-                            return true;
-                    }
-                }
- 
-                function findDividers(arr){
-                    if (arr.length === 17) {
-                        const dateDividers = getAllIndexes(arr, ".");
-                        const timeDividers = getAllIndexes(arr, ":");
-
-                        const dateResult = checkArr(dateDividers, 2,  5 );
-                        const timeResult = checkArr(timeDividers, 11, 14);
-
-                        if (dateResult && timeResult){
-                            return false;
-                        } else {
-                            return true;
-                        }
-                    } else {
-                        return true;
-                    }
-                }
-         
-                if (propElement.type                 &&
-                    propElement.type == "customDate" &&
-                    propValue                        ){
-                 
-                    const dateArray = propValue.split('');
-                    
-                    let check      = findDividers(dateArray);
-                    let countEmpty = 0;
-                         
-                    const x = propValue.replace(/\D/g, '')
-                    .match(/(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})/);
-        
-                    for (let i = 1; i < 7; i++) {
-
-                        if (x[i].length == 0){
-                            countEmpty++;
-                        }
-
-                        if (x[i].length !== 2){
-                         
-                            if (!check){
-                                check = true;
-                            }
-                        }
-                    }
-
-
-                    if ( countEmpty == 6 ){
-                        errors[el].date = null;
-
-                    } else {
-
-                        if( (x[1] > 31 || x[1] < 1) ||
-                            (x[2] > 12 || x[2] < 1) ||
-
-                            x[4] > 23 ||
-                            x[5] > 59 ||
-                            x[6] > 59 ){
-                                check = true;
-                            }
-      
-                        if ( check ) {
-                            errors[el].date = 
-                            "Неверный формат даты. Введите дату в формате xx.xx.xx xx:xx:xx";
+            if (propVals.length){
+                propVals.forEach(function(el){
     
-                        } else {
-                            errors[el].date = null;
-                        }
-                    }
-                       
-                }
-       
-            }
-
-            function valLength(){ 
-                try{
-               
-                    if(propValue){
+    
+                    const propElement = property.getItem(el);
+                    const values      = property.getValues();
+        
+                    let propValue  = values[el];
+                    errors[el] = {};
+        
+                    function numberField(){
                         
-                        if (propValue.length > propElement.length && propElement.length !== 0){
-                            errors[el].length = "Длина строки не должна превышать " + propElement.length + " симв.";
-                        } else {
-                            errors[el].length = null;
+                        function containsText(str) {
+                            return /\D/.test(str);
+                        }
+        
+               
+                        if (propElement.customType              &&
+                            propElement.customType == "integer" ){
+        
+                            const check =  containsText(propValue) ;
+        
+                            if ( check ){
+                                errors[el].isNum = "Данное поле должно содержать только числа";
+                            } else {
+                                errors[el].isNum = null;
+                            }
+                               
                         }
                     }
-                } catch (err){
-                    errors_setFunctionError(err,validation_logNameFile,"valLength");
-                }
-            }
-
-            function valNotNull (){
-                try{
-                    if ( propElement.notnull == true && propValue.length == 0 ){
-                        errors[el].notnull = "Поле не может быть пустым";
-                    } else {
-                        errors[el].notnull = null;
-                    }
-                } catch (err){
-                    errors_setFunctionError(err,validation_logNameFile,"valNotNull");
-                }
-            }
-
-            function valUnique (){
-                try{
-                    errors[el].unique = null;
-                                  
-                    if (propElement.unique == true){
-
-                        const tableRows   = Object.values($$("table").data.pull);
-
-                        tableRows.forEach(function(row){
-                            let tableValue = row[el];
-
-                            function numToString(element){
-                                if (element && typeof element === "number"){
-                                    return element.toString();
-                                } else {
-                                    return element;
+        
+                    function dateField(){
+        
+                        function getAllIndexes(arr, val) {
+                            let indexes = [], i;
+                            for(i = 0; i < arr.length; i++){
+                                if (arr[i] === val){
+                                    indexes.push(i);
                                 }
                             }
-
-                            tableValue = numToString(tableValue);
-                            propValue  = numToString(propValue);
-                   
-                            if (tableValue && typeof tableValue == "number"){
-                                tableValue = tableValue.toString();
+                                 
+                            return indexes;
+                        }
+        
+                        function isTrueLength(arr){
+                            if (arr.length === 2){
+                                return true;
                             }
-
-                            if (propValue && tableValue){
-                                const isIdenticValues = propValue.localeCompare(tableValue) == 0;
-                                const tableElemId     = row.id;
-                                const propElemId      = values.id;
-
-                                if (isIdenticValues && propElemId !== tableElemId){
-                                    errors[el].unique = "Поле должно быть уникальным";
-    
-                                } 
-                              
+                        }
+        
+                        function isTrueIndexes(arr, first, second){
+                            if (arr[0] == first && arr[1] == second){
+                                return true;
                             }
-                        });
+                        }
+        
+                        function checkArr(arr, firstIndex, secondIndex){
+                            if (isTrueLength(arr) && 
+                                isTrueIndexes(arr, firstIndex, secondIndex )){
+                                    return true;
+                            }
+                        }
+         
+                        function findDividers(arr){
+                            if (arr.length === 17) {
+                                const dateDividers = getAllIndexes(arr, ".");
+                                const timeDividers = getAllIndexes(arr, ":");
+        
+                                const dateResult = checkArr(dateDividers, 2,  5 );
+                                const timeResult = checkArr(timeDividers, 11, 14);
+        
+                                if (dateResult && timeResult){
+                                    return false;
+                                } else {
+                                    return true;
+                                }
+                            } else {
+                                return true;
+                            }
+                        }
+                 
+                        if (propElement.type                 &&
+                            propElement.type == "customDate" &&
+                            propValue                        ){
+                         
+                            const dateArray = propValue.split('');
+                            
+                            let check      = findDividers(dateArray);
+                            let countEmpty = 0;
+                                 
+                            const x = propValue.replace(/\D/g, '')
+                            .match(/(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})(\d{0,2})/);
+                
+                            for (let i = 1; i < 7; i++) {
+        
+                                if (x[i].length == 0){
+                                    countEmpty++;
+                                }
+        
+                                if (x[i].length !== 2){
+                                 
+                                    if (!check){
+                                        check = true;
+                                    }
+                                }
+                            }
+        
+        
+                            if ( countEmpty == 6 ){
+                                errors[el].date = null;
+        
+                            } else {
+        
+                                if( (x[1] > 31 || x[1] < 1) ||
+                                    (x[2] > 12 || x[2] < 1) ||
+        
+                                    x[4] > 23 ||
+                                    x[5] > 59 ||
+                                    x[6] > 59 ){
+                                        check = true;
+                                    }
+              
+                                if ( check ) {
+                                    errors[el].date = 
+                                    "Неверный формат даты. Введите дату в формате xx.xx.xx xx:xx:xx";
+            
+                                } else {
+                                    errors[el].date = null;
+                                }
+                            }
+                               
+                        }
+               
                     }
-                } catch (err){
-                    errors_setFunctionError(err, validation_logNameFile, "valUnique");
-                }
+        
+                    function valLength(){ 
+                        try{
+                       
+                            if(propValue){
+                                
+                                if (propValue.length > propElement.length && propElement.length !== 0){
+                                    errors[el].length = "Длина строки не должна превышать " + propElement.length + " симв.";
+                                } else {
+                                    errors[el].length = null;
+                                }
+                            }
+                        } catch (err){
+                            errors_setFunctionError(err,validation_logNameFile,"valLength");
+                        }
+                    }
+        
+                    function valNotNull (){
+                        try{
+                            if ( propElement.notnull == true && propValue.length == 0 ){
+                                errors[el].notnull = "Поле не может быть пустым";
+                            } else {
+                                errors[el].notnull = null;
+                            }
+                        } catch (err){
+                            errors_setFunctionError(err, validation_logNameFile, "valNotNull");
+                        }
+                    }
+        
+                    function valUnique (){
+                        
+                        errors[el].unique = null;
+
+                        const pull = $$("table").data.pull;
+                                        
+                        if (propElement.unique == true && pull){
+    
+                            const tableRows   = Object.values(pull);
+    
+                            if (tableRows.length){
+                                tableRows.forEach(function(row){
+                                    let tableValue = row[el];
+        
+                                    function numToString(element){
+                                        if (element && typeof element === "number"){
+                                            return element.toString();
+                                        } else {
+                                            return element;
+                                        }
+                                    }
+        
+                                    tableValue = numToString(tableValue);
+                                    propValue  = numToString(propValue);
+                            
+                                    if (tableValue && typeof tableValue == "number"){
+                                        tableValue = tableValue.toString();
+                                    }
+        
+                                    if (propValue && tableValue){
+                                        const isIdenticValues = propValue.localeCompare(tableValue) == 0;
+                                        const tableElemId     = row.id;
+                                        const propElemId      = values.id;
+        
+                                        if (isIdenticValues && propElemId !== tableElemId){
+                                            errors[el].unique = "Поле должно быть уникальным";
+            
+                                        } 
+                                        
+                                    }
+                                });
+                            } else {
+                                errors_setFunctionError("array is null", validation_logNameFile, "valUnique");
+                            }
+                          
+                        }
+                    
+                         
+                    }
+                   
+                    dateField   ();
+                    numberField ();
+                    valLength   ();
+                    valNotNull  ();
+                    valUnique   ();
+                });
+            } else {
+                errors_setFunctionError("array length is null", validation_logNameFile, "checkConditions");
             }
-           
-            dateField   ();
-            numberField ();
-            valLength   ();
-            valNotNull  ();
-            valUnique   ();
-        });
+          
+        }
+        
     }
 
     function createErrorMessage (){
      
         function findErrors (){
-            Object.values(errors).forEach(function(col, i){
+         
+            if (errors){
+                const values = Object.values(errors);
+                if (values && values.length){
+                    values.forEach(function(col, i){
 
-                function createMessage (){
-                    Object.values(col).forEach(function(error,e){
-                        if (error !== null){
-                            let nameCol = Object.keys(errors)[i];
-                            let textError = error;
-                            let typeError = Object.keys(col)[e];
-                            messageErrors.push({nameCol,typeError,textError})
+                        function createMessage (){
+                            Object.values(col).forEach(function(error,e){
+                                if (error !== null){
+                                    let nameCol = Object.keys(errors)[i];
+                                    let textError = error;
+                                    let typeError = Object.keys(col)[e];
+                                    messageErrors.push({nameCol,typeError,textError})
+                                }
+                                
+                            });
+                            return messageErrors;
                         }
-                        
-                    });
-                    return messageErrors;
-                }
-
-                createMessage ();
         
-            });
+                        createMessage ();
+                
+                    });
+                } else {
+                    errors_setFunctionError("array length is null", validation_logNameFile, "findErrors");
+                }
+            
+            }
+           
         }
 
         findErrors ();
@@ -14338,7 +14775,7 @@ function validateProfForm (){
     }
 
   
-    if (messageErrors.length){
+    if (messageErrors && messageErrors.length){
      
         messageErrors.forEach(function(prop){
             const item =  property.getItem(prop.nameCol);
@@ -14348,7 +14785,7 @@ function validateProfForm (){
         });
 
        
-    }
+    } 
     return messageErrors;
 }
 
@@ -14359,14 +14796,21 @@ function setLogError (){
 
             let nameEl;
 
-            table.getColumns(true).forEach(function(col){
+            const cols = table.getColumns(true);
+            if (cols && cols.length){
+                table.getColumns(true).forEach(function(col){
              
-                if (col.id == el.nameCol){
-                    nameEl = col.label;
-                }
-            });
+                    if (col.id == el.nameCol){
+                        nameEl = col.label;
+                    }
+                });
+    
+                setLogValue("error", el.textError + " (Поле: " + nameEl + ")");
+            } else {
+                errors_setFunctionError("array is null", validation_logNameFile, "setLogError");
+            }
 
-            setLogValue("error", el.textError + " (Поле: " + nameEl + ")");
+   
         });
 
     } catch (err){
@@ -14377,33 +14821,40 @@ function setLogError (){
 
 function uniqueData (itemData){
     const validateData = {};
-    try{
+    if (itemData) {
         const table      = $$("table");
         const dataValues = Object.values(itemData);
 
-        dataValues.forEach(function(el, i){
+        if (dataValues.length){
+            dataValues.forEach(function(el, i){
 
-            const oldValues    = table.getItem(itemData.id);
-            const oldValueKeys = Object.keys(oldValues);
-
-            function compareVals (){
-                const newValKey = Object.keys(itemData)[i];
-
-                oldValueKeys.forEach(function(oldValKey){
-                    if (oldValKey == newValKey){
-                        
-                        if (oldValues   [oldValKey] !== Object.values(itemData)[i]){
-                            validateData[newValKey]  =  Object.values(itemData)[i];
-                        } 
-                        
-                    }
-                }); 
-            }
-            compareVals ();
-        });
-    } catch (err){
-        errors_setFunctionError(err, validation_logNameFile, "uniqueData");
-    }
+                const oldValues    = table.getItem(itemData.id);
+                const oldValueKeys = Object.keys(oldValues);
+    
+                function compareVals (){
+                    const newValKey = Object.keys(itemData)[i];
+    
+                    oldValueKeys.forEach(function(oldValKey){
+                        if (oldValKey == newValKey){
+                            
+                            if (oldValues   [oldValKey] !== Object.values(itemData)[i]){
+                                validateData[newValKey]  =  Object.values(itemData)[i];
+                            } 
+                            
+                        }
+                    }); 
+                }
+                compareVals ();
+            });
+        } else {
+            errors_setFunctionError("array is null", validation_logNameFile, "uniqueData");
+        }
+     
+    } 
+    
+ 
+      
+     
 
     return validateData;
 }
@@ -14451,19 +14902,31 @@ function updateTable (itemData){
 
 
 function formAcitions_dateFormatting(arr){
-    const vals          = Object.values(arr);
-    const keys          = Object.keys(arr);
     const formattingArr = arr;
-
-    keys.forEach(function(el, i){
-        const prop       = $$("editTableFormProperty");
-        const item       = prop.getItem(el);
-        const formatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
-
-        if ( item.type == "customDate" ){
-            formattingArr[el] = formatData(vals[i]);
+    if (isArray(formattingArr, formAcitions_logNameFile, "dateFormatting")){
+        const vals          = Object.values(arr);
+        const keys          = Object.keys(arr);
+      
+        if (keys.length){
+            keys.forEach(function(el, i){
+                const prop       = $$("editTableFormProperty");
+                const item       = prop.getItem(el);
+                const formatData = webix.Date.dateToStr("%d.%m.%Y %H:%i:%s");
+        
+                if ( item.type == "customDate" ){
+                    formattingArr[el] = formatData(vals[i]);
+                }
+            });
+        } else {
+            errors_setFunctionError(
+                "array length is null",
+                formAcitions_logNameFile,
+                "dateFormatting"
+            );
         }
-    });
+      
+    }
+  
 
 
     return formattingArr;
@@ -14472,16 +14935,19 @@ function formAcitions_dateFormatting(arr){
 function formAcitions_formattingBoolVals(arr){
     const table = $$( "table" );
     const cols  = table.getColumns();
-    cols.forEach(function(el,i){
+    if (isArray(cols, formAcitions_logNameFile, "formattingBoolVals")){
+        cols.forEach(function(el,i){
 
-        if ( arr[el.id] && el.type == "boolean" ){
-            if (arr[el.id] == 2){
-                arr[el.id] = false;
-            } else {
-                arr[el.id] = true;
+            if ( arr[el.id] && el.type == "boolean" ){
+                if (arr[el.id] == 2){
+                    arr[el.id] = false;
+                } else {
+                    arr[el.id] = true;
+                }
             }
-        }
-    });
+        });
+    }
+    
 
     return arr;
 
@@ -14572,12 +15038,15 @@ function removeNullFields(arr){
     const keys    = Object.keys(arr);
     const sentObj = {};
 
-    vals.forEach(function(el,i){
-        if (el){
-            sentObj[keys[i]]= el;
-        }
-        formAcitions_dateFormatting(arr);
-    });
+    if (isArray(vals, formAcitions_logNameFile, "removeNullFields")){
+        vals.forEach(function(el,i){
+            if (el){
+                sentObj[keys[i]]= el;
+            }
+            formAcitions_dateFormatting(arr);
+        });
+    }
+   
 
     return sentObj;
 }
@@ -14806,21 +15275,27 @@ function toEditForm (nextItem) {
     function setViewDate(){
         const parseDate = webix.Date.dateToStr("%d.%m.%y %H:%i:%s");
  
-        const values    = Object.values(valuesTable);
+        if (valuesTable){
+            const values    = Object.values(valuesTable);
     
-        try{
-            values.forEach(function(el, i){
-                if(el instanceof Date){
-           
-                    const key        = Object.keys(valuesTable)[i];
-                    const value      = parseDate(el);
-                    valuesTable[key] = value;
+            if (values.length){
+                try{
+                    values.forEach(function(el, i){
+                        if(el instanceof Date){
+                   
+                            const key        = Object.keys(valuesTable)[i];
+                            const value      = parseDate(el);
+                            valuesTable[key] = value;
+                        }
+                    
+                    });
+                } catch (err){ 
+                    errors_setFunctionError(err, onFuncs_logNameFile, "setViewDate");
                 }
-            
-            });
-        } catch (err){ 
-            errors_setFunctionError(err, onFuncs_logNameFile, "setViewDate");
+            }
+           
         }
+        
     }
 
     
@@ -14967,7 +15442,7 @@ const onFuncTable = {
     onAfterDelete: function() {
         
         function setOverlayState(){
-            const id    = commonFunctions_getTable().config.id;
+            const id    = getTable().config.id;
             const table = $$(id);
 
 
@@ -14996,7 +15471,7 @@ const onFuncTable = {
             self.setColumnWidth(colId, newWidth);
         }
         
-        if (cols){
+        if (cols && cols.length){
             const lastIndex = cols.length - 1;
             let currColIndex;
 
@@ -15284,23 +15759,29 @@ function onResizeTable(table){
         const cols = table.getColumns();
         width -= 17;
         let sum = 0;
-        cols.forEach(function(col,i){
-            sum += col.width;
-        });
 
-        if (sum < width){
-            const different = width - sum;
- 
-            const lastCol = cols.length - 1;
+        if (cols && cols.length){
             cols.forEach(function(col,i){
-                if (i == lastCol){
-                    const newWidth = col.width + different;
-                    table.setColumnWidth(col.id, newWidth);
-                }
-        
+                sum += col.width;
             });
 
-        } 
+            
+            if (sum < width){
+                const different = width - sum;
+    
+                const lastCol = cols.length - 1;
+                cols.forEach(function(col,i){
+                    if (i == lastCol){
+                        const newWidth = col.width + different;
+                        table.setColumnWidth(col.id, newWidth);
+                    }
+            
+                });
+
+            } 
+        }
+        
+
 
     });
 }
@@ -15318,9 +15799,13 @@ function returnCol(index){
 
 function returnSumWidthCols(){
     let sum = 0;
-    cols.forEach(function(col){
-        sum += col.width;
-    });
+    
+    if (cols && cols.length){
+        cols.forEach(function(col){
+            sum += col.width;
+        });
+    }
+ 
     return sum;
 }
 
@@ -15365,6 +15850,7 @@ function columnResize(table){
 ;// CONCATENATED MODULE: ./src/js/components/table/columnsSettings/columnsWidth.js
 
 
+
 function setColsWidthStorage(table){
     table.attachEvent("onColumnResize",function(id, newWidth, oldWidth, action){
         if (action){
@@ -15372,15 +15858,24 @@ function setColsWidthStorage(table){
             const cols   = table.getColumns();
             const values = [];
 
-            cols.forEach(function(el){
+            if (cols.length){
+                cols.forEach(function(el){
 
-                values.push({
-                    column  : el.id, 
-                    position: table.getColumnIndex(el.id),
-                    width   : el.width.toFixed(2)
+                    values.push({
+                        column  : el.id, 
+                        position: table.getColumnIndex(el.id),
+                        width   : el.width.toFixed(2)
+                    });
                 });
-            });
-            postPrefsValues(values);
+                postPrefsValues(values);
+            } else {
+                errors_setFunctionError(
+                    "array length is null", 
+                    "table/columnsSettings/columnsWidtn", 
+                    "visibleColsSubmitClick"
+                ); 
+            }
+         
         }
     });     
 }
@@ -15394,15 +15889,22 @@ function createValues(table){
     const cols = table.getColumns();
     const values = [];
 
-    cols.forEach(function(col, i){
-        values.push({
-            column   : col.id, 
-            position : i,
-            width    : Number(col.width)
+    if (cols.length){
+        cols.forEach(function(col, i){
+            values.push({
+                column   : col.id, 
+                position : i,
+                width    : Number(col.width)
+            });
         });
-    });
+    } else {
+        errors_setFunctionError(
+            "array length is null", 
+            "table/columnsSettings/onAfterColumnDrop", 
+            "visibleColsSubmitClick"
+        ); 
+    }
 
- 
     return values;
 }
 
@@ -15429,7 +15931,7 @@ function setToolbarBtnState(){
 }
 
 function resetTableFilter(){
-    const table = commonFunctions_getTable();
+    const table = getTable();
 
     if (table){
         table.config.filter = null;
@@ -15550,7 +16052,7 @@ class Tables {
     }
 
     showExists(id){
-        const table = commonFunctions_getTable().config.id;
+        const table = getTable().config.id;
         createTable(table, id, true);
     }
 
@@ -15666,23 +16168,35 @@ let tree;
 const cssDisable = "tree_disabled-item";
 
 function cssItems(action, selectItems){
-    const pull       = tree.data.pull;
-    const values     = Object.values(pull);
-    values.forEach(function(item, i){
 
-        if (action == "remove"){
-            tree.removeCss(item.id, cssDisable);
+    if (tree){
+        const pull = tree.data.pull;
 
-        } else if (action == "add" && selectItems) {
-            const result = 
-            selectItems.find((id) => id == item.id);
+        if (pull){
+            const values = Object.values(pull);
 
-            if (!result){
-                tree.addCss   (item.id, cssDisable);
+            if (values && values.length){
+                values.forEach(function(item){
+        
+                    if (action == "remove"){
+                        tree.removeCss(item.id, cssDisable);
+            
+                    } else if (action == "add" && selectItems) {
+                        const result = 
+                        selectItems.find((id) => id == item.id);
+            
+                        if (!result){
+                            tree.addCss   (item.id, cssDisable);
+                        }
+                    }
+                
+                });
             }
+          
         }
-    
-    });
+    }
+   
+   
 }
 
 
@@ -15755,26 +16269,33 @@ function ownersLogic(value, topParent){
     if (topParent){ // если уже выбран элемент для редактирования
         const items = getAvailableItems(topParent);
 
-        items.forEach(function(id, i){
-            const item  = tree.getItem(id);
-            const owner = item.owner;
+        if (items && items.length){
+            items.forEach(function(id, i){
+                const item  = tree.getItem(id);
+                const owner = item.owner;
+        
+                if (owner == value){
+                    resultItems.push(id);
+                  
+                }
     
-            if (owner == value){
-                resultItems.push(id);
-              
-            }
-
-        });
-
-        cssItems("add", resultItems);
+            });
+    
+            cssItems("add", resultItems);
+        }
+        
     } else {
-        values.forEach(function(el){
-            const owner = el.owner; 
-            if (owner && owner == value){
-                resultItems.push(el.id);
-            
-            }
-        });
+
+        if (values && values.length){
+            values.forEach(function(el){
+                const owner = el.owner; 
+                if (owner && owner == value){
+                    resultItems.push(el.id);
+                
+                }
+            });
+        }
+   
 
     }
 
@@ -15782,9 +16303,12 @@ function ownersLogic(value, topParent){
 
     showLastItem(resultItems);
 
-    resultItems.forEach(function(id){
-        openFullBranch(id);
-    });
+    if (resultItems && resultItems.length){
+        resultItems.forEach(function(id){
+            openFullBranch(id);
+        });
+    }
+   
  
 }   
 
@@ -16002,11 +16526,14 @@ class Option {
         const data       = this.returnComboData();
         const pullValues = this.returnPullValues();
 
-        pullValues.forEach(function(el,i){
-            if (el.id !== option.id){
-                data.parse(option);
-            }
-        });
+        if (pullValues && pullValues.length){
+            pullValues.forEach(function(el,i){
+                if (el.id !== option.id){
+                    data.parse(option);
+                }
+            });
+        }
+       
 
     }
 
@@ -16014,13 +16541,15 @@ class Option {
         const data       = this.returnComboData();
         const pullValues = this.returnPullValues();
    
-        pullValues.forEach(function (el){
+        if (pullValues && pullValues.length){
+            pullValues.forEach(function (el){
 
-            if (el.id == option.id){
-                data.parse(option);
-            }
-           
-        });
+                if (el.id == option.id){
+                    data.parse(option);
+                }
+            
+            });
+        }
       
     }
 
@@ -16040,22 +16569,26 @@ class Option {
 
         function isExists(element){
             let check = false;
-            pullValues.forEach(function (el){
+            if (pullValues && pullValues.length){
+                pullValues.forEach(function (el){
 
-                if (el.id == element){
-                    check = true;
-                }
-            });
+                    if (el.id == element){
+                        check = true;
+                    }
+                });
+            }
             return check;
         }
 
         const removeItems = removeSubItemOptions(option.id);
-        removeItems.forEach(function (item){
-            if (isExists(item)){
-                data.remove(item);
-            }
+        if (removeItems && removeItems.length){
+            removeItems.forEach(function (item){
+                if (isExists(item)){
+                    data.remove(item);
+                }
 
-        });
+            });
+        }
     
     }
 
@@ -16313,13 +16846,16 @@ function getInfoEditTree_isParent(el){
 function findParents(treeData){
     const parents = [];
 
-    treeData.forEach(function(item,i){
+    if (treeData && treeData.length){
+        treeData.forEach(function(item,i){
 
-        if (getInfoEditTree_isParent(item.id)){
-            parents.push(item);
-        }
-       
-    });
+            if (getInfoEditTree_isParent(item.id)){
+                parents.push(item);
+            }
+           
+        });
+    
+    }
 
     return parents;
 }
@@ -16327,20 +16863,26 @@ function findParents(treeData){
 
 function setComboValues(treeData){
     const parents = findParents(treeData);
-    const options = returnEmptyOption();
-    const combo   = $$("editTreeCombo");
+ 
 
-    parents.forEach(function(parent){
-        options.push({
-            id    : parent.id,
-            value : parent.value
+    if (parents && parents.length){
+
+        const options = returnEmptyOption();
+        const combo   = $$("editTreeCombo");
+
+        parents.forEach(function(parent){
+            options.push({
+                id    : parent.id,
+                value : parent.value
+            });
         });
-    });
+    
+        combo.getPopup().getList().parse(options);
+    
+        const firstOption = options[0].id;
+        combo.setValue(firstOption);
+    }
 
-    combo.getPopup().getList().parse(options);
-
-    const firstOption = options[0].id;
-    combo.setValue(firstOption);
 
 }
 
@@ -16359,12 +16901,15 @@ async function getRefField(){
 function getOptions(data){
     const options = returnEmptyOption();
 
-    data.forEach(function(el){
-        options.push({
-            id    : el.id, 
-            value : el.first_name
+    if (data && data.length){
+        data.forEach(function(el){
+            options.push({
+                id    : el.id, 
+                value : el.first_name
+            });
         });
-    });
+    }
+ 
 
     return options;
 }
@@ -16413,8 +16958,10 @@ function createTreeItem(el){
 
 function pushTreeData(data){
     const treeData = [];       
-    try{
-        data.forEach(function(el,i){
+ 
+
+    if (data && data.length){
+        data.forEach(function(el){
             if (el.pid == 0){
                 const rootElement = createTreeItem(el);
 
@@ -16427,9 +16974,8 @@ function pushTreeData(data){
                 treeData.push (element );
             }
         });
-    } catch (err) {
-        errors_setFunctionError(err,getInfoEditTree_logNameFile,"pushTreeData");
     }
+
 
     return treeData;
 }
@@ -16438,16 +16984,20 @@ function createStruct(treeData){
     const treeStruct = [];
     const map        = {};
     try{
-        treeData.forEach(function(el, i){
 
-            map[el.id] = i; 
+        if (treeData && treeData.length){
+            treeData.forEach(function(el, i){
 
-            if ( el.pid !== 0 && el.pid !== el.id && el.pid !== null ) {
-                treeData[map[el.pid]].data.push(el);
-            } else {
-                treeStruct.push(el);
-            }
-        });
+                map[el.id] = i; 
+    
+                if ( el.pid !== 0 && el.pid !== el.id && el.pid !== null ) {
+                    treeData[map[el.pid]].data.push(el);
+                } else {
+                    treeStruct.push(el);
+                }
+            });
+        }
+    
     } catch (err) {
         errors_setFunctionError(err, getInfoEditTree_logNameFile, "createStruct");
     }
@@ -17543,18 +18093,21 @@ function selectItemAction(type, id){
     } 
 
 
-    visiualElements.forEach(function(elem){
-        if (elem !== selectElem){
-            Action.hideItem($$(elem));
-        } 
-
-        if (elem == id){
-            Action.removeItem($$("webix__null-content"));
-            Action.showItem  ($$("webix__none-content"));
-        }
-    });
-
-    Action.showItem($$(selectElem));
+    if (visiualElements && visiualElements.length){
+        visiualElements.forEach(function(elem){
+            if (elem !== selectElem){
+                Action.hideItem($$(elem));
+            } 
+    
+            if (elem == id){
+                Action.removeItem($$("webix__null-content"));
+                Action.showItem  ($$("webix__none-content"));
+            }
+        });
+    
+        Action.showItem($$(selectElem));
+    }
+  
 
 }
 
@@ -17619,6 +18172,7 @@ function preparationView(id){
 
 
 
+
 const loadFields_logNameFile = "treeSidebar => loadFields";
 
 let loadFields_tree;
@@ -17652,20 +18206,15 @@ function createNoneEl(uid, idParent){
 function isUniqueItem (menu, data){
     let check  = true;
 
-    try{
+    if (isArray(menu, loadFields_logNameFile, "isUniqueItem")){
         menu.forEach(function(el, i){
             if (el.name == data){
                 check = false;
                 
             }
         });
-    } catch (err){
-        errors_setFunctionError(
-            err, 
-            loadFields_logNameFile, 
-            "isUniqueItem"
-        );
     }
+   
     return check;
 }
 
@@ -17738,7 +18287,7 @@ async function generateMenuData (typeChild, idParent, uid){
 
     let itemsExists = false;
 
-    if (keys){
+    if (keys && keys.length){
         try{
         
             keys.forEach(function(data, i) {
@@ -18017,21 +18566,19 @@ const loadMenu_logNameFile = " treeSidebar => loadMenu";
 function generateChildsTree  (el){
     let childs = [];
 
-    try {
-        el.childs.forEach(function(child,i){
+    
+    const childsElems = el.childs;
+    if (childsElems && childsElems.length){
+        childsElems.forEach(function(child){
             childs.push({
                 id     : child.name, 
                 value  : child.title,
                 action : child.action
             });
         });
-    } catch (err){
-        errors_setFunctionError(
-            err,
-            loadMenu_logNameFile,
-            "generateChildsTree"
-        );
     }
+      
+    
     return childs;
 }
 
@@ -18090,41 +18637,47 @@ function generateMenuTree (menu){
     //     "childs": []
     // });
 
-    menu.forEach(function(el,i){
-        if (el.mtype !== 3){
-            menuTree.push  ( generateParentTree (el, menu, menuTree  ) );
-            if (el.childs.length !==0){
-                //menuHeader = generateHeaderMenu (el, menu, menuHeader);
+    if(isArray(menu, loadMenu_logNameFile, "generateMenuTree")){
+        menu.forEach(function(el,i){
+            if (el.mtype !== 3){
+                menuTree.push  ( generateParentTree (el, menu, menuTree  ) );
+                if (el.childs.length !==0){
+                    //menuHeader = generateHeaderMenu (el, menu, menuHeader);
+                }
+            } else {
+                delims.push(el.name);
+                menuTree.push({
+                    id       : el.name, 
+                    disabled : true,
+                    value    : ""
+                });
             }
-        } else {
-            delims.push(el.name);
-            menuTree.push({
-                id       : el.name, 
-                disabled : true,
-                value    : ""
+        
+        });
+  
+ 
+
+
+        tree.clearAll();
+        tree.parse(menuTree);
+        Action.hideItem($$("loadTreeOverlay"));
+
+        let popupData = btnContext.config.popup.data;
+        if (popupData !== undefined){
+            popupData = menuHeader;
+            btnContext.enable();
+        }
+
+
+        if (delims && delims.length){
+            delims.forEach(function(el){
+                tree.addCss(el, "tree_delim-items");
+    
             });
         }
-    
-    });
+      
 
-
-    tree.clearAll();
-    tree.parse(menuTree);
-    Action.hideItem($$("loadTreeOverlay"));
-
-    let popupData = btnContext.config.popup.data;
-    if (popupData !== undefined){
-        popupData = menuHeader;
-        btnContext.enable();
     }
-
-
-    delims.forEach(function(el){
-        tree.addCss(el, "tree_delim-items");
-
-    });
-
-
 }
 
 
@@ -18228,17 +18781,21 @@ function isIdIncludes(el){
 function setSearchInputState(visible = false){
     const headerChilds = $$("header").getChildViews();
 
-    headerChilds.forEach(function(el){
-        if (isIdIncludes(el)){
-            
-            if(visible){
-                el.show();
-            } else {
-                el.hide();
+    if (isArray(headerChilds, collapseBtn_logNameFile, "setSearchInputState")){
+        headerChilds.forEach(function(el){
+            if (isIdIncludes(el)){
+                
+                if(visible){
+                    el.show();
+                } else {
+                    el.hide();
+                }
+                
             }
-            
-        }
-    });
+        });
+    }
+
+   
 }
 
 
@@ -18431,14 +18988,17 @@ function findFavsInUserData(data, id){
     const collection = [];
     try{
 
-        data.forEach(function(el){
-            if (el.name.includes("fav-link") && id == el.owner){
-                const prefs  = JSON.parse(el.prefs);
-                prefs.dataId = el.id;
-                collection.push(prefs);
-                
-            }
-        });
+        if (data && data.length){
+            data.forEach(function(el){
+                if (el.name.includes("fav-link") && id == el.owner){
+                    const prefs  = JSON.parse(el.prefs);
+                    prefs.dataId = el.id;
+                    collection.push(prefs);
+                    
+                }
+            });
+        }
+       
 
     } catch (err){
         errors_setFunctionError(
@@ -18456,7 +19016,7 @@ function favorites_createOptions(data, user){
     const favCollection = findFavsInUserData(data, user.id);
     const radio         = $$("favCollectionLinks");
     try{
-        if (favCollection.length){
+        if (favCollection && favCollection.length){
             favCollection.forEach(function(el){
          
                 radio.addOption(
@@ -18776,7 +19336,7 @@ function postUserprefsData (sentObj){
 
 
 async function onItemClickBtn(){
-    const ownerId     = await returnOwner().id;
+    const owner       = await returnOwner();
 
     const localUrl    = "/index.html/content";
     const spawUrl     = "/init/default/spaw/content";
@@ -18784,35 +19344,44 @@ async function onItemClickBtn(){
 
     const prefName    = "userLocationHref";
 
-    new ServerData({
-        id : `smarts?query=userprefs.name=${prefName}+and+userprefs.owner=${ownerId}&limit=80&offset=0`
-       
-    }).get().then(function(data){
-      
-
-        if (data && path !== localUrl && path !== spawUrl){
+    if (owner && owner.id){
+        new ServerData({
+            id : `smarts?query=userprefs.name=${prefName}+and+userprefs.owner=${owner.id}&limit=80&offset=0`
            
-            const location = {
-                href : window.location.href
-            };
-
-            const sentObj = {
-                name  : prefName,
-                owner : ownerId.id,
-                prefs : location
-            };
-
-            const content = data.content;
+        }).get().then(function(data){
+          
     
-            if (content && content.length){ // запись с таким именем уже существует
-                const id = content[0].id;
-                putUserprefs(id, sentObj);
-            } else {
-                postUserprefsData (sentObj);
+            if (data && path !== localUrl && path !== spawUrl){
+               
+                const location = {
+                    href : window.location.href
+                };
+    
+                const sentObj = {
+                    name  : prefName,
+                    owner : ownerId.id,
+                    prefs : location
+                };
+    
+                const content = data.content;
+        
+                if (content && content.length){ // запись с таким именем уже существует
+                    const id = content[0].id;
+                    putUserprefs(id, sentObj);
+                } else {
+                    postUserprefsData (sentObj);
+                }
             }
-        }
-         
-    });
+             
+        });
+    } else {
+        errors_setFunctionError(
+            `owner is not defined`, 
+            "commonFunctions", 
+            "onItemClickBtn"
+        );
+    }
+    
 
  
 }
@@ -18894,19 +19463,24 @@ const header = {
 
 
 ;// CONCATENATED MODULE: ./src/js/components/header/setDefaultState.js
+
 function headerDefState(){
     const headerChilds = $$("header").getChildViews();
 
-    headerChilds.forEach(function(el){
-        if (el.config.id.includes("search")){
-            el.show();
-        }
-    });
+    if (isArray(headerChilds, "header/setDefaultState", "headerDefState")){
+        headerChilds.forEach(function(el){
+            if (el.config.id.includes("search")){
+                el.show();
+            }
+        });
+    }
+  
 }
 
 
 
 ;// CONCATENATED MODULE: ./src/js/components/header/loadContextMenu.js
+
 function createItems (){
 
     const items = [];
@@ -18942,20 +19516,23 @@ function generateHeaderMenu (menu){
     const btnContext = $$("button-context-menu");
     let menuHeader;
 
-    menu.forEach(function(el,i){
-        if (el.mtype !== 3){
-            if (el.mtype !== 3 && el.childs.length !==0){
-                menuHeader = createItems (el, menu, menuHeader);
+    if (isArray(menu, "header/loadContextMenu", "generateHeaderMenu")){
+        menu.forEach(function(el,i){
+            if (el.mtype !== 3){
+                if (el.mtype !== 3 && el.childs.length !==0){
+                    menuHeader = createItems (el, menu, menuHeader);
+                }
             }
+        
+        });
+    
+        if (btnContext.config.popup.data !== undefined){
+            btnContext.config.popup.data = menuHeader;
+            btnContext.enable();
         }
     
-    });
-
-    if (btnContext.config.popup.data !== undefined){
-        btnContext.config.popup.data = menuHeader;
-        btnContext.enable();
     }
-
+ 
 
 }
 
@@ -19017,7 +19594,7 @@ function hideOtherElems(selectElem){
     const visiualElements = mediator.getViews();
 
 
-    if (visiualElements){
+    if (visiualElements && visiualElements.length){
         visiualElements.forEach(function(elem){
             if (elem !== selectElem){
                 Action.hideItem($$(elem));
@@ -19119,7 +19696,7 @@ function restoreTempData(tempConfig, field){
         } else {
        
             if (tempConfig.queryFilter){
-                const table = commonFunctions_getTable();
+                const table = getTable();
                 if (table){
                     table.config.filter = {
                         table : filter.id,
@@ -19270,12 +19847,14 @@ function emptyTabsLogic(lastTab){
     const options = tabbar.config.options;
 
     let conutEmptyTabs = 0;
-    options.forEach(function(el, i){
-        if (el.info && el.info.tree && el.info.tree.none){ // empty tab
-            conutEmptyTabs ++;
-        }
-    });
-
+    if (options && options.length){
+        options.forEach(function(el, i){
+            if (el.info && el.info.tree && el.info.tree.none){ // empty tab
+                conutEmptyTabs ++;
+            }
+        });
+    }
+  
      
     if (options.length == conutEmptyTabs){ // all tabs is empty
         setEmptyTabLink();
@@ -19332,7 +19911,7 @@ function remove(lastTab){
 
 
 
- 
+
  
 const TABS_HISTORY  = [];
 const TABS_REMOVED  = [];
@@ -19416,7 +19995,7 @@ function hasDirtyForms(){
         dirty:false
     };
 
-    if (forms){
+    if (forms && forms.length){
         forms.forEach(function(form){
 
             if (form && form.isDirty() && !check.dirty){
@@ -19453,7 +20032,7 @@ function checkAlreadyExists(history, currLastPage){
  
     const lastIndex = history.length - 1;
     const lastElem  = history[lastIndex];
- 
+
     if (lastElem && lastElem.field == currLastPage.field){
         return true;
     }
@@ -19462,11 +20041,11 @@ function checkAlreadyExists(history, currLastPage){
 
 function addLastPage(treeData, history){
     const lastPage = treeData;
- 
+    
     if (treeData && !treeData.none){ // isn't empty page
-
+      
         const alreadyExists = checkAlreadyExists(history, lastPage);  //already exists in history
-       
+      
         if (!alreadyExists){
             mediator.tabs.addTabHistory(lastPage);
             history.push               (lastPage);  
@@ -19483,7 +20062,7 @@ function returnHistory(tabbar, tabIndex){
     const currHistory = conf.history;
 
     let history     = [];
-   
+
     if (currHistory){
         history = copyHistory(currHistory); 
     } 
@@ -19492,7 +20071,39 @@ function returnHistory(tabbar, tabIndex){
 
     return history;
 }
+function getTabConfig(){
+    const tabbar = $$("globalTabbar");
+    const id     = tabbar.getValue();
+    return tabbar.getOption(id);
+}
 
+function unblockHistoryBtns(){
+    const prevBtn = document.querySelector('.historyBtnLeft');
+    const nextBtn = document.querySelector('.historyBtnRight');
+
+    if (prevBtn && nextBtn){
+        const option = getTabConfig();
+
+        if (option){
+            const history = option.info.history;
+           
+             if (history.length > 1){
+                const id = prevBtn.getAttribute("view_id");
+                
+                Action.enableItem($$(id));
+                
+
+
+                // prev btn
+            }
+
+ 
+        }
+       
+    }
+}
+
+ 
 class Tabs {
     addTab(isNull, open = true){
         return add(isNull, open);
@@ -19563,16 +20174,23 @@ class Tabs {
  
         if (tabIndex > -1){
 
+           
+            const oldHistory = tabbar.config.options[tabIndex].info.history;
+        
+            tabbar.config.options[tabIndex].info = values;
+            tabbar.refresh();
+
+
+            changeName(this, values);
+
+
+            
             if (addHistory){
+                values.history = oldHistory;
                 const history  = returnHistory(tabbar, tabIndex);
                 values.history = history;
                 
             }
-           
-            tabbar.config.options[tabIndex].info = values;
-            tabbar.refresh();
-
-            changeName(this, values);
         
             this.setDataToStorage(tabbar, tabId);
         }
@@ -19588,7 +20206,7 @@ class Tabs {
     }
     
     changeTabName(id, value){
-  
+
         let name;
  
         if (!id && !value){
@@ -19599,6 +20217,8 @@ class Tabs {
             } else {
                 name = value;
             }
+
+         
       
         }
  
@@ -19641,9 +20261,15 @@ class Tabs {
     }
 
     addTabHistory(page){
+
+        console.log()
+      
         if (TABS_HISTORY.length > 10){
             TABS_HISTORY.shift();
         }
+
+       
+        unblockHistoryBtns();
         TABS_HISTORY.push(page);
 
         this.saveTabHistory();
@@ -19988,7 +20614,7 @@ const mediator = {
 
 
 ;// CONCATENATED MODULE: ./src/js/blocks/storageSetting.js
-
+ 
 
 
 
@@ -20062,9 +20688,9 @@ function deletePrefs(id, obj){
 
 
 function storageSetting_setDataToStorage(data, user){
+    
  
-        
-    if (data && typeof data == "object"){
+    if (isArray(data, storageSetting_logNameFile, "setDataToStorage")){
         data.forEach(function(el){
             const owner = el.owner;
             const name  = el.name;
@@ -20085,23 +20711,16 @@ function storageSetting_setDataToStorage(data, user){
             }
 
         });
-    } else {
-        errors_setFunctionError(
-            `type of content is not a array: 
-            ${data} or array does not exists`, 
-            storageSetting_logNameFile, 
-            "createComboValues"
-        ); 
-    }
+    } 
 }
 
 function setTabHistory(){
     const data = webix.storage.local.get("tabsHistory"); 
- 
+  
     if (data){
         const history = data.history;
         
-        if (history.length){
+        if (isArray(data, storageSetting_logNameFile, "setDataToStorage")){
             history.forEach(function(el){
         
                 mediator.tabs.addTabHistory(el);
@@ -20122,19 +20741,19 @@ async function storageSetting_setUserPrefs (userData){
     const userprefsData = webix.ajax(path);
   
     userprefsData.then( function (data) {
-  
-        let user = webix.storage.local.get("user");
-        data     = data.json().content;
-
-        if (userData){
-            user = userData;
-        }
  
-        storageSetting_setDataToStorage(data, user);
-        setLogPref      ();
-        setTabHistory   ();
-  
-        $$("globalTabbar").callEvent("setStorageData", [ '1' ]);
+        data = data.json();
+
+        if (data && data.content){
+     
+            const content = data.content;
+            storageSetting_setDataToStorage(content, user);
+            setLogPref      ();
+            setTabHistory   ();
+      
+            $$("globalTabbar").callEvent("setStorageData", [ '1' ]);
+        }
+
         
     });
 
@@ -20239,11 +20858,15 @@ function returnName(srcTable){
     const names = GetFields.names;
     let name;
     try{
-        names.forEach(function(el){
-            if (el.id == srcTable){
-                name = el.name;
-            }
-        });
+
+        if (names && names.length){
+            names.forEach(function(el){
+                if (el.id == srcTable){
+                    name = el.name;
+                }
+            });
+        }
+        
 
     } catch (err){
         errors_setFunctionError(
@@ -20260,7 +20883,7 @@ async function createLogMessage(srcTable) {
     let name;
 
     if (srcTable == "version"){
-        name = 'Expa v1.0.79';
+        name = 'Expa v1.0.80';
 
     } else if (srcTable == "cp"){
         name = 'Смена пароля';
@@ -20422,9 +21045,11 @@ function setAjaxError(err, file, func){
 
 let error;
 function setToLog(msg){
-    console.log(error)
-    if (!error){
 
+   
+    if (error){
+        console.log(error);
+    } else {
         const sentObj = {
             level : 3,
             msg   : msg 
@@ -20444,8 +21069,9 @@ function setToLog(msg){
                 "errors", 
                 "setToLog"
             );
-        });
+        }); 
     }
+
 }
 
 function errors_setFunctionError(err, file, func){
@@ -20493,7 +21119,7 @@ function getItemId (){
     return idTable;
 }
 
-function commonFunctions_getTable(){
+function getTable(){
     getItemId ();
     return visibleItem;
 }
@@ -20748,6 +21374,20 @@ async function returnOwner(){
     } 
 
     return ownerId;
+}
+
+function isArray(arr, logNameFile, func){
+ 
+    if (arr && typeof arr == "object"){
+        return true;
+    } else {
+        errors_setFunctionError(
+            `type of content is not a array 
+            or array does not exists : ${arr}`, 
+            logNameFile, 
+            func
+        ); 
+    }
 }
 
 
@@ -24914,23 +25554,25 @@ function expalib_lib (){
 
 function hideAllElements (){
 
-    try {
-        const container = $$("container");
-        const childs    = container.getChildViews();
-        
+  
+    const container = $$("container");
+    const childs    = container.getChildViews();
+    
+    if (childs.length){
         childs.forEach(function(el){
             const view = el.config.view;
             if(view == "scrollview" || view == "layout"){
                 Action.hideItem($$(el.config.id));
             }
         });
-    } catch (err){
+    } else {
         errors_setFunctionError(
-            err,
-            "routerConfig => hideAllElements",
+            "array length is null",
+            "routerConfig/hideAllElements",
             "hideAllElements"
-        );
+        ); 
     }
+
   
      
 }
@@ -25345,10 +25987,8 @@ function setUserprefsNameValue (){
 
 
 function setTemplateValue(data){
-
-    const type = typeof data;
-
-    if (type == "object"){
+ 
+    if (isArray(data, settings_logNameFile, "setTemplateValue")){
         data.forEach(function(el){
             const name    = el.name;
             const prefsId = "userprefs";
@@ -25361,15 +26001,7 @@ function setTemplateValue(data){
                 form.config.storagePrefs = prefs;
             }
         });
-    } else {
-        errors_setFunctionError(
-            `error type of data : ${type}`, 
-            settings_logNameFile, 
-            "setTemplateValue"
-        );
-    }
-    
-
+    } 
 
 }
 
@@ -25480,7 +26112,7 @@ function experimentalRouter(){
 
 
 
-const logout_logNameFile = "router => logout";
+const logout_logNameFile = "router/logout";
 
 function clearStorage(){
     try{
@@ -25508,20 +26140,16 @@ function isPrefExists(data, name){
         exists : false
     };
  
-    try{
+    if (isArray(data, logout_logNameFile, "isPrefExists")){
         data.forEach(function(el){
             if (el.name == name){
                 result.exists = true;
                 result.id     = el.id;
             } 
-        });  
-    }   catch(err){
-        errors_setFunctionError(
-            err, 
-            logout_logNameFile, 
-            "isPrefExists"
-        );
+        }); 
     }
+        
+  
     
     return result;
 }
@@ -25800,6 +26428,8 @@ function postLoginData(){
                 Backbone.history.navigate("content", { trigger:true});
                 window.location.reload();
             }
+        } else {
+            login_errorActions (); 
         }
          
     });
@@ -25862,12 +26492,16 @@ function returnPass(){
         name            : "password",
         invalidMessage  : invalidMsgText,
         type            : "password",
-        icon            : "password-icon wxi-eye",   
+        icon            : "password-icon wxi-eye", 
+        keyPressTimeout :  120000,  // 120000  = 2 min
         on              : {
             onItemClick:function(id, event){
                 clickPass(event, this);
      
             },
+            onTimedKeyPress:function(){
+                this.setValue(""); // auto clear
+            }
         } 
     };
 
@@ -26374,7 +27008,7 @@ function returnItem(config, index){
     const name = item.plural ? item.plural : item.singular;
   
     return {
-        id    : config.field,
+        id    : webix.uid(),
         value : name,
         config: config,
         index : index
@@ -26386,7 +27020,7 @@ function returnListItems(){
     const history = mediator.tabs.getTabHistory();
     const items = [];
 
-    if (history.length){
+    if (history && history.length){
      
         history.forEach(function(el, i){
             items.push(returnItem(el, i));
@@ -26740,7 +27374,7 @@ function restoreTabbar(data){
     const tabs   = data.tabs;
     const select = data.select;
 
-    if (tabs){
+    if (tabs && tabs.length){
         tabs.forEach(function(option){
             tabbar.addOption(option, false); 
         });
@@ -26914,7 +27548,7 @@ function createTabbar(){
 
 
 ;// CONCATENATED MODULE: ./src/js/app.js
-console.log("expa 1.0.79"); 
+console.log("expa 1.0.80"); 
 
 
 

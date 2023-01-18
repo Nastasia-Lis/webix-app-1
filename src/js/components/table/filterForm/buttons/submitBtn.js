@@ -114,26 +114,40 @@ function segmentBtnValue(input) {
     return value;
 }
 
+function returnArrayError(func){
+    setFunctionError(
+        `array is null`, 
+        logNameFile, 
+        func
+    ); 
+}
+
+
 function createValuesArray(){
     const valuesArr  = [];
     const inputs     = Filter.getAllChilds(true);
 
-    inputs.forEach(function(input){
+    if (inputs && inputs.length){
+        inputs.forEach(function(input){
         
-        const name       = $$(input).config.columnName;
-        const value      = $$(input)                         .getValue();
-        const operation  = $$(input + "-btnFilterOperations").getValue();
-
-        const logic      = segmentBtnValue(input); 
-
-        valuesArr.push ( { 
-            id        : input,
-            name      : name, 
-            value     : value,
-            operation : operation,
-            logic     : logic  
+            const name       = $$(input).config.columnName;
+            const value      = $$(input)                         .getValue();
+            const operation  = $$(input + "-btnFilterOperations").getValue();
+    
+            const logic      = segmentBtnValue(input); 
+    
+            valuesArr.push ( { 
+                id        : input,
+                name      : name, 
+                value     : value,
+                operation : operation,
+                logic     : logic  
+            });
         });
-    });
+    } 
+
+
+
 
     return valuesArr;
 }
@@ -146,35 +160,38 @@ function createGetData(){
     const valuesArr      = createValuesArray();
     const query          = [];
 
-    valuesArr.forEach(function(el){
+    if (valuesArr && valuesArr.length){
+        valuesArr.forEach(function(el){
   
-        const filterEl = $$(el.id);
-
-        let value      = el.value;
-   
-        function formattingDateValue(){
-            const view = filterEl.config.view; 
-            if ( view == "datepicker" ){
-                value = postFormatData(value);
+            const filterEl = $$(el.id);
+    
+            let value      = el.value;
+       
+            function formattingDateValue(){
+                const view = filterEl.config.view; 
+                if ( view == "datepicker" ){
+                    value = postFormatData(value);
+                }
             }
-        }
-
-        function formattingSelectValue(){
-            const text = filterEl.config.text;
-            if ( text && text == "Нет" ){
-                value = 0;
+    
+            function formattingSelectValue(){
+                const text = filterEl.config.text;
+                if ( text && text == "Нет" ){
+                    value = 0;
+                }
             }
-        }
-
-        if (filterEl){
-            formattingDateValue ();
-            formattingSelectValue();
-            query.push(createQuery(el));
-           
-        }
-
-    });
-
+    
+            if (filterEl){
+                formattingDateValue ();
+                formattingSelectValue();
+                query.push(createQuery(el));
+               
+            }
+    
+        });
+    
+    } 
+ 
     return query;
 }
 

@@ -25,6 +25,17 @@ const action = {
     } 
 };
 
+function returnDefaultWidthChart(){
+    const container = $$("dashboardInfoContainer");
+    if (container){
+        const width = container.$width;
+        const k     = 2;
+
+        return width/k;
+    } else {
+        return 500;
+    }
+}
 function createChart(dataCharts){
     const layout = [];
   
@@ -102,6 +113,7 @@ function createChart(dataCharts){
         //     "view": "datatable",
         //     "id"  : "auth_group",
         //     "height": 300,
+        //     "minWidth":200,
         //     "scroll": "xy",
         //     "columns": [
         //         {
@@ -147,7 +159,7 @@ function createChart(dataCharts){
         // };
      
         //  dataCharts.push(table);
-        // dataCharts.push(res);
+       // dataCharts.push(res);
       
         dataCharts.forEach(function(el){
           
@@ -164,16 +176,21 @@ function createChart(dataCharts){
             const titleTemplate = el.title;
 
             delete el.title;
-         
+       
+            const heightElem = el.height   ? el.height   : 300;
+            const widthElem  = el.minWidth ? el.minWidth : returnDefaultWidthChart();
+    
+ 
             layout.push({
                 css : "webix_dash-chart",
              
                 rows: [ 
                     {template:' ', height:20, css:"dash-delim"},
                     returnHeadline (titleTemplate),
-                    {   margin     : 10,
-                        minHeight  : 300,
-                        padding    : 10,
+                    {   margin     : 4,
+                        minHeight  : heightElem,
+                        minWidth   : widthElem,
+                        padding    : 4,
                         borderless : true,
                         rows       : [
                             {   
@@ -214,18 +231,18 @@ function setIdAttribute(idsParam){
 function createDashLayout(dataCharts){
     const layout = createChart(dataCharts);
  
-    const dashLayout = [
-        {  
-            rows : layout
+    // const dashLayout = [
+    //     {  
+    //         cols : layout
             
-        }
-    ];
+    //     }
+    // ];
  
     const dashCharts = {
         id  : "dashboard-charts",
         view: "flexlayout",
         css : "webix_dash-charts-flex",
-        rows: dashLayout,
+        cols: layout,
     };
 
     return dashCharts;

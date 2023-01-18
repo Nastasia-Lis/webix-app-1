@@ -1,4 +1,5 @@
 import { postPrefsValues }  from "./userprefsPost.js";
+import { setFunctionError } from "../../../blocks/errors.js";
 
 function setColsWidthStorage(table){
     table.attachEvent("onColumnResize",function(id, newWidth, oldWidth, action){
@@ -7,15 +8,24 @@ function setColsWidthStorage(table){
             const cols   = table.getColumns();
             const values = [];
 
-            cols.forEach(function(el){
+            if (cols.length){
+                cols.forEach(function(el){
 
-                values.push({
-                    column  : el.id, 
-                    position: table.getColumnIndex(el.id),
-                    width   : el.width.toFixed(2)
+                    values.push({
+                        column  : el.id, 
+                        position: table.getColumnIndex(el.id),
+                        width   : el.width.toFixed(2)
+                    });
                 });
-            });
-            postPrefsValues(values);
+                postPrefsValues(values);
+            } else {
+                setFunctionError(
+                    "array length is null", 
+                    "table/columnsSettings/columnsWidtn", 
+                    "visibleColsSubmitClick"
+                ); 
+            }
+         
         }
     });     
 }

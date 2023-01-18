@@ -1,10 +1,12 @@
 
 
-import { Filter }               from "../filterForm/actions/_FilterActions.js";
-import { createChildFields }    from "../filterForm/createElements/childFilter.js";
-import { getTable, Action }     from "../../../blocks/commonFunctions.js";
-
+import { Filter }                        from "../filterForm/actions/_FilterActions.js";
+import { createChildFields }             from "../filterForm/createElements/childFilter.js";
+import { getTable, Action, isArray }     from "../../../blocks/commonFunctions.js";
+import { setFunctionError }               from "../../../blocks/errors.js";
 let conditions;
+
+const logNameFile = "tables/createSpace/returnDashboardFilter";
 
 function returnInputId(id){
     const index = id.lastIndexOf(".");
@@ -69,10 +71,13 @@ function checkCondition(array){
 // array[4] - and/or
 function returInputsId(ids){
     const result = [];
-    ids.forEach(function(el, i){
-        const index = el.lastIndexOf(".") + 1;
-        result.push(el.slice(index));
-    });
+    if (isArray(ids, logNameFile, "returInputsId")){
+        ids.forEach(function(el, i){
+            const index = el.lastIndexOf(".") + 1;
+            result.push(el.slice(index));
+        });
+    }
+  
     
     
     return result;
@@ -81,15 +86,18 @@ function returInputsId(ids){
 
 function iterateConditions(){
     const ids = [];
-    conditions.forEach(function(el){
-        const arr = el.split(' ');
-        checkCondition(arr);
-        ids.push(arr[1]);
-     
-    });
-    
-    const inputsId = returInputsId(ids);
-    Filter.hideInputsContainers(inputsId);
+    if (isArray(conditions, logNameFile, "iterateConditions")){
+        conditions.forEach(function(el){
+            const arr = el.split(' ');
+            checkCondition(arr);
+            ids.push(arr[1]);
+         
+        });
+        
+        const inputsId = returInputsId(ids);
+        Filter.hideInputsContainers(inputsId);
+    }
+
 }
 
 
@@ -100,27 +108,30 @@ function returnConditions(filter){
     let r            = "";
     let counter      = 0;
 
-    array.forEach(function(el, i){
-        const length = array.length;
-
-        if (length - 1 === i){
-            r += " " + el;
-            counter ++;
-        }
-
-        if (counter >= 4 || length - 1 === i){
-            conditions.push(r);
-            r       = "";
-            counter = 0;
-        }
-
-        if (counter < 4){
-            r += " " + el;
-            counter ++;
-        }
-
-        
-    });
+    if (isArray(array, logNameFile, "returnConditions")){
+        array.forEach(function(el, i){
+            const length = array.length;
+    
+            if (length - 1 === i){
+                r += " " + el;
+                counter ++;
+            }
+    
+            if (counter >= 4 || length - 1 === i){
+                conditions.push(r);
+                r       = "";
+                counter = 0;
+            }
+    
+            if (counter < 4){
+                r += " " + el;
+                counter ++;
+            }
+    
+            
+        });
+    }
+  
    
 
     return conditions;
@@ -137,17 +148,30 @@ function lastItem(result){
 }
 
 function returnCurrIndexes(indexes){
- 
-    const inputs  = Filter.getItems();
     const result = [];
-    Object.keys(indexes).forEach(function(el){
+    if (isArray(indexes, logNameFile, "returnCurrIndexes")){
+        const inputs  = Filter.getItems();
 
-        if (inputIsVisible(inputs, el)){
-            result.push(indexes[el]);
+        const keys = Object.keys(indexes);
+        if (keys.length){
+            keys.forEach(function(el){
+    
+                if (inputIsVisible(inputs, el)){
+                    result.push(indexes[el]);
+                }
+              
+            });
+        } else {
+            setFunctionError(
+                `array length is null`, 
+                logNameFile, 
+                "returnCurrIndexes"
+            ); 
         }
-      
-    });
-
+       
+    
+    }
+ 
     return result;
 
 }

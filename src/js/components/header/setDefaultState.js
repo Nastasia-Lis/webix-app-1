@@ -1,11 +1,15 @@
+import { isArray }          from "../../blocks/commonFunctions.js";
 function headerDefState(){
     const headerChilds = $$("header").getChildViews();
 
-    headerChilds.forEach(function(el){
-        if (el.config.id.includes("search")){
-            el.show();
-        }
-    });
+    if (isArray(headerChilds, "header/setDefaultState", "headerDefState")){
+        headerChilds.forEach(function(el){
+            if (el.config.id.includes("search")){
+                el.show();
+            }
+        });
+    }
+  
 }
 
 

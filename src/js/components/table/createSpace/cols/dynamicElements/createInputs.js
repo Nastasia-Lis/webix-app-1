@@ -1,6 +1,6 @@
 import { setFunctionError }   from "../../../../../blocks/errors.js";
 import { ServerData }         from "../../../../../blocks/getServerData.js";
-import { Action }             from "../../../../../blocks/commonFunctions.js";
+import { Action, isArray }    from "../../../../../blocks/commonFunctions.js";
 import { Button }             from '../../../../../viewTemplates/buttons.js';
 import { submitBtn }          from './buttonLogic.js';
 
@@ -21,6 +21,13 @@ function setAdaptiveWidth(elem){
     inp.style.width   = elem.$width - 5 + "px";
 }
 
+function returnArrayError(func){
+    setFunctionError(
+        "array length is null",
+        logNameFile,
+        func
+    );
+}
 function createTextInput    (i){
     return {   
         view            : "text",
@@ -36,14 +43,19 @@ function createTextInput    (i){
             onChange:function(){
                 const inputs = $$("customInputs").getChildViews();
 
-                inputs.forEach(function(el){
-                    const view = el.config.view;
-                    const btn  = $$(el.config.id);
-
-                    if (view == "button"){
-                        Action.enableItem(btn);
-                    }
-                });
+                if (inputs.length){
+                    inputs.forEach(function(el){
+                        const view = el.config.view;
+                        const btn  = $$(el.config.id);
+    
+                        if (view == "button"){
+                            Action.enableItem(btn);
+                        }
+                    });
+                } else {
+                    returnArrayError("createTextInput");
+                }
+               
 
             }
         }
@@ -61,7 +73,7 @@ function dataTemplate(i, valueElem){
 
 function createOptions(content){
     const dataOptions = [];
-    if (typeof content == "object"){
+    if (isArray(content, logNameFile, "createOptions")){
         content.forEach(function(name, i) {
      
             let title = name;
@@ -161,14 +173,14 @@ function createDeleteAction (i){
     } 
 
 }
-
+ 
 function getInputsId        (element){
 
     const parent     = element.getParentView();
     const childs     = parent .getChildViews();
     const idElements = [];
 
-    try{
+    if (childs.length){
         childs.forEach((el,i) => {
             const view = el.config.view;
             const id   = el.config.id;
@@ -193,13 +205,11 @@ function getInputsId        (element){
             }
 
         });
-    } catch (err){
-        setFunctionError(
-            err,
-            logNameFile,
-            "generateCustomInputs => getInputsId"
-        );
-    } 
+    } else {
+        returnArrayError("getInputsId");
+    }
+       
+    
     return idElements;
 }
 
@@ -312,11 +322,16 @@ function createUpload       (i){
                 const parent = this  .getParentView();
                 const childs = parent.getChildViews();
 
-                childs.forEach(function(el,i){
-                    if (el.config.id.includes("customBtn")){
-                        el.disable();
-                    }
-                });
+                if (childs.length){
+                    childs.forEach(function(el,i){
+                        if (el.config.id.includes("customBtn")){
+                            el.disable();
+                        }
+                    });
+                } else {
+                    returnArrayError("createUpload");
+                }
+               
             },
             onBeforeFileAdd:function(){
                 const loadEl = $$("templateLoad");
@@ -328,11 +343,16 @@ function createUpload       (i){
                 const parent = this  .getParentView();
                 const childs = parent.getChildViews();
 
-                childs.forEach(function(el){
-                    if (el.config.id.includes("customBtn")){
-                        el.enable();
-                    }
-                });
+                if (childs.length){
+                    childs.forEach(function(el){
+                        if (el.config.id.includes("customBtn")){
+                            el.enable();
+                        }
+                    });
+                } else {
+                    returnArrayError("createUpload");
+                }
+                
             }
 
         }
@@ -356,13 +376,19 @@ function createDatepicker   (i){
             onChange:function(){
                 try{
                     const inputs = $$("customInputs").getChildViews();
-                    inputs.forEach(function(el,i){
-                        const btn  = $$(el.config.id);
-                        const view = el.config.view;
-                        if ( view == "button" && !(btn.isEnabled()) ){
-                            btn.enable();
-                        }
-                    });
+
+                    if (inputs.length){
+                        inputs.forEach(function(el,i){
+                            const btn  = $$(el.config.id);
+                            const view = el.config.view;
+                            if ( view == "button" && !(btn.isEnabled()) ){
+                                btn.enable();
+                            }
+                        });
+                    } else {
+                        returnArrayError("createDatepicker");
+                    }
+                  
                 } catch (err){
                     setFunctionError(
                         err,
@@ -391,13 +417,18 @@ function createCheckbox     (i){
             onChange:function(){
                 try{
                     const inputs = $$("customInputs").getChildViews();
-                    inputs.forEach(function(el,i){
-                        const view = el.config.view;
-                        const btn  = $$(el.config.id);
-                        if (view == "button" && !(btn.isEnabled())){
-                            btn.enable();
-                        }
-                    });
+                    if (inputs.length){
+                        inputs.forEach(function(el,i){
+                            const view = el.config.view;
+                            const btn  = $$(el.config.id);
+                            if (view == "button" && !(btn.isEnabled())){
+                                btn.enable();
+                            }
+                        });
+                    } else {
+                        returnArrayError("createCheckbox");
+                    }
+                
                 } catch (err){
                     setFunctionError(
                         err,
@@ -419,52 +450,57 @@ function generateCustomInputs (dataFields, id){
     const customInputs  = [];
     const objInuts      = Object.keys(data.inputs);
 
-    objInuts.forEach((el,i) => {
-        field = dataInputsArray[el];
-        if ( field.type == "string" ){
-            customInputs.push(
-                createTextInput(i)
-            );
-        } else if ( field.type == "apiselect" ) {
-           
-            customInputs.push(
-                createSelectInput(el, i, dataInputsArray)
-            );
-
-        } else if ( field.type == "submit" || 
-                    field.type == "button" ){
-
-            const actionType = field.action;
-            const findAction = data.actions[actionType];
-        
-            if ( findAction.verb == "DELETE" && actionType !== "submit" ){
-                createDeleteAction (i);
-            } else if ( findAction.verb == "DELETE" ) {
+    if (objInuts.length){
+        objInuts.forEach((el,i) => {
+            field = dataInputsArray[el];
+            if ( field.type == "string" ){
                 customInputs.push(
-                    createDeleteBtn(findAction, i)
+                    createTextInput(i)
                 );
-            } else {
+            } else if ( field.type == "apiselect" ) {
+               
                 customInputs.push(
-                    createCustomBtn(findAction, i)
-                        
+                    createSelectInput(el, i, dataInputsArray)
                 );
-            }
-        } else if ( field.type == "upload" ){
-            customInputs.push(
-                createUpload(i)
-            );
-        } else if ( field.type == "datetime" ){
-            customInputs.push(
-                createDatepicker(i)
-            );
-        }else if ( field.type == "checkbox" ){
-            customInputs.push(
-                createCheckbox(i)
-            );
-
-        } 
-    });
-
+    
+            } else if ( field.type == "submit" || 
+                        field.type == "button" ){
+    
+                const actionType = field.action;
+                const findAction = data.actions[actionType];
+            
+                if ( findAction.verb == "DELETE" && actionType !== "submit" ){
+                    createDeleteAction (i);
+                } else if ( findAction.verb == "DELETE" ) {
+                    customInputs.push(
+                        createDeleteBtn(findAction, i)
+                    );
+                } else {
+                    customInputs.push(
+                        createCustomBtn(findAction, i)
+                            
+                    );
+                }
+            } else if ( field.type == "upload" ){
+                customInputs.push(
+                    createUpload(i)
+                );
+            } else if ( field.type == "datetime" ){
+                customInputs.push(
+                    createDatepicker(i)
+                );
+            }else if ( field.type == "checkbox" ){
+                customInputs.push(
+                    createCheckbox(i)
+                );
+    
+            } 
+        });
+    
+    } else {
+        returnArrayError("generateCustomInputs");
+    }
+   
 
     return customInputs;
 }

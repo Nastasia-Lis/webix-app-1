@@ -14,16 +14,25 @@ function isDataExists(data){
 function hideHtmlContainers(){
     const container = $$("inputsFilter").getChildViews();
 
-    container.forEach(function(el){
+    if (container && container.length){
+        container.forEach(function(el){
 
-        const node = el.getNode();
-
-        const isShowContainer = node.classList.contains("webix_show-content");
-        if (!isShowContainer){
-            Filter.addClass(node, "webix_hide-content");
-        }
-       
-    });
+            const node = el.getNode();
+    
+            const isShowContainer = node.classList.contains("webix_show-content");
+            if (!isShowContainer){
+                Filter.addClass(node, "webix_hide-content");
+            }
+           
+        });
+    } else {
+        setFunctionError(
+            `array length is null`, 
+            "table/createSpace/returnLostFilter", 
+            "hideHtmlContainers"
+        ); 
+    }
+ 
 
 }
 

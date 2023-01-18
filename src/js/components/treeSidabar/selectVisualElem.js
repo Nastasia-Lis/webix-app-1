@@ -87,18 +87,21 @@ function selectItemAction(type, id){
     } 
 
 
-    visiualElements.forEach(function(elem){
-        if (elem !== selectElem){
-            Action.hideItem($$(elem));
-        } 
-
-        if (elem == id){
-            Action.removeItem($$("webix__null-content"));
-            Action.showItem  ($$("webix__none-content"));
-        }
-    });
-
-    Action.showItem($$(selectElem));
+    if (visiualElements && visiualElements.length){
+        visiualElements.forEach(function(elem){
+            if (elem !== selectElem){
+                Action.hideItem($$(elem));
+            } 
+    
+            if (elem == id){
+                Action.removeItem($$("webix__null-content"));
+                Action.showItem  ($$("webix__none-content"));
+            }
+        });
+    
+        Action.showItem($$(selectElem));
+    }
+  
 
 }
 
