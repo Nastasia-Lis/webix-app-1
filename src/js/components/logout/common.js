@@ -1,3 +1,11 @@
+///////////////////////////////
+
+// Общая логика logout
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 import { setStorageData }                from "../../blocks/storageSetting.js";
 

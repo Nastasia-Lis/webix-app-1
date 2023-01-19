@@ -396,6 +396,26 @@ class Tabs {
         return TABS_REMOVED;
     }
 
+
+    setHistoryBtnState(isNextBtn, enable = true){
+        const id   = isNextBtn ? "Right" : "Left";
+        const css  = `historyBtn${id}`;
+
+        const node = document.querySelector(`.${css}`);
+        
+        if (node){
+            const id  = node.getAttribute("view_id");
+
+            if (enable){
+                Action.enableItem($$(id));
+            } else {
+                Action.disableItem($$(id));
+            }
+           
+        
+        }
+    }
+
  
 
 }

@@ -1,3 +1,11 @@
+///////////////////////////////
+
+// Медиатор
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { settingsLayout }  from "./_layout.js";
 import { saveSettings }    from "./tabbar/buttons.js";
 

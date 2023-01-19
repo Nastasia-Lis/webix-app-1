@@ -1,3 +1,11 @@
+///////////////////////////////
+
+// Кнопка сокрытия лога
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { Button } from "../../viewTemplates/buttons.js";
 
 function logBtnClick(id){

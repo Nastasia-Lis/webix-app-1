@@ -1,3 +1,11 @@
+///////////////////////////////
+
+// Пересоздание фильтра после перезагрузки / перехода в таб
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { mediator }     from "../../../blocks/_mediator.js";
 
 function setDataToTab(currState){

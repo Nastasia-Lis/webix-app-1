@@ -1,3 +1,11 @@
+///////////////////////////////
+
+// Кнопки перемещения между list компонентами
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { Button } from "../../../../viewTemplates/buttons.js";
 import { Action } from "../../../../blocks/commonFunctions.js";
 

@@ -1,3 +1,12 @@
+
+///////////////////////////////
+
+// Дефолтные значения у пустых строк
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { getTable, isArray }    from '../../../../blocks/commonFunctions.js';
 import { returnDefaultValue }   from '../../defaultValues.js';
 

@@ -1,3 +1,11 @@
+///////////////////////////////
+
+// Кнопки перемещения колонок вверх/вниз
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { Button }   from "../../../../viewTemplates/buttons.js";
 
 function setBtnSubmitState(state){

@@ -86,6 +86,8 @@ function createWorkspaceCheckbox (){
                 });
         
                 visibleSegmentBtn(selectAll, selectValues);
+
+  
             }
          
     
@@ -105,8 +107,8 @@ function visibleCounter(){
     let visibleElements = 0;
     if (form){
         const elements      = $$("filterTableForm").elements;
-
-        if (elements && elements.length){
+ 
+        if (elements){
             const values        = Object.values(elements);
       
             if (values && values.length){
@@ -134,7 +136,7 @@ function visibleCounter(){
 
 function setDisableTabState(){
     const visibleElements = visibleCounter();
-
+ 
     if (!(visibleElements)){
         Action.showItem     ($$("filterEmptyTempalte" ));
 

@@ -1,3 +1,11 @@
+///////////////////////////////
+
+// Кнопка сокрытия сайдбара
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { checkFonts }               from "../../blocks/checkFonts.js";
 import { setFunctionError }         from "../../blocks/errors.js";
 import { Action, isArray }          from "../../blocks/commonFunctions.js";

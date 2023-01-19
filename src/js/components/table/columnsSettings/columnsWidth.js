@@ -1,3 +1,11 @@
+///////////////////////////////
+
+// Сохранение ресайза колонок 
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { postPrefsValues }  from "./userprefsPost.js";
 import { setFunctionError } from "../../../blocks/errors.js";
 

@@ -1,3 +1,12 @@
+
+///////////////////////////////
+
+// Проверка авторизации и перенаправление
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { Action }               from "../../blocks/commonFunctions.js";
 import { STORAGE, getData }     from "../../blocks/globalStorage.js";
 

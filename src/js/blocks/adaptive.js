@@ -1,3 +1,11 @@
+///////////////////////////////
+
+// Адаптив для сайдбара, таблиц, дашбордов, форм
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { setFunctionError } from "./errors.js";
 import { Action }           from "./commonFunctions.js";
 

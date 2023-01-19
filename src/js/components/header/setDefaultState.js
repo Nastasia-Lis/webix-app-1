@@ -1,3 +1,11 @@
+///////////////////////////////
+
+// Дефолтное состояние header после адаптива
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { isArray }          from "../../blocks/commonFunctions.js";
 function headerDefState(){
     const headerChilds = $$("header").getChildViews();

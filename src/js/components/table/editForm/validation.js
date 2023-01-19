@@ -168,7 +168,7 @@ function validateProfForm (){
         
                     function valNotNull (){
                         try{
-                            if ( propElement.notnull == true && propValue.length == 0 ){
+                            if ( propElement.notnull == false && propValue.length == 0 ){
                                 errors[el].notnull = "Поле не может быть пустым";
                             } else {
                                 errors[el].notnull = null;

@@ -1,3 +1,12 @@
+
+///////////////////////////////
+
+// Подготовка таблицы и загрузка
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { setLogValue }                      from '../../logBlock.js';
 import { LoadServerData, GetFields }        from "../../../blocks/globalStorage.js";
 

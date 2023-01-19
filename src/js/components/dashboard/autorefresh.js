@@ -1,3 +1,12 @@
+///////////////////////////////
+
+// Автообновление дашборда по параметру autorefresh
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 import { mediator }          from '../../blocks/_mediator.js';
 let idsParam;
 

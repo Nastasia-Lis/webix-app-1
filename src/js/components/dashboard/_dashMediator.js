@@ -1,3 +1,11 @@
+///////////////////////////////
+
+// Медиатор
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { Action }          from "../../blocks/commonFunctions.js";
 import { dashboardLayout } from "./_layout.js";
 import { createDashboard } from "./createDashboard.js";

@@ -1,3 +1,11 @@
+///////////////////////////////
+
+// Action с навигацие на другую страницу
+
+// Copyright (c) 2022 CA Expert
+
+/////////////////////////////// 
+
 import { mediator }                  from "../../../../blocks/_mediator.js";
 import { GetFields, LoadServerData } from "../../../../blocks/globalStorage.js";
 

@@ -1,3 +1,12 @@
+
+///////////////////////////////
+
+// Загрузка таблицы
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { GetFields }                        from "../../../../blocks/globalStorage.js";
 import { autorefresh }                      from './autorefresh.js';
 import { loadTableData }                    from './loadRows.js';

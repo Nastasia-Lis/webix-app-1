@@ -1,3 +1,11 @@
+///////////////////////////////
+
+// Кнопка сброса до дефолтных настроек
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { Button }                       from "../../../../viewTemplates/buttons.js";
 import { setFunctionError }             from "../../../../blocks/errors.js";
 import { setLogValue }                  from "../../../logBlock.js";

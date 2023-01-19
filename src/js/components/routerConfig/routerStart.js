@@ -1,3 +1,11 @@
+///////////////////////////////
+
+// Начальные настройки роутера
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 function navigate(path){
     Backbone.history.start({pushState: true, root: path});
 }

@@ -3,6 +3,15 @@
 var __webpack_exports__ = {};
 
 ;// CONCATENATED MODULE: ./src/js/blocks/getServerData.js
+///////////////////////////////
+
+// Обёртка для ajax запросов 
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 
 
 
@@ -204,6 +213,15 @@ class ServerData {
  
 
 ;// CONCATENATED MODULE: ./src/js/components/dashboard/_layout.js
+///////////////////////////////
+
+// Общий layout дашборда
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 function returnTemplate(id){
     return {
         id      : "dashboard" + id,
@@ -256,6 +274,14 @@ function dashboardLayout () {
 
 
 ;// CONCATENATED MODULE: ./src/js/components/logout/common.js
+///////////////////////////////
+
+// Общая логика logout
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 
@@ -296,6 +322,14 @@ function checkNotAuth (err){
 
 
 ;// CONCATENATED MODULE: ./src/js/blocks/globalStorage.js
+///////////////////////////////
+
+// Хранилище для fields 
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 
@@ -679,28 +713,6 @@ function selectPage(config, id, changeHistory=false){
     tabbarClick("onAfterTabClick" , id);
 }
 
-function blockBtn(css){
-    const prevBtn = document.querySelector('.' + css);
-
-    if (prevBtn){
-        const id = prevBtn.getAttribute("view_id");
-                
-        Action.disableItem($$(id));
-                
-    }
-}
-
-
-function unblockBtn(css){
-    const nextBtn = document.querySelector('.' + css);
-
-    if (nextBtn){
-        const id  = nextBtn.getAttribute("view_id");
-
-        Action.enableItem($$(id));
-       
-    }
-}
 
 function isThisPage(history){
     const lastHistory = history[history.length - 1];
@@ -728,11 +740,13 @@ function returnPrevPageConfig(history){
         }
         const lastIndex     = history.length - index;
         const modifyHistory = history.slice(0, lastIndex);
-        console.log(lastIndex)
+   
         if (lastIndex <= 1){
-            blockBtn  ("historyBtnLeft");
-            unblockBtn("historyBtnRight");
+            mediator.tabs.setHistoryBtnState(false, false); // disable prev btn
+
         }
+
+        mediator.tabs.setHistoryBtnState(true); // enable next btn
        
         if (history[lastIndex]){
             return{ 
@@ -765,7 +779,7 @@ function prevBtnClick (){
     const tabId          = returnSelectTabId    ();
     const history        = returnProp           ("history");
     const prevPageConfig = returnPrevPageConfig (history);
-  
+    
     if (prevPageConfig){
         addNextPageConfig(prevPageConfig);
         selectPage(prevPageConfig, tabId);
@@ -775,6 +789,8 @@ function prevBtnClick (){
 
 function returnNextPageConfig(nextPage){
     const history = returnProp("history");
+    const prevPage = returnProp("tree");
+    history.push(prevPage);
     return {
         tree   : nextPage,
         history: history
@@ -793,11 +809,12 @@ function nextBtnClick (){
     if (isNextPageExists(nextPage)){
         const tabId          = returnSelectTabId   ();
         const nextPageConfig = returnNextPageConfig(nextPage);
-
+  
         selectPage(nextPageConfig, tabId, true);
 
-        blockBtn  ("historyBtnRight");
-        unblockBtn("historyBtnLeft");
+        mediator.tabs.setHistoryBtnState(true, false);// disable next btn
+        mediator.tabs.setHistoryBtnState(); // enable prev btn
+         
     }
 
 }   
@@ -1309,6 +1326,14 @@ function createHeadline(idTemplate, title = null){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/filter/filterLayout.js
+///////////////////////////////
+
+// Layout фильтра
+
+// Copyright (c) 2022 CA Expert
+
+/////////////////////////////// 
+
 
 
 
@@ -1362,7 +1387,8 @@ function createMainView(inputsArray){
                 ]
             },
             
-            { rows : inputsArray }
+            {   id  : "dashboardFilterElems",
+                rows : inputsArray }
         ], 
     };
 
@@ -1490,6 +1516,14 @@ function createFilterLayout(inputsArray){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/contextWindow.js
+///////////////////////////////
+
+// Создание контекстного окна по клику на action
+
+// Copyright (c) 2022 CA Expert
+
+/////////////////////////////// 
+
 
 
 
@@ -1727,6 +1761,16 @@ function createContextProperty(data, idTable){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/click/updateSpace.js
+///////////////////////////////
+
+// Action с обновлением данных в таблице
+// и созданием контекстного окна
+
+// Copyright (c) 2022 CA Expert
+
+/////////////////////////////// 
+
+
 
 
 
@@ -1864,6 +1908,14 @@ function updateSpace(chartAction){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/click/navigate.js
+///////////////////////////////
+
+// Action с навигацие на другую страницу
+
+// Copyright (c) 2022 CA Expert
+
+/////////////////////////////// 
+
 
 
 
@@ -2054,7 +2106,14 @@ function navigate_navigate(field, filter){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/click/itemClickLogic.js
+///////////////////////////////
 
+// Обработка action при клике
+// (на весь элемент конкретную часть)
+
+// Copyright (c) 2022 CA Expert
+
+/////////////////////////////// 
 
 
 
@@ -2283,6 +2342,14 @@ function returnEl(element, topAction){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/common.js
+///////////////////////////////
+
+// Получить id дашборда
+
+// Copyright (c) 2022 CA Expert
+
+/////////////////////////////// 
+
 function getDashId ( idsParam ){
     const tree = $$("tree");
     let itemTreeId;
@@ -2298,6 +2365,14 @@ function getDashId ( idsParam ){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/dynamicElements/chartsLayout.js
+///////////////////////////////
+
+// Обработка данных charts
+
+// Copyright (c) 2022 CA Expert
+
+/////////////////////////////// 
+
 
 
 
@@ -2656,6 +2731,14 @@ function createOverlayTemplate(id, text = "Загрузка...", hidden = false)
 
 
 ;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/returnLostFilter.js
+///////////////////////////////
+
+// Пересоздание фильтра после перезагрузки / перехода в таб
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 function returnLostFilter_setDataToTab(currState){
@@ -2720,6 +2803,14 @@ function returnLostFilter (id){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/dynamicElements/_layout.js
+///////////////////////////////
+
+// Создание charts
+
+// Copyright (c) 2022 CA Expert
+
+/////////////////////////////// 
+
 
 
 
@@ -2934,6 +3025,15 @@ function createDynamicElems ( path, array, ids, btnPress = false ) {
 
 
 ;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/filter/submitBtnClick.js
+///////////////////////////////
+
+// Применение фильтра
+
+// Copyright (c) 2022 CA Expert
+
+/////////////////////////////// 
+
+
 
 
 
@@ -3074,7 +3174,7 @@ function setStateBtn(index){
           
         }, 1000);
     } catch (err){  
-        errors_setFunctionError(
+        setFunctionError(
             err, 
             submitBtnClick_logNameFile, 
             "setStateBtn"
@@ -3082,61 +3182,61 @@ function setStateBtn(index){
     }
 }
 
-const cssInvalid = "dash-filter-invalid";
+// const cssInvalid = "dash-filter-invalid";
 
-function markInvalid(input){
-    const node = input.getInputNode();
-    webix.html.addCss(node, cssInvalid);
-}
+// function markInvalid(input){
+//     const node = input.getInputNode();
+//     webix.html.addCss(node, cssInvalid);
+// }
 
-function resetInvalidMark(childs){
-    childs.forEach(function(input){
-        const view = input.config.view;
+// function resetInvalidMark(childs){
+//     childs.forEach(function(input){
+//         const view = input.config.view;
    
-        if (view == "datepicker" ){
-            const node = input.getInputNode();
-            const css = node.classList.contains(cssInvalid);
+//         if (view == "datepicker" ){
+//             const node = input.getInputNode();
+//             const css = node.classList.contains(cssInvalid);
 
-            if (css){
-                webix.html.removeCss(node, cssInvalid);
-            }
+//             if (css){
+//                 webix.html.removeCss(node, cssInvalid);
+//             }
 
-        }
+//         }
 
-    });
-}
+//     });
+// }
 
-function invalidTop(input, type){
-    const id = input.config.id;
-    if ( id.includes("_sdt") && type == "top"){
-        markInvalid(input);
-    }
-}
+// function invalidTop(input, type){
+//     const id = input.config.id;
+//     if ( id.includes("_sdt") && type == "top"){
+//         markInvalid(input);
+//     }
+// }
 
-function invalidEmpty(input, type){
-    if (type == "empty"){
-        const value = input.getValue();
-        if (!value){
-            markInvalid(input);
-        }
-    } 
-}
+// function invalidEmpty(input, type){
+//     if (type == "empty"){
+//         const value = input.getValue();
+//         if (!value){
+//             markInvalid(input);
+//         }
+//     } 
+// }
 
 
 
-function setInvalidView(type, childs){
+// function setInvalidView(type, childs){
 
-    childs.forEach(function(input){
-        const view = input.config.view;
+//     childs.forEach(function(input){
+//         const view = input.config.view;
        
-        if (view == "datepicker"){
-            invalidTop  (input, type);
-            invalidEmpty(input, type);
-        }
+//         if (view == "datepicker"){
+//             invalidTop  (input, type);
+//             invalidEmpty(input, type);
+//         }
 
-    });
+//     });
    
-}
+// }
 
 function loadView(){
     const charts = $$("dashboard-charts");
@@ -3148,44 +3248,168 @@ function loadView(){
     }); 
 }
 
+function findInputs(arr, result){
+
+    arr.forEach(function(el){
+        const view = el.config.view;
+
+        if (view){
+            result.push(el);
+        }
+    });
+
+}
+function findElems(){
+    const container = $$("dashboardFilterElems");
+    const result = [];
+    if (container){
+        const elems =  container.getChildViews();
+
+        if (elems && elems.length){
+            elems.forEach(function(el){
+    
+                const view = el.config.view;
+                if (!view || view !=="button"){
+                    const childs = el.getChildViews();
+                    if (childs && childs.length){
+                        findInputs(childs, result);
+                        
+                    }
+         
+                }
+            });
+        }
+       
+    }
+
+    return result;
+}
+
+function returnFormattingTime(date){
+    const format = webix.Date.dateToStr("%H:%i:%s");
+
+    return format(date);
+}
+
+function returnFormattingDate(date){
+    const format = webix.Date.dateToStr("%d.%m.%y");
+
+    return format(date);
+}
+
+function findEachTime(obj, id){
+    const res = obj.time.find(elem => elem.id === id);
+    return res;
+}
+
+function createFullDate(obj, resultValues){
+ 
+    obj.date.forEach(function(el){
+        const id    = el.id;
+        const value = el.value;
+        if (id){
+            const time  = findEachTime(obj, id);
+
+            resultValues.push(id + "=" + value + "+" + time.value);
+    
+        }
+    });
+
+ 
+
+}
+
+
+function formattingValues(values){
+
+    const resultValues = [];
+
+    let emptyValues = 0;
+    const dateCollection = {
+        time : [],
+        date : []
+    };
+
+ 
+
+    values.forEach(function(el){
+
+        let   value  = el.getValue();
+        const view   = el.config.view;
+
+        const sentAttr = el.config.sentAttr;
+        const type     = el.config.type;
+
+        if (value){
+
+            if (view == "datepicker"){
+
+                if(type && type == "time"){
+                    value = returnFormattingTime(value);
+                    dateCollection.time.push({
+                        id   : sentAttr,
+                        value: value
+                    });
+                } else {
+                    value = returnFormattingDate(value);
+                    dateCollection.date.push({
+                        id   : sentAttr,
+                        value: value
+                    });
+                }  
+
+            } else {
+                resultValues.push(sentAttr + "=" + value);
+            }
+           
+        } else {
+            emptyValues ++;
+        }
+    
+    });
+
+    
+    if (dateCollection.time.length && dateCollection.date.length){
+        createFullDate(dateCollection, resultValues);
+ 
+    }
+
+    return {
+        values     : resultValues,
+        emptyValues: emptyValues
+    };
+
+}
+
 
 function sentQuery (){
-    const childs = 
-    $$("datepicker-containersdt").getChildViews();
+    const inputs = findElems();
+    let values;
+    let empty = 0;
 
-    if (validateEmpty){
+    if (inputs && inputs.length){
+        const result = formattingValues(inputs);
+        values = result.values;
+        empty  = result.emptyValues;
+    }
+ 
+    if (!empty){
 
-        const formatData = webix.Date.dateToStr ("%Y/%m/%d %H:%i:%s");
-        const start      = formatData (compareDates[0]);
-        const end        = formatData (compareDates[1]);
+        const getUrl = findAction.url + "?" + values.join("&");
+    
+        loadView();
 
-        const compareValue = webix.filters.date.greater(start, end);
-        
-        if ( !(compareValue) || compareDates[0] == compareDates[1] ){
+        createDynamicElems(
+            getUrl, 
+            submitBtnClick_inputsArray,
+            submitBtnClick_idsParam, 
+            true
+        );
 
-            const getUrl = findAction.url + "?" + dateArray.join("&");
-      
-            loadView();
 
-            createDynamicElems(
-                getUrl, 
-                submitBtnClick_inputsArray,
-                submitBtnClick_idsParam, 
-                true
-            );
-
-            setStateBtn(index);
-            resetInvalidMark(childs);
-        } else {
-            setInvalidView("top", childs);
-            setLogValue(
-                "error", 
-                "Начало периода больше, чем конец"
-            );
-        }
     } else {
       
-        setInvalidView("empty", childs);
+        //setInvalidView("empty", childs);
      
         setLogValue(
             "error", 
@@ -3218,6 +3442,15 @@ function clickBtn(i, inputs, ids, action){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/dashboard/createSpace/filter/elements.js
+///////////////////////////////
+
+// Динамические элементы фильтра
+
+// Copyright (c) 2022 CA Expert
+
+/////////////////////////////// 
+
+
 
 
 
@@ -3303,11 +3536,13 @@ function setNullTimeValue(self){
     }
 }
 
+function elements_createDate(input, id){
 
-function elements_createDate(type, input){
     const dateTemplate = {
         view        : "datepicker",
+        id          : `dashDatepicker_${id}`,
         format      : "%d.%m.%y",
+        sentAttr    : id,
         editable    : true,
         value       : new Date(),
         placeholder : input.label,
@@ -3339,25 +3574,18 @@ function elements_createDate(type, input){
         }
     };
 
-    function setId(id){
-        const dateFirst = dateTemplate;
-        dateFirst.id    = "dashDatepicker_" + id;
-        return dateFirst;
-    }
 
-    if (type == "first"){
-        return setId("sdt");
-    } else if (type == "last"){
-        return setId("edt");
-    }
+    return dateTemplate;
 
 }
 
-let isClicked = false;
 
-function elements_createTime (type){
+
+function elements_createTime (id){
     const timeTemplate =  {   
         view        : "datepicker",
+        id          :`dashDatepicker_${id}-time`,
+        sentAttr    : id,
         format      : "%H:%i:%s",
         placeholder : "Время",
         height      : 42,
@@ -3396,25 +3624,11 @@ function elements_createTime (type){
                 );
                 setAdaptiveWidth(this);
             },
-            // onChange:function(newValue, oldValue, config){
-            //     console.log(newValue, oldValue, config)
-            //     setToStorage(this);
-            // },
-       
-           
+
         }
     };
 
-
-    if (type == "first"){
-        const timeFirst = timeTemplate;
-        timeFirst.id    = "dashDatepicker_" + "sdt" + "-time";
-        return timeFirst;
-    } else if (type == "last"){
-        const timeLast  = timeTemplate;
-        timeLast.id     =  "dashDatepicker_" + "edt" + "-time"; 
-        return timeLast;
-    }
+    return timeTemplate;
 }
 
 
@@ -3459,52 +3673,154 @@ function createHead(text){
 }
 
 
-function createInputs( input ){
+function createDatepicker(input, id){
 
     const inputs = {   
         width   : 200,
-        id      : "datepicker-container"+"sdt",
+        rows    : [ 
+            createHead (input.label),
+            elements_createDate (input, id),
+            elements_createTime (id),
+            { height:20 },
+        ]
+    };
+    if (elements_inputsArray){
+        elements_inputsArray.push( inputs );
+    }
+       
+}
+
+function createText(input, id){
+    
+    const value = input.value ? input.value : "";
+    const inputs = {   
+        width   : 200,
         rows    : [ 
 
-            createHead ( "Начиная с:"  ),
-            elements_createDate ( "first", input ),
-
-            { height:10 },
-
-            elements_createTime ("first"),
-
-
+            createHead (input.label),
+            { 
+                view        : "text", 
+                value       : value, 
+                sentAttr    : id,
+                placeholder : input.label,
+            },
             { height:20 },
+        ]
+    };
+   
+
+    if (elements_inputsArray){
+        elements_inputsArray.push( inputs );
+    }
+}
 
 
-            createHead ( "Заканчивая:" ),
-            elements_createDate ( "last", input ),
 
-            { height:10 },
+function dataTemplate(i, valueElem){
+    const template = { 
+            id    : i + 1, 
+            value : valueElem
+        };
+    return template;
+}
 
-            elements_createTime ("last"),
 
+function createOptions(content){
+    const dataOptions = [];
+    if (content && content.length){
+        content.forEach(function(name, i) {
+     
+            let title = name;
+            if ( typeof name == "object"){
+                title = name.name;
+            }
+
+            const optionElement = dataTemplate(i, title);
+            dataOptions.push(optionElement); 
+        });
+    }
+
+    return dataOptions;
+}
+
+function getOptionData (field){
+
+    return new webix.DataCollection({url:{
+        $proxy:true,
+        load: function(){
+            return ( 
+                
+                new ServerData({
+                    id : field.apiname,
+                
+                }).get().then(function(data){
+                
+                    if (data){
+                
+                        const content = data.content;
+                   
+                        if (content && content.length){
+                            return createOptions(content);
+                        } else {
+                            return [
+                                { 
+                                    id    : 1, 
+                                    value : ""
+                                }
+                            ];
+                        }
+                    }
+                    
+                })
+
+            );
+            
+        
+            
+        }
+    }});
+}
+
+
+function createCombo(input, id){
+ 
+    const inputs = {   
+        width   : 200,
+        rows    : [ 
+
+            createHead (input.label),
+            {
+                view          : "combo", 
+                placeholder   : input.label,
+                sentAttr      : id,
+                options       : getOptionData (input)
+            },
+            { height:20 },
         ]
     };
 
-    try{
+    if (elements_inputsArray){
         elements_inputsArray.push( inputs );
-    } catch (err){  
-        errors_setFunctionError(err, elements_logNameFile, "createInputs");
     }
 }
 
 function createFilter (inputs, el, ids){
- 
+
     elements_idsParam           = ids;
     elements_inputsArray.length = 0;
 
-    const values       = Object.values(inputs);
+    const keys   = Object.keys(inputs);
+    const values = Object.values(inputs);
 
     values.forEach(function(input, i){
+ 
+        if (input.type == "datetime"){ 
+            createDatepicker(input, keys[i]);
 
-        if (input.type == "datetime"&& input.order == 3){ 
-            createInputs(input);
+        } else if (input.type == "string"){
+            createText(input, keys[i]);
+        } else if (input.type == "apiselect"){
+            createCombo(input, keys[i])
 
         } else if (input.type == "submit"){
 
@@ -3529,6 +3845,15 @@ function createFilter (inputs, el, ids){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/dashboard/autorefresh.js
+///////////////////////////////
+
+// Автообновление дашборда по параметру autorefresh
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 
 let autorefresh_idsParam;
 
@@ -3569,6 +3894,13 @@ function autorefresh (el, ids) {
 
 
 ;// CONCATENATED MODULE: ./src/js/components/dashboard/createDashboard.js
+///////////////////////////////
+
+// Отображение charts
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
 
 
 
@@ -3580,14 +3912,12 @@ function autorefresh (el, ids) {
 
 
 
-
-const createDashboard_logNameFile = "dashboard => createDashboard";
 
 let createDashboard_idsParam;
 
 
 function createDashSpace (){
-
+    
     const item = GetFields.item(createDashboard_idsParam);
 
     if (item){
@@ -3610,7 +3940,7 @@ async function getFieldsData (isShowExists){
     if (!GetFields.keys){
         await LoadServerData.content("fields");
     }
-    
+  
 
     createDashSpace ();
 }
@@ -3714,7 +4044,7 @@ function createDashboard (ids, isShowExists){
 
     const scroll = $$("dashBodyScroll");
     Action.removeItem(scroll);
-
+ 
     getFieldsData (isShowExists);
   
     createContext();
@@ -3722,6 +4052,14 @@ function createDashboard (ids, isShowExists){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/dashboard/_dashMediator.js
+///////////////////////////////
+
+// Медиатор
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 
@@ -3766,6 +4104,15 @@ class Dashboards {
 
 
 ;// CONCATENATED MODULE: ./src/js/components/table/createSpace/rows/autorefresh.js
+
+///////////////////////////////
+
+// Автообновление данных в таблице по параметру autorefresh
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 
@@ -3845,6 +4192,15 @@ function autorefresh_autorefresh (data){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/table/createSpace/rows/formattingData.js
+
+///////////////////////////////
+
+// Форматирование колонок с датой
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 const formattingData_logNameFile = "table => createSpace => formattingData";
@@ -4051,6 +4407,15 @@ function returnDefaultValue (el){
 
 ;// CONCATENATED MODULE: ./src/js/components/table/createSpace/rows/setDefaultValues.js
 
+///////////////////////////////
+
+// Дефолтные значения у пустых строк
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 
 
 const setDefaultValues_logNameFile = "table/createSpace/rows/setDefaultValues";
@@ -4096,6 +4461,15 @@ function setDefaultValues (data){
 
 ;// CONCATENATED MODULE: ./src/js/components/table/createSpace/createContextSpace.js
 
+///////////////////////////////
+
+// Выделение поста в таблице по параметру в ссылке
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 
 
 function createContextSpace_getLinkParams(param){
@@ -4119,6 +4493,15 @@ function createContextSpace_selectContextId(){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/table/createSpace/returnLostData.js
+
+///////////////////////////////
+
+// Возвращение утерянного состояния  редактора постов после перезагрузки
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 
@@ -4256,6 +4639,16 @@ function returnLostData(){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/table/createSpace/returnSortData.js
+ 
+///////////////////////////////
+
+// Возвращение утерянного состояния сортировки после перезагрузки
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 
 
 function returnSortData(){
@@ -4992,7 +5385,7 @@ function activeState(){
     $$("filterTableForm").clearValidation();
 }
 
-function createText(type){
+function field_createText(type){
     const element = createFieldTemplate();
     element.view  = "text";
  
@@ -5025,7 +5418,7 @@ function findComboTable(){
     } 
 }
 
-function createCombo(type){
+function field_createCombo(type){
 
     const element       = createFieldTemplate();
     const findTableId   = findComboTable();
@@ -5054,7 +5447,7 @@ function createCombo(type){
     return element;
 }
 
-function createDatepicker() {
+function field_createDatepicker() {
     const element       = createFieldTemplate();
     element.view        = "datepicker";
     element.placeholder = "дд.мм.гг";
@@ -5073,19 +5466,19 @@ function createDatepicker() {
 function createField(){
  
     if (typeField=="text"){
-        return createText("text");
+        return field_createText("text");
 
     } else if (typeField=="combo"){
-        return createCombo("default");
+        return field_createCombo("default");
 
     } else if (typeField=="boolean"){
-        return createCombo("bool");
+        return field_createCombo("bool");
 
     } else if (typeField=="date"){
-        return createDatepicker();
+        return field_createDatepicker();
 
     } else if (typeField=="integer"){
-        return createText("int");
+        return field_createText("int");
 
     }
 
@@ -5109,6 +5502,14 @@ function field_field (id, type, element){
 
 
 ;// CONCATENATED MODULE: ./src/js/blocks/notifications.js
+///////////////////////////////
+
+// Confirm и modalbox 
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 function popupExec (titleText) { 
 
     return webix.confirm({
@@ -5301,7 +5702,7 @@ function isLastKey(inputsKey, keys) {
 }
 
 
-function findInputs(id, keys){
+function contextBtn_findInputs(id, keys){
 
     const result    = {};
 
@@ -5357,7 +5758,7 @@ function hideSegmentBtn (action, inputsKey, thisInput){
 
     if (action === "add" && checkKey){
 
-        const inputs     = findInputs (inputsKey, keys);
+        const inputs     = contextBtn_findInputs (inputsKey, keys);
         const checkInput = isLastInput(inputs.lastInput, thisInput);
     
         if (checkInput){
@@ -5368,7 +5769,7 @@ function hideSegmentBtn (action, inputsKey, thisInput){
 
     } else if (action === "remove" && checkKey){
  
-        const inputs     = findInputs (inputsKey, keys);
+        const inputs     = contextBtn_findInputs (inputsKey, keys);
         const checkInput = isLastInput(inputs.lastInput, thisInput);
 
         if (checkInput){
@@ -6183,6 +6584,16 @@ async function getLibraryData(){
 
 ;// CONCATENATED MODULE: ./src/js/components/table/createSpace/returnLostFilter.js
  
+///////////////////////////////
+
+// Возвращение утерянного состояния фильтров после перезагрузки
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
+
 
 
 
@@ -6264,6 +6675,14 @@ function returnLostFilter_returnLostFilter(id){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/table/createSpace/returnDashboardFilter.js
+
+///////////////////////////////
+
+// Переход в таблицу после action дашборда с фильтром
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
 
 
 
@@ -6492,6 +6911,15 @@ function returnDashboardFilter(filter){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/table/createSpace/rows/loadRows.js
+
+///////////////////////////////
+
+// Загрузка постов с сервера
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 
@@ -6783,10 +7211,14 @@ async function loadTableData(table, id, idsParam, offset){
                     setConfigTable(tableElem, data, limitLoad);
 
                     if (content){
-                        data  = data.content;
-            
+                        //console.log(data)
+                        // data = [
+                        //     {id: 4, name: "Критический", cdt: "2023-01-17 14:23:28", ndt:"2022-12-14"},
+                        //     {id: 5, name: "Критиче112ский", cdt: "2024-02-22 23:13:24", ndt:"2021-10-14"}
+                        // ]
+                        
                         setTableState(table);
-                        parseRowData (data);
+                        parseRowData (content); ///content!!!!
              
                         if (!offsetParam){
                         
@@ -6815,6 +7247,15 @@ async function loadTableData(table, id, idsParam, offset){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/table/createSpace/rows/createRows.js
+
+///////////////////////////////
+
+// Загрузка таблицы
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 
@@ -6869,6 +7310,16 @@ function createTableRows (id, idsParam, offset = 0){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/table/createSpace/cols/columnsWidth.js
+
+///////////////////////////////
+
+// Определение размера колонок
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 
 
 let table; 
@@ -7050,6 +7501,17 @@ function setUserPrefs(idTable, ids){
 
 ;// CONCATENATED MODULE: ./src/js/components/table/createSpace/cols/createCols.js
 
+///////////////////////////////
+
+// Создание колонок
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
+
+
 
 
 
@@ -7112,6 +7574,7 @@ function createTextCol      (){
     try{
         createCols_field.editor = "text";
         createCols_field.sort   = "string";
+ 
     }catch (err){
         errors_setFunctionError(
             err,
@@ -7122,6 +7585,7 @@ function createTextCol      (){
 }
 
 function createIntegerCol   (){
+    
     try{
         createCols_field.editor         = "text";
         createCols_field.sort           = "int";
@@ -7256,6 +7720,15 @@ function createTableCols (idsParam, idCurrTable){
 
 ;// CONCATENATED MODULE: ./src/js/components/table/createSpace/cols/detailAction.js
 
+///////////////////////////////
+
+// Создание динамических колонок с действиями
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 
 
 function createDetailAction (columnsData, idsParam, idCurrTable){
@@ -7300,6 +7773,16 @@ function createDetailAction (columnsData, idsParam, idCurrTable){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/table/createSpace/cols/dynamicElements/buttonLogic.js
+
+///////////////////////////////
+
+// Динамические кнопки
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 
 
 
@@ -7529,6 +8012,15 @@ function submitBtn (id, path, action, type){
 
 ;// CONCATENATED MODULE: ./src/js/components/table/createSpace/cols/dynamicElements/createInputs.js
 
+///////////////////////////////
+
+// Обработка динамичесих inputs
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 
 
 
@@ -7593,7 +8085,7 @@ function createTextInput    (i){
 }
 
 
-function dataTemplate(i, valueElem){
+function createInputs_dataTemplate(i, valueElem){
     const template = { 
             id    : i + 1, 
             value : valueElem
@@ -7601,7 +8093,7 @@ function dataTemplate(i, valueElem){
     return template;
 }
 
-function createOptions(content){
+function createInputs_createOptions(content){
     const dataOptions = [];
     if (isArray(content, createInputs_logNameFile, "createOptions")){
         content.forEach(function(name, i) {
@@ -7611,7 +8103,7 @@ function createOptions(content){
                 title = name.name;
             }
 
-            const optionElement = dataTemplate(i, title);
+            const optionElement = createInputs_dataTemplate(i, title);
             dataOptions.push(optionElement); 
         });
     }
@@ -7619,7 +8111,7 @@ function createOptions(content){
     return dataOptions;
 }
 
-function getOptionData      (){
+function createInputs_getOptionData      (){
 
     return new webix.DataCollection({url:{
         $proxy:true,
@@ -7636,7 +8128,7 @@ function getOptionData      (){
                         const content = data.content;
                    
                         if (content && content.length){
-                            return createOptions(content);
+                            return createInputs_createOptions(content);
                         } else {
                             return [
                                 { 
@@ -7666,7 +8158,7 @@ function createSelectInput  (el, i){
         placeholder   : createInputs_field.label, 
         labelPosition : "top", 
         options       : {
-            data : getOptionData ( dataInputsArray, el )
+            data : createInputs_getOptionData ( dataInputsArray, el )
         },
         on: {
             onAfterRender: function () {
@@ -8038,6 +8530,15 @@ function generateCustomInputs (dataFields, id){
 
 ;// CONCATENATED MODULE: ./src/js/components/table/createSpace/cols/dynamicElements/createElements.js
 
+///////////////////////////////
+
+// Область с динамическими элементами
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 
 
 
@@ -8210,6 +8711,15 @@ function createElements_createDynamicElems (id, ids){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/table/createSpace/generateTable.js
+
+///////////////////////////////
+
+// Подготовка таблицы и загрузка
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 
@@ -8495,6 +9005,14 @@ function showPropBtn (cell){
 
 ;// CONCATENATED MODULE: ./src/js/components/table/columnsSettings/userprefsPost.js
 
+///////////////////////////////
+
+// Загрузка данных о модифицированных колонках на сервер
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 
@@ -8737,6 +9255,14 @@ async function postPrefsValues(values, visCol = false, updates = true){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/table/columnsSettings/visibleCols/clearBtn.js
+///////////////////////////////
+
+// Кнопка сброса до дефолтных настроек
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 
@@ -8894,6 +9420,14 @@ function returnClearBtn(){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/table/columnsSettings/visibleCols/moveBtns.js
+///////////////////////////////
+
+// Кнопки перемещения колонок вверх/вниз
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 function setBtnSubmitState(state){
@@ -8982,6 +9516,14 @@ function returnMoveBtns(){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/table/columnsSettings/visibleCols/serachInput.js
+///////////////////////////////
+
+// Поиск по названию колонок
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 
@@ -9044,6 +9586,14 @@ function returnSearch(){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/table/columnsSettings/visibleCols/listMoveBtns.js
+///////////////////////////////
+
+// Кнопки перемещения между list компонентами
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 
@@ -9163,6 +9713,15 @@ function returnListBtns(){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/table/columnsSettings/visibleCols/saveBtn.js
+///////////////////////////////
+
+// Сохранение настроек
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 
 
 
@@ -9301,6 +9860,14 @@ function createEmptyTemplate(text, id){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/table/columnsSettings/visibleCols/createLists.js
+///////////////////////////////
+
+// Создание list компонентов попапа
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 
@@ -9412,6 +9979,15 @@ function returnSelectedList(){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/table/columnsSettings/visibleCols/_layout.js
+///////////////////////////////
+
+// Layout попапа с настройками колонок
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 
 
 
@@ -11326,6 +11902,8 @@ function createWorkspaceCheckbox (){
                 });
         
                 visibleSegmentBtn(selectAll, selectValues);
+
+  
             }
          
     
@@ -11345,8 +11923,8 @@ function visibleCounter(){
     let visibleElements = 0;
     if (form){
         const elements      = $$("filterTableForm").elements;
-
-        if (elements && elements.length){
+ 
+        if (elements){
             const values        = Object.values(elements);
       
             if (values && values.length){
@@ -11374,7 +11952,7 @@ function visibleCounter(){
 
 function setDisableTabState(){
     const visibleElements = visibleCounter();
-
+ 
     if (!(visibleElements)){
         Action.showItem     ($$("filterEmptyTempalte" ));
 
@@ -12510,7 +13088,10 @@ function setOperationValue(value){
         operation =  "=";
     } else if (value === "⊆"){
         operation = "contains";
-    } else {
+    } else if (value === "="){
+        operation = "%3D";
+    } else 
+    {
         operation = value;
     }
 
@@ -12545,6 +13126,12 @@ function returnBoolValue(value){
     }
 }
 
+function isDate(value){
+    if (webix.isDate(value)){
+        return true;
+    }
+}
+
 function submitBtn_setValue(name, value){
 
     let sentValue = "'" + value + "'";
@@ -12554,6 +13141,12 @@ function submitBtn_setValue(name, value){
         sentValue = returnBoolValue(value);
     }
 
+    if (isDate(value)){
+    
+        const format = webix.Date.dateToStr("%d.%m.%Y+%H:%i:%s");
+        sentValue = format(value);
+    }
+ 
     return sentValue;
 }
 
@@ -14657,7 +15250,7 @@ function validateProfForm (){
         
                     function valNotNull (){
                         try{
-                            if ( propElement.notnull == true && propValue.length == 0 ){
+                            if ( propElement.notnull == false && propValue.length == 0 ){
                                 errors[el].notnull = "Поле не может быть пустым";
                             } else {
                                 errors[el].notnull = null;
@@ -15848,6 +16441,14 @@ function columnResize(table){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/table/columnsSettings/columnsWidth.js
+///////////////////////////////
+
+// Сохранение ресайза колонок 
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 
@@ -15882,6 +16483,14 @@ function setColsWidthStorage(table){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/table/columnsSettings/onAfterColumnDrop.js
+///////////////////////////////
+
+// Перемещение колонок 
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
  
@@ -17318,6 +17927,14 @@ class UserAuth {
 
 
 ;// CONCATENATED MODULE: ./src/js/components/settings/headline.js
+///////////////////////////////
+
+// Элемент с заголовком компонента
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 const headline_headline = {   
     view        : "template",
     template    : "<div>Настройки</div>",
@@ -17369,7 +17986,14 @@ const layoutHeadline =  [
 
 
 ;// CONCATENATED MODULE: ./src/js/components/settings/tabbar/formTemplate.js
- 
+///////////////////////////////
+
+// Шаблон формы
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 
@@ -17429,6 +18053,13 @@ function returnFormTemplate(id, elems){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/settings/tabbar/formOther.js
+///////////////////////////////
+
+// Форма других настроек
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 
@@ -17561,7 +18192,16 @@ const otherFormLayout = {
 
 
 ;// CONCATENATED MODULE: ./src/js/components/settings/tabbar/formWorkspace.js
+///////////////////////////////
+
+// Форма настройки рабочего пространства
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
  
+
+
 
 
 
@@ -17640,6 +18280,12 @@ const workspaceLayout = {
 
 
 ;// CONCATENATED MODULE: ./src/js/components/settings/tabbar/commonTab.js
+///////////////////////////////
+
+// Дефолтные значения форм
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
 
 const defaultValue = {
     userprefsOther     : {},
@@ -17649,6 +18295,13 @@ const defaultValue = {
 
 
 ;// CONCATENATED MODULE: ./src/js/components/settings/tabbar/buttons.js
+///////////////////////////////
+
+// Сохранение пользовательских настроек
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 
@@ -17845,6 +18498,14 @@ const buttons =  {
 
 
 ;// CONCATENATED MODULE: ./src/js/components/settings/tabbar/tabbar.js
+///////////////////////////////
+
+// Таббар с формами
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 
@@ -17930,6 +18591,14 @@ const tabbar_tabbar = {
 
 
 ;// CONCATENATED MODULE: ./src/js/components/settings/tabbar/_layoutTab.js
+///////////////////////////////
+
+// Layout пользовательских настроек
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 
 
 
@@ -17950,6 +18619,14 @@ const layoutTabbar =  {
 
 
 ;// CONCATENATED MODULE: ./src/js/components/settings/_layout.js
+///////////////////////////////
+
+// Layout пользовательских настроек
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 
@@ -17975,6 +18652,14 @@ const settingsLayout = {
 
 
 ;// CONCATENATED MODULE: ./src/js/components/settings/_settingsMediator.js
+///////////////////////////////
+
+// Медиатор
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 
@@ -18736,6 +19421,15 @@ class Tree {
 
 
 ;// CONCATENATED MODULE: ./src/js/blocks/checkFonts.js
+///////////////////////////////
+
+// Проверка для иконочного шрифта
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 
 
 function checkFonts (){
@@ -18762,6 +19456,14 @@ function checkFonts (){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/header/collapseBtn.js
+///////////////////////////////
+
+// Кнопка сокрытия сайдбара
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 
@@ -18882,6 +19584,14 @@ const collapseBtn = {
 
 
 ;// CONCATENATED MODULE: ./src/js/components/header/logBtn.js
+///////////////////////////////
+
+// Кнопка сокрытия лога
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 function logBtnClick(id){
@@ -19258,6 +19968,14 @@ function favsPopup(){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/header/userContextBtn.js
+///////////////////////////////
+
+// Пользовательское меню
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 
@@ -19421,15 +20139,25 @@ const userContextBtn = new Button({
 
 
 ;// CONCATENATED MODULE: ./src/js/components/header/_layout.js
+///////////////////////////////
+
+// Layout всего header
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 
 
 const logo = {
-    view    : "label",
-    label   : "<img src='/init/static/images/expalogo.png' "+
+    view        : "template",
+    borderless  :true,
+    css         :{"background-color":"transparent!important"},
+    template    : "<img src='/init/static/images/expalogo.png' "+
         " style='height:30px; margin: 10px;'>", 
-    height  : 25,
+    height      : 25,
 };
 
 const search = {
@@ -19441,6 +20169,11 @@ const search = {
     hotkey      : "alt+shift+f",
     maxWidth    : 250, 
     minWidth    : 40, 
+    on:{
+        onViewResize:function(){
+            console.log(12)
+        }
+    }
 };
 
 const header = {
@@ -19463,6 +20196,14 @@ const header = {
 
 
 ;// CONCATENATED MODULE: ./src/js/components/header/setDefaultState.js
+///////////////////////////////
+
+// Дефолтное состояние header после адаптива
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 function headerDefState(){
     const headerChilds = $$("header").getChildViews();
@@ -19480,6 +20221,14 @@ function headerDefState(){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/header/loadContextMenu.js
+///////////////////////////////
+
+// Меню пользователя. Загрузка
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 function createItems (){
 
@@ -19538,6 +20287,14 @@ function generateHeaderMenu (menu){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/header/_headerMediator.js
+///////////////////////////////
+
+// Медиатор
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 
@@ -19643,8 +20400,31 @@ function setEmptyState(){
     Action.showItem ($$("webix__none-content"));
 }
 
+function changeHistoryBtnsState(){
+    const config = mediator.tabs.getInfo();
+ 
+    if (config && config.history){
+        const history  = config.history;
+        const nextPage = config.nextPage;
+
+        if (history.length > 1){
+            mediator.tabs.setHistoryBtnState(false);
+        } else {
+            mediator.tabs.setHistoryBtnState(false, false);
+        }
+ 
+        if (nextPage){
+            mediator.tabs.setHistoryBtnState(true);
+        } else {
+            mediator.tabs.setHistoryBtnState(true, false);
+        }
+ 
+    }
+    
+}
+
 function showTreeItem(config, isOtherTab, isOtherView){
-     
+
     if (isOtherView){
         Backbone.history.navigate("/" + config.view, { trigger : true });
     } else {
@@ -19671,6 +20451,10 @@ function showTreeItem(config, isOtherTab, isOtherView){
             }
 
         }
+
+
+        changeHistoryBtnsState();
+       
     }
 
 }
@@ -20304,12 +21088,40 @@ class Tabs {
         return TABS_REMOVED;
     }
 
+
+    setHistoryBtnState(isNextBtn, enable = true){
+        const id   = isNextBtn ? "Right" : "Left";
+        const css  = `historyBtn${id}`;
+
+        const node = document.querySelector(`.${css}`);
+        
+        if (node){
+            const id  = node.getAttribute("view_id");
+
+            if (enable){
+                Action.enableItem($$(id));
+            } else {
+                Action.disableItem($$(id));
+            }
+           
+        
+        }
+    }
+
  
 
 }
 
 
 ;// CONCATENATED MODULE: ./src/js/blocks/globalModalBox.js
+///////////////////////////////
+
+// Модальное окно: проверяет чисты ли все формы 
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 
@@ -20467,6 +21279,14 @@ async function clickModalBox(id){
 
 
 ;// CONCATENATED MODULE: ./src/js/blocks/setParamToLink.js
+///////////////////////////////
+
+// Действия с параметрами в ссылке  
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 function createParameters(params){
     const paramsObj =  params;
     return  "?" + new URLSearchParams(paramsObj).toString();
@@ -20490,6 +21310,14 @@ function removeParamFromLink(id){
 
 
 ;// CONCATENATED MODULE: ./src/js/blocks/queryToString.js
+///////////////////////////////
+
+// Создание query  
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 function encodeQueryData(data) {
     const ret = [];
     for (let item in data){
@@ -20512,6 +21340,15 @@ function encodeQueryData(data) {
 
 
 ;// CONCATENATED MODULE: ./src/js/blocks/_mediator.js
+///////////////////////////////
+
+// Медиатор
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 
 
 
@@ -20614,7 +21451,15 @@ const mediator = {
 
 
 ;// CONCATENATED MODULE: ./src/js/blocks/storageSetting.js
- 
+///////////////////////////////
+
+// Загрузка в Local Storage и применение настроек  
+
+// Copyright (c) 2022 CA Expert
+
+/////////////////////////////// 
+
+
 
 
 
@@ -20883,7 +21728,7 @@ async function createLogMessage(srcTable) {
     let name;
 
     if (srcTable == "version"){
-        name = 'Expa v1.0.80';
+        name = 'Expa v1.0.81';
 
     } else if (srcTable == "cp"){
         name = 'Смена пароля';
@@ -21018,6 +21863,14 @@ function setLogValue (type, text, src) {
 
 
 ;// CONCATENATED MODULE: ./src/js/blocks/errors.js
+///////////////////////////////
+
+// Обработка ошибок в обычных функциях и при ajax запросах 
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 function setAjaxError(err, file, func){
     if (err.status === 400 ||  err.status === 401 || err.status === 404){
@@ -21086,6 +21939,16 @@ function errors_setFunctionError(err, file, func){
 
 
 ;// CONCATENATED MODULE: ./src/js/blocks/commonFunctions.js
+///////////////////////////////
+
+// Общеиспользуемые функции (Получить id, действия 
+// над элементами (показать, включить и тд))
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 
 
 
@@ -25549,6 +26412,15 @@ function expalib_lib (){
 
 ;// CONCATENATED MODULE: ./src/js/components/routerConfig/actions/hideAllElements.js
 
+///////////////////////////////
+
+// Сокрытие всех элементов
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 
 
 
@@ -25579,6 +26451,15 @@ function hideAllElements (){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/routerConfig/actions/createElements.js
+
+///////////////////////////////
+
+// Создание компонентов
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 let specificElement;
@@ -25629,6 +26510,13 @@ function createElements(specElem){
 
 ;// CONCATENATED MODULE: ./src/js/components/routerConfig/actions/createContent.js
 
+///////////////////////////////
+
+// Отрисовка главного layout и сокрытие авторизации 
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
 
 
 
@@ -25703,6 +26591,14 @@ async function createContent (){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/routerConfig/actions/_RouterActions.js
+///////////////////////////////
+
+// Медиатор 
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 
@@ -25740,6 +26636,15 @@ class RouterActions {
 
 
 ;// CONCATENATED MODULE: ./src/js/components/routerConfig/tree.js
+///////////////////////////////
+
+// Навигация по сайдбару
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 
 
 
@@ -25828,6 +26733,15 @@ async function treeRouter(selectId){
 
 ;// CONCATENATED MODULE: ./src/js/components/routerConfig/index.js
 
+///////////////////////////////
+
+// Проверка авторизации и перенаправление
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 
 
 
@@ -25877,6 +26791,15 @@ async function indexRouter(){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/routerConfig/cp.js
+
+///////////////////////////////
+
+// Смена пароля
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 
@@ -25956,6 +26879,14 @@ function cpRouter(){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/routerConfig/settings.js
+///////////////////////////////
+
+// Пользовательские настройки
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 
@@ -26070,6 +27001,15 @@ function settingsRouter(){
 
 ;// CONCATENATED MODULE: ./src/js/components/routerConfig/experimental.js
 
+///////////////////////////////
+
+// Редактор дерева
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 
 
 function experimental_loadSpace(){
@@ -26105,6 +27045,15 @@ function experimentalRouter(){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/routerConfig/logout.js
+
+///////////////////////////////
+
+// Выход из системы
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 
@@ -26298,6 +27247,16 @@ async function logoutRouter(){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/routerConfig/_router.js
+
+///////////////////////////////
+
+// Роуты
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 
 
 expalib_lib ();
@@ -26580,6 +27539,14 @@ const auth = {
 
 
 ;// CONCATENATED MODULE: ./src/js/components/logout/autoLogout.js
+///////////////////////////////
+
+// Автоматический выход из системы
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 
@@ -26615,6 +27582,14 @@ function resetTimer (){
 
 
 ;// CONCATENATED MODULE: ./src/js/blocks/adaptive.js
+///////////////////////////////
+
+// Адаптив для сайдбара, таблиц, дашбордов, форм
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 
 
@@ -26890,8 +27865,16 @@ function adaptivePoints (){
 }
 
 ;// CONCATENATED MODULE: ./src/js/blocks/webixGlobalPrefs.js
+///////////////////////////////
 
-function createCustomEditor(){
+// Глобальные настройки для webix 
+
+// Copyright (c) 2022 CA Expert
+
+/////////////////////////////// 
+
+
+function createCustomEditor(){  
     webix.editors.customDate = webix.extend({
         render:function(){
             return webix.html.create("div", {
@@ -26901,7 +27884,7 @@ function createCustomEditor(){
     
 }
 
-function setDateFormat(){
+function setDateFormat(){  
     webix.i18n.setLocale("ru-RU");   
     webix.i18n.parseFormat = "%d.%m.%Y %H:%i:%s";
     webix.i18n.setLocale();
@@ -26936,6 +27919,14 @@ function backButtonBrowserLogic (){
 
 
 ;// CONCATENATED MODULE: ./src/js/components/routerConfig/routerStart.js
+///////////////////////////////
+
+// Начальные настройки роутера
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 function routerStart_navigate(path){
     Backbone.history.start({pushState: true, root: path});
 }
@@ -27548,7 +28539,7 @@ function createTabbar(){
 
 
 ;// CONCATENATED MODULE: ./src/js/app.js
-console.log("expa 1.0.80"); 
+console.log("expa 1.0.81"); 
 
 
 

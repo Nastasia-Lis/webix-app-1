@@ -1,3 +1,11 @@
+///////////////////////////////
+
+// Обработка ошибок в обычных функциях и при ajax запросах 
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { setLogValue }  from "../components/logBlock.js";
 function setAjaxError(err, file, func){
     if (err.status === 400 ||  err.status === 401 || err.status === 404){

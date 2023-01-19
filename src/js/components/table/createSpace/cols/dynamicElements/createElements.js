@@ -1,3 +1,12 @@
+
+///////////////////////////////
+
+// Область с динамическими элементами
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { GetFields }              from "../../../../../blocks/globalStorage.js";
 
 import { setFunctionError }       from "../../../../../blocks/errors.js";

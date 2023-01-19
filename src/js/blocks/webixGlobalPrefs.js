@@ -1,5 +1,13 @@
+///////////////////////////////
 
-function createCustomEditor(){
+// Глобальные настройки для webix 
+
+// Copyright (c) 2022 CA Expert
+
+/////////////////////////////// 
+
+
+function createCustomEditor(){  
     webix.editors.customDate = webix.extend({
         render:function(){
             return webix.html.create("div", {
@@ -9,7 +17,7 @@ function createCustomEditor(){
     
 }
 
-function setDateFormat(){
+function setDateFormat(){  
     webix.i18n.setLocale("ru-RU");   
     webix.i18n.parseFormat = "%d.%m.%Y %H:%i:%s";
     webix.i18n.setLocale();

@@ -1,4 +1,11 @@
- 
+///////////////////////////////
+
+// Шаблон формы
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { Action }    from "../../../blocks/commonFunctions.js";
 import { mediator }  from "../../../blocks/_mediator.js";
 

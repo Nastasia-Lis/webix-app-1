@@ -1,4 +1,13 @@
 
+///////////////////////////////
+
+// Возвращение утерянного состояния  редактора постов после перезагрузки
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 import { mediator }     from "../../../blocks/_mediator.js";
 import { Action }       from "../../../blocks/commonFunctions.js";
 

@@ -1,3 +1,12 @@
+
+///////////////////////////////
+
+// Загрузка постов с сервера
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { Action, isArray }                  from "../../../../blocks/commonFunctions.js";
 import { setFunctionError }                 from "../../../../blocks/errors.js";
 import { ServerData }                       from "../../../../blocks/getServerData.js";
@@ -290,10 +299,14 @@ async function loadTableData(table, id, idsParam, offset){
                     setConfigTable(tableElem, data, limitLoad);
 
                     if (content){
-                        data  = data.content;
-            
+                        //console.log(data)
+                        // data = [
+                        //     {id: 4, name: "Критический", cdt: "2023-01-17 14:23:28", ndt:"2022-12-14"},
+                        //     {id: 5, name: "Критиче112ский", cdt: "2024-02-22 23:13:24", ndt:"2021-10-14"}
+                        // ]
+                        
                         setTableState(table);
-                        parseRowData (data);
+                        parseRowData (content); ///content!!!!
              
                         if (!offsetParam){
                         

@@ -1,3 +1,11 @@
+///////////////////////////////
+
+// Медиатор
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { Action }               from "../../blocks/commonFunctions.js";
 import { header }               from "./_layout.js";
 import { headerDefState }       from "./setDefaultState.js";

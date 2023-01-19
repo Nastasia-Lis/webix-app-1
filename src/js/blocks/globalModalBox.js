@@ -1,3 +1,11 @@
+///////////////////////////////
+
+// Модальное окно: проверяет чисты ли все формы 
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 import { modalBox }          from "./notifications.js";
 import { setFunctionError }  from "./errors.js";

@@ -1,9 +1,15 @@
+///////////////////////////////
+
+// Отображение charts
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { LoadServerData, GetFields }      from "../../blocks/globalStorage.js";
 import { Action }                         from '../../blocks/commonFunctions.js';
 import { mediator }                       from '../../blocks/_mediator.js';
 import { ServerData }                     from '../../blocks/getServerData.js';
-import { setFunctionError, 
-            setAjaxError }                from '../../blocks/errors.js';
 
 import { createDynamicElems }             from './createSpace/dynamicElements/_layout.js';
 import { createFilter }                   from './createSpace/filter/elements.js';
@@ -11,13 +17,11 @@ import { autorefresh }                    from './autorefresh.js';
 import { createContextProperty }          from './createSpace/contextWindow.js';
 
 
-const logNameFile = "dashboard => createDashboard";
-
 let idsParam;
 
 
 function createDashSpace (){
-
+    
     const item = GetFields.item(idsParam);
 
     if (item){
@@ -40,7 +44,7 @@ async function getFieldsData (isShowExists){
     if (!GetFields.keys){
         await LoadServerData.content("fields");
     }
-    
+  
 
     createDashSpace ();
 }
@@ -144,7 +148,7 @@ function createDashboard (ids, isShowExists){
 
     const scroll = $$("dashBodyScroll");
     Action.removeItem(scroll);
-
+ 
     getFieldsData (isShowExists);
   
     createContext();

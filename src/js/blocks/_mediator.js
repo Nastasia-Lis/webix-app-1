@@ -1,3 +1,12 @@
+///////////////////////////////
+
+// Медиатор
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 import { Dashboards }    from "../components/dashboard/_dashMediator.js";
 import { Tables, Forms } from "../components/table/_tableMediator.js";
 import { TreeEdit }      from "../components/treeEdit/_treeEditMediator.js";

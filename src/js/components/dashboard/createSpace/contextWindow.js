@@ -1,3 +1,11 @@
+///////////////////////////////
+
+// Создание контекстного окна по клику на action
+
+// Copyright (c) 2022 CA Expert
+
+/////////////////////////////// 
+
 import { Action }           from '../../../blocks/commonFunctions.js';
 import { Button }           from '../../../viewTemplates/buttons.js';
 import { LoadServerData, 

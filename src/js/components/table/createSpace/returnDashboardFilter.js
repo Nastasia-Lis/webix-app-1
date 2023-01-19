@@ -1,4 +1,12 @@
 
+///////////////////////////////
+
+// Переход в таблицу после action дашборда с фильтром
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 import { Filter }                        from "../filterForm/actions/_FilterActions.js";
 import { createChildFields }             from "../filterForm/createElements/childFilter.js";

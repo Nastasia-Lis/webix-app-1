@@ -1,3 +1,12 @@
+
+///////////////////////////////
+
+// Выделение поста в таблице по параметру в ссылке
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { getTable }         from "../../../blocks/commonFunctions.js";
 import { mediator }         from "../../../blocks/_mediator.js";
 

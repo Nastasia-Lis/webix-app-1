@@ -1,3 +1,11 @@
+///////////////////////////////
+
+// Обработка данных charts
+
+// Copyright (c) 2022 CA Expert
+
+/////////////////////////////// 
+
 import { setFunctionError }             from "../../../../blocks/errors.js";
 import { updateSpace }                  from "../click/updateSpace.js";
 import { returnEl, setAttributes }      from '../click/itemClickLogic.js';

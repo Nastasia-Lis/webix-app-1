@@ -1,3 +1,12 @@
+
+///////////////////////////////
+
+// Редактор дерева
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { mediator }          from "../../blocks/_mediator.js";
 import { RouterActions }     from "./actions/_RouterActions.js";
 

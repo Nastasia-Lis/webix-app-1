@@ -1,5 +1,14 @@
+///////////////////////////////
+
+// Динамические элементы фильтра
+
+// Copyright (c) 2022 CA Expert
+
+/////////////////////////////// 
+
 import { setFunctionError }     from "../../../../blocks/errors.js";
 import { mediator }             from "../../../../blocks/_mediator.js";
+import { ServerData }           from "../../../../blocks/getServerData.js";
 
 import { Button }               from '../../../../viewTemplates/buttons.js';
 
@@ -83,11 +92,13 @@ function setNullTimeValue(self){
     }
 }
 
+function createDate(input, id){
 
-function createDate(type, input){
     const dateTemplate = {
         view        : "datepicker",
+        id          : `dashDatepicker_${id}`,
         format      : "%d.%m.%y",
+        sentAttr    : id,
         editable    : true,
         value       : new Date(),
         placeholder : input.label,
@@ -119,25 +130,18 @@ function createDate(type, input){
         }
     };
 
-    function setId(id){
-        const dateFirst = dateTemplate;
-        dateFirst.id    = "dashDatepicker_" + id;
-        return dateFirst;
-    }
 
-    if (type == "first"){
-        return setId("sdt");
-    } else if (type == "last"){
-        return setId("edt");
-    }
+    return dateTemplate;
 
 }
 
-let isClicked = false;
 
-function createTime (type){
+
+function createTime (id){
     const timeTemplate =  {   
         view        : "datepicker",
+        id          :`dashDatepicker_${id}-time`,
+        sentAttr    : id,
         format      : "%H:%i:%s",
         placeholder : "Время",
         height      : 42,
@@ -176,25 +180,11 @@ function createTime (type){
                 );
                 setAdaptiveWidth(this);
             },
-            // onChange:function(newValue, oldValue, config){
-            //     console.log(newValue, oldValue, config)
-            //     setToStorage(this);
-            // },
-       
-           
+
         }
     };
 
-
-    if (type == "first"){
-        const timeFirst = timeTemplate;
-        timeFirst.id    = "dashDatepicker_" + "sdt" + "-time";
-        return timeFirst;
-    } else if (type == "last"){
-        const timeLast  = timeTemplate;
-        timeLast.id     =  "dashDatepicker_" + "edt" + "-time"; 
-        return timeLast;
-    }
+    return timeTemplate;
 }
 
 
@@ -239,52 +229,154 @@ function createHead(text){
 }
 
 
-function createInputs( input ){
+function createDatepicker(input, id){
 
     const inputs = {   
         width   : 200,
-        id      : "datepicker-container"+"sdt",
+        rows    : [ 
+            createHead (input.label),
+            createDate (input, id),
+            createTime (id),
+            { height:20 },
+        ]
+    };
+    if (inputsArray){
+        inputsArray.push( inputs );
+    }
+       
+}
+
+function createText(input, id){
+    
+    const value = input.value ? input.value : "";
+    const inputs = {   
+        width   : 200,
         rows    : [ 
 
-            createHead ( "Начиная с:"  ),
-            createDate ( "first", input ),
-
-            { height:10 },
-
-            createTime ("first"),
-
-
+            createHead (input.label),
+            { 
+                view        : "text", 
+                value       : value, 
+                sentAttr    : id,
+                placeholder : input.label,
+            },
             { height:20 },
+        ]
+    };
+   
+
+    if (inputsArray){
+        inputsArray.push( inputs );
+    }
+}
 
 
-            createHead ( "Заканчивая:" ),
-            createDate ( "last", input ),
 
-            { height:10 },
+function dataTemplate(i, valueElem){
+    const template = { 
+            id    : i + 1, 
+            value : valueElem
+        };
+    return template;
+}
 
-            createTime ("last"),
 
+function createOptions(content){
+    const dataOptions = [];
+    if (content && content.length){
+        content.forEach(function(name, i) {
+     
+            let title = name;
+            if ( typeof name == "object"){
+                title = name.name;
+            }
+
+            const optionElement = dataTemplate(i, title);
+            dataOptions.push(optionElement); 
+        });
+    }
+
+    return dataOptions;
+}
+
+function getOptionData (field){
+
+    return new webix.DataCollection({url:{
+        $proxy:true,
+        load: function(){
+            return ( 
+                
+                new ServerData({
+                    id : field.apiname,
+                
+                }).get().then(function(data){
+                
+                    if (data){
+                
+                        const content = data.content;
+                   
+                        if (content && content.length){
+                            return createOptions(content);
+                        } else {
+                            return [
+                                { 
+                                    id    : 1, 
+                                    value : ""
+                                }
+                            ];
+                        }
+                    }
+                    
+                })
+
+            );
+            
+        
+            
+        }
+    }});
+}
+
+
+function createCombo(input, id){
+ 
+    const inputs = {   
+        width   : 200,
+        rows    : [ 
+
+            createHead (input.label),
+            {
+                view          : "combo", 
+                placeholder   : input.label,
+                sentAttr      : id,
+                options       : getOptionData (input)
+            },
+            { height:20 },
         ]
     };
 
-    try{
+    if (inputsArray){
         inputsArray.push( inputs );
-    } catch (err){  
-        setFunctionError(err, logNameFile, "createInputs");
     }
 }
 
 function createFilter (inputs, el, ids){
- 
+
     idsParam           = ids;
     inputsArray.length = 0;
 
-    const values       = Object.values(inputs);
+    const keys   = Object.keys(inputs);
+    const values = Object.values(inputs);
 
     values.forEach(function(input, i){
+ 
+        if (input.type == "datetime"){ 
+            createDatepicker(input, keys[i]);
 
-        if (input.type == "datetime"&& input.order == 3){ 
-            createInputs(input);
+        } else if (input.type == "string"){
+            createText(input, keys[i]);
+        } else if (input.type == "apiselect"){
+            createCombo(input, keys[i])
 
         } else if (input.type == "submit"){
 

@@ -1,3 +1,11 @@
+///////////////////////////////
+
+// Создание list компонентов попапа
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 import { createEmptyTemplate } from "../../../../viewTemplates/emptyTemplate.js";
 import { Action }              from "../../../../blocks/commonFunctions.js";

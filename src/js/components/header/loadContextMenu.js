@@ -1,3 +1,11 @@
+///////////////////////////////
+
+// Меню пользователя. Загрузка
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { isArray }          from "../../blocks/commonFunctions.js";
 function createItems (){
 

@@ -1,3 +1,13 @@
+///////////////////////////////
+
+// Action с обновлением данных в таблице
+// и созданием контекстного окна
+
+// Copyright (c) 2022 CA Expert
+
+/////////////////////////////// 
+
+
 import { setFunctionError }         from "../../../../blocks/errors.js";
 import { mediator }                 from "../../../../blocks/_mediator.js";
 import { ServerData }               from "../../../../blocks/getServerData.js";

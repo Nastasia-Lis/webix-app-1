@@ -1,3 +1,12 @@
+///////////////////////////////
+
+// Общий layout дашборда
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 function returnTemplate(id){
     return {
         id      : "dashboard" + id,

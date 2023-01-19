@@ -1,3 +1,11 @@
+///////////////////////////////
+
+// Получить id дашборда
+
+// Copyright (c) 2022 CA Expert
+
+/////////////////////////////// 
+
 function getDashId ( idsParam ){
     const tree = $$("tree");
     let itemTreeId;

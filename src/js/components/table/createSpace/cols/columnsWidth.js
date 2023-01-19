@@ -1,3 +1,13 @@
+
+///////////////////////////////
+
+// Определение размера колонок
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 import { isArray } from "../../../../blocks/commonFunctions.js";
 
 let table; 

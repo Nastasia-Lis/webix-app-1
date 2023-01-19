@@ -1,3 +1,10 @@
+///////////////////////////////
+
+// Сохранение пользовательских настроек
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { setLogValue }       from "../../logBlock.js";
 import { setStorageData }    from "../../../blocks/storageSetting.js";
 import { ServerData }        from "../../../blocks/getServerData.js";

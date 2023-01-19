@@ -1,3 +1,14 @@
+
+///////////////////////////////
+
+// Создание колонок
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
+
 import { GetFields }            from "../../../../blocks/globalStorage.js";
 
 import { setFunctionError }     from "../../../../blocks/errors.js";
@@ -61,6 +72,7 @@ function createTextCol      (){
     try{
         field.editor = "text";
         field.sort   = "string";
+ 
     }catch (err){
         setFunctionError(
             err,
@@ -71,6 +83,7 @@ function createTextCol      (){
 }
 
 function createIntegerCol   (){
+    
     try{
         field.editor         = "text";
         field.sort           = "int";

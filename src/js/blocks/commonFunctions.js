@@ -1,3 +1,13 @@
+///////////////////////////////
+
+// Общеиспользуемые функции (Получить id, действия 
+// над элементами (показать, включить и тд))
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 import { setFunctionError }   from "./errors.js";
 import { setStorageData }     from "./storageSetting.js";
 import { ServerData }         from "./getServerData.js";

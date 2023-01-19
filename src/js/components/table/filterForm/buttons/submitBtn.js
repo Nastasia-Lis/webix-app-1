@@ -38,7 +38,10 @@ function setOperationValue(value){
         operation =  "=";
     } else if (value === "⊆"){
         operation = "contains";
-    } else {
+    } else if (value === "="){
+        operation = "%3D";
+    } else 
+    {
         operation = value;
     }
 
@@ -73,6 +76,12 @@ function returnBoolValue(value){
     }
 }
 
+function isDate(value){
+    if (webix.isDate(value)){
+        return true;
+    }
+}
+
 function setValue(name, value){
 
     let sentValue = "'" + value + "'";
@@ -82,6 +91,12 @@ function setValue(name, value){
         sentValue = returnBoolValue(value);
     }
 
+    if (isDate(value)){
+    
+        const format = webix.Date.dateToStr("%d.%m.%Y+%H:%i:%s");
+        sentValue = format(value);
+    }
+ 
     return sentValue;
 }
 

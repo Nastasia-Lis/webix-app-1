@@ -1,4 +1,14 @@
  
+///////////////////////////////
+
+// Возвращение утерянного состояния фильтров после перезагрузки
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
+
 import { createWorkspace }   from "../filterForm/userTemplate.js";
 import { Action }            from "../../../blocks/commonFunctions.js";
 import { Filter }            from "../filterForm/actions/_FilterActions.js";

@@ -1,3 +1,11 @@
+///////////////////////////////
+
+// Layout фильтра
+
+// Copyright (c) 2022 CA Expert
+
+/////////////////////////////// 
+
 import { setFunctionError }               from "../../../../blocks/errors.js";
 import { Action }                         from '../../../../blocks/commonFunctions.js';
 import { mediator }                       from '../../../../blocks/_mediator.js';
@@ -51,7 +59,8 @@ function createMainView(inputsArray){
                 ]
             },
             
-            { rows : inputsArray }
+            {   id  : "dashboardFilterElems",
+                rows : inputsArray }
         ], 
     };
 

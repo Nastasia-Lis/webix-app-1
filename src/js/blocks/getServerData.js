@@ -1,3 +1,12 @@
+///////////////////////////////
+
+// Обёртка для ajax запросов 
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 import { setFunctionError, setAjaxError } from "./errors.js";
 
 

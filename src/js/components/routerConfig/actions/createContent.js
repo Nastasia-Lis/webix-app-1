@@ -1,4 +1,11 @@
 
+///////////////////////////////
+
+// Отрисовка главного layout и сокрытие авторизации 
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
 
 import { setStorageData }           from "../../../blocks/storageSetting.js";
 import { STORAGE, getData, 

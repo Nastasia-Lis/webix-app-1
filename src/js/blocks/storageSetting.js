@@ -1,4 +1,12 @@
- 
+///////////////////////////////
+
+// Загрузка в Local Storage и применение настроек  
+
+// Copyright (c) 2022 CA Expert
+
+/////////////////////////////// 
+
+
 import { ServerData }               from "./getServerData.js"
 import { returnOwner, isArray }     from "./commonFunctions.js";
 import { mediator }                 from "./_mediator.js";

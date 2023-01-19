@@ -1,3 +1,12 @@
+
+///////////////////////////////
+
+// Создание динамических колонок с действиями
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { GetFields }        from "../../../../blocks/globalStorage.js";
 import { isArray }         from "../../../../blocks/commonFunctions.js";
 

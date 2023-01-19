@@ -1,7 +1,16 @@
+///////////////////////////////
+
+// Применение фильтра
+
+// Copyright (c) 2022 CA Expert
+
+/////////////////////////////// 
+
+
 import { setLogValue }          from '../../../logBlock.js';
 import { setFunctionError }     from "../../../../blocks/errors.js";
 import { createDynamicElems }   from '../dynamicElements/_layout.js';
-import { Action } from '../../../../blocks/commonFunctions.js';
+import { Action }               from '../../../../blocks/commonFunctions.js';
 
 const logNameFile = "dashboard => createSpace => submitBtn";
 
@@ -146,61 +155,61 @@ function setStateBtn(index){
     }
 }
 
-const cssInvalid = "dash-filter-invalid";
+// const cssInvalid = "dash-filter-invalid";
 
-function markInvalid(input){
-    const node = input.getInputNode();
-    webix.html.addCss(node, cssInvalid);
-}
+// function markInvalid(input){
+//     const node = input.getInputNode();
+//     webix.html.addCss(node, cssInvalid);
+// }
 
-function resetInvalidMark(childs){
-    childs.forEach(function(input){
-        const view = input.config.view;
+// function resetInvalidMark(childs){
+//     childs.forEach(function(input){
+//         const view = input.config.view;
    
-        if (view == "datepicker" ){
-            const node = input.getInputNode();
-            const css = node.classList.contains(cssInvalid);
+//         if (view == "datepicker" ){
+//             const node = input.getInputNode();
+//             const css = node.classList.contains(cssInvalid);
 
-            if (css){
-                webix.html.removeCss(node, cssInvalid);
-            }
+//             if (css){
+//                 webix.html.removeCss(node, cssInvalid);
+//             }
 
-        }
+//         }
 
-    });
-}
+//     });
+// }
 
-function invalidTop(input, type){
-    const id = input.config.id;
-    if ( id.includes("_sdt") && type == "top"){
-        markInvalid(input);
-    }
-}
+// function invalidTop(input, type){
+//     const id = input.config.id;
+//     if ( id.includes("_sdt") && type == "top"){
+//         markInvalid(input);
+//     }
+// }
 
-function invalidEmpty(input, type){
-    if (type == "empty"){
-        const value = input.getValue();
-        if (!value){
-            markInvalid(input);
-        }
-    } 
-}
+// function invalidEmpty(input, type){
+//     if (type == "empty"){
+//         const value = input.getValue();
+//         if (!value){
+//             markInvalid(input);
+//         }
+//     } 
+// }
 
 
 
-function setInvalidView(type, childs){
+// function setInvalidView(type, childs){
 
-    childs.forEach(function(input){
-        const view = input.config.view;
+//     childs.forEach(function(input){
+//         const view = input.config.view;
        
-        if (view == "datepicker"){
-            invalidTop  (input, type);
-            invalidEmpty(input, type);
-        }
+//         if (view == "datepicker"){
+//             invalidTop  (input, type);
+//             invalidEmpty(input, type);
+//         }
 
-    });
+//     });
    
-}
+// }
 
 function loadView(){
     const charts = $$("dashboard-charts");
@@ -212,44 +221,168 @@ function loadView(){
     }); 
 }
 
+function findInputs(arr, result){
+
+    arr.forEach(function(el){
+        const view = el.config.view;
+
+        if (view){
+            result.push(el);
+        }
+    });
+
+}
+function findElems(){
+    const container = $$("dashboardFilterElems");
+    const result = [];
+    if (container){
+        const elems =  container.getChildViews();
+
+        if (elems && elems.length){
+            elems.forEach(function(el){
+    
+                const view = el.config.view;
+                if (!view || view !=="button"){
+                    const childs = el.getChildViews();
+                    if (childs && childs.length){
+                        findInputs(childs, result);
+                        
+                    }
+         
+                }
+            });
+        }
+       
+    }
+
+    return result;
+}
+
+function returnFormattingTime(date){
+    const format = webix.Date.dateToStr("%H:%i:%s");
+
+    return format(date);
+}
+
+function returnFormattingDate(date){
+    const format = webix.Date.dateToStr("%d.%m.%y");
+
+    return format(date);
+}
+
+function findEachTime(obj, id){
+    const res = obj.time.find(elem => elem.id === id);
+    return res;
+}
+
+function createFullDate(obj, resultValues){
+ 
+    obj.date.forEach(function(el){
+        const id    = el.id;
+        const value = el.value;
+        if (id){
+            const time  = findEachTime(obj, id);
+
+            resultValues.push(id + "=" + value + "+" + time.value);
+    
+        }
+    });
+
+ 
+
+}
+
+
+function formattingValues(values){
+
+    const resultValues = [];
+
+    let emptyValues = 0;
+    const dateCollection = {
+        time : [],
+        date : []
+    };
+
+ 
+
+    values.forEach(function(el){
+
+        let   value  = el.getValue();
+        const view   = el.config.view;
+
+        const sentAttr = el.config.sentAttr;
+        const type     = el.config.type;
+
+        if (value){
+
+            if (view == "datepicker"){
+
+                if(type && type == "time"){
+                    value = returnFormattingTime(value);
+                    dateCollection.time.push({
+                        id   : sentAttr,
+                        value: value
+                    });
+                } else {
+                    value = returnFormattingDate(value);
+                    dateCollection.date.push({
+                        id   : sentAttr,
+                        value: value
+                    });
+                }  
+
+            } else {
+                resultValues.push(sentAttr + "=" + value);
+            }
+           
+        } else {
+            emptyValues ++;
+        }
+    
+    });
+
+    
+    if (dateCollection.time.length && dateCollection.date.length){
+        createFullDate(dateCollection, resultValues);
+ 
+    }
+
+    return {
+        values     : resultValues,
+        emptyValues: emptyValues
+    };
+
+}
+
 
 function sentQuery (){
-    const childs = 
-    $$("datepicker-containersdt").getChildViews();
+    const inputs = findElems();
+    let values;
+    let empty = 0;
 
-    if (validateEmpty){
+    if (inputs && inputs.length){
+        const result = formattingValues(inputs);
+        values = result.values;
+        empty  = result.emptyValues;
+    }
+ 
+    if (!empty){
 
-        const formatData = webix.Date.dateToStr ("%Y/%m/%d %H:%i:%s");
-        const start      = formatData (compareDates[0]);
-        const end        = formatData (compareDates[1]);
+        const getUrl = findAction.url + "?" + values.join("&");
+    
+        loadView();
 
-        const compareValue = webix.filters.date.greater(start, end);
-        
-        if ( !(compareValue) || compareDates[0] == compareDates[1] ){
+        createDynamicElems(
+            getUrl, 
+            inputsArray,
+            idsParam, 
+            true
+        );
 
-            const getUrl = findAction.url + "?" + dateArray.join("&");
-      
-            loadView();
 
-            createDynamicElems(
-                getUrl, 
-                inputsArray,
-                idsParam, 
-                true
-            );
-
-            setStateBtn(index);
-            resetInvalidMark(childs);
-        } else {
-            setInvalidView("top", childs);
-            setLogValue(
-                "error", 
-                "Начало периода больше, чем конец"
-            );
-        }
     } else {
       
-        setInvalidView("empty", childs);
+        //setInvalidView("empty", childs);
      
         setLogValue(
             "error", 

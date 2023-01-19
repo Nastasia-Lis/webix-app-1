@@ -1,12 +1,22 @@
+///////////////////////////////
+
+// Layout всего header
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { collapseBtn }          from "./collapseBtn.js";
 import { logBtn }               from "./logBtn.js";
 import { userContextBtn }       from "./userContextBtn.js";
 
 const logo = {
-    view    : "label",
-    label   : "<img src='/init/static/images/expalogo.png' "+
+    view        : "template",
+    borderless  :true,
+    css         :{"background-color":"transparent!important"},
+    template    : "<img src='/init/static/images/expalogo.png' "+
         " style='height:30px; margin: 10px;'>", 
-    height  : 25,
+    height      : 25,
 };
 
 const search = {
@@ -18,6 +28,11 @@ const search = {
     hotkey      : "alt+shift+f",
     maxWidth    : 250, 
     minWidth    : 40, 
+    on:{
+        onViewResize:function(){
+            console.log(12)
+        }
+    }
 };
 
 const header = {

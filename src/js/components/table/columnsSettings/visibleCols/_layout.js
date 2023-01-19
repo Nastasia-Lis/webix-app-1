@@ -1,3 +1,12 @@
+///////////////////////////////
+
+// Layout попапа с настройками колонок
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 import { Popup }                 from "../../../../viewTemplates/popup.js";
 
 import { returnClearBtn }        from "./clearBtn.js";

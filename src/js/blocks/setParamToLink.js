@@ -1,3 +1,11 @@
+///////////////////////////////
+
+// Действия с параметрами в ссылке  
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 function createParameters(params){
     const paramsObj =  params;
     return  "?" + new URLSearchParams(paramsObj).toString();

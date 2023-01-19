@@ -1,4 +1,12 @@
 
+///////////////////////////////
+
+// Загрузка данных о модифицированных колонках на сервер
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { getItemId, returnOwner, 
         getTable, Action, isArray } from "../../../blocks/commonFunctions.js";
 import { setFunctionError }         from "../../../blocks/errors.js";

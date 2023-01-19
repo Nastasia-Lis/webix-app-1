@@ -1,4 +1,11 @@
+///////////////////////////////
 
+// Обработка action при клике
+// (на весь элемент конкретную часть)
+
+// Copyright (c) 2022 CA Expert
+
+/////////////////////////////// 
 
 import { LoadServerData, 
          GetFields }        from "../../../../blocks/globalStorage.js";

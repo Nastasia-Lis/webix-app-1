@@ -73,8 +73,31 @@ function setEmptyState(){
     Action.showItem ($$("webix__none-content"));
 }
 
+function changeHistoryBtnsState(){
+    const config = mediator.tabs.getInfo();
+ 
+    if (config && config.history){
+        const history  = config.history;
+        const nextPage = config.nextPage;
+
+        if (history.length > 1){
+            mediator.tabs.setHistoryBtnState(false);
+        } else {
+            mediator.tabs.setHistoryBtnState(false, false);
+        }
+ 
+        if (nextPage){
+            mediator.tabs.setHistoryBtnState(true);
+        } else {
+            mediator.tabs.setHistoryBtnState(true, false);
+        }
+ 
+    }
+    
+}
+
 function showTreeItem(config, isOtherTab, isOtherView){
-     
+
     if (isOtherView){
         Backbone.history.navigate("/" + config.view, { trigger : true });
     } else {
@@ -101,6 +124,10 @@ function showTreeItem(config, isOtherTab, isOtherView){
             }
 
         }
+
+
+        changeHistoryBtnsState();
+       
     }
 
 }

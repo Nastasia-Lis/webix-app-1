@@ -15,28 +15,6 @@ function selectPage(config, id, changeHistory=false){
     tabbarClick("onAfterTabClick" , id);
 }
 
-function blockBtn(css){
-    const prevBtn = document.querySelector('.' + css);
-
-    if (prevBtn){
-        const id = prevBtn.getAttribute("view_id");
-                
-        Action.disableItem($$(id));
-                
-    }
-}
-
-
-function unblockBtn(css){
-    const nextBtn = document.querySelector('.' + css);
-
-    if (nextBtn){
-        const id  = nextBtn.getAttribute("view_id");
-
-        Action.enableItem($$(id));
-       
-    }
-}
 
 function isThisPage(history){
     const lastHistory = history[history.length - 1];
@@ -64,11 +42,13 @@ function returnPrevPageConfig(history){
         }
         const lastIndex     = history.length - index;
         const modifyHistory = history.slice(0, lastIndex);
-        console.log(lastIndex)
+   
         if (lastIndex <= 1){
-            blockBtn  ("historyBtnLeft");
-            unblockBtn("historyBtnRight");
+            mediator.tabs.setHistoryBtnState(false, false); // disable prev btn
+
         }
+
+        mediator.tabs.setHistoryBtnState(true); // enable next btn
        
         if (history[lastIndex]){
             return{ 
@@ -101,7 +81,7 @@ function prevBtnClick (){
     const tabId          = returnSelectTabId    ();
     const history        = returnProp           ("history");
     const prevPageConfig = returnPrevPageConfig (history);
-  
+    
     if (prevPageConfig){
         addNextPageConfig(prevPageConfig);
         selectPage(prevPageConfig, tabId);
@@ -111,6 +91,8 @@ function prevBtnClick (){
 
 function returnNextPageConfig(nextPage){
     const history = returnProp("history");
+    const prevPage = returnProp("tree");
+    history.push(prevPage);
     return {
         tree   : nextPage,
         history: history
@@ -129,11 +111,12 @@ function nextBtnClick (){
     if (isNextPageExists(nextPage)){
         const tabId          = returnSelectTabId   ();
         const nextPageConfig = returnNextPageConfig(nextPage);
-
+  
         selectPage(nextPageConfig, tabId, true);
 
-        blockBtn  ("historyBtnRight");
-        unblockBtn("historyBtnLeft");
+        mediator.tabs.setHistoryBtnState(true, false);// disable next btn
+        mediator.tabs.setHistoryBtnState(); // enable prev btn
+         
     }
 
 }   

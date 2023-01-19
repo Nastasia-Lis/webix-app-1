@@ -1,3 +1,12 @@
+
+///////////////////////////////
+
+// Автообновление данных в таблице по параметру autorefresh
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { getItemData }  from './createRows.js';
 import { getTable }     from '../../../../blocks/commonFunctions.js';
 

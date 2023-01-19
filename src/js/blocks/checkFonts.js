@@ -1,3 +1,12 @@
+///////////////////////////////
+
+// Проверка для иконочного шрифта
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 import { setLogValue } from "../components/logBlock.js";
 
 function checkFonts (){

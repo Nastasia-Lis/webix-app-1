@@ -1,3 +1,11 @@
+///////////////////////////////
+
+// Создание query  
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 function encodeQueryData(data) {
     const ret = [];
     for (let item in data){

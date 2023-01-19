@@ -1,3 +1,11 @@
+///////////////////////////////
+
+// Layout пользовательских настроек
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 import { layoutHeadline }  from "./headline.js";
 import { layoutTabbar }    from "./tabbar/_layoutTab.js";

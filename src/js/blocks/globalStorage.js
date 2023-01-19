@@ -1,3 +1,11 @@
+///////////////////////////////
+
+// Хранилище для fields 
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { setFunctionError } from "./errors.js";
 import { checkNotAuth }     from "../components/logout/common.js";
 
