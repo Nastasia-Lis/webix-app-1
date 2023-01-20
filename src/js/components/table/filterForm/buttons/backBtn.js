@@ -1,3 +1,12 @@
+ 
+///////////////////////////////
+
+// Кнопка вернуться к таблице
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { Action }  from  "../../../../blocks/commonFunctions.js";
 import { Button }  from "../../../../viewTemplates/buttons.js";
 import { Filter }  from "../actions/_FilterActions.js";

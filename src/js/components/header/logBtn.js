@@ -28,6 +28,10 @@ function onChangeLogBtn(newValue){
 
     const lastItemList = list.getLastId();
 
+    const minHeight = 5;
+    
+    const maxHeight = 90;
+
     function setState (height,icon){
         logBtn.config.badge     = "";
 
@@ -39,12 +43,12 @@ function onChangeLogBtn(newValue){
     }
 
     if (newValue == 2){
-        setState (90, "icon-eye-slash");
+        setState (maxHeight, "icon-eye-slash");
         list.showItem(lastItemList);
 
     } else {
        
-        setState (5, "icon-eye");
+        setState (minHeight, "icon-eye");
     }
 }
 

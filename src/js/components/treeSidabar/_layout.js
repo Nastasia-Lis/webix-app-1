@@ -1,3 +1,12 @@
+  
+///////////////////////////////
+
+// Layout дерева
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { preparationView }       from "./preparationView.js"; 
 import { mediator }              from "../../blocks/_mediator.js"; 
 

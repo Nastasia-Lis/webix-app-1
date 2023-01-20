@@ -1,3 +1,12 @@
+ 
+///////////////////////////////
+
+// Layout таббара с табами
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { tabbar }       from './tabbar.js';
 import { tabForm }      from './tabForm.js';
 import { tabLibrary }   from './tabLibrary.js';

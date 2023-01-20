@@ -1,3 +1,12 @@
+ 
+///////////////////////////////
+
+// Счётчик записей
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { getTable }       from '../../../blocks/commonFunctions.js';
 
 function createTemplateCounter(idEl, text){

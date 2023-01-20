@@ -28,17 +28,20 @@ function autorefresh (el, ids) {
         const counter        = userprefsOther.autorefCounterOpt;
         idsParam             = ids;
 
+        const minValue     = 15000;
+        const defaultValue = 50000;
+
         if ( counter !== undefined ){
 
-            if ( counter >= 15000 ){
+            if ( counter >= minValue ){
                 setIntervalConfig(counter);
 
             } else {
-                setIntervalConfig(50000);
+                setIntervalConfig(defaultValue);
             }
 
         } else {
-            setIntervalConfig(50000);
+            setIntervalConfig(defaultValue);
         }
 
        

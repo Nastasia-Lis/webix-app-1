@@ -1,3 +1,12 @@
+  
+///////////////////////////////
+
+// Медиатор
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { Action }               from "../../blocks/commonFunctions.js";
 import { treeSidebar }          from "./_layout.js";
 import { generateMenuTree }     from "./loadMenu.js";

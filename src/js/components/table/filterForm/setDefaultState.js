@@ -1,3 +1,12 @@
+ 
+///////////////////////////////
+
+// Дефолтное состояние фильтра 
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { Action, getTable } from "../../../blocks/commonFunctions.js";
 import { Filter }           from "./actions/_FilterActions.js";
 

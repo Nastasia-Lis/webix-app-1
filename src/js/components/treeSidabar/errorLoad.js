@@ -1,3 +1,12 @@
+  
+///////////////////////////////
+
+// Загрузка дерева с ошибкой
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { createOverlayTemplate }  from "../../viewTemplates/loadTemplate.js";
 import { Action }                 from "../../blocks/commonFunctions.js";
 import { setLogValue }            from "../logBlock.js";

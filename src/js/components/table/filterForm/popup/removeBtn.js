@@ -1,7 +1,16 @@
+ 
+///////////////////////////////
+
+// Кнопка удаления шаблона
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 import { setLogValue }       from '../../../logBlock.js';
 
-import { setFunctionError}   from "../../../../blocks/errors.js";
+ 
 
 import { ServerData }        from "../../../../blocks/getServerData.js";
 

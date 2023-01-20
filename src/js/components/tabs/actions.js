@@ -1,3 +1,12 @@
+  
+///////////////////////////////
+
+// Добавление и удаление вкладок
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { mediator }          from "../../blocks/_mediator.js";
 import { Action }            from "../../blocks/commonFunctions.js";
 import { showTreeItem }      from "./showItem.js";

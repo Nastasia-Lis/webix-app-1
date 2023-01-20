@@ -1,3 +1,11 @@
+  
+///////////////////////////////
+
+// Медиатор
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
 
 import { editTreeLayout }     from "./_layout.js";
 import { contextMenu }        from "./contextMenu.js";

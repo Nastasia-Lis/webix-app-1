@@ -65,12 +65,15 @@ function autorefresh (data){
             counter = userprefsOther.autorefCounterOpt;
         }
 
+        const minValue     = 15000;
+        const defaultValue = 120000;
+        
         if ( userprefsOther && counter !== undefined ){
-            if ( counter >= 15000 ){
+            if ( counter >= minValue ){
                 setIntervalConfig(data.type, counter);
                 
             } else {
-                setIntervalConfig(data.type, 120000);
+                setIntervalConfig(data.type, defaultValue);
             }
         }
 

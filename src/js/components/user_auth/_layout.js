@@ -1,4 +1,11 @@
+  
+///////////////////////////////
 
+// Layout редактора пароля
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
 import { setLogValue }      from '../logBlock.js';
 import { ServerData }       from "../../blocks/getServerData.js";
 import { mediator }         from "../../blocks/_mediator.js";

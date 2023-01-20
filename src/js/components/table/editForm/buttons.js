@@ -1,3 +1,13 @@
+ 
+///////////////////////////////
+
+// Кнопки редактора
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 import { modalBox }            from "../../../blocks/notifications.js";
 import { Action }              from "../../../blocks/commonFunctions.js";
 

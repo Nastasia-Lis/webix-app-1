@@ -1,3 +1,11 @@
+ 
+///////////////////////////////
+
+// Layout попапа
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
 
 import { Popup }                from "../../../../viewTemplates/popup.js";
 import { createEmptyTemplate }  from "../../../../viewTemplates/emptyTemplate.js";

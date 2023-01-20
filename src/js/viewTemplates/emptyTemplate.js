@@ -1,3 +1,11 @@
+  
+///////////////////////////////
+
+// Шаблон пустого пространства
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
 
 function createEmptyTemplate(text, id){
     const formEmptyTemplate = {   

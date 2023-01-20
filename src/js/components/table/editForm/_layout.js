@@ -1,3 +1,12 @@
+ 
+///////////////////////////////
+
+// Layout редактора 
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 import { propertyLayout }   from "./property.js";
 import { editFormBtns }     from "./buttons.js";

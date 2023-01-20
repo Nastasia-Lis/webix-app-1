@@ -1,3 +1,12 @@
+ 
+///////////////////////////////
+
+// Кнопка календаря 
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { setFunctionError }                     from "../../../../blocks/errors.js";
 import { modalBox }                             from "../../../../blocks/notifications.js";
 import { Action }                               from "../../../../blocks/commonFunctions.js";

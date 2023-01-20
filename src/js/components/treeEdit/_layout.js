@@ -1,3 +1,12 @@
+  
+///////////////////////////////
+
+// Layout компонента
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { setLogValue }                   from '../logBlock.js';
 import { ServerData }                    from "../../blocks/getServerData.js";
 import { returnForm }                    from "./form.js";

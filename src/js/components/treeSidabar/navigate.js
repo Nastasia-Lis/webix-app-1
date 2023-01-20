@@ -1,3 +1,12 @@
+  
+///////////////////////////////
+
+// Навигация по дереву
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 import { GetMenu }          from "../../blocks/globalStorage.js";
 import { setFunctionError }  from "../../blocks/errors.js";

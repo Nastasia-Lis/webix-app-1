@@ -1,6 +1,16 @@
+ 
+///////////////////////////////
+
+// Уведомление о новых несохранённых изменениях в шаблоне
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 import { Button }               from "../../../viewTemplates/buttons.js";
 import { Filter }               from "./actions/_FilterActions.js";
- 
+
 import { ServerData }           from "../../../blocks/getServerData.js";
 import { setLogValue }          from "../../logBlock.js"
 import { Action }               from "../../../blocks/commonFunctions.js"

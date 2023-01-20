@@ -1,3 +1,12 @@
+ 
+///////////////////////////////
+
+// Создание кнопок полей фильтра
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { createContextBtn }    from "./contextBtn.js";
 import { createOperationBtn }  from "./operationBtn.js";
 

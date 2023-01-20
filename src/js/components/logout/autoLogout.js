@@ -29,7 +29,9 @@ function resetTimer (){
                 window.location.pathname !== "/init/default/spaw" ){
                 
                 clearTimeout(timeout);
-                timeout = setTimeout(logout, 600000); // 600000
+
+                const time = 600000;
+                timeout = setTimeout(logout, time); // 600000
             }
         } catch (err){
             setFunctionError(err, "autoLogout", "resetTimer");

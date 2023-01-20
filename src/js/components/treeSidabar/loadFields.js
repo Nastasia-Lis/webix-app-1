@@ -1,3 +1,13 @@
+  
+///////////////////////////////
+
+// Загрузка fields
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 import { LoadServerData, GetMenu, GetFields }   from "../../blocks/globalStorage.js";
 import { isArray }                              from "../../blocks/commonFunctions.js";
 import { setFunctionError }                     from "../../blocks/errors.js";

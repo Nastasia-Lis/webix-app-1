@@ -1,4 +1,12 @@
- 
+  
+///////////////////////////////
+
+// Функции таблицы
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { defaultStateForm }  from './editForm/states.js';
 import { createProperty }    from './editForm/createProperty.js';
 

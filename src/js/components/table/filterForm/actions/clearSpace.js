@@ -1,3 +1,12 @@
+ 
+///////////////////////////////
+
+// Очищение пространства фильтра 
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { Action }     from "../../../../blocks/commonFunctions.js";
 import { Filter }     from "./_FilterActions.js";
  

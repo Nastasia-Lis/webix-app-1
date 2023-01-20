@@ -1,3 +1,12 @@
+ 
+///////////////////////////////
+
+// Компонент с контекстом в формах
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 function propertyTemplate (idProp){
     return {
         view      : "property",  

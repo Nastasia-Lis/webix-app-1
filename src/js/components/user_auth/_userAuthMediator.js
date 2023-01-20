@@ -1,3 +1,12 @@
+  
+///////////////////////////////
+
+// Медиатор
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { authCpLayout, doAuthCp } from "./_layout.js";
 
 class UserAuth {

@@ -1,3 +1,11 @@
+ 
+///////////////////////////////
+
+// Кнопка, открывающая попап с редактором колонок
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
 
 import { Button }                   from "../../../viewTemplates/buttons.js";
 import { Action, getTable }         from "../../../blocks/commonFunctions.js";

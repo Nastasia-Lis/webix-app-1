@@ -1,3 +1,12 @@
+  
+///////////////////////////////
+
+// layout кнопки добавления вкладки
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { Button }    from "../../viewTemplates/buttons.js";
 import { mediator }  from "../../blocks/_mediator.js";
 

@@ -1,3 +1,11 @@
+ 
+///////////////////////////////
+
+// Кнопка с выбором операции и/или 
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
 
 import { Filter }   from "../actions/_FilterActions.js";
 import { Action }   from "../../../../blocks/commonFunctions.js";

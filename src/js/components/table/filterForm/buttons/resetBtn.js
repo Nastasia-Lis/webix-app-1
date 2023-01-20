@@ -1,3 +1,11 @@
+ 
+///////////////////////////////
+
+// Кнопка сброса фильтров
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
 
 import { setFunctionError }     from "../../../../blocks/errors.js";
 

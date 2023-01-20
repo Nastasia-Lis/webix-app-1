@@ -1,3 +1,13 @@
+  
+///////////////////////////////
+
+// Кнопка с историей и восстановлением последней вкладки
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 import { Button }           from "../../viewTemplates/buttons.js";
 import { Popup }            from "../../viewTemplates/popup.js";
 import { mediator }         from "../../blocks/_mediator.js";

@@ -1,3 +1,12 @@
+ 
+///////////////////////////////
+
+// Кнопка сохранить в библиотеку шаблон
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { setLogValue }                           from '../../../logBlock.js';
 
 import { setFunctionError }                      from "../../../../blocks/errors.js";

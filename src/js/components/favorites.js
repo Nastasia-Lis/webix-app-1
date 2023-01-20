@@ -1,3 +1,11 @@
+  
+///////////////////////////////
+
+// Попап с избранными страницами
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
 
 import { setFunctionError }                 from "../blocks/errors.js";
 import { ServerData }                       from "../blocks/getServerData.js";
@@ -12,10 +20,11 @@ import { setLogValue }                      from "./logBlock.js";
 
 
 const logNameFile = "favorites";
-
+const minWidth    = 1200;
+const k           = 0.89;
 function setAdaptiveSize(popup){
-    if (window.innerWidth < 1200 ){
-        const size  = window.innerWidth * 0.89;
+    if (window.innerWidth < minWidth ){
+        const size  = window.innerWidth * k;
         try{
             popup.config.width = size;
             popup.resize();

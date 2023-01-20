@@ -228,9 +228,12 @@ function createContextProperty(data, idTable){
     
     container = $$("dashboardContext");
     Action.showItem(container);
-    if (window.innerWidth < 850){
 
-        container.config.width = window.innerWidth - 45;
+    const minWidth   = 850;
+    const emptySpace = 45;
+    if (window.innerWidth < minWidth){
+
+        container.config.width = window.innerWidth - emptySpace;
  
         container.resize();
         Action.hideItem($$("dashboardInfoContainer"));

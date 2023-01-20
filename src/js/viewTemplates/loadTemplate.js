@@ -1,3 +1,12 @@
+  
+///////////////////////////////
+
+// Шаблон загрузки
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 function createOverlayTemplate(id, text = "Загрузка...", hidden = false){
 

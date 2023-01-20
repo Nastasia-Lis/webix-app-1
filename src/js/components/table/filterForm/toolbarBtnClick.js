@@ -1,3 +1,12 @@
+ 
+///////////////////////////////
+
+// Кнопка в тулбаре таблицы, открывающая фильтр
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 import { Action }             from "../../../blocks/commonFunctions.js";
 import { mediator }           from "../../../blocks/_mediator.js";
@@ -100,6 +109,7 @@ function filterBtnClick (idTable){
 
     const width    = container.$width;
     const minWidth = 850;
+    const filterMaxWidth = 350;
 
     if (width < minWidth){
         Action.hideItem($$("tree"));
@@ -110,7 +120,7 @@ function filterBtnClick (idTable){
 
     } else {
         Action.hideItem($$("table-backTableBtnFilter"));
-        filter.config.width = 350;
+        filter.config.width = filterMaxWidth;
         filter.resize();
     }
 

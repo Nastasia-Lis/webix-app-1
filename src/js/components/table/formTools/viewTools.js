@@ -1,3 +1,11 @@
+ 
+///////////////////////////////
+
+// Layout компонента с динамич. полями в формах
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
 
 function setBtnFilterState(){
     const btnClass          = document.querySelector(".webix_btn-filter");

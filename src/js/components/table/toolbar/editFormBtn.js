@@ -1,3 +1,11 @@
+ 
+///////////////////////////////
+
+// Кнопка, открывающая редактор записей
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
 
 import { Action }             from "../../../blocks/commonFunctions.js";
 import { mediator }           from "../../../blocks/_mediator.js";
@@ -89,11 +97,12 @@ function editBtnClick() {
     
     maxView ();
 
-    if (container.$width < 850 ){
+    const minWidth = 850;
+    if (container.$width < minWidth ){
         Action.hideItem(tree);
  
 
-        if (container.$width < 850 ){
+        if (container.$width < minWidth ){
             minView ();
         }
       

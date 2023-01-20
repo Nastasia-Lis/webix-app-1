@@ -1,3 +1,12 @@
+ 
+///////////////////////////////
+
+// Медиатор
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { visibleField }     from "./visibleField.js";
 import { clearSpace }       from "./clearSpace.js";
 import { getFilterState }   from "./getFilterState.js";

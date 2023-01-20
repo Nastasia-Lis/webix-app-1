@@ -1,3 +1,13 @@
+ 
+///////////////////////////////
+
+// Посты и удаление в редакторе форм
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 import { getItemId, isArray }       from "../../../../blocks/commonFunctions.js";
 import { validateProfForm, 
         setLogError, uniqueData}    from "../validation.js";

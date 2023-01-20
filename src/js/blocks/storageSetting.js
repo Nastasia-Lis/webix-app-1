@@ -28,11 +28,14 @@ function setLogState(value){
     let height;
     let icon;
 
+    const minWidth = 5;
+    const maxWidth = 90;
+
     if (value == 1){
-        height = 5;
+        height = minWidth;
         icon = "icon-eye";
     } else {
-        height = 90;
+        height = maxWidth;
         icon = "icon-eye-slash";
     }
 

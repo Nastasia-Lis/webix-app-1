@@ -22,7 +22,8 @@ function visibleColsSubmitClick (){
     const values    = [];
     const table     = getTable();
 
-    const containerWidth = window.innerWidth - $$("tree").$width - 77; 
+    const emptySpace = 77;
+    const containerWidth = window.innerWidth - $$("tree").$width - emptySpace; 
 
     function returnMinSize(){
         const allCols = table.getColumns(true).length;
@@ -36,8 +37,8 @@ function visibleColsSubmitClick (){
 
 
         let widthLastCol   =  containerWidth - sumWidth;
-
-        if (widthLastCol < 50){
+        const minWidth     = 50;
+        if (widthLastCol < minWidth){
             widthLastCol = returnMinSize();
         }
 

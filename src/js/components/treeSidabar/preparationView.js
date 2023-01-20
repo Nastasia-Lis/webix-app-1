@@ -1,3 +1,13 @@
+  
+///////////////////////////////
+
+// Дефолтные состояния всех компонентов
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 import { LoadServerData, GetFields }  from "../../blocks/globalStorage.js";
 import { mediator }                   from "../../blocks/_mediator.js";
 import { selectElem }                 from "./selectVisualElem.js";

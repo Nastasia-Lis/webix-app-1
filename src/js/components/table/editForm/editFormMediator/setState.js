@@ -1,3 +1,12 @@
+ 
+///////////////////////////////
+
+// Состояния редактора записей
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { Action }            from "../../../../blocks/commonFunctions.js";
 import { setFunctionError }  from "../../../../blocks/errors.js";
 import { mediator }          from "../../../../blocks/_mediator.js";

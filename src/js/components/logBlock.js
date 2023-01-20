@@ -1,3 +1,12 @@
+  
+///////////////////////////////
+
+// Компонент с выводом ошибок 
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { setStorageData }               from "../blocks/storageSetting.js";
 import { LoadServerData, GetFields }    from "../blocks/globalStorage.js";
 import { setFunctionError }             from "../blocks/errors.js";
@@ -27,11 +36,12 @@ function createCurrDate(){
 
 function openLog(){
     try{
-        const layout =  $$("logLayout");
-        const btn    = $$("webix_log-btn");
-        
+        const layout    =  $$("logLayout");
+        const btn       = $$("webix_log-btn");
+        const maxHeight = 90;
+
         if (btn.config.icon == eyeIcon){
-            layout.config.height = 90;
+            layout.config.height = maxHeight;
             layout.resize();
             btn   .setValue(2);
 
@@ -112,7 +122,7 @@ async function createLogMessage(srcTable) {
     let name;
 
     if (srcTable == "version"){
-        name = 'Expa v1.0.81';
+        name = 'Expa v1.0.82';
 
     } else if (srcTable == "cp"){
         name = 'Смена пароля';

@@ -1,3 +1,11 @@
+ 
+///////////////////////////////
+
+// Создание родительского элемента фильтра 
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
 
 import { Action }                   from "../../../../blocks/commonFunctions.js";
 import { setFunctionError }         from "../../../../blocks/errors.js";

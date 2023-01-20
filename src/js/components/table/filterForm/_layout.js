@@ -1,3 +1,12 @@
+ 
+///////////////////////////////
+
+// Layout фильтра
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { buttonsFormFilter }    from "./buttons/_layoutBtn.js";
 import { createEmptyTemplate }  from "../../../viewTemplates/emptyTemplate.js";
 import { saveTemplateNotify }   from "./saveTemplateNotify.js";

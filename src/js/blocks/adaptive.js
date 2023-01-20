@@ -9,17 +9,18 @@
 import { setFunctionError } from "./errors.js";
 import { Action }           from "./commonFunctions.js";
 
-
+const minWidth = 850;
 
 function resizeSidebar(){
     const tree          = $$("tree");
     const resizer       = $$("sideMenuResizer");
     const treeContainer = $$("sidebarContainer");
+    const treeWidth     = 250;
 
     function resizeTree(){
         try{
             if (tree){
-                tree.config.width = 250;
+                tree.config.width = treeWidth;
                 tree.resize();
             }
         } catch (err){
@@ -33,7 +34,7 @@ function resizeSidebar(){
 
 
     
-    if (window.innerWidth < 850){
+    if (window.innerWidth < minWidth){
         Action.hideItem(tree   );
         Action.hideItem(resizer);
         Action.hideItem(treeContainer);
@@ -47,7 +48,7 @@ function resizeSidebar(){
 
     }
 
-    if (window.innerWidth > 850 && $$("tree")){
+    if (window.innerWidth > minWidth && $$("tree")){
         resizeTree();
     }
     
@@ -80,13 +81,13 @@ function resizeForms(){
     const formResizer = $$("formsTools-resizer");
     const backBtn     = $$("table-backFormsBtnFilter");
 
-    if (window.innerWidth < 850){
+    if (window.innerWidth < minWidth){
         setMinView(tools,сontainer, backBtn);
         Action.hideItem(formResizer);
     }
 
 
-    if (window.innerWidth > 850){
+    if (window.innerWidth > minWidth){
         setMaxWidth(tools, сontainer, backBtn);
         Action.showItem(formResizer);
     }
@@ -99,12 +100,12 @@ function resizeContext(){
     const dashContainer = $$("dashboardInfoContainer");
     const contextWindow = $$("dashboardContext");
     
-    if (window.innerWidth < 850){
+    if (window.innerWidth < minWidth){
         setMinView(contextWindow, dashContainer);
     }
 
 
-    if (window.innerWidth > 850){
+    if (window.innerWidth > minWidth){
         setMaxWidth(contextWindow, dashContainer);
     }
 }
@@ -115,12 +116,12 @@ function resizeTools(){
     const backBtn       = $$("dash-backDashBtn");
 
     
-    if (window.innerWidth < 850){
+    if (window.innerWidth < minWidth){
         setMinView(dashTool, dashContainer, backBtn);
     }
 
 
-    if (window.innerWidth > 850){
+    if (window.innerWidth > minWidth){
         setMaxWidth(dashTool, dashContainer, backBtn);
     }
             
@@ -135,16 +136,16 @@ function resizeTableEditForm(){
     const tree      = $$("tree");
 
     
-    if ($$("container").$width < 850 && editForm.isVisible()){
+    if ($$("container").$width < minWidth && editForm.isVisible()){
         Action.hideItem(tree);
     }
 
 
-    if (window.innerWidth < 850){
+    if (window.innerWidth < minWidth){
         setMinView(editForm, container, backBtn);
     }
 
-    if (window.innerWidth > 850){
+    if (window.innerWidth > minWidth){
         setMaxWidth(editForm, container, backBtn);
     }
 
@@ -158,16 +159,16 @@ function resizeTableFilterForm (){
     const backBtn    = $$("table-backTableBtnFilter");
     const tree       = $$("tree");
  
-    if (window.innerWidth < 850){
+    if (window.innerWidth < minWidth){
         setMinView(filterForm, container, backBtn);
     }
 
-    if ($$("container").$width < 850 && filterForm.isVisible()){
+    if ($$("container").$width < minWidth && filterForm.isVisible()){
         Action.hideItem(tree);
     }
 
 
-    if (window.innerWidth > 850){
+    if (window.innerWidth > minWidth){
         setMaxWidth(filterForm, container, backBtn);
     }
 
@@ -241,7 +242,7 @@ function resizeAdaptive (){
         getActiveView ();
         resizeSidebar();
 
-        if(window.innerWidth > 850){
+        if(window.innerWidth > minWidth){
             setSearchInputState();
         }
 
@@ -255,13 +256,14 @@ function adaptivePoints (){
     const tree = $$("tree");
 
     function hideTree(){
-        if (window.innerWidth < 850 && tree){
+        if (window.innerWidth < minWidth && tree){
           //  tree.hide();
         }
     }
 
     function addTreeEvent(){
-        if (window.innerWidth < 1200 ){
+        const minWidthEditProp = 1200;
+        if (window.innerWidth < minWidthEditProp ){
             const editContainer = $$("editTableBarContainer");
 
             tree.attachEvent("onAfterLoad", function(){

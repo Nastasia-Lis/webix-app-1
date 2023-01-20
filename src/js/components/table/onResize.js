@@ -1,11 +1,22 @@
+  
+///////////////////////////////
+
+// Ресайз колонок
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 function onResizeTable(table){
     table.attachEvent("onResize", function(width){
         const cols = table.getColumns();
-        width -= 17;
+        const scrollWidth = 17;
+        width -= scrollWidth;
         let sum = 0;
 
         if (cols && cols.length){
-            cols.forEach(function(col,i){
+            cols.forEach(function(col){
                 sum += col.width;
             });
 

@@ -1,3 +1,13 @@
+ 
+///////////////////////////////
+
+// Сохранения состояния фильтра в local storage
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 import { getItemId }  from "../../../../blocks/commonFunctions.js";
 import { mediator }   from "../../../../blocks/_mediator.js";
 import { Filter }     from "./_FilterActions.js";

@@ -52,7 +52,9 @@ function collapseClick (){
         Action.showItem(treeContainer);
         Action.showItem(tree);
 
-        if(window.innerWidth >= 600){
+        const minWidthResizer = 600;
+
+        if(window.innerWidth >= minWidthResizer){
             Action.showItem(resizer);
         } 
      
@@ -67,7 +69,8 @@ function collapseClick (){
 
     try {
 
-        if (window.innerWidth > 850 ){
+        const minWidth = 850;
+        if (window.innerWidth > minWidth ){
             if (tree.isVisible()){
                 hideTree()
 

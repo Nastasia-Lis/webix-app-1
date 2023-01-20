@@ -1,3 +1,13 @@
+ 
+///////////////////////////////
+
+// Медиатор для кнопок 
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 import { librarySaveBtn }   from "./libSaveBtn.js";
 import { backBtn }          from "./backBtn.js";
 import { editBtn }          from "./editBtn/_layout.js";

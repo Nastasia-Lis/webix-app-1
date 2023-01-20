@@ -56,12 +56,14 @@ function setLogHeight(height){
 function setScrollHeight(){
     const logBth = $$("webix_log-btn");
 
+    const maxHeight = 90;
+    const minHeight = 5;
     if ( logBth.config.icon == "icon-eye" ){
-        setLogHeight(90);
-        setLogHeight(5);
+        setLogHeight(maxHeight);
+        setLogHeight(minHeight);
     } else {
-        setLogHeight(5);
-        setLogHeight(90);
+        setLogHeight(minHeight);
+        setLogHeight(maxHeight);
     }
    
 }

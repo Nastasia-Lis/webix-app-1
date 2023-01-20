@@ -12,7 +12,7 @@
 import { createWorkspace }   from "../filterForm/userTemplate.js";
 import { Action }            from "../../../blocks/commonFunctions.js";
 import { Filter }            from "../filterForm/actions/_FilterActions.js";
-
+import { setFunctionError }  from "../../../blocks/errors.js";
 function isDataExists(data){
     
     if (data && data.values.values.length){

@@ -1,3 +1,11 @@
+ 
+///////////////////////////////
+
+// Динамические кнопки в таблице
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
 
 import { popupExec }            from "../../blocks/notifications.js";
 import { setLogValue }          from '../logBlock.js';
@@ -106,9 +114,10 @@ function initSpace(propertyElem){
 
 
 function resizeProp(propertyElem){
+    const minPropWidth = 200;
     try{
-        if (propertyElem.config.width < 200){
-            propertyElem.config.width = 200;
+        if (propertyElem.config.width < minPropWidth){
+            propertyElem.config.width = minPropWidth;
             propertyElem.resize();
         }
     } catch (err){

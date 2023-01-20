@@ -1,4 +1,11 @@
+ 
+///////////////////////////////
 
+// Создание чекбоксов в редакторе 
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
 
 import { Action }             from "../../../../../blocks/commonFunctions.js";
 import { setFunctionError }   from "../../../../../blocks/errors.js";
@@ -277,8 +284,8 @@ function stateSelectAll(){
 
 
 function createFieldsTab (){
-    
-    if (window.innerWidth < 1200 ){
+    const minWidth = 1200;
+    if (window.innerWidth < minWidth ){
         popupSizeAdaptive();
     }
  

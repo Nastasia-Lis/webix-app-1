@@ -1,3 +1,12 @@
+  
+///////////////////////////////
+
+// Создание дерева
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { setFunctionError }               from "../../blocks/errors.js";
 import { ServerData }                     from "../../blocks/getServerData.js";
 import { GetFields, LoadServerData }      from "../../blocks/globalStorage.js";

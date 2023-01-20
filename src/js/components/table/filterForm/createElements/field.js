@@ -1,4 +1,11 @@
+ 
+///////////////////////////////
 
+// Типы полей элемента 
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
 
 import { getComboOptions, 
         Action }            from "../../../../blocks/commonFunctions.js";
@@ -68,6 +75,7 @@ function createText(type){
 
 function findComboTable(){
     if (el.editor && el.editor == "combo"){
+        
         return el.type.slice(10);
     } 
 }

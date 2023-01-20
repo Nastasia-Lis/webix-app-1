@@ -1,4 +1,13 @@
-import { createAddBtn }      from "./logic.js";
+  
+///////////////////////////////
+
+// Layout панели вкладок
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+import { createAddBtn }      from "./addTab.js";
 import { mediator }          from "../../blocks/_mediator.js";
 import { restoreTempData }   from "./restoreTempData.js";
 import { showTreeItem }      from "./showItem.js";

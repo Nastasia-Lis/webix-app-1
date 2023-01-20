@@ -1,3 +1,12 @@
+  
+///////////////////////////////
+
+// Кнопка сохранения страницы в закладки
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { LoadServerData, GetFields }        from "../../blocks/globalStorage.js";
 
 import { setLogValue }                      from "../logBlock.js";

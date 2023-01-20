@@ -1,3 +1,11 @@
+ 
+///////////////////////////////
+
+// Layout тулбара
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
 
 import { createHeadline }           from '../../viewHeadline/_layout.js';
 import { toolbarVisibleColsBtn }    from "./visibleColsBtn.js";

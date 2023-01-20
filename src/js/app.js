@@ -1,4 +1,13 @@
-console.log("expa 1.0.81"); 
+  
+///////////////////////////////
+
+// Приложение
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+console.log("expa 1.0.82"); 
 
 import { textInputClean }                     from "./blocks/commonFunctions.js";
 import { auth }                               from "./components/login.js";

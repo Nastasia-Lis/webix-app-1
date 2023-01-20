@@ -119,10 +119,11 @@ function filterBtnClick (){
     filterMaxAdaptive();
 
 
-    if (container.$width < 850){
+    const minWidth = 850;
+    if (container.$width < minWidth){
         Action.hideItem(tree);
 
-        if (container.$width  < 850 ){
+        if (container.$width  < minWidth ){
             filterMinAdaptive();
         }
 

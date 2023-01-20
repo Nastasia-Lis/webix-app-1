@@ -1,3 +1,13 @@
+ 
+///////////////////////////////
+
+// Медиатор
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
+
 import { Action, getTable }           from "../../blocks/commonFunctions.js";
 import { createTable }                from "./createSpace/generateTable.js";
 import { returnLayoutForms, 

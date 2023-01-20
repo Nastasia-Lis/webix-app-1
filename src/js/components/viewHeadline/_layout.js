@@ -1,3 +1,12 @@
+  
+///////////////////////////////
+
+// Layout титульной панели
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { setHeadlineBlock }  from "./title.js";
 import { createHistoryBtns } from "./historyBtns.js";
 import { createFavoriteBtn } from "./favoriteBtn.js";

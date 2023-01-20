@@ -59,7 +59,9 @@ function toolMinAdaptive(){
     Action.showItem($$("table-backFormsBtnFilter"));
     Action.hideItem(formResizer);
 
-    tools.config.width = window.innerWidth - 45;
+    const emptySpace = 45;
+    
+    tools.config.width = window.innerWidth - emptySpace;
     tools.resize();
 }
 
@@ -94,16 +96,18 @@ function setStateTool(){
     const contaierWidth = $$("container").$width;
 
     if(!(btnClass.classList.contains(secondaryBtnClass))){
-   
-        if (contaierWidth < 850  ){
+        const minWidth      = 850;
+        const toolsMaxWidth = 350;
+        
+        if (contaierWidth < minWidth  ){
             Action.hideItem($$("tree"));
-            if (contaierWidth  < 850 ){
+            if (contaierWidth  < minWidth ){
                 toolMinAdaptive();
             }
         } else {
      
             Action.hideItem($$("table-backFormsBtnFilter"));
-            tools.config.width = 350;
+            tools.config.width = toolsMaxWidth;
             tools.resize();
         }
         Action.showItem(formResizer);

@@ -1,3 +1,12 @@
+  
+///////////////////////////////
+
+// Библиотека
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 function lib (){
   
     (function (global, factory) {

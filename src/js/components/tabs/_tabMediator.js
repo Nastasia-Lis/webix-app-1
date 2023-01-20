@@ -1,3 +1,12 @@
+  
+///////////////////////////////
+
+// Медиатор
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 import { add, remove }          from "./actions.js";
 import { GetFields }            from "../../blocks/globalStorage.js";

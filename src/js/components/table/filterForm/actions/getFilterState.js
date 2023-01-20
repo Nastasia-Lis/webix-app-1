@@ -1,3 +1,12 @@
+ 
+///////////////////////////////
+
+// Описание текущего фильтра для пересоздания
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { setFunctionError }         from "../../../../blocks/errors.js";
 import { Filter }                   from "./_FilterActions.js";
 

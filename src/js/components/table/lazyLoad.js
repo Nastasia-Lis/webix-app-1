@@ -1,3 +1,12 @@
+ 
+///////////////////////////////
+
+// Загрузка постов по скроллу
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { createTableRows } from './createSpace/rows/createRows.js';
 
 const limitLoad   = 80;

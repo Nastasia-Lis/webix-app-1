@@ -1,3 +1,12 @@
+ 
+///////////////////////////////
+
+// Кнопка, открывающая фильтры
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 import { filterBtnClick }    from "../filterForm/toolbarBtnClick.js";
 import { Button }            from "../../../viewTemplates/buttons.js";
 

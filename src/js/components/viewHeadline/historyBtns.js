@@ -1,8 +1,17 @@
+  
+///////////////////////////////
+
+// Кнопки с историей
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 import { Button }     from "../../viewTemplates/buttons.js";
 
 import { mediator }   from "../../blocks/_mediator.js";
-import { Action }     from "../../blocks/commonFunctions.js";
+ 
 
 function returnProp(name){
     const tabInfo = mediator.tabs.getInfo();

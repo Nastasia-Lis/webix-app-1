@@ -1,3 +1,12 @@
+ 
+///////////////////////////////
+
+// Создание дочернего элемента 
+
+// Copyright (c) 2022 CA Expert
+
+///////////////////////////////
+
 
 import { field }            from "../createElements/field.js";
 import { createBtns }       from "../createElements/buttons/_layoutBtns.js";
