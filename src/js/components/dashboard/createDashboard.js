@@ -1,6 +1,10 @@
 ///////////////////////////////
 
-// Отображение charts
+// Отображение charts (create charts)
+
+// Автообновление (create autorefresh) 
+
+// Создание layout (create layout)
 
 // Copyright (c) 2022 CA Expert
 
@@ -11,15 +15,14 @@ import { Action }                         from '../../blocks/commonFunctions.js'
 import { mediator }                       from '../../blocks/_mediator.js';
 import { ServerData }                     from '../../blocks/getServerData.js';
 
-import { createDynamicElems }             from './createSpace/dynamicElements/_layout.js';
-import { createFilter }                   from './createSpace/filter/elements.js';
-import { autorefresh }                    from './autorefresh.js';
-import { createContextProperty }          from './createSpace/contextWindow.js';
+ import { createContextProperty, 
+        createFilter, 
+        createDynamicElems }              from './dynamicElements.js';
 
+
+// create charts 
 
 let idsParam;
-
-
 function createDashSpace (){
     
     const item = GetFields.item(idsParam);
@@ -154,6 +157,105 @@ function createDashboard (ids, isShowExists){
     createContext();
 }
 
+
+
+
+
+// create autorefresh 
+
+function setIntervalConfig(counter){
+    setInterval(function(){
+        mediator.dashboards.load(idsParam);
+    },  counter );
+}
+
+function autorefresh (el, ids) {
+
+  
+    if (el.autorefresh){
+
+        const userprefsOther = webix.storage.local.get("userprefsOtherForm");
+        const counter        = userprefsOther.autorefCounterOpt;
+        idsParam             = ids;
+
+        const minValue     = 15000;
+        const defaultValue = 50000;
+
+        if ( counter !== undefined ){
+
+            if ( counter >= minValue ){
+                setIntervalConfig(counter);
+
+            } else {
+                setIntervalConfig(defaultValue);
+            }
+
+        } else {
+            setIntervalConfig(defaultValue);
+        }
+
+       
+    }
+}
+
+
+
+//create layout
+
+
+function returnTemplate(id){
+    return {
+        id      : "dashboard" + id,
+        css     : "webix_dashTool", 
+        minWidth: 200,
+        width   : 350,
+        hidden  : true,
+        rows    : [{}],
+        on:{
+            onViewShow:function(){
+                if (window.innerWidth > 850){
+                    this.config.width = 350;
+                    this.resize();
+                }
+            }
+        }
+    };
+}
+
+const dashboardTool    = returnTemplate("Tool");
+const dashboardContext = returnTemplate("Context");
+
+function dashboardLayout () {
+        return [
+            {  
+                id  : "dashboardContainer",
+        
+                rows: [
+
+                    {cols:[
+                        {   id      : "dashboardInfoContainer",
+                            css     : "dash_container",
+                            minWidth: 250, 
+                            rows    : [
+                                {id : "dash-none-content"}
+                            ] 
+                        },
+                        {view: "resizer"},
+                        dashboardTool,
+                        dashboardContext
+                    ]},
+                
+                    
+                
+                ]
+                    
+            }
+        ];
+}
+
+
+
 export {
-    createDashboard
+    createDashboard,
+    dashboardLayout
 };

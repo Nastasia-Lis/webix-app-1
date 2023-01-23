@@ -7,8 +7,9 @@
 ///////////////////////////////
 
 import { Action }          from "../../blocks/commonFunctions.js";
-import { dashboardLayout } from "./_layout.js";
-import { createDashboard } from "./createDashboard.js";
+import { dashboardLayout, 
+        createDashboard }  from "./createDashboard.js";
+
 
 
 class Dashboards {

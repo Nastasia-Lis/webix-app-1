@@ -29,7 +29,7 @@ function getItemId (){
             idTable      = tableView.config.idTable;
             visibleItem  = tableView; 
   
-        } else if ($$("dashboardContainer").isVisible()){
+        } else if (dashboard && dashboard.isVisible()){
             idTable      = dashboard.config.idDash;
             visibleItem  = dashboard; 
         }
