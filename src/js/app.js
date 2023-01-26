@@ -1,13 +1,15 @@
   
 ///////////////////////////////
-
+//
+// Пустой компонент (create empty)
+//
 // Приложение
-
+//
 // Copyright (c) 2022 CA Expert
-
+//
 ///////////////////////////////
 
-console.log("expa 1.0.83"); 
+console.log("expa 1.0.84"); 
 
 import { textInputClean }                     from "./blocks/commonFunctions.js";
 import { auth }                               from "./components/login.js";
@@ -17,7 +19,7 @@ import { mediator }                           from "./blocks/_mediator.js";
  
 
 import { logLayout }                          from "./components/logBlock.js";
-import { resetTimer }                         from  "./components/logout/autoLogout.js";
+import { resetTimer }                         from  "./components/logout.js";
 
 import { setFunctionError }                   from "./blocks/errors.js";
 import { resizeAdaptive, adaptivePoints }     from "./blocks/adaptive.js";
@@ -25,13 +27,13 @@ import { resizeAdaptive, adaptivePoints }     from "./blocks/adaptive.js";
 import { webixGlobalPrefs, protoUIEdittree, 
          backButtonBrowserLogic }             from "./blocks/webixGlobalPrefs.js";
          
-import { setRouterStart }                     from "./components/routerConfig/routerStart.js";
+import { setRouterStart }                     from "./components/router.js";
 
 import { createOverlayTemplate }              from "./viewTemplates/loadTemplate.js";
 
-import { createTabbar }                       from "./components/tabs/_layout.js";
+import { createTabbar }                       from "./components/tabs.js";
 
-
+//create empty
 const emptySpace = {
     view    : "align", 
     align   : "middle,center",

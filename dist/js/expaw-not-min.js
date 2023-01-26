@@ -4,11 +4,11 @@ var __webpack_exports__ = {};
 
 ;// CONCATENATED MODULE: ./src/js/blocks/getServerData.js
 ///////////////////////////////
-
+//
 // Обёртка для ajax запросов 
-
+//
 // Copyright (c) 2022 CA Expert
-
+//
 ///////////////////////////////
 
 
@@ -212,20 +212,55 @@ class ServerData {
 
  
 
-;// CONCATENATED MODULE: ./src/js/components/logout/common.js
+;// CONCATENATED MODULE: ./src/js/components/logout.js
 ///////////////////////////////
-
-// Общая логика logout
-
+//
+// Auto logout          (create auto logout)
+//
+// Общая логика logout  (create logout)
+//
 // Copyright (c) 2022 CA Expert
-
+//
 ///////////////////////////////
 
 
 
 
 
+//create auto logout
+function resetTimer (){
 
+    let timeout;
+
+    window.onload       = resetTimer;
+    window.onmousemove  = resetTimer;
+    window.onmousedown  = resetTimer;      
+    window.ontouchstart = resetTimer;
+    window.onclick      = resetTimer;     
+    window.onkeypress   = resetTimer;   
+    window.addEventListener('scroll', resetTimer, true); 
+
+    function resetTimer() {
+        try {
+            if (window.location.pathname !== "/index.html"        && 
+                window.location.pathname !== "/"                  && 
+                window.location.pathname !== "/init/default/spaw" ){
+                
+                clearTimeout(timeout);
+
+                const time = 600000;
+                timeout = setTimeout(logout, time); // 600000
+            }
+        } catch (err){
+            errors_setFunctionError(err, "autoLogout", "resetTimer");
+        }
+    }
+    
+}
+
+
+
+//create logout
 async function logout() {
 
     Backbone.history.navigate("logout?auto=true", { trigger:true});
@@ -262,11 +297,11 @@ function checkNotAuth (err){
 
 ;// CONCATENATED MODULE: ./src/js/blocks/globalStorage.js
 ///////////////////////////////
-
+//
 // Хранилище для fields 
-
+//
 // Copyright (c) 2022 CA Expert
-
+//
 ///////////////////////////////
 
 
@@ -420,74 +455,14 @@ class GetFields extends LoadServerData {
 
 
 
-;// CONCATENATED MODULE: ./src/js/components/viewHeadline/title.js
-  
-///////////////////////////////
-
-// Название страницы
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-const title_logNameFile = "viewHeadline => title";
-
-function returnHeadline(idTemplate, templateTitle){
-    const headline = {   
-        view        : "template",
-        id          : idTemplate,
-        borderless  : true,
-        css         : "webix_block-headline",
-        height      : 34,
-        template    : templateTitle,
-        on:{
-
-        }
-    };
-
-    return headline;
-}
-function returnDiv(title = "Имя не указано"){
-    return "<div class='no-wrap-headline'>" + title + "</div>";
-}
-
-function setHeadlineBlock ( idTemplate, title ){
-    let templateTitle;
-    try{
-        if(title){
-            templateTitle = title;
-        } else {
-            templateTitle = function(){
-                const value      = $$(idTemplate).getValues();
-                const valLength  = Object.keys(value).length;
-                
-                //changeTabName(id)
-                if (valLength !== 0){
-                   // mediator.tabs.changeTabName(null, value);
-                    return returnDiv(title = value);
-                } else {
-                    return returnDiv();
-                }
-            };
-        }
-    } catch (err){
-        errors_setFunctionError(err, title_logNameFile, "setHeadlineBlock");
-    } 
-
-    return returnHeadline(idTemplate, templateTitle);
-}
-
-
 ;// CONCATENATED MODULE: ./src/js/viewTemplates/buttons.js
   
 ///////////////////////////////
-
+//
 // Шаблон кнопок 
-
+//
 // Copyright (c) 2022 CA Expert
-
+//
 ///////////////////////////////
 
 
@@ -653,21 +628,469 @@ class Button {
 }
 
 
-;// CONCATENATED MODULE: ./src/js/components/viewHeadline/historyBtns.js
+;// CONCATENATED MODULE: ./src/js/viewTemplates/popup.js
   
 ///////////////////////////////
-
-// Кнопки с историей
-
+//
+// Шаблон попапа
+//
 // Copyright (c) 2022 CA Expert
+//
+///////////////////////////////
 
+
+class Popup {
+
+    constructor (options){
+
+
+        this.elements   = options.elements;
+
+        this.headline  = {
+            template    : "<div class='no-wrap-headline'>" + 
+                            options.headline + 
+                            "</div>", 
+            css         : "webix_popup-headline", 
+            borderless  : true, 
+            height      : 40 
+        };
+
+        this.closeBtn  =  {
+            view    : "button",
+            id      : "buttonClosePopup",
+            css     : "popup_close-btn",
+            type    : "icon",
+            hotkey  : "esc",
+            width   : 25,
+            icon    : 'wxi-close',
+            click   : function(){
+ 
+                if (options.closeClick){
+                    const config =  options.closeConfig;
+                    const elem = config ? config.currElem : null;
+                    options.closeClick(elem);
+                } else {
+                    const popup = $$(options.config.id);
+                    if (popup){
+                        popup.destructor();
+                    }
+                }
+         
+             
+            }
+        };
+  
+        this.popupView  = {
+            view    : "popup",
+            css     : "webix_popup-config",
+            modal   : true,
+            escHide : true,
+            position: "center",
+            body    : {
+                scroll : "y",
+                rows   : [
+                    {   css : "webix_popup-headline-wrapper", 
+                        cols: [ 
+                            this.headline,
+                           // {},
+                            this.closeBtn,
+                            {width:12},
+                        ]
+                    },
+
+                    this.elements
+        
+                ]
+            }
+        };
+
+
+        this.options  = options.config;
+        this.id       = options.config.id;
+
+        this.values   = Object.values(this.options);
+        this.keys     = Object.keys  (this.options);
+
+      
+    }
+
+
+    addConfig(){
+        const popup  = this.popupView; 
+        const values = this.values;
+
+        if (this.keys && this.keys.length){
+            this.keys.forEach(function(option,i){
+                popup[option] = values[i];
+    
+            });
+        }
+     
+     
+        return popup;
+
+    }
+
+    createView(){
+        const popup  = this.popupView; 
+        const values = this.values;
+
+        if (this.keys && this.keys.length){
+            this.keys.forEach(function(option,i){
+                popup[option] = values[i];
+    
+            });
+        }
+     
+
+      
+        return webix.ui(this.addConfig());
+    }
+
+    showPopup(){
+        $$(this.id).show();
+     
+    }
+
+
+}
+
+
+;// CONCATENATED MODULE: ./src/js/components/viewHeadline.js.js
+  
+///////////////////////////////
+//
+// Кнопка сохранения страницы в закладки    (create favorite btn)
+//
+// Кнопки с историей                        (create history btns)
+//
+// Название страницы                        (create title)
+//
+// Layout титульной панели                  (create layout)
+//
+// Copyright (c) 2022 CA Expert
+//
 ///////////////////////////////
 
 
 
 
 
+
+
+
+
+
+const viewHeadline_js_logNameFile = "viewHeadline";
+
+
+
+//create favorite btn
+
+function findName (id, names){
+
+    try{
+        const nameTemplate = $$("favNameLink");
+
+        if (names && names.length){
+            names.forEach(function(el){
+                if (el.id == id){
+                    if(nameTemplate){
+                        nameTemplate.setValues(el.name);
+                    }
+                }
+                
+            });
+        }
+      
+    } catch (err){
+        errors_setFunctionError(
+            err, 
+            viewHeadline_js_logNameFile, 
+            "findName"
+        );
+    }
+}
+
+async function getLinkName(){
+        
+    await LoadServerData.content("fields");
+    const names = GetFields.names;
+
+    if (names){
+        const id = getItemId();
+        findName (id, names);
+    }
+  
+}
+
+function getLink(){
+    try{
+        let link    = window.location.href;
+        let index   = link.lastIndexOf("?");
  
+        if (index !== -1){ // if url params is exists
+            link        = link.slice(0, index);
+        }
+
+        const favTemplate = $$("favLink");
+        if (favTemplate){
+            favTemplate.setValues(link);
+        }
+    } catch (err){
+        errors_setFunctionError(
+            err, 
+            viewHeadline_js_logNameFile, 
+            "getLink"
+        );
+    }
+}
+
+
+function createDivTemplate(name, text){
+    return "<div style='font-weight:600'>" + 
+            name + ": </div>" + text;
+}
+ 
+function createTemplate(id, name, nonName){
+    return {   
+        id          : id,
+        css         : "popup_subtitle", 
+        borderless  : true, 
+        height      : 20 ,
+        template    : function(){
+            const value = $$(id).getValues();
+            const keys  = Object.keys(value);
+         
+
+            if (keys.length !== 0){
+                return createDivTemplate(name, value);
+
+            } else {
+                return createDivTemplate(name, nonName);
+
+            }
+      
+        }
+    };
+}
+
+function getValue(elem){
+    return  $$(elem).getValues();   
+}
+
+
+
+async function postContent(namePref){
+    const favNameLinkVal = getValue("favNameLink");
+    const favLinkVal     = getValue("favLink");
+
+    const user = await returnOwner();
+
+    if (user){
+
+        const postObj = {
+            name : "fav-link_" + namePref,
+            owner: user.id,
+            prefs:{
+                name: favNameLinkVal,
+                link: favLinkVal,
+                id  : namePref,
+            }
+        };
+
+        new ServerData({
+            id : "userprefs"
+           
+        }).post(postObj).then(function(data){
+        
+            if (data){
+        
+                setLogValue(
+                    "success", 
+                    "Ссылка" + " «" + favNameLinkVal + "» " + 
+                    " сохранёна в избранное"
+                );
+            }
+            Action.destructItem($$("popupFavsLinkSave")); 
+        });
+
+    }
+}
+
+function getFavPrefs(data){
+    const prefs = [];
+
+    if (data && data.length){
+        data.forEach(function(pref){
+
+            if (pref.name.includes("fav-link")){
+                prefs.push(pref.name);
+            }
+    
+        });
+    }
+     
+
+    return prefs;
+}
+
+function returnId(el){
+    const index = el.indexOf("_") + 1;
+    return el.slice(index);
+}
+
+function getNotUniquePref(favPrefs, namePref){
+    let unique = true;
+
+    if (favPrefs && favPrefs.length){
+        favPrefs.forEach(function(el){
+                
+            if (el.includes(namePref)){
+                const id = returnId(el);
+    
+                if (id == namePref && unique){
+                    unique = false;
+                    setLogValue(
+                        "success", 
+                        "Такая ссылка уже есть в избранном"
+                    );
+                } 
+            } 
+        });
+    
+    }
+
+    return unique;
+}
+
+
+function getNotUniquePrefs (data, namePref){
+    const favPrefs = getFavPrefs(data);
+    let unique = true;
+    try{
+        if (favPrefs.length){
+            unique = 
+            getNotUniquePref(favPrefs, namePref);
+        } 
+        
+        
+        if (!(favPrefs.length) || unique) {
+            postContent(namePref);
+        } else if (!unique){
+            Action.destructItem($$("popupFavsLinkSave"));
+        }
+    } catch (err){
+        errors_setFunctionError(
+            err,
+            viewHeadline_js_logNameFile,
+            "getNotUniquePrefs"
+        );
+    }
+}
+
+function btnSaveLinkClick(){
+  
+    const namePref = getItemId();
+
+    new ServerData({
+        id : "userprefs"
+       
+    }).get().then(function(data){
+    
+        if (data){
+            const content = data.content;
+
+            if (content && content.length){
+                getNotUniquePrefs (content, namePref);
+            }
+            
+        }
+
+    });
+
+}
+
+const btnSaveLink = new Button({
+
+    config   : {
+        value    : "Сохранить ссылку", 
+        click    : function(){
+            btnSaveLinkClick();
+        },
+    },
+    titleAttribute : "Сохранить ссылку в избранное"
+
+   
+}).maxView("primary");
+
+
+function saveFavsClick(){
+
+    const popup = new Popup({
+        headline : "Сохранить ссылку",
+        config   : {
+            id    : "popupFavsLinkSave",
+            width : 500,
+    
+        },
+
+        elements : {
+            rows : [
+                createTemplate("favNameLink", "Имя",    "не указано"),
+                {height : 5},
+                createTemplate("favLink",     "Ссылка", "не указана"),
+                {height : 10},
+                {   padding:{
+                        left  : 8,
+                        right : 8
+                    },
+                    rows:[
+                        btnSaveLink,
+                    ]
+                },
+                
+                {}
+            ]
+          
+        }
+    });
+
+    popup.createView ();
+    popup.showPopup  ();
+
+
+    getLinkName();
+    getLink();
+}
+
+
+function createFavoriteBtn(){
+
+       
+    const favsBtn = new Button({
+    
+        config   : {
+            id       : webix.uid(),
+            hotkey   : "Ctrl+Shift+L",
+            icon     : "icon-star",
+            click    : function(){
+                saveFavsClick();
+            },
+        },
+        titleAttribute : "Добавить ссылку в избранное"
+    
+       
+    }).transparentView();
+
+    return favsBtn;
+}
+
+
+
+
+
+//create history btns
 
 function returnProp(name){
     const tabInfo = mediator.tabs.getInfo();
@@ -833,476 +1256,56 @@ function createHistoryBtns(){
     };
 }
 
- 
- 
 
-;// CONCATENATED MODULE: ./src/js/viewTemplates/popup.js
-  
-///////////////////////////////
+//create title
 
-// Шаблон попапа
+function returnHeadline(idTemplate, templateTitle){
+    const headline = {   
+        view        : "template",
+        id          : idTemplate,
+        borderless  : true,
+        css         : "webix_block-headline",
+        height      : 34,
+        template    : templateTitle,
+        on:{
 
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-class Popup {
-
-    constructor (options){
-
-
-        this.elements   = options.elements;
-
-        this.headline  = {
-            template    : "<div class='no-wrap-headline'>" + 
-                            options.headline + 
-                            "</div>", 
-            css         : "webix_popup-headline", 
-            borderless  : true, 
-            height      : 40 
-        };
-
-        this.closeBtn  =  {
-            view    : "button",
-            id      : "buttonClosePopup",
-            css     : "popup_close-btn",
-            type    : "icon",
-            hotkey  : "esc",
-            width   : 25,
-            icon    : 'wxi-close',
-            click   : function(){
- 
-                if (options.closeClick){
-                    const config =  options.closeConfig;
-                    const elem = config ? config.currElem : null;
-                    options.closeClick(elem);
-                } else {
-                    const popup = $$(options.config.id);
-                    if (popup){
-                        popup.destructor();
-                    }
-                }
-         
-             
-            }
-        };
-  
-        this.popupView  = {
-            view    : "popup",
-            css     : "webix_popup-config",
-            modal   : true,
-            escHide : true,
-            position: "center",
-            body    : {
-                scroll : "y",
-                rows   : [
-                    {   css : "webix_popup-headline-wrapper", 
-                        cols: [ 
-                            this.headline,
-                           // {},
-                            this.closeBtn,
-                            {width:12},
-                        ]
-                    },
-
-                    this.elements
-        
-                ]
-            }
-        };
-
-
-        this.options  = options.config;
-        this.id       = options.config.id;
-
-        this.values   = Object.values(this.options);
-        this.keys     = Object.keys  (this.options);
-
-      
-    }
-
-
-    addConfig(){
-        const popup  = this.popupView; 
-        const values = this.values;
-
-        if (this.keys && this.keys.length){
-            this.keys.forEach(function(option,i){
-                popup[option] = values[i];
-    
-            });
-        }
-     
-     
-        return popup;
-
-    }
-
-    createView(){
-        const popup  = this.popupView; 
-        const values = this.values;
-
-        if (this.keys && this.keys.length){
-            this.keys.forEach(function(option,i){
-                popup[option] = values[i];
-    
-            });
-        }
-     
-
-      
-        return webix.ui(this.addConfig());
-    }
-
-    showPopup(){
-        $$(this.id).show();
-     
-    }
-
-
-}
-
-
-;// CONCATENATED MODULE: ./src/js/components/viewHeadline/favoriteBtn.js
-  
-///////////////////////////////
-
-// Кнопка сохранения страницы в закладки
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-
-
-
-
-
-
-
-
-
-const favoriteBtn_logNameFile = "viewHeadline => favoriteBtn";
-
-function findName (id, names){
-
-    try{
-        const nameTemplate = $$("favNameLink");
-
-        if (names && names.length){
-            names.forEach(function(el){
-                if (el.id == id){
-                    if(nameTemplate){
-                        nameTemplate.setValues(el.name);
-                    }
-                }
-                
-            });
-        }
-      
-    } catch (err){
-        errors_setFunctionError(
-            err, 
-            favoriteBtn_logNameFile, 
-            "findName"
-        );
-    }
-}
-
-async function getLinkName(){
-        
-    await LoadServerData.content("fields");
-    const names = GetFields.names;
-
-    if (names){
-        const id = getItemId();
-        findName (id, names);
-    }
-  
-}
-
-function getLink(){
-    try{
-        let link    = window.location.href;
-        let index   = link.lastIndexOf("?");
- 
-        if (index !== -1){ // if url params is exists
-            link        = link.slice(0, index);
-        }
-
-        const favTemplate = $$("favLink");
-        if (favTemplate){
-            favTemplate.setValues(link);
-        }
-    } catch (err){
-        errors_setFunctionError(
-            err, 
-            favoriteBtn_logNameFile, 
-            "getLink"
-        );
-    }
-}
-
-
-function createDivTemplate(name, text){
-    return "<div style='font-weight:600'>" + 
-            name + ": </div>" + text;
-}
- 
-function createTemplate(id, name, nonName){
-    return {   
-        id          : id,
-        css         : "popup_subtitle", 
-        borderless  : true, 
-        height      : 20 ,
-        template    : function(){
-            const value = $$(id).getValues();
-            const keys  = Object.keys(value);
-         
-
-            if (keys.length !== 0){
-                return createDivTemplate(name, value);
-
-            } else {
-                return createDivTemplate(name, nonName);
-
-            }
-      
         }
     };
+
+    return headline;
+}
+function returnDiv(title = "Имя не указано"){
+    return "<div class='no-wrap-headline'>" + title + "</div>";
 }
 
-function getValue(elem){
-    return  $$(elem).getValues();   
-}
-
-
-
-async function postContent(namePref){
-    const favNameLinkVal = getValue("favNameLink");
-    const favLinkVal     = getValue("favLink");
-
-    const user = await returnOwner();
-
-    if (user){
-
-        const postObj = {
-            name : "fav-link_" + namePref,
-            owner: user.id,
-            prefs:{
-                name: favNameLinkVal,
-                link: favLinkVal,
-                id  : namePref,
-            }
-        };
-
-        new ServerData({
-            id : "userprefs"
-           
-        }).post(postObj).then(function(data){
-        
-            if (data){
-        
-                setLogValue(
-                    "success", 
-                    "Ссылка" + " «" + favNameLinkVal + "» " + 
-                    " сохранёна в избранное"
-                );
-            }
-            Action.destructItem($$("popupFavsLinkSave")); 
-        });
-
-    }
-}
-
-function getFavPrefs(data){
-    const prefs = [];
-
-    if (data && data.length){
-        data.forEach(function(pref){
-
-            if (pref.name.includes("fav-link")){
-                prefs.push(pref.name);
-            }
-    
-        });
-    }
-     
-
-    return prefs;
-}
-
-function returnId(el){
-    const index = el.indexOf("_") + 1;
-    return el.slice(index);
-}
-
-function getNotUniquePref(favPrefs, namePref){
-    let unique = true;
-
-    if (favPrefs && favPrefs.length){
-        favPrefs.forEach(function(el){
-                
-            if (el.includes(namePref)){
-                const id = returnId(el);
-    
-                if (id == namePref && unique){
-                    unique = false;
-                    setLogValue(
-                        "success", 
-                        "Такая ссылка уже есть в избранном"
-                    );
-                } 
-            } 
-        });
-    
-    }
-
-    return unique;
-}
-
-
-function getNotUniquePrefs (data, namePref){
-    const favPrefs = getFavPrefs(data);
-    let unique = true;
+function setHeadlineBlock ( idTemplate, title ){
+    let templateTitle;
     try{
-        if (favPrefs.length){
-            unique = 
-            getNotUniquePref(favPrefs, namePref);
-        } 
-        
-        
-        if (!(favPrefs.length) || unique) {
-            postContent(namePref);
-        } else if (!unique){
-            Action.destructItem($$("popupFavsLinkSave"));
+        if(title){
+            templateTitle = title;
+        } else {
+            templateTitle = function(){
+                const value      = $$(idTemplate).getValues();
+                const valLength  = Object.keys(value).length;
+                
+                //changeTabName(id)
+                if (valLength !== 0){
+                   // mediator.tabs.changeTabName(null, value);
+                    return returnDiv(title = value);
+                } else {
+                    return returnDiv();
+                }
+            };
         }
     } catch (err){
-        errors_setFunctionError(
-            err,
-            favoriteBtn_logNameFile,
-            "getNotUniquePrefs"
-        );
-    }
-}
+        errors_setFunctionError(err, viewHeadline_js_logNameFile, "setHeadlineBlock");
+    } 
 
-function btnSaveLinkClick(){
-  
-    const namePref = getItemId();
-
-    new ServerData({
-        id : "userprefs"
-       
-    }).get().then(function(data){
-    
-        if (data){
-            const content = data.content;
-
-            if (content && content.length){
-                getNotUniquePrefs (content, namePref);
-            }
-            
-        }
-
-    });
-
-}
-
-const btnSaveLink = new Button({
-
-    config   : {
-        value    : "Сохранить ссылку", 
-        click    : function(){
-            btnSaveLinkClick();
-        },
-    },
-    titleAttribute : "Сохранить ссылку в избранное"
-
-   
-}).maxView("primary");
-
-
-function saveFavsClick(){
-
-    const popup = new Popup({
-        headline : "Сохранить ссылку",
-        config   : {
-            id    : "popupFavsLinkSave",
-            width : 500,
-    
-        },
-
-        elements : {
-            rows : [
-                createTemplate("favNameLink", "Имя",    "не указано"),
-                {height : 5},
-                createTemplate("favLink",     "Ссылка", "не указана"),
-                {height : 10},
-                {   padding:{
-                        left  : 8,
-                        right : 8
-                    },
-                    rows:[
-                        btnSaveLink,
-                    ]
-                },
-                
-                {}
-            ]
-          
-        }
-    });
-
-    popup.createView ();
-    popup.showPopup  ();
-
-
-    getLinkName();
-    getLink();
+    return returnHeadline(idTemplate, templateTitle);
 }
 
 
-function createFavoriteBtn(){
-
-       
-    const favsBtn = new Button({
-    
-        config   : {
-            id       : webix.uid(),
-            hotkey   : "Ctrl+Shift+L",
-            icon     : "icon-star",
-            click    : function(){
-                saveFavsClick();
-            },
-        },
-        titleAttribute : "Добавить ссылку в избранное"
-    
-       
-    }).transparentView();
-
-    return favsBtn;
-}
-
-
-
-
-;// CONCATENATED MODULE: ./src/js/components/viewHeadline/_layout.js
-  
-///////////////////////////////
-
-// Layout титульной панели
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-
-
+//create layout
 function createHeadline(idTemplate, title = null){
     const headlineLayout = {
         css : "webix_block-headline",
@@ -1323,11 +1326,11 @@ function createHeadline(idTemplate, title = null){
 ;// CONCATENATED MODULE: ./src/js/viewTemplates/loadTemplate.js
   
 ///////////////////////////////
-
+//
 // Шаблон загрузки
-
+//
 // Copyright (c) 2022 CA Expert
-
+//
 ///////////////////////////////
 
 
@@ -3991,11 +3994,11 @@ class Dashboards {
 
 ;// CONCATENATED MODULE: ./src/js/blocks/notifications.js
 ///////////////////////////////
-
+//
 // Confirm и modalbox 
-
+//
 // Copyright (c) 2022 CA Expert
-
+//
 ///////////////////////////////
 
 function popupExec (titleText) { 
@@ -4037,11 +4040,11 @@ function modalBox (title, text, btns){
 ;// CONCATENATED MODULE: ./src/js/viewTemplates/emptyTemplate.js
   
 ///////////////////////////////
-
+//
 // Шаблон пустого пространства
-
+//
 // Copyright (c) 2022 CA Expert
-
+//
 ///////////////////////////////
 
 function createEmptyTemplate(text, id){
@@ -4071,7 +4074,7 @@ function createEmptyTemplate(text, id){
 //
 // Кнопки редактора                             (create form btns)
 //
-// Создание контента редактора                  (create property)
+// Создание компонента редактора                (create property)
 //
 // Медиатор                                     (create mediator)
 //
@@ -6773,7 +6776,7 @@ function editTableBar (){
 //
 // Создание родительского элемента фильтра                  (create parent field)
 //
-// Кнопка с выбором операции и/или                          (create operation field btn)
+// Кнопка с выбором операции и/или                          (create logic operation field btn)
 //
 // Layout фильтра                                           (create filter form layout)
 //
@@ -6787,11 +6790,11 @@ function editTableBar (){
 //
 // Кнопка применения изменений фильтра                      (create submit popup btn)
 //
-// Кнопка удаления шаблона                                   (create template del btn)
+// Кнопка удаления шаблона                                  (create template del btn)
 //
-// Layout таббара с табами                                   (create layout tabbar)
+// Layout таббара с табами                                  (create layout tabbar)
 //
-// Layout попапа с таббаром                                  (create layout edit popup)
+// Layout попапа с таббаром                                 (create layout edit popup)
 //
 // Copyright (c) 2022 CA Expert
 //
@@ -9730,7 +9733,7 @@ function createParentFilter (parentElem, positon = 1) {
 
 
 
-//create operation field btn
+//create logic operation field btn
 
 function segmentBtn(element, isChild, uniqueId){
     let id;
@@ -11457,11 +11460,13 @@ function returnCountCols(){
     let countCols;
 
     if(storageData && storageData.values.length){
-        countCols  =  length;
+        countCols  =  storageData.values.length;
+ 
     } else {
         const cols = table.getColumns(true);
         countCols  = cols .length;
     }
+
     return countCols;
 }
 
@@ -11487,7 +11492,7 @@ function setColsSize(col){
 
 function findUniqueCols(col){
     let result = false;
-
+  
     if (isArray(storageData, generateTable_logNameFile, "findUniqueCols")){
         storageData.values.forEach(function(el){
 
@@ -11561,8 +11566,10 @@ function setVisibleCols(allCols){
 
 
 function setPositionCols(){
-    if (isArray(storageData.values, generateTable_logNameFile, "setPositionCols")){
+   
+    if (isArray(storageData, generateTable_logNameFile, "setPositionCols")){
         storageData.values.forEach(function(el){
+       
             table.moveColumn(el.column,el.position);
                 
         });
@@ -11573,13 +11580,17 @@ function setPositionCols(){
 function setUserPrefs(idTable, ids){
     table       = idTable;
 
-    const prefsName = "visibleColsPrefs_" + ids;
+    const prefsName = `fields/${ids}`;
 
     storageData   = webix.storage.local.get(prefsName);
-
+     
+    if (storageData){
+        storageData = storageData.columns;
+    }
+    
     const allCols = table.getColumns       (true);
  
-   
+ 
     if( storageData && storageData.values.length ){
         setVisibleCols (allCols);
         setPositionCols();
@@ -14185,6 +14196,14 @@ function returnMoveBtns(){
 
 // create save btn
 
+function returnMinSize(table, containerWidth){
+    const allCols = table.getColumns(true).length;
+    const width  = containerWidth / allCols;
+
+    return width.toFixed(2);
+}
+
+
 function visibleColsSubmitClick (){
  
     const list      = $$("visibleListSelected");
@@ -14196,12 +14215,6 @@ function visibleColsSubmitClick (){
     const emptySpace = 77;
     const containerWidth = window.innerWidth - $$("tree").$width - emptySpace; 
 
-    function returnMinSize(){
-        const allCols = table.getColumns(true).length;
-        const width  = containerWidth / allCols;
-
-        return width.toFixed(2);
-    }
 
     function setLastColWidth(lastColumn,widthCols){
         const sumWidth     = widthCols.reduce((a, b) => a + b, 0);
@@ -14210,7 +14223,7 @@ function visibleColsSubmitClick (){
         let widthLastCol   =  containerWidth - sumWidth;
         const minWidth     = 50;
         if (widthLastCol < minWidth){
-            widthLastCol = returnMinSize();
+            widthLastCol = returnMinSize(table, containerWidth);
         }
 
         lastColumn.width = Number(widthLastCol);
@@ -14517,11 +14530,16 @@ function setSize(sentVals){
         );
     }
 
-    if (isArray(sentVals.values, columnsSettings_logNameFile, "setSize")){
-        sentVals.values.forEach(function(el){
-            setColWidth(el);
-        });
+
+    if (sentVals && sentVals.columns){
+        const vals = sentVals.columns.values;
+        if (isArray(vals, columnsSettings_logNameFile, "setSize")){
+            vals.forEach(function(el){
+                setColWidth(el);
+            });
+        }
     }
+  
   
 }
 
@@ -14531,7 +14549,7 @@ function columnsSettings_saveExistsTemplate(sentObj, idPutData, visCol){
 
     const prefs   = sentObj.prefs;
     const id      = getItemId();
-
+   
     new ServerData({
         id : `userprefs/${idPutData}`,
        
@@ -14553,7 +14571,7 @@ function columnsSettings_saveExistsTemplate(sentObj, idPutData, visCol){
                 );
             
                 if (setUpdates){
-                    setUpdateCols (prefs);
+                    setUpdateCols (prefs.columns);
                 }
               
     
@@ -14599,7 +14617,7 @@ function columnsSettings_saveNewTemplate(sentObj){
                 );
     
                 if (setUpdates){
-                    setUpdateCols (prefs);
+                    setUpdateCols (prefs.columns);
                 }
 
             }
@@ -14610,25 +14628,49 @@ function columnsSettings_saveNewTemplate(sentObj){
     Action.destructItem($$("popupVisibleCols"));
 }
 
-function getUserprefsData(sentObj, visCol){
+function getUserprefsData(values, visCol){
     const id      = getItemId();
 
+    const name  = `userprefs.name+=+%27fields/${id}%27`;
+    const owner = `userprefs.owner+=+${userData.id}`;
+
     new ServerData({
-        id : `smarts?query=userprefs.name+=+%27visibleColsPrefs_${id}%27+and+userprefs.owner+=+${userData.id}&limit=80&offset=0`,
-    
+        id : `smarts?query=${name}+and+${owner}&limit=80&offset=0`,
+       // id : `smarts?query=userprefs.name+=+%27visibleColsPrefs_${id}%27+and+${owner}&limit=80&offset=0`,
     }).get().then(function(data){
 
         if (data){
-
             const content = data.content;
 
             if (content && content.length){ // запись уже существует
-                columnsSettings_saveExistsTemplate(sentObj, content[0].id, visCol);
+               
+                const columnsData = content[0];
+
+                if (columnsData){
+                    const prefs       = JSON.parse(columnsData.prefs);
+
+                    if (prefs){
+                        prefs.columns = values;
+                        columnsData.prefs = prefs;
+                    }
+    
+                    columnsSettings_saveExistsTemplate(columnsData, columnsData.id, visCol);
+                }
+          
             } else {
+
+                const sentObj = {
+                    name  : `fields/${id}`,
+                    owner : userData.id,
+                    prefs : {
+                        columns:values
+                    },
+                };
+
                 columnsSettings_saveNewTemplate(sentObj);
             }
-
         }
+
         
     });
 
@@ -14647,14 +14689,14 @@ async function postPrefsValues(values, visCol = false, updates = true){
         tableIdPrefs : id
     };
 
-    const sentObj = {
-        name  : "visibleColsPrefs_" + id,
-        owner : userData.id,
-        prefs : sentVals,
-    };
+    // const sentObj = {
+    //     name  : `fields/${id}`,
+    //     owner : userData.id,
+    //     prefs : sentVals,
+    // };
 
 
-    getUserprefsData(sentObj, visCol);
+    getUserprefsData(sentVals, visCol);
 
 }
 
@@ -16162,16 +16204,408 @@ function returnLayoutForms(id){
 
 
 
-;// CONCATENATED MODULE: ./src/js/components/treeEdit/form.js
+;// CONCATENATED MODULE: ./src/js/components/treeEdit.js
   
 ///////////////////////////////
-
-// Формы с заданием условий для дерева
-
+//
+// Медиатор                             (create mediator)
+//
+// Контекстное меню                     (create context menu)
+//
+// Формы с заданием условий для дерева  (create tree forms)
+//
+// Создание дерева                      (create tree data)
+//
+// Layout компонента                    (create layout)
+//
 // Copyright (c) 2022 CA Expert
-
+//
 ///////////////////////////////
 
+
+
+
+
+
+
+const treeEdit_logNameFile = "treeEdit";
+
+
+//create mediator
+class TreeEdit {
+    constructor (){
+        this.name = "treeTempl";
+    }
+
+    create(){
+        try{
+            if (!$$(this.name)){
+                $$("container").addView(
+                    {   view:"layout",
+                        id:this.name, 
+                        hidden:true, 
+                        scroll:"auto",
+                        rows: editTreeLayout()
+                    },
+                4);
+                
+                webix.ui(contextMenu());
+            }
+          
+        } catch (err){
+            errors_setFunctionError(
+                err,
+                treeEdit_logNameFile,
+                "createTreeTempl"
+            );
+        }
+    }
+
+    showView(){
+        Action.showItem($$(this.name));   
+    }
+
+    load(){
+        getInfoEditTree();
+    }
+
+
+    defaultState(id){
+        try{
+            const elem = $$("treeTempl");
+            if(!($$(id))){
+                Action.hideItem(elem);
+            }
+        } catch (err){
+            errors_setFunctionError(err, treeEdit_logNameFile, "hideTreeTempl");
+        }
+    }
+
+}
+
+
+//create context menu
+let treeItem;
+let context ;
+let treeEdit_titem ;
+let menu ;  
+let cmd ;  
+let treeEdit_url ;
+let postObj;
+
+class Option {
+
+    constructor (){
+        this.combo     = $$("editTreeCombo");
+        this.comboData = this.combo.getPopup().getList();
+        this.pull      = Object.values(this.comboData.data.pull);
+    }
+
+    static returnCombo(){
+        return $$("editTreeCombo");
+    }
+
+
+    static returnComboData(){
+        const combo = this.returnCombo();
+        return combo.getPopup().getList();
+    }
+
+
+    static returnPullValues(){
+        const data = this.returnComboData();
+        return Object.values(data.data.pull);
+    }
+
+
+    static add(option){  
+        const data       = this.returnComboData();
+        const pullValues = this.returnPullValues();
+
+        if (pullValues && pullValues.length){
+            pullValues.forEach(function(el,i){
+                if (el.id !== option.id){
+                    data.parse(option);
+                }
+            });
+        }
+       
+
+    }
+
+    static rename(option){
+        const data       = this.returnComboData();
+        const pullValues = this.returnPullValues();
+   
+        if (pullValues && pullValues.length){
+            pullValues.forEach(function (el){
+
+                if (el.id == option.id){
+                    data.parse(option);
+                }
+            
+            });
+        }
+      
+    }
+
+    static remove(option){
+        const data       = this.returnComboData();
+        const pullValues = this.returnPullValues();
+
+        function removeSubItemOptions(id){
+            const res = [id];
+
+            tree.data.eachSubItem(id, function(obj){ 
+                res.push(obj.id);
+            }); 
+
+            return res;
+        }
+
+        function isExists(element){
+            let check = false;
+            if (pullValues && pullValues.length){
+                pullValues.forEach(function (el){
+
+                    if (el.id == element){
+                        check = true;
+                    }
+                });
+            }
+            return check;
+        }
+
+        const removeItems = removeSubItemOptions(option.id);
+        if (removeItems && removeItems.length){
+            removeItems.forEach(function (item){
+                if (isExists(item)){
+                    data.remove(item);
+                }
+
+            });
+        }
+    
+    }
+
+}
+
+
+function treeEdit_addItem(text){
+    postObj.name = text;
+    postObj.pid = treeEdit_titem.id;
+
+    new ServerData({
+        id : treeEdit_url 
+       
+    }).post(postObj).then(function(data){
+    
+        if (data){
+    
+            const content = data.content;
+    
+            if (content){
+                let idNewItem = content.id;
+            
+                treeItem.data.add({
+                    id    : idNewItem,
+                    value : text, 
+                    pid   : treeEdit_titem.id
+                }, 0, treeEdit_titem.id);
+                
+                treeItem.open(treeEdit_titem.id);
+  
+                const comboOption = {
+                    id      : treeEdit_titem.id, 
+                    value   : treeEdit_titem.value
+                };
+
+                Option.add(comboOption);
+            
+                setLogValue("success","Данные сохранены");
+    
+            }
+        }
+         
+    });
+
+
+}
+
+function renameItem(text){
+    postObj.name = text;
+    postObj.id = treeEdit_titem.id;
+    postObj.pid = treeEdit_titem.pid;
+
+    new ServerData({
+        id : treeEdit_url + treeEdit_titem.id
+       
+    }).put(postObj).then(function(data){
+    
+        if (data){
+
+            treeEdit_titem.value = text;
+            treeItem.updateItem(treeEdit_titem.id, treeEdit_titem);
+
+            const option = {
+                id    : treeEdit_titem.id, 
+                value : treeEdit_titem.value
+            };
+
+            Option.rename(option);
+
+            setLogValue("success", "Данные изменены");
+    
+            
+        }
+         
+    });
+
+}
+
+function removeItem(){
+
+    new ServerData({
+        id : treeEdit_url + treeEdit_titem.id
+       
+    }).del(treeEdit_titem).then(function(data){
+    
+        if (data){
+            const option = {
+                id    : treeEdit_titem.id, 
+                value : treeEdit_titem.value
+            };
+
+            Option.remove(option);
+
+            treeItem.remove(treeEdit_titem.id);
+
+            setLogValue("success", "Данные удалены"); 
+    
+        }
+         
+    });
+
+}
+
+function expandItem(){
+    try{
+        treeItem.open(treeEdit_titem.id);
+        treeItem.data.eachSubItem(treeEdit_titem.id, function (obj){ 
+            treeItem.open(obj.id);
+        });
+
+    } catch (err){
+        errors_setFunctionError( 
+            err,
+            "editTree",
+            "case open all"
+        );
+    }
+}
+
+function collapseItem(){
+    try{
+        treeItem.close(treeEdit_titem.id);
+        treeItem.data.eachSubItem(treeEdit_titem.id, function (obj){ 
+            treeItem.close(obj.id);
+        });
+    } catch (err){
+        errors_setFunctionError( 
+            err,
+            "editTree",
+            "case close all"
+        );
+    }
+}
+
+
+function contextLogic(id, self){
+    context     = self.getContext();
+    treeItem    = $$("treeEdit");
+    treeEdit_titem       = treeItem.getItem(context.id); 
+    menu        = self.getMenu(id);
+    cmd         = menu.getItem(id).value;
+    treeEdit_url         = "trees/";
+
+    postObj = {
+        name  : "",
+        pid   : "",
+        owner : null,
+        descr : "",
+        ttype : 1,
+        value : "",
+        cdt   : null,
+    };
+
+
+    switch (cmd) {
+        case "Добавить": {
+        
+            const text = 
+            prompt
+            ("Имя нового подэлемента '" + treeEdit_titem.value + "'", "");
+
+            if (text != null) {
+                treeEdit_addItem(text);
+            }
+            break;
+        }
+    
+        case "Переименовать": {
+            const text = prompt("Новое имя", treeEdit_titem.value);
+            if (text != null) { 
+                renameItem(text);
+            }
+            break;
+        }
+        case "Удалить": {
+            removeItem();
+            break;
+        }
+
+        case "Развернуть всё": {
+            expandItem();
+            break;
+        }
+        case "Свернуть всё": {
+            collapseItem();
+            break;
+        }
+        
+    }
+}
+
+function contextMenu (){
+
+    const contextMenu = {
+        view : "contextmenu",
+        id   : "contextMenuEditTree",
+        data : [
+                "Добавить",
+                "Переименовать",
+                { $template : "Separator" },
+                "Развернуть всё",
+                "Свернуть всё",
+                { $template : "Separator" },
+                "Удалить"
+            ],
+        master: $$("treeEdit"),
+        on:{
+            onMenuItemClick:function(id){
+             
+                contextLogic(id, this);
+         
+            }
+        }
+    };
+
+    return contextMenu;
+}
+
+
+
+//create tree forms
 let tree;
 
 const cssDisable = "tree_disabled-item";
@@ -16377,7 +16811,7 @@ function returnOwnerCombo(){
 }
 
 
-function form_returnBtn(){
+function treeEdit_returnBtn(){
     const btn = {   
         view  : "button", 
         value : "Применить" ,
@@ -16397,7 +16831,7 @@ function returnForm(){
         elements: [
             returnParentCombo(),
             returnOwnerCombo (),
-            form_returnBtn(),
+            treeEdit_returnBtn(),
             {}, 
         ]
     };
@@ -16406,454 +16840,9 @@ function returnForm(){
 }
 
 
-
-;// CONCATENATED MODULE: ./src/js/components/treeEdit/_layout.js
-  
-///////////////////////////////
-
-// Layout компонента
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-
-
-
-function renameTree(state, editor){
-    
-    if(state.value != state.old){
-      
-        const pid = $$("treeEdit").getParentId(editor.id);
-        
-        const postObj = {
-            name    : state.value,
-            pid     : pid,
-            id      : editor.id,
-            owner   : null,
-            descr   : "",
-            ttype   : 1,
-            value   : "",
-            cdt     : null,
-        };
-
-        new ServerData({
-            id : `trees/${editor.id}`
-           
-        }).put(postObj).then(function(data){
-        
-            if (data){
-                setLogValue("success", "Данные изменены");
-            }
-             
-        });
-
-
-    }
-  
-}
-
-
-function returnTree(){
-    const tree = {
-        view       : "edittree",
-        id         : "treeEdit",
-        editable   : true,
-        editor     : "text",
-        editValue  : "value",
-        css        : "webix_tree-edit",
-        editaction : "dblclick",
-        data       : [],
-        on         : {
-            onAfterEditStop:function(state, editor){
-                renameTree(state, editor);
-            },
-        }
-    
-    };
-
-    return tree;
-}
-
-function editTreeLayout () {
-
-    return [
-        {   id  : "treeEditContainer", 
-            cols: [
-                {rows: [
-                        returnTree(),
-                    ],
-                },
-                returnForm()
-                   
-            ]
-        }
-   
-    ];
-}
-
-
-webix.UIManager.addHotKey("Ctrl+Shift+E", function() { 
-
-    Backbone.history.navigate("experimental/treeEdit", { trigger:true});
-
-});
-
-
-;// CONCATENATED MODULE: ./src/js/components/treeEdit/contextMenu.js
-  
-///////////////////////////////
-
-// Контекстное меню
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-
-
-let contextMenu_tree;
-let context ;
-let contextMenu_titem ;
-let menu ;  
-let cmd ;  
-let contextMenu_url ;
-let postObj;
-
-class Option {
-
-    constructor (){
-        this.combo     = $$("editTreeCombo");
-        this.comboData = this.combo.getPopup().getList();
-        this.pull      = Object.values(this.comboData.data.pull);
-    }
-
-    static returnCombo(){
-        return $$("editTreeCombo");
-    }
-
-
-    static returnComboData(){
-        const combo = this.returnCombo();
-        return combo.getPopup().getList();
-    }
-
-
-    static returnPullValues(){
-        const data = this.returnComboData();
-        return Object.values(data.data.pull);
-    }
-
-
-    static add(option){  
-        const data       = this.returnComboData();
-        const pullValues = this.returnPullValues();
-
-        if (pullValues && pullValues.length){
-            pullValues.forEach(function(el,i){
-                if (el.id !== option.id){
-                    data.parse(option);
-                }
-            });
-        }
-       
-
-    }
-
-    static rename(option){
-        const data       = this.returnComboData();
-        const pullValues = this.returnPullValues();
-   
-        if (pullValues && pullValues.length){
-            pullValues.forEach(function (el){
-
-                if (el.id == option.id){
-                    data.parse(option);
-                }
-            
-            });
-        }
-      
-    }
-
-    static remove(option){
-        const data       = this.returnComboData();
-        const pullValues = this.returnPullValues();
-
-        function removeSubItemOptions(id){
-            const res = [id];
-
-            contextMenu_tree.data.eachSubItem(id, function(obj){ 
-                res.push(obj.id);
-            }); 
-
-            return res;
-        }
-
-        function isExists(element){
-            let check = false;
-            if (pullValues && pullValues.length){
-                pullValues.forEach(function (el){
-
-                    if (el.id == element){
-                        check = true;
-                    }
-                });
-            }
-            return check;
-        }
-
-        const removeItems = removeSubItemOptions(option.id);
-        if (removeItems && removeItems.length){
-            removeItems.forEach(function (item){
-                if (isExists(item)){
-                    data.remove(item);
-                }
-
-            });
-        }
-    
-    }
-
-}
-
-
-function contextMenu_addItem(text){
-    postObj.name = text;
-    postObj.pid = contextMenu_titem.id;
-
-    new ServerData({
-        id : contextMenu_url 
-       
-    }).post(postObj).then(function(data){
-    
-        if (data){
-    
-            const content = data.content;
-    
-            if (content){
-                let idNewItem = content.id;
-            
-                contextMenu_tree.data.add({
-                    id    : idNewItem,
-                    value : text, 
-                    pid   : contextMenu_titem.id
-                }, 0, contextMenu_titem.id);
-                
-                contextMenu_tree.open(contextMenu_titem.id);
-  
-                const comboOption = {
-                    id      : contextMenu_titem.id, 
-                    value   : contextMenu_titem.value
-                };
-
-                Option.add(comboOption);
-            
-                setLogValue("success","Данные сохранены");
-    
-            }
-        }
-         
-    });
-
-
-}
-
-function renameItem(text){
-    postObj.name = text;
-    postObj.id = contextMenu_titem.id;
-    postObj.pid = contextMenu_titem.pid;
-
-    new ServerData({
-        id : contextMenu_url + contextMenu_titem.id
-       
-    }).put(postObj).then(function(data){
-    
-        if (data){
-
-            contextMenu_titem.value = text;
-            contextMenu_tree.updateItem(contextMenu_titem.id, contextMenu_titem);
-
-            const option = {
-                id    : contextMenu_titem.id, 
-                value : contextMenu_titem.value
-            };
-
-            Option.rename(option);
-
-            setLogValue("success", "Данные изменены");
-    
-            
-        }
-         
-    });
-
-}
-
-function removeItem(){
-
-    new ServerData({
-        id : contextMenu_url + contextMenu_titem.id
-       
-    }).del(contextMenu_titem).then(function(data){
-    
-        if (data){
-            const option = {
-                id    : contextMenu_titem.id, 
-                value : contextMenu_titem.value
-            };
-
-            Option.remove(option);
-
-            contextMenu_tree.remove(contextMenu_titem.id);
-
-            setLogValue("success", "Данные удалены"); 
-    
-        }
-         
-    });
-
-}
-
-function expandItem(){
-    try{
-        contextMenu_tree.open(contextMenu_titem.id);
-        contextMenu_tree.data.eachSubItem(contextMenu_titem.id, function (obj){ 
-            contextMenu_tree.open(obj.id);
-        });
-
-    } catch (err){
-        errors_setFunctionError( 
-            err,
-            "editTree",
-            "case open all"
-        );
-    }
-}
-
-function collapseItem(){
-    try{
-        contextMenu_tree.close(contextMenu_titem.id);
-        contextMenu_tree.data.eachSubItem(contextMenu_titem.id, function (obj){ 
-            contextMenu_tree.close(obj.id);
-        });
-    } catch (err){
-        errors_setFunctionError( 
-            err,
-            "editTree",
-            "case close all"
-        );
-    }
-}
-
-
-function contextLogic(id, self){
-    context = self.getContext();
-    contextMenu_tree    = $$("treeEdit");
-    contextMenu_titem   = contextMenu_tree.getItem(context.id); 
-    menu    = self.getMenu(id);
-    cmd     = menu.getItem(id).value;
-    contextMenu_url     = "trees/";
-
-    postObj = {
-        name  : "",
-        pid   : "",
-        owner : null,
-        descr : "",
-        ttype : 1,
-        value : "",
-        cdt   : null,
-    };
-
-
-    switch (cmd) {
-        case "Добавить": {
-        
-            const text = 
-            prompt
-            ("Имя нового подэлемента '" + contextMenu_titem.value + "'", "");
-
-            if (text != null) {
-                contextMenu_addItem(text);
-            }
-            break;
-        }
-    
-        case "Переименовать": {
-            const text = prompt("Новое имя", contextMenu_titem.value);
-            if (text != null) { 
-                renameItem(text);
-            }
-            break;
-        }
-        case "Удалить": {
-            removeItem();
-            break;
-        }
-
-        case "Развернуть всё": {
-            expandItem();
-            break;
-        }
-        case "Свернуть всё": {
-            collapseItem();
-            break;
-        }
-        
-    }
-}
-
-function contextMenu (){
-
-    const contextMenu = {
-        view : "contextmenu",
-        id   : "contextMenuEditTree",
-        data : [
-                "Добавить",
-                "Переименовать",
-                { $template : "Separator" },
-                "Развернуть всё",
-                "Свернуть всё",
-                { $template : "Separator" },
-                "Удалить"
-            ],
-        master: $$("treeEdit"),
-        on:{
-            onMenuItemClick:function(id){
-             
-                contextLogic(id, this);
-         
-            }
-        }
-    };
-
-    return contextMenu;
-}
-
-
-;// CONCATENATED MODULE: ./src/js/components/treeEdit/getInfoEditTree.js
-  
-///////////////////////////////
-
-// Создание дерева
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-
-
-const getInfoEditTree_logNameFile = "getContent => getInfoEditTree";
+//create tree data
 
 let treeEdit;
-
-
 
 function returnEmptyOption(){
     const options = [
@@ -16868,7 +16857,7 @@ function returnEmptyOption(){
 
 
 //set combo parents
-function getInfoEditTree_isParent(el){
+function treeEdit_isParent(el){
     let res          = false;
     const firstChild = treeEdit.getFirstChildId(el);
 
@@ -16885,7 +16874,7 @@ function findParents(treeData){
     if (treeData && treeData.length){
         treeData.forEach(function(item,i){
 
-            if (getInfoEditTree_isParent(item.id)){
+            if (treeEdit_isParent(item.id)){
                 parents.push(item);
             }
            
@@ -17035,7 +17024,7 @@ function createStruct(treeData){
         }
     
     } catch (err) {
-        errors_setFunctionError(err, getInfoEditTree_logNameFile, "createStruct");
+        errors_setFunctionError(err, treeEdit_logNameFile, "createStruct");
     }
     return treeStruct;
 }
@@ -17083,12 +17072,98 @@ function getInfoEditTree() {
 }
 
 
-;// CONCATENATED MODULE: ./src/js/components/treeEdit/_treeEditMediator.js
+
+//create layout
+
+
+function renameTree(state, editor){
+    
+    if(state.value != state.old){
+      
+        const pid = $$("treeEdit").getParentId(editor.id);
+        
+        const postObj = {
+            name    : state.value,
+            pid     : pid,
+            id      : editor.id,
+            owner   : null,
+            descr   : "",
+            ttype   : 1,
+            value   : "",
+            cdt     : null,
+        };
+
+        new ServerData({
+            id : `trees/${editor.id}`
+           
+        }).put(postObj).then(function(data){
+        
+            if (data){
+                setLogValue("success", "Данные изменены");
+            }
+             
+        });
+
+
+    }
+  
+}
+
+
+function returnTree(){
+    const tree = {
+        view       : "edittree",
+        id         : "treeEdit",
+        editable   : true,
+        editor     : "text",
+        editValue  : "value",
+        css        : "webix_tree-edit",
+        editaction : "dblclick",
+        data       : [],
+        on         : {
+            onAfterEditStop:function(state, editor){
+                renameTree(state, editor);
+            },
+        }
+    
+    };
+
+    return tree;
+}
+
+function editTreeLayout () {
+
+    return [
+        {   id  : "treeEditContainer", 
+            cols: [
+                {rows: [
+                        returnTree(),
+                    ],
+                },
+                returnForm()
+                   
+            ]
+        }
+   
+    ];
+}
+
+
+webix.UIManager.addHotKey("Ctrl+Shift+E", function() { 
+
+    Backbone.history.navigate("experimental/treeEdit", { trigger:true});
+
+});
+
+
+;// CONCATENATED MODULE: ./src/js/components/userAuth.js
   
 ///////////////////////////////
-
-// Медиатор
-
+//
+// Медиатор                 (create mediator)
+//
+// Layout редактора пароля  (create layout)
+//
 // Copyright (c) 2022 CA Expert
 
 ///////////////////////////////
@@ -17098,81 +17173,39 @@ function getInfoEditTree() {
 
 
 
-
-
-const _treeEditMediator_logNameFile = "treeEdit => _treeEditMediator";
-
-class TreeEdit {
+//create mediator
+class UserAuth {
     constructor (){
-        this.name = "treeTempl";
+        this.name = "user_auth";
     }
 
-    create(){
-        try{
-            if (!$$(this.name)){
-                $$("container").addView(
-                    {   view:"layout",
-                        id:this.name, 
-                        hidden:true, 
-                        scroll:"auto",
-                        rows: editTreeLayout()
-                    },
-                4);
-                
-                webix.ui(contextMenu());
-            }
-          
-        } catch (err){
-            errors_setFunctionError(
-                err,
-                _treeEditMediator_logNameFile,
-                "createTreeTempl"
-            );
-        }
+    create (){
+        $$("container").addView(
+            {   view   : "layout",
+                id     : this.name, 
+                css    : "webix_auth",
+                hidden : true, 
+                rows   : [
+                    authCpLayout,
+                    {}
+                ],
+            }, 
+        7);
+
     }
 
-    showView(){
-        Action.showItem($$(this.name));   
-    }
-
-    load(){
-        getInfoEditTree();
-    }
-
-
-    defaultState(id){
-        try{
-            const elem = $$("treeTempl");
-            if(!($$(id))){
-                Action.hideItem(elem);
-            }
-        } catch (err){
-            errors_setFunctionError(err, _treeEditMediator_logNameFile, "hideTreeTempl");
-        }
+    put (){
+        return doAuthCp();
     }
 
 }
 
+//create layout
 
-
-;// CONCATENATED MODULE: ./src/js/components/user_auth/_layout.js
-  
-///////////////////////////////
-
-// Layout редактора пароля
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-
-
-let _layout_form;
+let userAuth_form;
 
 function returnPassData(){
-    const passData = _layout_form.getValues();
+    const passData = userAuth_form.getValues();
 
     const objPass = {
         op: passData.oldPass,
@@ -17184,9 +17217,9 @@ function returnPassData(){
 
 async function doAuthCp (){
 
-    _layout_form = $$("cp-form");
+    userAuth_form = $$("cp-form");
 
-    if ( _layout_form && _layout_form.validate()){
+    if ( userAuth_form && userAuth_form.validate()){
 
         const objPass = returnPassData();
 
@@ -17201,8 +17234,8 @@ async function doAuthCp (){
                     setLogValue("success", data.err);
                 }
                 
-                _layout_form.clear();
-                _layout_form.setDirty(false);
+                userAuth_form.clear();
+                userAuth_form.setDirty(false);
                 return true;
             }
              
@@ -17215,14 +17248,14 @@ async function doAuthCp (){
    
 }
 
-const _layout_headline = {   
+const userAuth_headline = {   
     template   : "<div>Изменение пароля</div>",
     css        : 'webix_cp-form',
     height     : 35, 
     borderless : true
 };
 
-function _layout_returnDiv(text){
+function userAuth_returnDiv(text){
     const defaultStyles = 
     "display:inline-block; font-size:13px!important; font-weight:600;";
 
@@ -17244,9 +17277,9 @@ const userName = {
         const values = $$("authName").getValues();
         const keys   = Object.keys(values);
         if (keys.length !== 0){
-            return _layout_returnDiv (values);
+            return userAuth_returnDiv (values);
         } else {
-            return _layout_returnDiv ("не указано");
+            return userAuth_returnDiv ("не указано");
         }
     },
 };
@@ -17285,7 +17318,7 @@ const authCp = {
     borderless  : true,
     margin      : 5,
     elements    : [
-        _layout_headline,
+        userAuth_headline,
         userName,
         generatePassInput("Старый пароль"       , "oldPass"   ),
         generatePassInput("Новый пароль"        , "newPass"   ),
@@ -17338,55 +17371,77 @@ const authCpLayout = {
 };
 
 
-;// CONCATENATED MODULE: ./src/js/components/user_auth/_userAuthMediator.js
-  
+;// CONCATENATED MODULE: ./src/js/components/settings.js
 ///////////////////////////////
-
-// Медиатор
-
+//
+// Медиатор                                     (create mediator)
+//
+// Элемент с заголовком компонента              (create headline)
+//
+// Таббар с формами                             (create tabbar layout)
+//
+// Шаблон формы                                 (create form template)
+//
+// Форма настройки рабочего пространства        (create workspace settings tab)
+//
+// Форма других настроек                        (create other settings tab)
+//
+// Дефолтные значения форм                      (create default state)
+//
+// Сохранение пользовательских настроек         (create buttons)
+//
+// Layout пользовательских настроек             (create layout)
+//
+// Layout пользовательских настроек             (create user prefs settings)
+//
 // Copyright (c) 2022 CA Expert
-
+//
 ///////////////////////////////
 
 
 
-class UserAuth {
+
+
+
+
+
+
+
+
+const settings_logNameFile   = "settings";
+
+
+//create mediator
+class Settings {
     constructor (){
-        this.name = "user_auth";
+        this.name = "dashboards";
     }
 
     create (){
         $$("container").addView(
-            {   view   : "layout",
-                id     : this.name, 
-                css    : "webix_auth",
-                hidden : true, 
-                rows   : [
-                    authCpLayout,
-                    {}
+            {   view    :"layout",
+                id      : "settings", 
+                css     :"webix_auth",
+                hidden  :true, 
+                rows    :[
+                    settingsLayout,
                 ],
             }, 
-        7);
+        8);
 
+    
     }
 
-    put (){
-        return doAuthCp();
+    async put (){
+       return await saveSettings();
     }
 
 }
 
+//create headline
 
-;// CONCATENATED MODULE: ./src/js/components/settings/headline.js
-///////////////////////////////
 
-// Элемент с заголовком компонента
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-const headline_headline = {   
+const settings_headline = {   
     view        : "template",
     template    : "<div>Настройки</div>",
     css         : "webix_headline-userprefs",
@@ -17431,23 +17486,91 @@ const userInfo =  {
 
 
 const layoutHeadline =  [ 
-    headline_headline,
+    settings_headline,
     userInfo,
 ];
 
 
-;// CONCATENATED MODULE: ./src/js/components/settings/tabbar/formTemplate.js
-///////////////////////////////
+//create tabbar layout
 
-// Шаблон формы
+function createHeadlineSpan(headMsg){
+    return `<span class='webix_tabbar-filter-headline'>
+            ${headMsg}
+            </span>`;
+}
 
-// Copyright (c) 2022 CA Expert
+const settings_tabbar = {   
+    view     : "tabbar",  
+    type     : "top", 
+    id       : "userprefsTabbar",
+    css      : "webix_filter-popup-tabbar",
+    multiview: true, 
+    height   : 50,
+    options  : [
+        {   value: createHeadlineSpan("Рабочее пространство"), 
+            id   : 'userprefsWorkspace' 
+        },
+        {   value: createHeadlineSpan("Другое"), 
+            id   : 'userprefsOther' 
+        },
+    ],
 
-///////////////////////////////
+    on       :{
+        onBeforeTabClick:function(id){
+            const tabbar    = $$("userprefsTabbar");
+            const value     = tabbar.getValue();
+            const tabbarVal = value + "Form";
+            const form      = $$(tabbarVal);
+
+            function createModalBox(){
+                try{
+                    webix.modalbox({
+                        title   : "Данные не сохранены",
+                        css     : "webix_modal-custom-save",
+                        buttons : ["Отмена", "Не сохранять", "Сохранить"],
+                        width   : 500,
+                        text    : "Выберите действие перед тем как продолжить"
+                    }).then(function(result){
+
+                        if ( result == 1){
+                            
+                            const storageData = webix.storage.local.get(tabbarVal);
+                            const saveBtn     = $$("userprefsSaveBtn");
+                            const resetBtn    = $$("userprefsResetBtn");
+
+                            form.setValues(storageData);
+
+                            tabbar.setValue(id);
+                            Action.disableItem(saveBtn);
+                            Action.disableItem(resetBtn);
+
+                        } else if ( result == 2){
+                            saveSettings ();
+                            tabbar.setValue(id);
+                        }
+                    });
+                } catch (err){
+                    errors_setFunctionError(
+                        err, 
+                        settings_logNameFile, 
+                        "createModalBox"
+                    );
+                }
+            }
+
+
+            if (form.isDirty()){
+                createModalBox();
+                return false;
+            }
+
+        }
+    }
+};
 
 
 
-
+//create form template
 function returnFormTemplate(id, elems){
     const form =  {    
         view       : "form", 
@@ -17461,7 +17584,7 @@ function returnFormTemplate(id, elems){
             onViewShow: webix.once(function(){
                mediator.setForm(this);
             }),
-    
+      
             onChange:function(){
                 const form     = this;
                 const isDirty  = form.isDirty();
@@ -17502,20 +17625,82 @@ function returnFormTemplate(id, elems){
     return form;
 }
 
-
-;// CONCATENATED MODULE: ./src/js/components/settings/tabbar/formOther.js
-///////////////////////////////
-
-// Форма других настроек
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
+//create workspace settings tab
 
 
+const logBlockRadio = {
+    view         : "radio",
+    labelPosition: "top",
+    name         : "logBlockOpt", 
+    label        : "Отображение блока системных сообщений", 
+    value        : 1, 
+    options      : [
+        {"id" : 1, "value" : "Показать"}, 
+        {"id" : 2, "value" : "Скрыть"  }
+    ],
+    on:{
+        onAfterRender: function () {
+            this.getInputNode().setAttribute(
+                "title",
+                "Показать/скрыть по умолчанию" + 
+                " блок системных сообщений"
+                );
+        },
+
+        onChange:function(newValue, oldValue){
+            try{
+                const btn = $$("webix_log-btn");
+
+                if (newValue !== oldValue){
+             
+                    if (newValue == 1){
+                        btn.setValue(2);
+                    } else {
+                        btn.setValue(1);
+                    }
+                
+                }
+            } catch (err){
+                errors_setFunctionError(
+                    err,
+                    settings_logNameFile,
+                    "onChange"
+                );
+            }
+ 
+        }
+    }
+};
+
+
+function returnFormElem(){
+    const elems = [
+        { rows : [  
+            logBlockRadio,
+            {height : 15},
+
+        ]},
+    ]; 
+
+    return returnFormTemplate(
+        "userprefsWorkspaceForm",  
+        elems
+    );
+}
+
+
+const workspaceLayout = {
+    view      : "scrollview",
+    borderless: true, 
+    css       : "webix_multivew-cell",
+    id        : "userprefsWorkspace",
+    scroll    : "y", 
+    body      : returnFormElem()
+};
 
 
 
-const formOther_logNameFile   = "settings => tabbar => otherForm";
+//create other settings tab
 
 const autorefRadio   = {
     view            : "radio",
@@ -17578,7 +17763,7 @@ const autorefCounter = {
             } catch (err){
                 errors_setFunctionError(
                     err,
-                    formOther_logNameFile,
+                    settings_logNameFile,
                     "onChange"
                 );
             }
@@ -17611,7 +17796,7 @@ const saveHistoryRadio = {
     ],
 };
 
-function formOther_returnForm(){
+function settings_returnForm(){
     const elems = [{
         rows: [
             autorefRadio,
@@ -17638,105 +17823,12 @@ const otherFormLayout = {
     css       : "webix_multivew-cell",
     id        : "userprefsOther", 
     scroll    : "y", 
-    body      : formOther_returnForm()
-};
-
-
-;// CONCATENATED MODULE: ./src/js/components/settings/tabbar/formWorkspace.js
-///////////////////////////////
-
-// Форма настройки рабочего пространства
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
- 
-
-
-
-
-
-const formWorkspace_logNameFile   = "settings => tabbar => workspaceForm";
-
-const logBlockRadio = {
-    view         : "radio",
-    labelPosition: "top",
-    name         : "logBlockOpt", 
-    label        : "Отображение блока системных сообщений", 
-    value        : 1, 
-    options      : [
-        {"id" : 1, "value" : "Показать"}, 
-        {"id" : 2, "value" : "Скрыть"  }
-    ],
-    on:{
-        onAfterRender: function () {
-            this.getInputNode().setAttribute(
-                "title",
-                "Показать/скрыть по умолчанию" + 
-                " блок системных сообщений"
-                );
-        },
-
-        onChange:function(newValue, oldValue){
-            try{
-                const btn = $$("webix_log-btn");
-
-                if (newValue !== oldValue){
-             
-                    if (newValue == 1){
-                        btn.setValue(2);
-                    } else {
-                        btn.setValue(1);
-                    }
-                
-                }
-            } catch (err){
-                errors_setFunctionError(
-                    err,
-                    formWorkspace_logNameFile,
-                    "onChange"
-                );
-            }
- 
-        }
-    }
-};
-
-
-function formWorkspace_returnForm(){
-    const elems = [
-        { rows : [  
-            logBlockRadio,
-            {height : 15},
-
-        ]},
-    ]; 
-
-    return returnFormTemplate(
-        "userprefsWorkspaceForm",  
-        elems
-    );
-}
-
-
-const workspaceLayout = {
-    view      : "scrollview",
-    borderless: true, 
-    css       : "webix_multivew-cell",
-    id        : "userprefsWorkspace",
-    scroll    : "y", 
-    body      : formWorkspace_returnForm()
+    body      : settings_returnForm()
 };
 
 
 
-;// CONCATENATED MODULE: ./src/js/components/settings/tabbar/commonTab.js
-///////////////////////////////
-
-// Дефолтные значения форм
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
+//create default state
 
 const defaultValue = {
     userprefsOther     : {},
@@ -17744,47 +17836,42 @@ const defaultValue = {
 };
 
 
+//create buttons
 
-;// CONCATENATED MODULE: ./src/js/components/settings/tabbar/buttons.js
-///////////////////////////////
-
-// Сохранение пользовательских настроек
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-
-
-
-
-
-
-
-
-let buttons_tabbar;
+let tabbarElem;
 let tabbarVal;
-let buttons_form;
+let settings_form;
 
-let buttons_values;
-let buttons_sentObj;
+let settings_values;
+let settings_sentObj;
+
+function settings_createSentObj(owner, values){
+    const sentObj = {
+        name  : "/settings",
+        owner : owner,
+        prefs : {
+            [tabbarVal]:values
+        }
+    };
+
+    return sentObj;
+}
 
 function putPrefs(id){
 
     return new ServerData({
         id : `userprefs/${id}`
        
-    }).put(buttons_sentObj).then(function(data){
+    }).put(settings_sentObj).then(function(data){
 
         if (data){
-            const formVals = JSON.stringify(buttons_values);
+            const formVals = JSON.stringify(settings_values);
             setStorageData (tabbarVal, formVals);
 
-            const name         = buttons_tabbar.getValue();
-            defaultValue[name] = buttons_values;
+            const name         = tabbarElem.getValue();
+            defaultValue[name] = settings_values;
 
-            buttons_form.setDirty(false);
+            settings_form.setDirty(false);
 
             setLogValue(
                 "success", 
@@ -17799,17 +17886,17 @@ function putPrefs(id){
 
 
 function postPrefs(){
-
+    
     return new ServerData({
         id : "userprefs"
        
-    }).post(buttons_sentObj).then(function(data){
+    }).post(settings_sentObj).then(function(data){
 
         if (data){
-            const tabbarVal         = buttons_tabbar.getValue();
-            defaultValue[tabbarVal] = buttons_values;
+            const tabbarVal         = tabbarElem.getValue();
+            defaultValue[tabbarVal] = settings_values;
 
-            buttons_form.setDirty(false);
+            settings_form.setDirty(false);
 
             setLogValue(
                 "success", 
@@ -17823,40 +17910,54 @@ function postPrefs(){
    
 }
 
-function buttons_createSentObj(owner, values){
-    const sentObj = {
-        name  : tabbarVal,
-        owner : owner,
-        prefs : values,
-    };
 
-    return sentObj;
-}
 
 
 async function savePrefs(){
     const ownerId = await returnOwner();
+    const name  = `userprefs.name='/settings'`;
+    const owner = `userprefs.owner=${ownerId.id}`;
 
     return new ServerData({
-        id : `smarts?query=userprefs.name='${tabbarVal}'+and+userprefs.owner=${ownerId.id}&limit=80&offset=0`
+        id : `smarts?query=${name}+and+${owner}&limit=80&offset=0`
        
     }).get().then(function(data){
 
-        if (data){
-            buttons_values  = buttons_form.getValues();
-            buttons_sentObj = buttons_createSentObj(ownerId.id, buttons_values);
+        if (data && data.content){
+        
+            settings_values  = settings_form.getValues();
 
-            if (data.content && data.content.length){ // запись уже существует
-                const content   = data.content;
-                const firstPost = content[0];
-    
-                if (firstPost){
-                    return putPrefs(firstPost.id);
-                }
-              
+            if (data.content){
+                settings_sentObj = data.content[0];
+            } 
+           
+            if (settings_sentObj){ // modify exists settings
+                const prefs = JSON.parse(settings_sentObj.prefs);
+                prefs[`${tabbarVal}`] = settings_values;
+   
+                settings_sentObj.prefs = prefs;
             } else {
-                return postPrefs(); 
+                settings_sentObj = settings_createSentObj(ownerId.id, settings_values);
             }
+
+
+           
+
+            if (settings_sentObj){
+                if (data.content && data.content.length){ // запись уже существует
+                    const content   = data.content;
+                    const firstPost = content[0];
+        
+                    if (firstPost){
+                        return putPrefs(firstPost.id);
+                    }
+                
+                } else {
+                    return postPrefs(); 
+                }
+            }
+        
+           
         }
          
     });
@@ -17864,12 +17965,12 @@ async function savePrefs(){
 
 
 async function saveSettings (){
-    buttons_tabbar    = $$("userprefsTabbar");
-    const value     = buttons_tabbar.getValue();
-    tabbarVal = value + "Form" ;
-    buttons_form      = $$(tabbarVal);
+    tabbarElem    = $$("userprefsTabbar");
+    const value   = tabbarElem.getValue();
+    tabbarVal     = value + "Form" ;
+    settings_form          = $$(tabbarVal);
 
-    if (buttons_form.isDirty()){
+    if (settings_form.isDirty()){
         return savePrefs();   
    
     } else {
@@ -17920,7 +18021,7 @@ const clearBtn = new Button({
    
 }).maxView();
 
-const buttons_submitBtn = new Button({
+const settings_submitBtn = new Button({
     
     config   : {
         id       : "userprefsSaveBtn",
@@ -17941,123 +18042,17 @@ const buttons =  {
         {   responsive : "adaptiveUserprefs",
             cols:[
                 clearBtn,
-                buttons_submitBtn,
+                settings_submitBtn,
             ]
         }
     ]
 };
 
-
-;// CONCATENATED MODULE: ./src/js/components/settings/tabbar/tabbar.js
-///////////////////////////////
-
-// Таббар с формами
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-
-
-
-const tabbar_logNameFile   = "settings => tabbar => tabbar";
-
-
-function createHeadlineSpan(headMsg){
-    return `<span class='webix_tabbar-filter-headline'>
-            ${headMsg}
-            </span>`;
-}
-
-const tabbar_tabbar = {   
-    view     : "tabbar",  
-    type     : "top", 
-    id       : "userprefsTabbar",
-    css      : "webix_filter-popup-tabbar",
-    multiview: true, 
-    height   : 50,
-    options  : [
-        {   value: createHeadlineSpan("Рабочее пространство"), 
-            id   : 'userprefsWorkspace' 
-        },
-        {   value: createHeadlineSpan("Другое"), 
-            id   : 'userprefsOther' 
-        },
-    ],
-
-    on       :{
-        onBeforeTabClick:function(id){
-            const tabbar    = $$("userprefsTabbar");
-            const value     = tabbar.getValue();
-            const tabbarVal = value + "Form";
-            const form      = $$(tabbarVal);
-
-            function createModalBox(){
-                try{
-                    webix.modalbox({
-                        title   : "Данные не сохранены",
-                        css     : "webix_modal-custom-save",
-                        buttons : ["Отмена", "Не сохранять", "Сохранить"],
-                        width   : 500,
-                        text    : "Выберите действие перед тем как продолжить"
-                    }).then(function(result){
-
-                        if ( result == 1){
-                            
-                            const storageData = webix.storage.local.get(tabbarVal);
-                            const saveBtn     = $$("userprefsSaveBtn");
-                            const resetBtn    = $$("userprefsResetBtn");
-
-                            form.setValues(storageData);
-
-                            tabbar.setValue(id);
-                            Action.disableItem(saveBtn);
-                            Action.disableItem(resetBtn);
-
-                        } else if ( result == 2){
-                            saveSettings ();
-                            tabbar.setValue(id);
-                        }
-                    });
-                } catch (err){
-                    errors_setFunctionError(
-                        err, 
-                        tabbar_logNameFile, 
-                        "createModalBox"
-                    );
-                }
-            }
-
-
-            if (form.isDirty()){
-                createModalBox();
-                return false;
-            }
-
-        }
-    }
-};
-
-
-;// CONCATENATED MODULE: ./src/js/components/settings/tabbar/_layoutTab.js
-///////////////////////////////
-
-// Layout пользовательских настроек
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-
-
-
+//create layout
 
 const layoutTabbar =  {
     rows:[
-        tabbar_tabbar,
+        settings_tabbar,
         {
             cells:[
                 workspaceLayout,
@@ -18068,20 +18063,7 @@ const layoutTabbar =  {
     ]
 };
 
-
-;// CONCATENATED MODULE: ./src/js/components/settings/_layout.js
-///////////////////////////////
-
-// Layout пользовательских настроек
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-
-
+//create user prefs settings
 
 const settingsLayout = {
 
@@ -18102,72 +18084,94 @@ const settingsLayout = {
 
 
 
-;// CONCATENATED MODULE: ./src/js/components/settings/_settingsMediator.js
-///////////////////////////////
-
-// Медиатор
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-
-class Settings {
-    constructor (){
-        this.name = "dashboards";
-    }
-
-    create (){
-        $$("container").addView(
-            {   view    :"layout",
-                id      : "settings", 
-                css     :"webix_auth",
-                hidden  :true, 
-                rows    :[
-                    settingsLayout,
-                ],
-            }, 
-        8);
-    }
-
-    async put (){
-       return await saveSettings();
-    }
-
-}
-
-
-;// CONCATENATED MODULE: ./src/js/components/treeSidabar/selectVisualElem.js
+;// CONCATENATED MODULE: ./src/js/components/treeSidebar.js
   
 ///////////////////////////////
-
-// Отрисовка компонента выбранного
-
+//
+// Медиатор                             (create mediator)
+//
+// Отрисовка неизвестного компонента    (create null content)
+//
+// Отрисовка компонента выбранного      (create select component)
+//
+// Дефолтные состояния всех компонентов (create default states)
+//
+// Навигация по дереву                  (create navigate)
+//
+// Загрузка menu                        (create load menu logic)
+//
+// Загрузка fields                      (create load fields logic)
+//
+// Загрузка дерева с ошибкой            (create error load)
+//
+// Адаптив дерева                       (create adaptive)
+//
+// Layout дерева                        (create layout)
+//
 // Copyright (c) 2022 CA Expert
-
+//
 ///////////////////////////////
 
-
-
-
-
-
-const selectVisualElem_logNameFile = "treeSidebar => selectVisualElem";
-
-function setNameToTab(){
-    mediator.tabs.changeTabName(false, false);
-    const data = mediator.tabs.getInfo();
-    data.tree  = {none:true};
-    mediator.tabs.setInfo(data);
  
+
+
+
+
+
+
+const treeSidebar_logNameFile = "treeSidebar";
+
+
+
+//create mediator
+
+class Tree {
+    constructor (){
+        this.name = "tree";
+    }
+
+    create(){
+        return treeSidebar();
+    }
+
+    showView(){
+        Action.showItem($$(this.name));   
+    }
+
+    load(data){
+        generateMenuTree(data);
+    }
+
+    selectItem(id){
+        return selectElem(id);
+    }
+
+    dataLength(){
+        return $$(this.name).data.order.length;
+    }
+
+    close (){
+        const tree = $$(this.name);
+
+        if (tree){
+            tree.closeAll();
+        }
+
+    }
+
+    clear (){
+        const tree = $$(this.name);
+    
+        if (tree){
+            tree.clearAll();
+        }
+
+    }
+
 }
 
-function createUndefinedView(){
-
-    const id = "webix__null-content";
-
+//create null content
+function createNullContent(id){
     const view = {
         view  : "align", 
         align : "middle,center",
@@ -18184,6 +18188,39 @@ function createUndefinedView(){
         }
         
     };
+
+    return view;
+}
+
+//create select component
+function setNameToTab(){
+    mediator.tabs.changeTabName(false, false);
+    const data = mediator.tabs.getInfo();
+    data.tree  = {none:true};
+    mediator.tabs.setInfo(data);
+ 
+}
+
+function createUndefinedView(){
+
+    const id = "webix__null-content";
+
+    // const view = {
+    //     view  : "align", 
+    //     align : "middle,center",
+    //     id    : id,
+    //     body  : {  
+    //         borderless : true, 
+    //         template   : "Блок в процессе разработки", 
+    //         height     : 50, 
+    //         width      : 220,
+    //         css        : {
+    //             "color"     : "#858585",
+    //             "font-size" : "14px!important"
+    //         }
+    //     }
+        
+    // };
      
     if ( !($$(id)) ){
         try{
@@ -18194,11 +18231,11 @@ function createUndefinedView(){
                 setNameToTab();
             }
 
-            $$("container").addView(view, 2);
+            $$("container").addView(createNullContent(id), 2);
         } catch (err){ 
             errors_setFunctionError(
                 err, 
-                selectVisualElem_logNameFile, 
+                treeSidebar_logNameFile, 
                 "createUndefinedView"
             );
         }
@@ -18283,21 +18320,10 @@ function selectElem(id){
 
 
 
-;// CONCATENATED MODULE: ./src/js/components/treeSidabar/preparationView.js
-  
-///////////////////////////////
-
-// Дефолтные состояния всех компонентов
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
 
 
 
-
-
-
+//create default states
 async function getSingleTreeItem(data) {
 
     await LoadServerData.content("fields");
@@ -18322,34 +18348,158 @@ function preparationView(id){
 }
 
 
-;// CONCATENATED MODULE: ./src/js/components/treeSidabar/loadFields.js
+
+
+//create navigate
+
+function getFields (id){
+    const menu  = GetMenu.content;
+    
+    if (menu){
+        try{
+            Backbone.history.navigate("tree/" + id, { trigger : true });
+        } catch (err){
+            errors_setFunctionError(err, treeSidebar_logNameFile, "getFields");
+        }
+    }
+}
+
+
+
+//create load menu logic
+
+function generateChildsTree  (el){
+    let childs = [];
+
+    
+    const childsElems = el.childs;
+    if (childsElems && childsElems.length){
+        childsElems.forEach(function(child){
+            childs.push({
+                id     : child.name, 
+                value  : child.title,
+                action : child.action
+            });
+        });
+    }
+      
+    
+    return childs;
+}
+
+function generateParentTree  (el){ 
+    let menuItem;
+    try {                  
+        menuItem = {
+            id     : el.name, 
+            value  : el.title,
+            action : el.action,
+        };
+
   
-///////////////////////////////
+        if ( !(el.title) ){
+            menuItem.value="Без названия";
+        }
 
-// Загрузка fields
+        if ( el.mtype == 2 ) {
 
-// Copyright (c) 2022 CA Expert
+            if ( el.childs.length == 0 ){
+                menuItem.webix_kids = true; 
+            } else {
+                menuItem.data = generateChildsTree (el);
+            }         
+        } 
 
-///////////////////////////////
+    
+
+    } catch (err){
+        errors_setFunctionError(
+            err,
+            treeSidebar_logNameFile,
+            "generateParentTree"
+        );
+    }
+    return menuItem;
+} 
+
+
+function generateMenuTree (menu){ 
+
+    const menuTree   = [];
+    const delims     = [];
+    const tree       = $$("tree");
+    const btnContext = $$("button-context-menu");
+
+    let menuHeader = [];
+
+    // menu.push ({
+    //     "id": 77,
+    //     "name": "sales",
+    //     "title": "Sales",
+    //     "mtype": 1,
+    //     "ltype": 1,
+    //     "action": "dashboard",
+    //     "childs": []
+    // });
+
+    if(isArray(menu, treeSidebar_logNameFile, "generateMenuTree")){
+        menu.forEach(function(el,i){
+            if (el.mtype !== 3){
+                menuTree.push  ( generateParentTree (el, menu, menuTree  ) );
+                if (el.childs.length !==0){
+                    //menuHeader = generateHeaderMenu (el, menu, menuHeader);
+                }
+            } else {
+                delims.push(el.name);
+                menuTree.push({
+                    id       : el.name, 
+                    disabled : true,
+                    value    : ""
+                });
+            }
+        
+        });
+  
+ 
+
+
+        tree.clearAll();
+        tree.parse(menuTree);
+        Action.hideItem($$("loadTreeOverlay"));
+
+        let popupData = btnContext.config.popup.data;
+        if (popupData !== undefined){
+            popupData = menuHeader;
+            btnContext.enable();
+        }
+
+
+        if (delims && delims.length){
+            delims.forEach(function(el){
+                tree.addCss(el, "tree_delim-items");
+    
+            });
+        }
+      
+
+    }
+}
 
 
 
 
 
-
-
-const loadFields_logNameFile = "treeSidebar => loadFields";
-
-let loadFields_tree;
+//create load fields logic
+let treeSidebar_tree;
 let id;
 let selectItem;
 
-function loadFields_returnId(type, uid){
+function treeSidebar_returnId(type, uid){
     return "q-" + type + "_data-tree_" + uid;
 }
 
 function addDisableItem(idLoadElement, value, idParent = id){
-    loadFields_tree.data.add({
+    treeSidebar_tree.data.add({
         id      :idLoadElement,
         disabled:true,
         value   :value
@@ -18357,13 +18507,13 @@ function addDisableItem(idLoadElement, value, idParent = id){
 }
 
 function createLoadEl(uid){
-    const id = loadFields_returnId("none", uid);
+    const id = treeSidebar_returnId("none", uid);
     addDisableItem (id, "Загрузка ...");
-    loadFields_tree.addCss    (id, "tree_load-items");
+    treeSidebar_tree.addCss    (id, "tree_load-items");
 }
 
 function createNoneEl(uid, idParent){
-    const id = loadFields_returnId("none", uid);
+    const id = treeSidebar_returnId("none", uid);
     addDisableItem (id, "Раздел пуст", idParent);
 }
 
@@ -18371,7 +18521,7 @@ function createNoneEl(uid, idParent){
 function isUniqueItem (menu, data){
     let check  = true;
 
-    if (isArray(menu, loadFields_logNameFile, "isUniqueItem")){
+    if (isArray(menu, treeSidebar_logNameFile, "isUniqueItem")){
         menu.forEach(function(el, i){
             if (el.name == data){
                 check = false;
@@ -18393,54 +18543,21 @@ function removeTreeEls( noneEl = false, uid ){
     const load = "q-load_data-tree_" + uid;
     const none = "q-none_data-tree_" + uid;
     try{
-        if( loadFields_tree.exists(load)){
-            loadFields_tree.remove(load);
+        if( treeSidebar_tree.exists(load)){
+            treeSidebar_tree.remove(load);
         }
         
-        if( loadFields_tree.exists(none) && noneEl){
-            loadFields_tree.remove(none);
+        if( treeSidebar_tree.exists(none) && noneEl){
+            treeSidebar_tree.remove(none);
         }
     } catch (err){
         errors_setFunctionError(
             err, 
-            loadFields_logNameFile, 
+            treeSidebar_logNameFile, 
             "removeTreeEls"
         );
     }
 }
-
-// function openFullBranch(value){
-
-//     const parent = tree.getParentId(value);
-//     if (parent && tree.getParentId(parent)){
-//         tree.open     (parent);
-//         openFullBranch(parent);
-     
-//     } else {
-      
-//         tree.open(value);
-//         tree.open(parent);
-//         tree.select(value);
-//         const item = tree.getItemNode(value);
-   
-//         // webix.html.addCss( item, "webix_selected");
-//         // item.setAttribute("tabindex", "0");
-//         // item.setAttribute("aria-selected", "true");
-        
-//         console.log(tree.exists(value), value, tree.getItem(value))
-//     }     
-
-// }
-
-
-// function selectTreeItem(){
-//     const isExists = tree.exists(selectItem);
- 
-//     if (isExists && selectItem){
-//         openFullBranch(selectItem); 
-//     }
-// }
-
 
 async function generateMenuData (typeChild, idParent, uid){
     await LoadServerData.content("fields");
@@ -18459,7 +18576,7 @@ async function generateMenuData (typeChild, idParent, uid){
     
                 if (isTrueType(values[i], typeChild) && isUniqueItem(menu, data)){
             
-                    loadFields_tree.data.add({
+                    treeSidebar_tree.data.add({
                             id      : data, 
                             value   : (values[i].plural) ? 
                             values[i].plural : values[i].singular, 
@@ -18480,15 +18597,15 @@ async function generateMenuData (typeChild, idParent, uid){
                 removeTreeEls(false, uid);
                 const noneEl =  "q-none_data-tree_" + uid;
             
-                if( !(loadFields_tree.exists(noneEl)) ){
+                if( !(treeSidebar_tree.exists(noneEl)) ){
                     createNoneEl(uid, idParent);
-                    loadFields_tree.addCss(noneEl, "tree_none-items");
+                    treeSidebar_tree.addCss(noneEl, "tree_none-items");
                 }
             }
         } catch (err){
             errors_setFunctionError(
                 err, 
-                loadFields_logNameFile, 
+                treeSidebar_logNameFile, 
                 "generateMenuData"
             );
         }
@@ -18499,7 +18616,7 @@ async function generateMenuData (typeChild, idParent, uid){
 
 async function getMenuChilds(uid) {
 
-    const selectedItem  = loadFields_tree.getItem(id);
+    const selectedItem  = treeSidebar_tree.getItem(id);
     if (selectedItem.action.includes("all_")){
         const index = selectedItem.action.indexOf("_");
         const type  = selectedItem.action.slice  (index + 1);
@@ -18511,17 +18628,17 @@ async function getMenuChilds(uid) {
 
 
 
-function loadFields_loadFields(selectId, treeItem){
+function treeSidebar_loadFields(selectId, treeItem){
  
     const uid = webix.uid();
   
-    loadFields_tree = $$("tree");
+    treeSidebar_tree = $$("tree");
     id   = selectId;
     selectItem = treeItem;
 
-    const item = loadFields_tree.getItem(id);
+    const item = treeSidebar_tree.getItem(id);
 
-    if (loadFields_tree.getItem(id) && item.$count === -1){
+    if (treeSidebar_tree.getItem(id) && item.$count === -1){
         createLoadEl (uid);
         getMenuChilds(uid);
     }
@@ -18529,81 +18646,10 @@ function loadFields_loadFields(selectId, treeItem){
 }
 
 
-;// CONCATENATED MODULE: ./src/js/components/treeSidabar/navigate.js
-  
-///////////////////////////////
-
-// Навигация по дереву
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
 
 
 
-
-
-const navigate_logNameFile = "treeSidebar => navigate";
-
-function getFields (id){
-    const menu  = GetMenu.content;
-    
-    if (menu){
-        try{
-            Backbone.history.navigate("tree/" + id, { trigger : true });
-        } catch (err){
-            errors_setFunctionError(err, navigate_logNameFile, "getFields");
-        }
-    }
-}
-
-
-;// CONCATENATED MODULE: ./src/js/components/treeSidabar/adaptive.js
-  
-///////////////////////////////
-
-// Адаптив дерева
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-
-
-const adaptive_logNameFile = "treeSidebar => adaptive";
-const minWidth    = 850;
-function setAdaptiveState(){
-    try{
-        if (window.innerWidth < minWidth ){
-            $$("tree").hide();
-        }
-    } catch (err){
-        errors_setFunctionError(
-            err, 
-            adaptive_logNameFile, 
-            "setAdaptiveState"
-        );
-    }
-}
-
-
-;// CONCATENATED MODULE: ./src/js/components/treeSidabar/errorLoad.js
-  
-///////////////////////////////
-
-// Загрузка дерева с ошибкой
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-
-
-
+//create error load
 function setErrLoad(err){
     Action.hideItem($$("loadTreeOverlay"));
                 
@@ -18638,24 +18684,25 @@ function setErrLoad(err){
 }
 
 
-;// CONCATENATED MODULE: ./src/js/components/treeSidabar/_layout.js
-  
-///////////////////////////////
+//create adaptive
+const minWidth    = 850;
+function setAdaptiveState(){
+    try{
+        if (window.innerWidth < minWidth ){
+            $$("tree").hide();
+        }
+    } catch (err){
+        errors_setFunctionError(
+            err, 
+            treeSidebar_logNameFile, 
+            "setAdaptiveState"
+        );
+    }
+}
 
-// Layout дерева
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
- 
- 
 
 
-
-
-
-
+//create layout
 
 function isBranch(id){
     return $$("tree").isBranch(id);
@@ -18731,7 +18778,7 @@ function treeSidebar () {
             },
 
             onBeforeOpen:function (id, selectItem){
-                loadFields_loadFields(id, selectItem);
+                treeSidebar_loadFields(id, selectItem);
             },
 
             onAfterSelect:function(id){
@@ -18756,202 +18803,6 @@ function treeSidebar () {
 
     return tree;
 }
-
-
-;// CONCATENATED MODULE: ./src/js/components/treeSidabar/loadMenu.js
-  
-///////////////////////////////
-
-// Загрузка menu
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-
-const loadMenu_logNameFile = " treeSidebar => loadMenu";
-
-function generateChildsTree  (el){
-    let childs = [];
-
-    
-    const childsElems = el.childs;
-    if (childsElems && childsElems.length){
-        childsElems.forEach(function(child){
-            childs.push({
-                id     : child.name, 
-                value  : child.title,
-                action : child.action
-            });
-        });
-    }
-      
-    
-    return childs;
-}
-
-function generateParentTree  (el){ 
-    let menuItem;
-    try {                  
-        menuItem = {
-            id     : el.name, 
-            value  : el.title,
-            action : el.action,
-        };
-
-  
-        if ( !(el.title) ){
-            menuItem.value="Без названия";
-        }
-
-        if ( el.mtype == 2 ) {
-
-            if ( el.childs.length == 0 ){
-                menuItem.webix_kids = true; 
-            } else {
-                menuItem.data = generateChildsTree (el);
-            }         
-        } 
-
-    
-
-    } catch (err){
-        errors_setFunctionError(
-            err,
-            loadMenu_logNameFile,
-            "generateParentTree"
-        );
-    }
-    return menuItem;
-} 
-
-
-function generateMenuTree (menu){ 
-
-    const menuTree   = [];
-    const delims     = [];
-    const tree       = $$("tree");
-    const btnContext = $$("button-context-menu");
-
-    let menuHeader = [];
-
-    // menu.push ({
-    //     "id": 77,
-    //     "name": "sales",
-    //     "title": "Sales",
-    //     "mtype": 1,
-    //     "ltype": 1,
-    //     "action": "dashboard",
-    //     "childs": []
-    // });
-
-    if(isArray(menu, loadMenu_logNameFile, "generateMenuTree")){
-        menu.forEach(function(el,i){
-            if (el.mtype !== 3){
-                menuTree.push  ( generateParentTree (el, menu, menuTree  ) );
-                if (el.childs.length !==0){
-                    //menuHeader = generateHeaderMenu (el, menu, menuHeader);
-                }
-            } else {
-                delims.push(el.name);
-                menuTree.push({
-                    id       : el.name, 
-                    disabled : true,
-                    value    : ""
-                });
-            }
-        
-        });
-  
- 
-
-
-        tree.clearAll();
-        tree.parse(menuTree);
-        Action.hideItem($$("loadTreeOverlay"));
-
-        let popupData = btnContext.config.popup.data;
-        if (popupData !== undefined){
-            popupData = menuHeader;
-            btnContext.enable();
-        }
-
-
-        if (delims && delims.length){
-            delims.forEach(function(el){
-                tree.addCss(el, "tree_delim-items");
-    
-            });
-        }
-      
-
-    }
-}
-
-
-;// CONCATENATED MODULE: ./src/js/components/treeSidabar/_treeMediator.js
-  
-///////////////////////////////
-
-// Медиатор
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-
-
-
-
-class Tree {
-    constructor (){
-        this.name = "tree";
-    }
-
-    create(){
-        return treeSidebar();
-    }
-
-    showView(){
-        Action.showItem($$(this.name));   
-    }
-
-    load(data){
-        generateMenuTree(data);
-    }
-
-    selectItem(id){
-        return selectElem(id);
-    }
-
-    dataLength(){
-        return $$(this.name).data.order.length;
-    }
-
-    close (){
-        const tree = $$(this.name);
-
-        if (tree){
-            tree.closeAll();
-        }
-
-    }
-
-    clear (){
-        const tree = $$(this.name);
-    
-        if (tree){
-            tree.clearAll();
-        }
-
-    }
-
-}
-
 
 
 ;// CONCATENATED MODULE: ./src/js/blocks/checkFonts.js
@@ -18989,225 +18840,12 @@ function checkFonts (){
 }
 
 
-;// CONCATENATED MODULE: ./src/js/components/header/collapseBtn.js
-///////////////////////////////
-
-// Кнопка сокрытия сайдбара
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-
-
-const collapseBtn_logNameFile = "header => collapseBtn";
-
-
-function isIdIncludes(el){
-    if (el.config.id.includes("search" )      || 
-        el.config.id.includes("log-btn")      || 
-        el.config.id.includes("context-menu") )
-    {
-        return true;
-    }
-}
-
-function setSearchInputState(visible = false){
-    const headerChilds = $$("header").getChildViews();
-
-    if (isArray(headerChilds, collapseBtn_logNameFile, "setSearchInputState")){
-        headerChilds.forEach(function(el){
-            if (isIdIncludes(el)){
-                
-                if(visible){
-                    el.show();
-                } else {
-                    el.hide();
-                }
-                
-            }
-        });
-    }
-
-   
-}
-
-
-function collapseClick (){
-    const treeContainer = $$("sidebarContainer");
-    const tree          = $$("tree");
-    const resizer       = $$("sideMenuResizer");
-
-    function showTree(){
-        Action.showItem(treeContainer);
-        Action.showItem(tree);
-
-        const minWidthResizer = 600;
-
-        if(window.innerWidth >= minWidthResizer){
-            Action.showItem(resizer);
-        } 
-     
-    }
-
-    function hideTree(){
-        Action.hideItem(treeContainer);
-        Action.hideItem(tree);
-        Action.hideItem(resizer);
-        
-    }
-
-    try {
-
-        const minWidth = 850;
-        if (window.innerWidth > minWidth ){
-            if (tree.isVisible()){
-                hideTree()
-
-            } else {
-                showTree(); 
- 
-            }
-        } else {
-            if (tree.isVisible()){
-                hideTree();
-                setSearchInputState(true);
-
-            } else {
-                showTree();
-
-                tree.config.width = window.innerWidth;
-                tree.resize();
-        
-                setSearchInputState();
-            }
-        }
-        this.refresh();
-       
-    } catch (err){
-        errors_setFunctionError(
-            err,
-            collapseBtn_logNameFile,
-            "collapseClick"
-        );
-
-    }
-}
-
-
-const collapseBtn = {   
-    view    : "button",
-    type    : "icon",
-    id      : "collapseBtn",
-    icon    : "icon-bars",
-    css     : "webix_collapse",
-    title   : "текст",
-    height  : 42, 
-    width   : 40,
-    click   : collapseClick,
-    on      : {
-        onAfterRender: function () {
-            this.getInputNode()
-            .setAttribute("title", "Видимость бокового меню");
-            checkFonts();
-        }
-    }    
-};
-
-
-
-
-
-;// CONCATENATED MODULE: ./src/js/components/header/logBtn.js
-///////////////////////////////
-
-// Кнопка сокрытия лога
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-function logBtnClick(id){
-    const btn = $$(id);
-
-    if (btn.getValue() == 1){
-        btn.setValue(2);
-
-    } else {
-        btn.setValue(1);
-    }
-}
-
-
-function onChangeLogBtn(newValue){
-
-    const list      = $$("logBlock-list");
-    const logLayout = $$("logLayout");
-    const logBtn    = $$("webix_log-btn");
-
-    const lastItemList = list.getLastId();
-
-    const minHeight = 5;
-    
-    const maxHeight = 90;
-
-    function setState (height,icon){
-        logBtn.config.badge     = "";
-
-        logLayout.config.height = height;
-        logLayout.resize();
-
-        logBtn.config.icon      = icon;
-        logBtn.refresh();
-    }
-
-    if (newValue == 2){
-        setState (maxHeight, "icon-eye-slash");
-        list.showItem(lastItemList);
-
-    } else {
-       
-        setState (minHeight, "icon-eye");
-    }
-}
-
-
-const logBtn = new Button({
-    
-    config   : {
-        id       : "webix_log-btn",
-        hotkey   : "Ctrl+M",
-        icon     : "icon-eye", 
-        badge    : 0,
-        click   : function(id){
-            logBtnClick(id)
-        },
-    },
-    onFunc   :{
-        onChange:function(newValue){
-        
-            onChangeLogBtn(newValue);
-        },
-        setStorageData:function(){
-
-        }
-    },
-    titleAttribute : "Показать/скрыть системные сообщения"
-
-   
-}).minView();
-
-
 ;// CONCATENATED MODULE: ./src/js/components/favorites.js
   
 ///////////////////////////////
-
+//
 // Попап с избранными страницами
-
+//
 // Copyright (c) 2022 CA Expert
 
 ///////////////////////////////
@@ -19517,13 +19155,25 @@ function favsPopup(){
 
 
 
-;// CONCATENATED MODULE: ./src/js/components/header/userContextBtn.js
+;// CONCATENATED MODULE: ./src/js/components/header.js
 ///////////////////////////////
-
-// Пользовательское меню
-
+//
+// Меню пользователя. Загрузка                  (create load data)
+//
+// Дефолтное состояние header после адаптива    (create default state)
+//
+// Кнопка пользовательских функций              (create user prefs btn)
+//
+// Кнопка сокрытия лога                         (create log btn)
+//
+// Кнопка сокрытия дерева                       (create collapse btn)
+// 
+// Layout                                       (create layout)
+//
+// Медиатор                                     (create mediator)
+//
 // Copyright (c) 2022 CA Expert
-
+//
 ///////////////////////////////
 
 
@@ -19536,6 +19186,82 @@ function favsPopup(){
 
 
 
+const header_logNameFile = "header";
+
+//create load data
+function createItems (){
+
+    const items = [];
+
+    function pustItem(id, value, icon){
+        const item = {
+            id    : id, 
+            value : value, 
+            icon  : icon
+        };
+
+        if (id == "logout"){
+            item.css = "webix_logout";
+        }
+      
+        items.push(item);
+    
+        return items;
+    }
+    
+    pustItem ("favs",       "Избранное",     "icon-star"     );
+    pustItem ("settings",  "Настройки",      "icon-cog"      );
+    pustItem ("cp",         "Смена пароля",  "icon-lock"     );
+    pustItem ("logout",     "Выйти",         "icon-sign-out" );
+
+      
+   
+    return items;
+}
+
+function generateHeaderMenu (menu){
+
+    const btnContext = $$("button-context-menu");
+    let menuHeader;
+
+    if (isArray(menu, "header/loadContextMenu", "generateHeaderMenu")){
+        menu.forEach(function(el,i){
+            if (el.mtype !== 3){
+                if (el.mtype !== 3 && el.childs.length !==0){
+                    menuHeader = createItems (el, menu, menuHeader);
+                }
+            }
+        
+        });
+    
+        if (btnContext.config.popup.data !== undefined){
+            btnContext.config.popup.data = menuHeader;
+            btnContext.enable();
+        }
+    
+    }
+ 
+
+}
+
+
+
+
+
+//create default state
+function headerDefState(){
+    const headerChilds = $$("header").getChildViews();
+
+    if (isArray(headerChilds, "header/setDefaultState", "headerDefState")){
+        headerChilds.forEach(function(el){
+            if (el.config.id.includes("search")){
+                el.show();
+            }
+        });
+    }
+  
+}
+//create user prefs btn
 
 function navigateTo (path){
     return Backbone.history.navigate(path, {trigger : true});
@@ -19687,20 +19413,191 @@ const userContextBtn = new Button({
    
 }).minView();
 
+//create log btn
 
-;// CONCATENATED MODULE: ./src/js/components/header/_layout.js
-///////////////////////////////
+function logBtnClick(id){
+    const btn = $$(id);
 
-// Layout всего header
+    if (btn.getValue() == 1){
+        btn.setValue(2);
 
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
+    } else {
+        btn.setValue(1);
+    }
+}
 
 
+function onChangeLogBtn(newValue){
+
+    const list      = $$("logBlock-list");
+    const logLayout = $$("logLayout");
+    const logBtn    = $$("webix_log-btn");
+
+    const lastItemList = list.getLastId();
+
+    const minHeight = 5;
+    
+    const maxHeight = 90;
+
+    function setState (height,icon){
+        logBtn.config.badge     = "";
+
+        logLayout.config.height = height;
+        logLayout.resize();
+
+        logBtn.config.icon      = icon;
+        logBtn.refresh();
+    }
+
+    if (newValue == 2){
+        setState (maxHeight, "icon-eye-slash");
+        list.showItem(lastItemList);
+
+    } else {
+       
+        setState (minHeight, "icon-eye");
+    }
+}
+
+
+const logBtn = new Button({
+    
+    config   : {
+        id       : "webix_log-btn",
+        hotkey   : "Ctrl+M",
+        icon     : "icon-eye", 
+        badge    : 0,
+        click   : function(id){
+            logBtnClick(id)
+        },
+    },
+    onFunc   :{
+        onChange:function(newValue){
+        
+            onChangeLogBtn(newValue);
+        },
+        setStorageData:function(){
+
+        }
+    },
+    titleAttribute : "Показать/скрыть системные сообщения"
+
+   
+}).minView();
+
+//create collapse btn
+function isIdIncludes(el){
+    if (el.config.id.includes("search" )      || 
+        el.config.id.includes("log-btn")      || 
+        el.config.id.includes("context-menu") )
+    {
+        return true;
+    }
+}
+
+function setSearchInputState(visible = false){
+    const headerChilds = $$("header").getChildViews();
+
+    if (isArray(headerChilds, header_logNameFile, "setSearchInputState")){
+        headerChilds.forEach(function(el){
+            if (isIdIncludes(el)){
+                
+                if(visible){
+                    el.show();
+                } else {
+                    el.hide();
+                }
+                
+            }
+        });
+    }
+
+   
+}
+
+
+function collapseClick (){
+    const treeContainer = $$("sidebarContainer");
+    const tree          = $$("tree");
+    const resizer       = $$("sideMenuResizer");
+
+    function showTree(){
+        Action.showItem(treeContainer);
+        Action.showItem(tree);
+
+        const minWidthResizer = 600;
+
+        if(window.innerWidth >= minWidthResizer){
+            Action.showItem(resizer);
+        } 
+     
+    }
+
+    function hideTree(){
+        Action.hideItem(treeContainer);
+        Action.hideItem(tree);
+        Action.hideItem(resizer);
+        
+    }
+
+    try {
+
+        const minWidth = 850;
+        if (window.innerWidth > minWidth ){
+            if (tree.isVisible()){
+                hideTree()
+
+            } else {
+                showTree(); 
+ 
+            }
+        } else {
+            if (tree.isVisible()){
+                hideTree();
+                setSearchInputState(true);
+
+            } else {
+                showTree();
+
+                tree.config.width = window.innerWidth;
+                tree.resize();
+        
+                setSearchInputState();
+            }
+        }
+        this.refresh();
+       
+    } catch (err){
+        errors_setFunctionError(
+            err,
+            header_logNameFile,
+            "collapseClick"
+        );
+
+    }
+}
+
+
+const collapseBtn = {   
+    view    : "button",
+    type    : "icon",
+    id      : "collapseBtn",
+    icon    : "icon-bars",
+    css     : "webix_collapse",
+    title   : "текст",
+    height  : 42, 
+    width   : 40,
+    click   : collapseClick,
+    on      : {
+        onAfterRender: function () {
+            this.getInputNode()
+            .setAttribute("title", "Видимость бокового меню");
+            checkFonts();
+        }
+    }    
+};
+
+//create layout
 const logo = {
     view        : "template",
     borderless  :true,
@@ -19745,111 +19642,7 @@ const header = {
 };
 
 
-;// CONCATENATED MODULE: ./src/js/components/header/setDefaultState.js
-///////////////////////////////
-
-// Дефолтное состояние header после адаптива
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-function headerDefState(){
-    const headerChilds = $$("header").getChildViews();
-
-    if (isArray(headerChilds, "header/setDefaultState", "headerDefState")){
-        headerChilds.forEach(function(el){
-            if (el.config.id.includes("search")){
-                el.show();
-            }
-        });
-    }
-  
-}
-
-
-
-;// CONCATENATED MODULE: ./src/js/components/header/loadContextMenu.js
-///////////////////////////////
-
-// Меню пользователя. Загрузка
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-function createItems (){
-
-    const items = [];
-
-    function pustItem(id, value, icon){
-        const item = {
-            id    : id, 
-            value : value, 
-            icon  : icon
-        };
-
-        if (id == "logout"){
-            item.css = "webix_logout";
-        }
-      
-        items.push(item);
-    
-        return items;
-    }
-    
-    pustItem ("favs",       "Избранное",     "icon-star"     );
-    pustItem ("settings",  "Настройки",      "icon-cog"      );
-    pustItem ("cp",         "Смена пароля",  "icon-lock"     );
-    pustItem ("logout",     "Выйти",         "icon-sign-out" );
-
-      
-   
-    return items;
-}
-
-function generateHeaderMenu (menu){
-
-    const btnContext = $$("button-context-menu");
-    let menuHeader;
-
-    if (isArray(menu, "header/loadContextMenu", "generateHeaderMenu")){
-        menu.forEach(function(el,i){
-            if (el.mtype !== 3){
-                if (el.mtype !== 3 && el.childs.length !==0){
-                    menuHeader = createItems (el, menu, menuHeader);
-                }
-            }
-        
-        });
-    
-        if (btnContext.config.popup.data !== undefined){
-            btnContext.config.popup.data = menuHeader;
-            btnContext.enable();
-        }
-    
-    }
- 
-
-}
-
-
-;// CONCATENATED MODULE: ./src/js/components/header/_headerMediator.js
-///////////////////////////////
-
-// Медиатор
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-
-
-
+//create mediator
 class Header {
     constructor (){
         this.name = "tree";
@@ -19874,220 +19667,26 @@ class Header {
 }
 
 
-;// CONCATENATED MODULE: ./src/js/components/tabs/showItem.js
-  
+;// CONCATENATED MODULE: ./src/js/components/tabs.js
+
 ///////////////////////////////
-
-// Клик на таб
-
+//
+// Медиатор                                                 (create mediator)
+//
+// Кнопка с историей и восстановлением последней вкладки    (create restore btn)
+//
+// Клик на таб                                              (create tab click logic)
+//
+// Восстановление утерянных вкладок после перезагрузки      (create restore data logic)
+//
+// layout кнопки добавления вкладки                         (create add btn layout)
+//
+// Добавление и удаление вкладок                            (create add tab logic)
+//
+// Layout панели вкладок                                    (create layout)
+//
 // Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-
-function returnSelectElem(type){
-   
-    let selectElem; 
-        
-    if (type == "dbtable"){
-        selectElem = "tables";
-
-    } else if(type == "tform"){
-        selectElem = "forms";
-
-    } else if(type == "dashboard"){
-        selectElem = "dashboards";
-    // Action.hideItem($$("propTableView"));
-
-    }  
-
-    return selectElem;
-}
-
-function hideOtherElems(selectElem){
-    const visiualElements = mediator.getViews();
-
-
-    if (visiualElements && visiualElements.length){
-        visiualElements.forEach(function(elem){
-            if (elem !== selectElem){
-                Action.hideItem($$(elem));
-            } 
-        });
-    }
-
-    Action.hideItem ($$("webix__null-content"));
-    Action.hideItem ($$("webix__none-content"));
-
-}
-
-
-function showContent(selectElem, id){
-    if (selectElem == "tables" || selectElem == "forms"){
-        mediator.tables.showExists(id);
-    } else if (selectElem == "dashboards"){
-        mediator.dashboards.showExists(id);
-    }
-
-}
-
-function selectTree(id, isOtherTab){
-   
-    const tree = $$("tree");
-    if ( tree.exists(id) && isOtherTab){
-        tree.config.isTabSelect = true;
-        tree.select(id);
-       // tree.showItem(id);
-    }
-
-    // if parent is closed ??
-}
-
-function setLink(id){
-
-    const path = "tree/" + id;
-    
-    Backbone.history.navigate(path);
- 
-}
-
-function setEmptyState(){
-    mediator.hideAllContent();
-    Backbone.history.navigate("tree/tab?new=true", { trigger : true });
-    Action.showItem ($$("webix__none-content"));
-}
-
-function changeHistoryBtnsState(){
-    const config = mediator.tabs.getInfo();
- 
-    if (config && config.history){
-        const history  = config.history;
-        const nextPage = config.nextPage;
-
-        if (history.length > 1){
-            mediator.tabs.setHistoryBtnState(false);
-        } else {
-            mediator.tabs.setHistoryBtnState(false, false);
-        }
- 
-        if (nextPage){
-            mediator.tabs.setHistoryBtnState(true);
-        } else {
-            mediator.tabs.setHistoryBtnState(true, false);
-        }
- 
-    }
-    
-}
-
-function showTreeItem(config, isOtherTab, isOtherView){
-
-    if (isOtherView){
-        Backbone.history.navigate("/" + config.view, { trigger : true });
-    } else {
-
-        const id              = config.field;
-        const type            = config.type;
-    
-        if (config.none){ //none-content
-            setEmptyState();
-
-        } else {
-            const selectElem = returnSelectElem(type);
-
-            hideOtherElems(selectElem);
-
-            Action.showItem ($$(selectElem));
-    
-
-            if (id){
-                setLink    (id);
-                showContent(selectElem, id);
-                selectTree (id, isOtherTab);
-
-            }
-
-        }
-
-
-        changeHistoryBtnsState();
-       
-    }
-
-}
-
-
-;// CONCATENATED MODULE: ./src/js/components/tabs/restoreTempData.js
-  
-///////////////////////////////
-
-// Восстановление утерянных вкладок после перезагрузки
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
- 
-
-
-function restoreTempData(tempConfig, field){
-  
-    const filter = tempConfig.filter;
-    const edit   = tempConfig.edit;
-
-    if (filter){
-    
-        if (filter.dashboards){
-            const data = {
-                content : filter.values
-            };
-            
-            webix.storage.local.put("dashFilterState", data);
-        } else {
-       
-            if (tempConfig.queryFilter){
-                const table = getTable();
-                if (table){
-                    table.config.filter = {
-                        table : filter.id,
-                        query : tempConfig.queryFilter
-                    };
-                  
-                }
-
-             
-            }
-            webix.storage.local.put("currFilterState", filter);
-        }
-    
-        window.history.pushState('', '', "?view=filter");
-  
-    }  
- 
-    if (edit){
-         
-        webix.storage.local.put("editFormTempData", edit.values);
-        if (edit.selected){
-            window.history.pushState('', '', "?id=" + edit.selected);
-        }
-
-    }
-
-
-   
-}
-
-
-;// CONCATENATED MODULE: ./src/js/components/tabs/actions.js
-  
-///////////////////////////////
-
-// Добавление и удаление вкладок
-
-// Copyright (c) 2022 CA Expert
-
+//
 ///////////////////////////////
 
 
@@ -20095,194 +19694,12 @@ function restoreTempData(tempConfig, field){
 
 
 
-
-/// add tab 
-
-function actions_clearTree(){
-    const tree = $$("tree");
-    if (tree){
-        tree.unselectAll();
-    }
-  
-}
-
-function actions_createEmptySpace(show, hide){
-    Action.showItem (show);  
-    Action.hideItem (hide);
-}
-
-function actions_createSpace(isNull){
-    const nullContent = $$("webix__null-content");
-    const noneContent = $$("webix__none-content");
-
-   
-    if (isNull){
-        actions_createEmptySpace(nullContent, noneContent);
-    } else {
-        actions_createEmptySpace(noneContent, nullContent);
-    }
-}
-
-function setPath(){
-    Backbone.history.navigate(
-        "tree/tab?new=true", 
-        { trigger : true }
-    );
-}
-
-function actions_setToStorage(idTab){
-    const options = $$("globalTabbar").config.options;
  
-    if (options){
-
-        const data = {
-            tabs   : options,
-            select : idTab
-        };
-
-        webix.storage.local.put   ("tabbar", data);
-    } else {
-        webix.storage.local.remove("tabbar");
-    }   
-}
-
-
-function setDefaultState(){
-    mediator.tables.defaultState();
-    mediator.dashboards.defaultState();
-    mediator.forms.defaultState();
-}
-
-function add(isNull, open){
-    const tabbar = $$("globalTabbar");
-    const id     = webix.uid();
-
-   // let pathParam;
-
-    const treeConfig =  {
-        tree:{
-            none : true
-        }
-    };
-
-
-    tabbar.addOption({
-        id    : id, 
-        value : "Новая вкладка", 
-        info  : treeConfig,
-        close : true, 
-    }, open);
-
-    actions_clearTree();
-
-    if (open){
-        setDefaultState();
-    }
-
-    mediator.hideAllContent(false);
-
-
-    actions_setToStorage();
-
-    actions_createSpace (isNull);
-
-    setPath     ();
-
-    return id;
-}
-
-
-// remove tab
-
-function setEmptyTabLink(){
-    Backbone.history.navigate(
-        "tree/tab?new=true", 
-        { trigger : true }
-    );
-}
-
-function emptyTabsLogic(lastTab){
-    const tabbar = $$("globalTabbar");
-
-    tabbar.setValue(lastTab);
-    const options = tabbar.config.options;
-
-    let conutEmptyTabs = 0;
-    if (options && options.length){
-        options.forEach(function(el, i){
-            if (el.info && el.info.tree && el.info.tree.none){ // empty tab
-                conutEmptyTabs ++;
-            }
-        });
-    }
-  
-     
-    if (options.length == conutEmptyTabs){ // all tabs is empty
-        setEmptyTabLink();
-    }
-}
-
-function createConfigSpace(lastTab){
-    const option = $$("globalTabbar").getOption(lastTab);
-
-    const treeConfig = option.info.tree;
-    const tempConfig = option.info.temp;
-
-
-    if (treeConfig){
-        showTreeItem(treeConfig, true, option.isOtherView);
-    }
-
-    if (tempConfig){
-        restoreTempData(tempConfig);
-    }  
-}
 
 
 
 
-
-
-function remove(lastTab){
-
-    setDefaultState();
-
-    if (lastTab.length){
-        emptyTabsLogic(lastTab);
-
-        mediator.tables.filter.clearAll();
-
-        createConfigSpace(lastTab);
-        
-    } else {   
-        setEmptyTabLink();
-        mediator.hideAllContent();
-
-    }
-
-    actions_clearTree();
-
-    actions_setToStorage(lastTab);
-}
-
-
-;// CONCATENATED MODULE: ./src/js/components/tabs/_tabMediator.js
-  
-///////////////////////////////
-
-// Медиатор
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-
-
-
-
- 
+//create mediator
 const TABS_HISTORY  = [];
 const TABS_REMOVED  = [];
 
@@ -20315,8 +19732,6 @@ function changeName(self, values){
    
 }
 
-
-
 function getFieldsname(id){
     const field    = GetFields.item(id);
     let name; 
@@ -20346,7 +19761,7 @@ function getFieldsname(id){
     return name;
 }
 
-function _tabMediator_setName(name){
+function tabs_setName(name){
     const tabbar   = $$("globalTabbar");
     const tabId    = tabbar.getValue   ();
 
@@ -20380,11 +19795,6 @@ function hasDirtyForms(){
  
     return check;
 }
-
-function _tabMediator_tabbarClick(ev, id){
-    $$("globalTabbar").callEvent(ev, [ id ]);
-}
-
 
 function copyHistory(currHistory){
     
@@ -20592,7 +20002,7 @@ class Tabs {
       
         }
  
-        _tabMediator_setName(name);
+        tabs_setName(name);
 
     }
 
@@ -20614,8 +20024,8 @@ class Tabs {
 
         mediator.tabs.setInfo(config);
 
-        _tabMediator_tabbarClick("onBeforeTabClick", newTabId);
-        _tabMediator_tabbarClick("onAfterTabClick" , newTabId);
+        tabs_tabbarClick("onBeforeTabClick", newTabId);
+        tabs_tabbarClick("onAfterTabClick" , newTabId);
     }
 
     getTabHistory(){
@@ -20699,13 +20109,971 @@ class Tabs {
 }
 
 
+
+
+//create restore btn
+
+function getSelectedOption(){
+    const radio      = $$("tabsHistoryList");
+    const selectedId = radio.getValue();
+    return radio.getOption(selectedId);
+}
+
+
+function tabs_returnEmptyOption(){
+    return {   
+        id       : "radioNoneContent", 
+        disabled : true, 
+        value    : "История пуста"
+    };
+}
+
+function returnItem(config, index){
+    
+    const item = GetFields.item(config.field);
+    const name = item.plural ? item.plural : item.singular;
+  
+    return {
+        id    : webix.uid(),
+        value : name,
+        config: config,
+        index : index
+    };
+   
+}
+
+function returnListItems(){
+    const history = mediator.tabs.getTabHistory();
+    const items = [];
+
+    if (history && history.length){
+     
+        history.forEach(function(el, i){
+            items.push(returnItem(el, i));
+        });
+
+    } else {
+        items.push(tabs_returnEmptyOption());
+    }
+
+    return items;
+}
+
+
+function returnRadio(){
+    const radio = {
+        view     : "radio", 
+        id       : "tabsHistoryList",
+        vertical : true,
+        options  : returnListItems(),
+        on       : {
+            onChange:function(newValue, oldValue){
+                if (newValue !== oldValue){
+                    Action.enableItem($$("tabsHistoryBtn"));
+                }
+            }
+        }
+    };
+
+    return radio;
+}
+
+function returnRadioList(){
+    const container = {
+        view       : "scrollview",
+        scroll     : "y",
+        maxHeight  : 300,
+        borderless : true,
+        body       : {
+            rows: [
+                returnRadio()
+            ]
+        }
+    };
+
+    return container;
+}
+
+
+function openLink(){
+    const option = getSelectedOption();
+ 
+    const createConfig = {
+        tree: option.config
+    };
+
+    mediator.tabs.openInNewTab(createConfig);
+
+    Action.destructItem($$("popupTabsHistory"));
+}
+
+function returnOpenBtn(){
+    const btn = new Button({
+        config   : {
+            id       : "tabsHistoryBtn",
+            hotkey   : "Ctrl+Shift+Space",
+            value    : "Открыть ссылку", 
+            disabled : true,
+            click    : function(){
+                openLink();
+            },
+        },
+        titleAttribute : "Открыть ссылку"
+    
+       
+    }).maxView("primary");
+
+    return btn;
+}
+
+function returnSuccessNotify(text){
+    setLogValue ("succcess", text, '"expa'); 
+}
+
+
+
+function clearAllClick(){
+
+    modalBox("История будет очищена полностью", 
+        "Вы уверены?", 
+        ["Отмена", "Продолжить"]
+    )
+    .then(function (result){
+        if (result == 1){
+            mediator.tabs.clearTabHistory();
+            Action.destructItem($$("popupTabsHistory"));
+            returnSuccessNotify("История успешно очищена");
+        }
+
+    });
+
+}
+
+function tabs_removeOptionState (option){
+    const radio = $$("tabsHistoryList");
+    try{
+
+        option.value = option.value + " (запись удалена)";
+        radio.refresh();
+        
+        radio.disableOption(option.id);
+
+    } catch (err){
+        errors_setFunctionError(
+            err, 
+            "tabs / tabsHistory", 
+            "removeOptionState"
+        );
+    }
+}
+
+function removeItemClick(){
+    const option = getSelectedOption();
+ 
+    if (option){
+        const name = option.value;
+        modalBox("Запись «" + name + "» будет удалена из истории", 
+            "Вы уверены?", 
+            ["Отмена", "Продолжить"]
+        )
+        .then(function (result){
+            if (result == 1){
+                
+                mediator.tabs.removeTabHistoryPage(option.index);
+                tabs_removeOptionState (option);
+                returnSuccessNotify("Запись «" + name + "» удалена из истории");
+            }
+    
+        });
+    } else {
+        webix.message({
+            text :"Запись не выбрана",
+            type :"error", 
+        });
+    }
+ 
+   
+}
+
+
+
+function tabs_returnRemoveBtn(){
+    const removeBtn = new Button({
+
+        config   : {
+            id       : "removeTabsHistory",
+            hotkey   : "Alt+Shift+R",
+            icon     : "icon-trash",
+            popup   : {
+
+                view    : 'contextmenu',
+                css     : "webix_contextmenu",
+                data    : [
+                    { id: 'clearSingle', value: 'Удалить ссылку'   },
+                    { id: 'clearAll',    value: 'Очистить историю' }
+                ],
+                on      : {
+                    onItemClick: function(id){
+                        if (id == "clearAll"){
+                            clearAllClick();
+                        } else if (id == "clearSingle"){
+                            removeItemClick();
+                            // проверить выбрана ли ссылка
+                        }
+     
+                    }
+                }
+            },
+
+        },
+        titleAttribute : "Очистить историю / удалить выбранную ссылку"
+       
+    }).minView("delete");
+
+    return removeBtn;
+}
+
+
+function openHistoryPopup(){
+ 
+    const popup = new Popup({
+        headline : "История",
+        config   : {
+            id    : "popupTabsHistory",
+            width : 500,
+    
+        },
+
+        elements : {
+            rows : [
+                returnRadioList(),
+                {cols:[
+                    returnOpenBtn(),
+                    tabs_returnRemoveBtn()
+                ]}
+            ]
+          
+        }
+    });
+
+    popup.createView ();
+    popup.showPopup  ();
+}
+
+function findLastRemovedTab(){
+    const removedHistory = mediator.tabs.getRemovedTabs();
+
+    if (removedHistory){
+        const index = removedHistory.length - 1;
+        const tab   =  removedHistory[index];
+
+        mediator.tabs.deleteOpenRemovedTab(index);
+
+        return tab;
+
+    }
+
+}
+
+function openClosedTab(){
+    const lastRemovedTabConfig = findLastRemovedTab();
+    if (lastRemovedTabConfig){
+        mediator.tabs.openInNewTab({tree:lastRemovedTabConfig});
+    }
+   
+    
+}
+
+function tabsHistoryBtn(){
+    const btn = new Button({
+        
+        config   : {
+            id       : "historyTabBtn",
+           // hotkey   : "Ctrl+Shift+A",
+            icon     : "icon-file", //wxi-plus
+            popup   : {
+
+                view    : 'contextmenu',
+               
+                css     : "webix_contextmenu",
+                data    : [
+                    { id: 'addTab' , value: 'Новая вкладка'            },
+                    { id: 'history', value: 'Открыть историю'          },
+                    { id: 'restore', value: 'Открыть закрытую вкладку' },
+                    { id: 'empty'  , value: '',                        }
+                ],
+                on      : {
+                    onItemClick: function(id){
+                        if (id == "addTab"){
+                            mediator.tabs.openInNewTab({tree:{none:true}});
+
+                        } else if (id == "history"){
+                            openHistoryPopup();
+
+                        } else if (id == "restore"){
+                           openClosedTab();
+                        }  
+     
+                    }
+                }
+            },
+            // click    : function(){
+            //     openHistoryPopup();
+            // },
+        },
+        titleAttribute : "Действия с вкладками"
+    
+       
+    }).transparentView();
+
+    return btn;
+}
+
+
+
+
+
+
+//create tab click logic
+
+
+function returnSelectElem(type){
+   
+    let selectElem; 
+        
+    if (type == "dbtable"){
+        selectElem = "tables";
+
+    } else if(type == "tform"){
+        selectElem = "forms";
+
+    } else if(type == "dashboard"){
+        selectElem = "dashboards";
+    // Action.hideItem($$("propTableView"));
+
+    }  
+
+    return selectElem;
+}
+
+function hideOtherElems(selectElem){
+    const visiualElements = mediator.getViews();
+
+
+    if (visiualElements && visiualElements.length){
+        visiualElements.forEach(function(elem){
+            if (elem !== selectElem){
+                Action.hideItem($$(elem));
+            } 
+        });
+    }
+
+    Action.hideItem ($$("webix__null-content"));
+    Action.hideItem ($$("webix__none-content"));
+
+}
+
+
+function showContent(selectElem, id){
+    if (selectElem == "tables" || selectElem == "forms"){
+        mediator.tables.showExists(id);
+    } else if (selectElem == "dashboards"){
+        mediator.dashboards.showExists(id);
+    }
+
+}
+
+function selectTree(id, isOtherTab){
+   
+    const tree = $$("tree");
+    if ( tree.exists(id) && isOtherTab){
+        tree.config.isTabSelect = true;
+        tree.select(id);
+       // tree.showItem(id);
+    }
+
+    // if parent is closed ??
+}
+
+function setLink(id){
+
+    const path = "tree/" + id;
+    
+    Backbone.history.navigate(path);
+ 
+}
+
+function setEmptyState(){
+    mediator.hideAllContent();
+    Backbone.history.navigate("tree/tab?new=true", { trigger : true });
+    Action.showItem ($$("webix__none-content"));
+}
+
+function changeHistoryBtnsState(){
+    const config = mediator.tabs.getInfo();
+ 
+    if (config && config.history){
+        const history  = config.history;
+        const nextPage = config.nextPage;
+
+        if (history.length > 1){
+            mediator.tabs.setHistoryBtnState(false);
+        } else {
+            mediator.tabs.setHistoryBtnState(false, false);
+        }
+ 
+        if (nextPage){
+            mediator.tabs.setHistoryBtnState(true);
+        } else {
+            mediator.tabs.setHistoryBtnState(true, false);
+        }
+ 
+    }
+    
+}
+
+function showTreeItem(config, isOtherTab, isOtherView){
+
+    if (isOtherView){
+        Backbone.history.navigate("/" + config.view, { trigger : true });
+    } else {
+
+        const id              = config.field;
+        const type            = config.type;
+    
+        if (config.none){ //none-content
+            setEmptyState();
+
+        } else {
+            const selectElem = returnSelectElem(type);
+
+            hideOtherElems(selectElem);
+
+            Action.showItem ($$(selectElem));
+    
+
+            if (id){
+                setLink    (id);
+                showContent(selectElem, id);
+                selectTree (id, isOtherTab);
+
+            }
+
+        }
+
+
+        changeHistoryBtnsState();
+       
+    }
+
+}
+
+
+
+
+
+
+
+//create restore data logic
+
+function restoreTempData(tempConfig, field){
+  
+    const filter = tempConfig.filter;
+    const edit   = tempConfig.edit;
+
+    if (filter){
+    
+        if (filter.dashboards){
+            const data = {
+                content : filter.values
+            };
+            
+            webix.storage.local.put("dashFilterState", data);
+        } else {
+       
+            if (tempConfig.queryFilter){
+                const table = getTable();
+                if (table){
+                    table.config.filter = {
+                        table : filter.id,
+                        query : tempConfig.queryFilter
+                    };
+                  
+                }
+
+             
+            }
+            webix.storage.local.put("currFilterState", filter);
+        }
+    
+        window.history.pushState('', '', "?view=filter");
+  
+    }  
+ 
+    if (edit){
+         
+        webix.storage.local.put("editFormTempData", edit.values);
+        if (edit.selected){
+            window.history.pushState('', '', "?id=" + edit.selected);
+        }
+
+    }
+
+
+   
+}
+
+
+
+
+
+
+
+//create add btn layout
+
+function createAddBtn(){
+    const btn = new Button({
+    
+        config   : {
+            id       : "addTabBtn",
+           // hotkey   : "Ctrl+Shift+A",
+            icon     : "icon-plus", //wxi-plus
+            click    : function(){
+                mediator.tabs.addTab();
+            },
+        },
+        titleAttribute : "Добавить вкладку"
+    
+       
+    }).transparentView();
+
+    return btn;
+}
+
+
+
+
+
+
+//create add tab logic
+
+
+/// add tab 
+
+function tabs_clearTree(){
+    const tree = $$("tree");
+    if (tree){
+        tree.unselectAll();
+    }
+  
+}
+
+function tabs_createEmptySpace(show, hide){
+    Action.showItem (show);  
+    Action.hideItem (hide);
+}
+
+function tabs_createSpace(isNull){
+    const nullContent = $$("webix__null-content");
+    const noneContent = $$("webix__none-content");
+
+   
+    if (isNull){
+        tabs_createEmptySpace(nullContent, noneContent);
+    } else {
+        tabs_createEmptySpace(noneContent, nullContent);
+    }
+}
+
+function setPath(){
+    Backbone.history.navigate(
+        "tree/tab?new=true", 
+        { trigger : true }
+    );
+}
+
+function tabs_setToStorage(idTab){
+    const options = $$("globalTabbar").config.options;
+ 
+    if (options){
+
+        const data = {
+            tabs   : options,
+            select : idTab
+        };
+
+        webix.storage.local.put   ("tabbar", data);
+    } else {
+        webix.storage.local.remove("tabbar");
+    }   
+}
+
+
+function setDefaultState(){
+    mediator.tables.defaultState();
+    mediator.dashboards.defaultState();
+    mediator.forms.defaultState();
+}
+
+function add(isNull, open){
+    const tabbar = $$("globalTabbar");
+    const id     = webix.uid();
+
+   // let pathParam;
+
+    const treeConfig =  {
+        tree:{
+            none : true
+        }
+    };
+
+
+    tabbar.addOption({
+        id    : id, 
+        value : "Новая вкладка", 
+        info  : treeConfig,
+        close : true, 
+    }, open);
+
+    tabs_clearTree();
+
+    if (open){
+        setDefaultState();
+    }
+
+    mediator.hideAllContent(false);
+
+
+    tabs_setToStorage();
+
+    tabs_createSpace (isNull);
+
+    setPath     ();
+
+    return id;
+}
+
+
+// remove tab
+
+function setEmptyTabLink(){
+    Backbone.history.navigate(
+        "tree/tab?new=true", 
+        { trigger : true }
+    );
+}
+
+function emptyTabsLogic(lastTab){
+    const tabbar = $$("globalTabbar");
+
+    tabbar.setValue(lastTab);
+    const options = tabbar.config.options;
+
+    let conutEmptyTabs = 0;
+    if (options && options.length){
+        options.forEach(function(el, i){
+            if (el.info && el.info.tree && el.info.tree.none){ // empty tab
+                conutEmptyTabs ++;
+            }
+        });
+    }
+  
+     
+    if (options.length == conutEmptyTabs){ // all tabs is empty
+        setEmptyTabLink();
+    }
+}
+
+function createConfig(lastTab){
+    const option = $$("globalTabbar").getOption(lastTab);
+
+    const treeConfig = option.info.tree;
+    const tempConfig = option.info.temp;
+
+
+    if (treeConfig){
+        showTreeItem(treeConfig, true, option.isOtherView);
+    }
+
+    if (tempConfig){
+        restoreTempData(tempConfig);
+    }  
+}
+
+
+
+
+
+
+function remove(lastTab){
+
+    setDefaultState();
+
+    if (lastTab.length){
+        emptyTabsLogic(lastTab);
+
+        mediator.tables.filter.clearAll();
+
+        createConfig(lastTab);
+        
+    } else {   
+        setEmptyTabLink();
+        mediator.hideAllContent();
+
+    }
+
+    tabs_clearTree();
+
+    tabs_setToStorage(lastTab);
+}
+
+
+
+
+
+
+//create layout
+
+
+let prevValue;
+
+function setStateToStorage(idTab){
+    const tabbar  = $$("globalTabbar");
+    const options = tabbar.config.options;
+    
+ 
+    const data = {
+        tabs   : options,
+        select : idTab
+    };
+
+    webix.storage.local.put("tabbar", data);
+}
+
+function isOtherTab(id){
+    let check = true;
+
+    if (id == prevValue){
+        check = false;
+    }
+
+    return check;
+}
+
+function createConfigSpace(id){
+    const option     = $$("globalTabbar").getOption(id);
+  
+    const treeConfig = option.info.tree;
+    const tempConfig = option.info.temp;
+  
+    if (treeConfig){
+        showTreeItem(
+            treeConfig, 
+            isOtherTab(), 
+            option.isOtherView
+        );
+
+ 
+        if (tempConfig){
+            restoreTempData(
+                tempConfig, 
+                treeConfig.field
+            );
+        }
+    }    
+}
+
+function tabs_tabbarClick(ev, id){
+    $$("globalTabbar").callEvent(ev, [ id ]);
+}
+
+
+
+function restoreTabbar(data){
+    const tabbar = $$("globalTabbar");
+    const tabs   = data.tabs;
+    const select = data.select;
+
+    if (tabs && tabs.length){
+        tabs.forEach(function(option){
+            tabbar.addOption(option, false); 
+        });
+    }
+   
+  
+    if (select){
+    
+        tabbar.setValue(select);
+ 
+        tabs_tabbarClick("onBeforeTabClick", select);
+   
+        tabs_tabbarClick("onAfterTabClick" , select);
+  
+    } else {
+        const options = tabbar.config.options;
+        const index   = options.length - 1;
+        const lastOpt = options[index]; 
+        if (lastOpt){
+            const id  = lastOpt.id;
+            tabbar.setValue(id);
+        }
+
+   
+    }
+}
+
+function addNewTab(){
+    $$("globalTabbar").addOption( { 
+        id    : "container", 
+        value : "Новая вкладка", 
+        info  : {},
+        close : true
+    }, true); 
+}
+
+
+function isSelectedOption(id){
+    const selectOpt = $$("globalTabbar").getValue();
+    if ( selectOpt == id ){
+        return true;
+    }
+}
+
+
+
+
+function createTabbar(){
+    const tabbar = {
+        view    : "tabbar",
+        id      : "globalTabbar",
+        css     : "global-tabbar",
+        value   : "container",
+        tooltip : "#value#",
+        optionWidth: 300,
+        multiview  : true, 
+        options : [
+           
+        ],
+        on:{
+
+
+            onBeforeTabClick:function(){
+        
+                const clearDirty = false;
+                mediator.tables.defaultState("edit", clearDirty);
+                
+                mediator.tables.defaultState("filter");
+                
+                mediator.dashboards.defaultState();
+               
+                mediator.forms.defaultState();
+
+                prevValue = this.getValue();
+         
+            },
+
+            onAfterTabClick:function(id){
+            
+                mediator.tables.filter.clearAll();
+
+                createConfigSpace(id);
+
+                setStateToStorage(id);
+        
+            },
+
+
+            setStorageData:function(){
+                const data  = webix.storage.local.get("tabbar");
+          
+                
+                if (data && data.tabs.length){
+                 
+                    restoreTabbar(data);
+                  
+                } else {
+                    addNewTab();
+                }
+            },
+
+            onBeforeTabClose: function(id){
+               
+                const tabConfig = this.getOption(id);
+                if (tabConfig && tabConfig.info){
+                    mediator.tabs.addRemovedTab(tabConfig.info.tree);
+                }
+                
+                const tabbar     = this;
+                const option     = tabbar.getOption(id);
+                const isTabDirty = option.info.dirty;
+   
+
+                if (isSelectedOption(id)){ // текущая вкладка
+
+                    mediator.getGlobalModalBox().then(function(result){
+
+                        if (result){
+                            tabbar.removeOption(id);
+                        }
+    
+                    });
+
+                } else { // другая вкладка
+        
+                    if (isTabDirty){
+                        tabbar.setValue(id);
+                 
+                        tabs_tabbarClick("onBeforeTabClick", id);
+                        tabs_tabbarClick("onAfterTabClick" , id);
+    
+                        const optionData = mediator.tabs.getInfo();
+                        optionData.isClose = true;
+                        mediator.tabs.setInfo(optionData);
+                    } else {
+                        tabbar.removeOption(id);
+                    }
+              
+                } 
+            
+                return false;
+            },
+
+            // onOptionAdd:function(){
+            //     this.config.addedTabs ++; 
+
+            // },
+
+            onOptionRemove:function(removedTab, lastTab){
+      
+                mediator.tabs.removeTab(lastTab);
+
+            },
+
+           
+          
+        }
+     
+    };
+
+    const layout = {
+        cols:[
+            createAddBtn(),
+            tabbar,
+            tabsHistoryBtn()
+        ]
+    };
+
+    return layout;
+}
+
+
 ;// CONCATENATED MODULE: ./src/js/blocks/globalModalBox.js
 ///////////////////////////////
-
+//
 // Модальное окно: проверяет чисты ли все формы 
-
+//
 // Copyright (c) 2022 CA Expert
-
+//
 ///////////////////////////////
 
 
@@ -20727,7 +21095,11 @@ function settingsForm(form){
         getSettingsFormValues(form);
     }
     const storageData = getSettingsFormValues(id);
-    form.setValues(storageData);
+
+    if (storageData){
+        form.setValues(storageData);
+    }
+    
 }
 
 function unsetDirty(){
@@ -20866,11 +21238,11 @@ async function clickModalBox(id){
 
 ;// CONCATENATED MODULE: ./src/js/blocks/setParamToLink.js
 ///////////////////////////////
-
+//
 // Действия с параметрами в ссылке  
-
+//
 // Copyright (c) 2022 CA Expert
-
+//
 ///////////////////////////////
 
 function createParameters(params){
@@ -20897,11 +21269,11 @@ function removeParamFromLink(id){
 
 ;// CONCATENATED MODULE: ./src/js/blocks/queryToString.js
 ///////////////////////////////
-
+//
 // Создание query  
-
+//
 // Copyright (c) 2022 CA Expert
-
+//
 ///////////////////////////////
 
 function encodeQueryData(data) {
@@ -20927,11 +21299,11 @@ function encodeQueryData(data) {
 
 ;// CONCATENATED MODULE: ./src/js/blocks/_mediator.js
 ///////////////////////////////
-
+//
 // Медиатор
-
+//
 // Copyright (c) 2022 CA Expert
-
+//
 ///////////////////////////////
 
 
@@ -21038,11 +21410,11 @@ const mediator = {
 
 ;// CONCATENATED MODULE: ./src/js/blocks/storageSetting.js
 ///////////////////////////////
-
+//
 // Загрузка в Local Storage и применение настроек  
-
+//
 // Copyright (c) 2022 CA Expert
-
+//
 /////////////////////////////// 
 
 
@@ -21056,8 +21428,6 @@ function setStorageData (name, value){
         localStorage.setItem(name, value);
     } 
 }
-
-
 
 
 function setLogState(value){
@@ -21120,6 +21490,17 @@ function deletePrefs(id, obj){
     }
 }
 
+function setSettingsToStorage(el){
+  
+    const prefs  = JSON.parse(el.prefs);
+    const names  = Object.keys(prefs);
+    const values = Object.values(prefs);
+    names.forEach(function(name, i){
+        setStorageData (name, JSON.stringify(values[i]));
+    });
+ 
+ 
+}
 
 function storageSetting_setDataToStorage(data, user){
     
@@ -21134,14 +21515,19 @@ function storageSetting_setDataToStorage(data, user){
             if (owner == user.id && !isFavPref){
                  
 
-                if (name !== "userRestoreData"){
-                    setStorageData (el.name, el.prefs);
-                } 
-
-                if (name == "tabbar" || name == "userRestoreData" 
-                    || name == "tabsHistory"){
-                    deletePrefs(el.id, el);
+                if (name == "/settings"){
+                    setSettingsToStorage(el);
+                } else {
+                    if (name !== "userRestoreData"){
+                        setStorageData (el.name, el.prefs);
+                    } 
+    
+                    if (name == "tabbar" || name == "userRestoreData" 
+                        || name == "tabsHistory"){
+                        deletePrefs(el.id, el);
+                    }
                 }
+              
             }
 
         });
@@ -21205,11 +21591,11 @@ async function storageSetting_setUserPrefs (userData){
 ;// CONCATENATED MODULE: ./src/js/components/logBlock.js
   
 ///////////////////////////////
-
+//
 // Компонент с выводом ошибок 
-
+//
 // Copyright (c) 2022 CA Expert
-
+//
 ///////////////////////////////
 
 
@@ -21327,7 +21713,7 @@ async function createLogMessage(srcTable) {
     let name;
 
     if (srcTable == "version"){
-        name = 'Expa v1.0.83';
+        name = 'Expa v1.0.84';
 
     } else if (srcTable == "cp"){
         name = 'Смена пароля';
@@ -21463,11 +21849,11 @@ function setLogValue (type, text, src) {
 
 ;// CONCATENATED MODULE: ./src/js/blocks/errors.js
 ///////////////////////////////
-
+//
 // Обработка ошибок в обычных функциях и при ajax запросах 
-
+//
 // Copyright (c) 2022 CA Expert
-
+//
 ///////////////////////////////
 
 
@@ -21539,12 +21925,12 @@ function errors_setFunctionError(err, file, func){
 
 ;// CONCATENATED MODULE: ./src/js/blocks/commonFunctions.js
 ///////////////////////////////
-
+//
 // Общеиспользуемые функции (Получить id, действия 
 // над элементами (показать, включить и тд))
-
+//
 // Copyright (c) 2022 CA Expert
-
+//
 ///////////////////////////////
 
 
@@ -21678,23 +22064,6 @@ function textInputClean(){
     }, { capture: true });
 }
 
-function stringOption(l, el, keyArray){
-    try{
-        while (l <= Object.values(el).length){
-            if (typeof Object.values(el)[l] == "string"){
-                keyArray = Object.keys(el)[l];
-                break;
-            } 
-            l++;
-        }
-    } catch (err){  
-        setFunctionError(
-            err,
-            "commonFunctions",
-            "getComboOptions => stringOption"
-        );
-    }
-}
 
 
 
@@ -26018,262 +26387,92 @@ function expalib_lib (){
 }
 
 
-;// CONCATENATED MODULE: ./src/js/components/routerConfig/actions/hideAllElements.js
-
+;// CONCATENATED MODULE: ./src/js/components/router.js
 ///////////////////////////////
 
-// Сокрытие всех элементов
-
+// Начальные настройки роутера                      (create router settings)
+//
+// Навигация по сайдбару                            (create tree navigate)
+//
+// Пользовательские настройки                       (create settings)
+//
+// Выход из системы                                 (create logout)
+//
+// Проверка авторизации и перенаправление           (create index)
+//
+// Редактор дерева                                  (create edit tree)
+//
+// Смена пароля                                     (create cp)
+//
+// Роуты                                            (create routes)
+//
+// Сокрытие всех элементов                          (create visible state)
+//
+// Создание компонентов                             (create components)
+//
+// Отрисовка главного layout и сокрытие авторизации (create content)
+//
+// Медиатор                                         (create mediator)
+//
 // Copyright (c) 2022 CA Expert
-
+//
 ///////////////////////////////
 
 
+expalib_lib ();
 
 
 
-function hideAllElements (){
 
-  
-    const container = $$("container");
-    const childs    = container.getChildViews();
-    
-    if (childs.length){
-        childs.forEach(function(el){
-            const view = el.config.view;
-            if(view == "scrollview" || view == "layout"){
-                Action.hideItem($$(el.config.id));
-            }
-        });
+
+
+
+
+
+
+const router_logNameFile = "router";
+
+
+
+
+async function getOwner(){
+    const owner = await returnOwner();
+
+    return owner;
+}
+
+
+
+//create router settings
+function router_navigate(path){
+    Backbone.history.start({pushState: true, root: path});
+}
+
+function setRouterStart(){
+    if (window.location.host.includes("localhost:3000")){
+        router_navigate('/index.html/');
     } else {
-        errors_setFunctionError(
-            "array length is null",
-            "routerConfig/hideAllElements",
-            "hideAllElements"
-        ); 
-    }
-
-  
-     
-}
-
-
-;// CONCATENATED MODULE: ./src/js/components/routerConfig/actions/createElements.js
-
-///////////////////////////////
-
-// Создание компонентов
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-let specificElement;
-
-function createDefaultWorkspace(){
-    if(!specificElement){
-        mediator.dashboards.create();
-        mediator.tables.create();
-        mediator.forms.create();
+        router_navigate('/init/default/spaw/');
     }
 }
 
-function createTreeTempl(){
-    if (specificElement == "treeTempl"){
-        mediator.treeEdit.create();
-    }
- 
-}
 
-function createCp(){
-    if (specificElement == "cp"){
-        mediator.user_auth.create();
-    }
 
-}
 
-function createUserprefs(){
-    if (specificElement == "settings"){
-        mediator.settings.create();
-    }
+//create tree navigate
 
-}
-
-function createSpecificWorkspace (){
-    createTreeTempl();
-    createCp();
-    createUserprefs();
-}
-
-
-function createElements(specElem){
-    specificElement = specElem;
-    createDefaultWorkspace();
-    createSpecificWorkspace ();
-  
-}
-
-
-;// CONCATENATED MODULE: ./src/js/components/routerConfig/actions/createContent.js
-
-///////////////////////////////
-
-// Отрисовка главного layout и сокрытие авторизации 
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-
-
-
-
-
-function getMenuTree() {
-
-    LoadServerData.content("mmenu")
-    
-    .then(function (result){
-        if (result){
-            const menu = GetMenu.content;
-            mediator.sidebar.load(menu);
-            mediator.header.load(menu);
-        }
-
-    });
-
-}
-
-function setUserData(){
-  
-    const data = STORAGE.whoami.content;
-
-    const userStorageData = {
-        id       : data.id,
-        name     : data.first_name,
-        username : data.username
-    };
-
-    setStorageData(
-        "user", 
-        JSON.stringify(userStorageData)
-    );
-}
-
-
-
-
-
-async function createContent (){
-
-    if (!STORAGE.whoami){
-        await getData("whoami"); 
-    }
-
-    
-    if (STORAGE.whoami){
-        Action.hideItem($$("userAuth"  ));
-        Action.showItem($$("mainLayout"));
-    
-        setUserData();
-
-        createElements();
-    
-        getMenuTree();
- 
-         
-    } else {
-        Backbone.history.navigate("/", { trigger:true});
-        window.location.reload();
-    }
-
-  
-
-
-}
-
-
-
-;// CONCATENATED MODULE: ./src/js/components/routerConfig/actions/_RouterActions.js
-///////////////////////////////
-
-// Медиатор 
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-
-
-
-
-
-class RouterActions {
-    static hideEmptyTemplates(){
-        Action.removeItem($$("webix__null-content"));
-        Action.hideItem  ($$("webix__none-content"));     
-    }
-
-    static hideContent   (){
-        hideAllElements();
-    }
-
-    static async createContentSpace (){
-        await createContent  ();
-    }
-
-    static async loadSpace(){
-        const isSidebarData = mediator.sidebar.dataLength();
-
-        if (!isSidebarData){
-            await createContent();
-        }
-    }
-
-    static createContentElements(id){
-        createElements (id);
-    }
-
-}
-
-
-;// CONCATENATED MODULE: ./src/js/components/routerConfig/tree.js
-///////////////////////////////
-
-// Навигация по сайдбару
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-
-
-
-
-
-const tree_logNameFile = "router => tree";
-
- 
-let tree_id;
+let router_id;
 let emptyTab = false;
 
 
 
-async function tree_getTableData (){
+async function router_getTableData (){
 
     await LoadServerData.content("fields");
     const keys = GetFields.keys;
  
     if (keys){
-        mediator.sidebar.selectItem(tree_id);
+        mediator.sidebar.selectItem(router_id);
     }
 }
 
@@ -26287,14 +26486,14 @@ async function createTableSpace (){
         tree.attachEvent("onAfterLoad", 
         webix.once(function (){
             if (!isFieldsExists && !emptyTab) {
-                tree_getTableData ();
+                router_getTableData ();
             } 
         }));         
        
     } catch (err){
         errors_setFunctionError(
             err, 
-            tree_logNameFile, 
+            router_logNameFile, 
             "createTableSpace"
         );
     }
@@ -26315,7 +26514,7 @@ async function checkTable(){
     } catch (err){
         errors_setFunctionError(
             err, 
-            tree_logNameFile, 
+            router_logNameFile, 
             "checkTable"
         );
 
@@ -26333,179 +26532,17 @@ async function treeRouter(selectId){
         emptyTab = true;
     }
 
-    tree_id = selectId;
+    router_id = selectId;
     checkTable();
   
 }
 
 
-;// CONCATENATED MODULE: ./src/js/components/routerConfig/index.js
 
-///////////////////////////////
-
-// Проверка авторизации и перенаправление
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-
-
-const routerConfig_logNameFile = "router => index";
-
-
-function goToContentPage(){
-    
-    try {
-        Backbone.history.navigate(
-            "content", 
-            {trigger : true}
-        );
-    } catch (err){
-        console.log(
-            err + 
-            " " + 
-            routerConfig_logNameFile + 
-            " goToContentPage"
-        );
-    }
-}
-
-
-function showLogin(){
-    Action.hideItem($$("mainLayout"));
-    Action.showItem($$("userAuth"  ));
-
-}
-
-async function indexRouter(){
-
-    if (!STORAGE.whoami ){
-        await getData("whoami"); 
-    }
-
-
-    if (STORAGE.whoami){
-        goToContentPage();
-
-    } else {
-        showLogin();
-    }
-}
-
-
-
-
-;// CONCATENATED MODULE: ./src/js/components/routerConfig/cp.js
-
-///////////////////////////////
-
-// Смена пароля
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-
-
-
-
-const cp_logNameFile = "router => cp";
- 
-function setUserValues(){
-    const user     = webix.storage.local.get("user");
-    const authName =  $$("authName");
-    try{
-        if (user){
-            const values = user.name.toString();
-            authName.setValues(values);
-        }
-    } catch (err){
-        errors_setFunctionError(
-            err,
-            cp_logNameFile,
-            "setUserValues"
-        );
-    }
-}
-
- 
-function setTab(id){
-    $$("globalTabbar").addOption({
-        id    : id, 
-        value : "Смена пароля", 
-        isOtherView : true,
-        info  : {
-            tree:{
-                view : "cp"
-            }
-        },
-        close : true, 
-    }, true);
-}
-
-function cp_createCp(){
-    const auth = $$("user_auth");
-    
-    setTab("cp");
-
-    if(auth){
-        Action.showItem(auth);
-    } else {
-        RouterActions.createContentElements("cp");
-        Action.showItem($$("user_auth"));
-   
-    }
-}
-
-
-function loadSpace(){
-    const isSidebarData = mediator.sidebar.dataLength();
-
-    if (!isSidebarData){
-        RouterActions.createContentSpace(); //async ?
-    }
-}
-
-function cpRouter(){
-    
-    loadSpace();
-
-    RouterActions.hideContent();
-    cp_createCp        ();
- 
-    mediator.sidebar.close();
-
-    setUserValues     ();
-    RouterActions.hideEmptyTemplates();
-}
-
-
-
-;// CONCATENATED MODULE: ./src/js/components/routerConfig/settings.js
-///////////////////////////////
-
-// Пользовательские настройки
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-
-
-
-
-const settings_logNameFile = "router => settings";
-
-
+//create settings
 
 function setUserprefsNameValue (){
+  
     const user = webix.storage.local.get("user");
     try{
         if (user){
@@ -26516,7 +26553,7 @@ function setUserprefsNameValue (){
       
         errors_setFunctionError(
             err, 
-            settings_logNameFile,
+            router_logNameFile,
             "setUserprefsNameValue"
         );
     }
@@ -26527,34 +26564,48 @@ function setUserprefsNameValue (){
 
 function setTemplateValue(data){
  
-    if (isArray(data, settings_logNameFile, "setTemplateValue")){
-        data.forEach(function(el){
-            const name    = el.name;
-            const prefsId = "userprefs";
-            if (name.includes   (prefsId)     && 
-                name.lastIndexOf(prefsId) == 0){
+    if (isArray(data, router_logNameFile, "setTemplateValue")){
+ 
+        const prefs = JSON.parse(data.prefs);
 
-                const prefs = JSON.parse(el.prefs);
-                const form  = $$(name);
-                form.setValues(prefs);
-                form.config.storagePrefs = prefs;
+        if (prefs){
+  
+            const names  = Object.keys(prefs);
+            const values = Object.values(prefs);
+            
+            if (names.length){
+                names.forEach(function(name, i){
+                    const form = $$(name);
+                    if (form){
+                        form.setValues(values[i]);
+                        form.config.storagePrefs = values[i];
+                    }
+                   
+                });
             }
-        });
+        }
     } 
 
 }
 
-function getDataUserprefs(){
+async function getDataUserprefs(){
+    const owner   = await getOwner();
+    const name    = `userprefs.name='/settings'`;
+    const ownerId = `userprefs.owner=${owner.id}`;
 
     new ServerData({  
-        id : "userprefs"
+        id : `smarts?query=${name}+and+${ownerId}&limit=80&offset=0`
     }).get().then(function(data){
         if (data){
-            setTemplateValue(data.content);
+          
+            if (data.content.length){
+                setTemplateValue(data.content[0]);
+            }
+      
         } else {
             errors_setFunctionError(
                 `data is ${data}` , 
-                settings_logNameFile, 
+                router_logNameFile, 
                 "getDataUserprefs"
             ); 
         }
@@ -26562,7 +26613,7 @@ function getDataUserprefs(){
 
 }
 
-function settings_setTab(id){
+function setTabData(id){
     $$("globalTabbar").addOption({
         id    : id, 
         value : "Настройки", 
@@ -26587,7 +26638,7 @@ function settingsRouter(){
         RouterActions.createContentSpace();
     }
 
-    settings_setTab(id);
+    setTabData(id);
 
 
     if (elem){
@@ -26607,69 +26658,8 @@ function settingsRouter(){
 }
 
 
-;// CONCATENATED MODULE: ./src/js/components/routerConfig/experimental.js
 
-///////////////////////////////
-
-// Редактор дерева
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-
-function experimental_loadSpace(){
-    const isTreeData = mediator.sidebar.dataLength();
-    if (!isTreeData){
-        RouterActions.createContentSpace();
-    }
-}
-
-function createTreeTemplate(){
-    const id = "treeTempl";
-    if (!$$(id)){
-        RouterActions.createContentElements(id);
-    }
-
-    mediator.treeEdit.showView();
-    mediator.treeEdit.load();
-}
-
-
-function experimentalRouter(){
-    RouterActions.hideEmptyTemplates();
-   
-    RouterActions.hideContent();
-
-    experimental_loadSpace          ();
-    
-    createTreeTemplate ();
-    
-    mediator.sidebar.close();
-}
-
-
-
-;// CONCATENATED MODULE: ./src/js/components/routerConfig/logout.js
-
-///////////////////////////////
-
-// Выход из системы
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-
-
-
-
-
-const logout_logNameFile = "router/logout";
+//create logout
 
 function clearStorage(){
     try{
@@ -26678,13 +26668,13 @@ function clearStorage(){
     } catch (err){
         errors_setFunctionError(
             err, 
-            logout_logNameFile, 
+            router_logNameFile, 
             "clearStorage"
         );
     }
 }
 
-function logout_putPrefs(id, sentObj){
+function router_putPrefs(id, sentObj){
 
     new ServerData({  
         id : `userprefs/${id}`
@@ -26697,7 +26687,7 @@ function isPrefExists(data, name){
         exists : false
     };
  
-    if (isArray(data, logout_logNameFile, "isPrefExists")){
+    if (isArray(data, router_logNameFile, "isPrefExists")){
         data.forEach(function(el){
             if (el.name == name){
                 result.exists = true;
@@ -26727,11 +26717,6 @@ function returnSentTemplate(name, data){
     };
 }
 
-async function getOwner(){
-    const owner = await returnOwner();
-
-    return owner;
-}
 
 
 async function saveCurrData(servData, name, prefs, owner){
@@ -26743,7 +26728,7 @@ async function saveCurrData(servData, name, prefs, owner){
     
     if (isExists){
         const id = result.id;
-        logout_putPrefs(id, pref);
+        router_putPrefs(id, pref);
     } else {
         pref.owner = owner.id;
         postUserPrefs(pref);
@@ -26821,7 +26806,7 @@ function backPage(){
     } catch (err){
         errors_setFunctionError(
             err, 
-            logout_logNameFile, 
+            router_logNameFile, 
             "backPage"
         );
     }
@@ -26845,7 +26830,7 @@ async function logoutRouter(){
         } else {
             errors_setFunctionError(
                 "data is " + data, 
-                logout_logNameFile, 
+                router_logNameFile, 
                 "logoutRouter"
             );  
         }
@@ -26854,29 +26839,157 @@ async function logoutRouter(){
 }
 
 
-;// CONCATENATED MODULE: ./src/js/components/routerConfig/_router.js
 
-///////////////////////////////
+//create index
 
-// Роуты
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-
-expalib_lib ();
-
-
-
-
-
-
-
+function goToContentPage(){
+    
+    try {
+        Backbone.history.navigate(
+            "content", 
+            {trigger : true}
+        );
+    } catch (err){
+        console.log(
+            err + 
+            " " + 
+            router_logNameFile + 
+            " goToContentPage"
+        );
+    }
+}
 
 
+function showLogin(){
+    Action.hideItem($$("mainLayout"));
+    Action.showItem($$("userAuth"  ));
+
+}
+
+async function indexRouter(){
+
+    if (!STORAGE.whoami ){
+        await getData("whoami"); 
+    }
+
+
+    if (STORAGE.whoami){
+        goToContentPage();
+
+    } else {
+        showLogin();
+    }
+}
+
+
+
+
+//create edit tree
+
+function loadTreeSpace(){
+    const isTreeData = mediator.sidebar.dataLength();
+    if (!isTreeData){
+        RouterActions.createContentSpace();
+    }
+}
+
+function createTreeTemplate(){
+    const id = "treeTempl";
+    if (!$$(id)){
+        RouterActions.createContentElements(id);
+    }
+
+    mediator.treeEdit.showView();
+    mediator.treeEdit.load();
+}
+
+
+function experimentalRouter(){
+    RouterActions.hideEmptyTemplates();
+   
+    RouterActions.hideContent();
+
+    loadTreeSpace ();
+    
+    createTreeTemplate ();
+    
+    mediator.sidebar.close();
+}
+
+
+//create cp
+function setUserValues(){
+    const user     = webix.storage.local.get("user");
+    const authName =  $$("authName");
+    try{
+        if (user){
+            const values = user.name.toString();
+            authName.setValues(values);
+        }
+    } catch (err){
+        errors_setFunctionError(
+            err,
+            router_logNameFile,
+            "setUserValues"
+        );
+    }
+}
+
+ 
+function setTab(id){
+    $$("globalTabbar").addOption({
+        id    : id, 
+        value : "Смена пароля", 
+        isOtherView : true,
+        info  : {
+            tree:{
+                view : "cp"
+            }
+        },
+        close : true, 
+    }, true);
+}
+
+function createCpComponent(){
+    const auth = $$("user_auth");
+    
+    setTab("cp");
+
+    if(auth){
+        Action.showItem(auth);
+    } else {
+        RouterActions.createContentElements("cp");
+        Action.showItem($$("user_auth"));
+   
+    }
+}
+
+
+function loadSpace(){
+    const isSidebarData = mediator.sidebar.dataLength();
+
+    if (!isSidebarData){
+        RouterActions.createContentSpace(); //async ?
+    }
+}
+
+function cpRouter(){
+    
+    loadSpace();
+
+    RouterActions.hideContent();
+    createCpComponent        ();
+ 
+    mediator.sidebar.close();
+
+    setUserValues     ();
+    RouterActions.hideEmptyTemplates();
+}
+
+
+
+
+//create routes
 function router (){
     let routes = new (Backbone.Router.extend({
     
@@ -26928,13 +27041,184 @@ function router (){
     return routes;
 }
 
+//create visible state
+
+function hideAllElements (){
+
+  
+    const container = $$("container");
+    const childs    = container.getChildViews();
+    
+    if (childs.length){
+        childs.forEach(function(el){
+            const view = el.config.view;
+            if(view == "scrollview" || view == "layout"){
+                Action.hideItem($$(el.config.id));
+            }
+        });
+    } else {
+        errors_setFunctionError(
+            "array length is null",
+            "routerConfig/hideAllElements",
+            "hideAllElements"
+        ); 
+    }
+
+  
+     
+}
+
+
+
+//create components
+
+let specificElement;
+
+function createDefaultWorkspace(){
+    if(!specificElement){
+        mediator.dashboards.create();
+        mediator.tables.create();
+        mediator.forms.create();
+    }
+}
+
+function createTreeTempl(){
+    if (specificElement == "treeTempl"){
+        mediator.treeEdit.create();
+    }
+ 
+}
+
+function createCp(){
+    if (specificElement == "cp"){
+        mediator.user_auth.create();
+    }
+
+}
+
+function createUserprefs(){
+    if (specificElement == "settings"){
+        mediator.settings.create();
+    }
+
+}
+
+function createSpecificWorkspace (){
+    createTreeTempl();
+    createCp();
+    createUserprefs();
+}
+
+
+function createElements(specElem){
+    specificElement = specElem;
+    createDefaultWorkspace();
+    createSpecificWorkspace ();
+  
+}
+
+
+//create content
+
+function getMenuTree() {
+
+    LoadServerData.content("mmenu")
+    
+    .then(function (result){
+        if (result){
+            const menu = GetMenu.content;
+            mediator.sidebar.load(menu);
+            mediator.header.load(menu);
+        }
+
+    });
+
+}
+
+function setUserData(){
+  
+    const data = STORAGE.whoami.content;
+
+    const userStorageData = {
+        id       : data.id,
+        name     : data.first_name,
+        username : data.username
+    };
+
+    setStorageData(
+        "user", 
+        JSON.stringify(userStorageData)
+    );
+}
+
+
+
+
+
+async function createContent (){
+
+    if (!STORAGE.whoami){
+        await getData("whoami"); 
+    }
+
+    
+    if (STORAGE.whoami){
+        Action.hideItem($$("userAuth"  ));
+        Action.showItem($$("mainLayout"));
+    
+        setUserData();
+
+        createElements();
+    
+        getMenuTree();
+ 
+         
+    } else {
+        Backbone.history.navigate("/", { trigger:true});
+        window.location.reload();
+    }
+
+  
+
+
+}
+
+//create mediator
+class RouterActions {
+    static hideEmptyTemplates(){
+        Action.removeItem($$("webix__null-content"));
+        Action.hideItem  ($$("webix__none-content"));     
+    }
+
+    static hideContent   (){
+        hideAllElements();
+    }
+
+    static async createContentSpace (){
+        await createContent  ();
+    }
+
+    static async loadSpace(){
+        const isSidebarData = mediator.sidebar.dataLength();
+
+        if (!isSidebarData){
+            await createContent();
+        }
+    }
+
+    static createContentElements(id){
+        createElements (id);
+    }
+
+}
+
 
 ;// CONCATENATED MODULE: ./src/js/components/login.js
   
 ///////////////////////////////
-
+//
 // Компонент авторизации 
-
+//
 // Copyright (c) 2022 CA Expert
 
 ///////////////////////////////
@@ -27156,58 +27440,13 @@ const auth = {
 }; 
 
 
-;// CONCATENATED MODULE: ./src/js/components/logout/autoLogout.js
-///////////////////////////////
-
-// Автоматический выход из системы
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-
-
-function resetTimer (){
-
-    let timeout;
-
-    window.onload       = resetTimer;
-    window.onmousemove  = resetTimer;
-    window.onmousedown  = resetTimer;      
-    window.ontouchstart = resetTimer;
-    window.onclick      = resetTimer;     
-    window.onkeypress   = resetTimer;   
-    window.addEventListener('scroll', resetTimer, true); 
-
-    function resetTimer() {
-        try {
-            if (window.location.pathname !== "/index.html"        && 
-                window.location.pathname !== "/"                  && 
-                window.location.pathname !== "/init/default/spaw" ){
-                
-                clearTimeout(timeout);
-
-                const time = 600000;
-                timeout = setTimeout(logout, time); // 600000
-            }
-        } catch (err){
-            errors_setFunctionError(err, "autoLogout", "resetTimer");
-        }
-    }
-    
-}
-
-
-
 ;// CONCATENATED MODULE: ./src/js/blocks/adaptive.js
 ///////////////////////////////
-
+//
 // Адаптив для сайдбара, таблиц, дашбордов, форм
-
+//
 // Copyright (c) 2022 CA Expert
-
+//
 ///////////////////////////////
 
 
@@ -27488,11 +27727,11 @@ function adaptivePoints (){
 
 ;// CONCATENATED MODULE: ./src/js/blocks/webixGlobalPrefs.js
 ///////////////////////////////
-
+//
 // Глобальные настройки для webix 
-
+//
 // Copyright (c) 2022 CA Expert
-
+//
 /////////////////////////////// 
 
 
@@ -27540,665 +27779,19 @@ function backButtonBrowserLogic (){
 
 
 
-;// CONCATENATED MODULE: ./src/js/components/routerConfig/routerStart.js
-///////////////////////////////
-
-// Начальные настройки роутера
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-function routerStart_navigate(path){
-    Backbone.history.start({pushState: true, root: path});
-}
-
-function setRouterStart(){
-    if (window.location.host.includes("localhost:3000")){
-        routerStart_navigate('/index.html/');
-    } else {
-        routerStart_navigate('/init/default/spaw/');
-    }
-}
-
-
-;// CONCATENATED MODULE: ./src/js/components/tabs/addTab.js
-  
-///////////////////////////////
-
-// layout кнопки добавления вкладки
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-
-
-function createAddBtn(){
-    const btn = new Button({
-    
-        config   : {
-            id       : "addTabBtn",
-           // hotkey   : "Ctrl+Shift+A",
-            icon     : "icon-plus", //wxi-plus
-            click    : function(){
-                mediator.tabs.addTab();
-            },
-        },
-        titleAttribute : "Добавить вкладку"
-    
-       
-    }).transparentView();
-
-    return btn;
-}
-
-
-
-;// CONCATENATED MODULE: ./src/js/components/tabs/tabsHistory.js
-  
-///////////////////////////////
-
-// Кнопка с историей и восстановлением последней вкладки
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-
-
-
-
-
-
-
-
-
-
-function getSelectedOption(){
-    const radio      = $$("tabsHistoryList");
-    const selectedId = radio.getValue();
-    return radio.getOption(selectedId);
-}
-
-
-function tabsHistory_returnEmptyOption(){
-    return {   
-        id       : "radioNoneContent", 
-        disabled : true, 
-        value    : "История пуста"
-    };
-}
-
-function returnItem(config, index){
-    
-    const item = GetFields.item(config.field);
-    const name = item.plural ? item.plural : item.singular;
-  
-    return {
-        id    : webix.uid(),
-        value : name,
-        config: config,
-        index : index
-    };
-   
-}
-
-function returnListItems(){
-    const history = mediator.tabs.getTabHistory();
-    const items = [];
-
-    if (history && history.length){
-     
-        history.forEach(function(el, i){
-            items.push(returnItem(el, i));
-        });
-
-    } else {
-        items.push(tabsHistory_returnEmptyOption());
-    }
-
-    return items;
-}
-
-
-function returnRadio(){
-    const radio = {
-        view     : "radio", 
-        id       : "tabsHistoryList",
-        vertical : true,
-        options  : returnListItems(),
-        on       : {
-            onChange:function(newValue, oldValue){
-                if (newValue !== oldValue){
-                    Action.enableItem($$("tabsHistoryBtn"));
-                }
-            }
-        }
-    };
-
-    return radio;
-}
-
-function returnRadioList(){
-    const container = {
-        view       : "scrollview",
-        scroll     : "y",
-        maxHeight  : 300,
-        borderless : true,
-        body       : {
-            rows: [
-                returnRadio()
-            ]
-        }
-    };
-
-    return container;
-}
-
-
-function openLink(){
-    const option = getSelectedOption();
- 
-    const createConfig = {
-        tree: option.config
-    };
-
-    mediator.tabs.openInNewTab(createConfig);
-
-    Action.destructItem($$("popupTabsHistory"));
-}
-
-function returnOpenBtn(){
-    const btn = new Button({
-        config   : {
-            id       : "tabsHistoryBtn",
-            hotkey   : "Ctrl+Shift+Space",
-            value    : "Открыть ссылку", 
-            disabled : true,
-            click    : function(){
-                openLink();
-            },
-        },
-        titleAttribute : "Открыть ссылку"
-    
-       
-    }).maxView("primary");
-
-    return btn;
-}
-
-function returnSuccessNotify(text){
-    setLogValue ("succcess", text, '"expa'); 
-}
-
-
-
-function clearAllClick(){
-
-    modalBox("История будет очищена полностью", 
-        "Вы уверены?", 
-        ["Отмена", "Продолжить"]
-    )
-    .then(function (result){
-        if (result == 1){
-            mediator.tabs.clearTabHistory();
-            Action.destructItem($$("popupTabsHistory"));
-            returnSuccessNotify("История успешно очищена");
-        }
-
-    });
-
-}
-
-function tabsHistory_removeOptionState (option){
-    const radio = $$("tabsHistoryList");
-    try{
-
-        option.value = option.value + " (запись удалена)";
-        radio.refresh();
-        
-        radio.disableOption(option.id);
-
-    } catch (err){
-        errors_setFunctionError(
-            err, 
-            "tabs / tabsHistory", 
-            "removeOptionState"
-        );
-    }
-}
-
-function removeItemClick(){
-    const option = getSelectedOption();
- 
-    if (option){
-        const name = option.value;
-        modalBox("Запись «" + name + "» будет удалена из истории", 
-            "Вы уверены?", 
-            ["Отмена", "Продолжить"]
-        )
-        .then(function (result){
-            if (result == 1){
-                
-                mediator.tabs.removeTabHistoryPage(option.index);
-                tabsHistory_removeOptionState (option);
-                returnSuccessNotify("Запись «" + name + "» удалена из истории");
-            }
-    
-        });
-    } else {
-        webix.message({
-            text :"Запись не выбрана",
-            type :"error", 
-        });
-    }
- 
-   
-}
-
-
-
-function tabsHistory_returnRemoveBtn(){
-    const removeBtn = new Button({
-
-        config   : {
-            id       : "removeTabsHistory",
-            hotkey   : "Alt+Shift+R",
-            icon     : "icon-trash",
-            popup   : {
-
-                view    : 'contextmenu',
-                css     : "webix_contextmenu",
-                data    : [
-                    { id: 'clearSingle', value: 'Удалить ссылку'   },
-                    { id: 'clearAll',    value: 'Очистить историю' }
-                ],
-                on      : {
-                    onItemClick: function(id){
-                        if (id == "clearAll"){
-                            clearAllClick();
-                        } else if (id == "clearSingle"){
-                            removeItemClick();
-                            // проверить выбрана ли ссылка
-                        }
-     
-                    }
-                }
-            },
-
-        },
-        titleAttribute : "Очистить историю / удалить выбранную ссылку"
-       
-    }).minView("delete");
-
-    return removeBtn;
-}
-
-
-function openHistoryPopup(){
- 
-    const popup = new Popup({
-        headline : "История",
-        config   : {
-            id    : "popupTabsHistory",
-            width : 500,
-    
-        },
-
-        elements : {
-            rows : [
-                returnRadioList(),
-                {cols:[
-                    returnOpenBtn(),
-                    tabsHistory_returnRemoveBtn()
-                ]}
-            ]
-          
-        }
-    });
-
-    popup.createView ();
-    popup.showPopup  ();
-}
-
-function findLastRemovedTab(){
-    const removedHistory = mediator.tabs.getRemovedTabs();
-
-    if (removedHistory){
-        const index = removedHistory.length - 1;
-        const tab   =  removedHistory[index];
-
-        mediator.tabs.deleteOpenRemovedTab(index);
-
-        return tab;
-
-    }
-
-}
-
-function openClosedTab(){
-    const lastRemovedTabConfig = findLastRemovedTab();
-    if (lastRemovedTabConfig){
-        mediator.tabs.openInNewTab({tree:lastRemovedTabConfig});
-    }
-   
-    
-}
-
-function tabsHistoryBtn(){
-    const btn = new Button({
-        
-        config   : {
-            id       : "historyTabBtn",
-           // hotkey   : "Ctrl+Shift+A",
-            icon     : "icon-file", //wxi-plus
-            popup   : {
-
-                view    : 'contextmenu',
-               
-                css     : "webix_contextmenu",
-                data    : [
-                    { id: 'addTab' , value: 'Новая вкладка'            },
-                    { id: 'history', value: 'Открыть историю'          },
-                    { id: 'restore', value: 'Открыть закрытую вкладку' },
-                    { id: 'empty'  , value: '',                        }
-                ],
-                on      : {
-                    onItemClick: function(id){
-                        if (id == "addTab"){
-                            mediator.tabs.openInNewTab({tree:{none:true}});
-
-                        } else if (id == "history"){
-                            openHistoryPopup();
-
-                        } else if (id == "restore"){
-                           openClosedTab();
-                        }  
-     
-                    }
-                }
-            },
-            // click    : function(){
-            //     openHistoryPopup();
-            // },
-        },
-        titleAttribute : "Действия с вкладками"
-    
-       
-    }).transparentView();
-
-    return btn;
-}
-
-
-;// CONCATENATED MODULE: ./src/js/components/tabs/_layout.js
-  
-///////////////////////////////
-
-// Layout панели вкладок
-
-// Copyright (c) 2022 CA Expert
-
-///////////////////////////////
-
-
-
-
-
-
-
-
-
-let prevValue;
-
-
-
-function setStateToStorage(idTab){
-    const tabbar  = $$("globalTabbar");
-    const options = tabbar.config.options;
-    
- 
-    const data = {
-        tabs   : options,
-        select : idTab
-    };
-
-    webix.storage.local.put("tabbar", data);
-}
-
-function isOtherTab(id){
-    let check = true;
-
-    if (id == prevValue){
-        check = false;
-    }
-
-    return check;
-}
-
-function _layout_createConfigSpace(id){
-    const option     = $$("globalTabbar").getOption(id);
-  
-    const treeConfig = option.info.tree;
-    const tempConfig = option.info.temp;
-  
-    if (treeConfig){
-        showTreeItem(
-            treeConfig, 
-            isOtherTab(), 
-            option.isOtherView
-        );
-
- 
-        if (tempConfig){
-            restoreTempData(
-                tempConfig, 
-                treeConfig.field
-            );
-        }
-    }    
-}
-
-function _layout_tabbarClick(ev, id){
-    $$("globalTabbar").callEvent(ev, [ id ]);
-}
-
-
-
-function restoreTabbar(data){
-    const tabbar = $$("globalTabbar");
-    const tabs   = data.tabs;
-    const select = data.select;
-
-    if (tabs && tabs.length){
-        tabs.forEach(function(option){
-            tabbar.addOption(option, false); 
-        });
-    }
-   
-  
-    if (select){
-    
-        tabbar.setValue(select);
- 
-        _layout_tabbarClick("onBeforeTabClick", select);
-   
-        _layout_tabbarClick("onAfterTabClick" , select);
-  
-    } else {
-        const options = tabbar.config.options;
-        const index   = options.length - 1;
-        const lastOpt = options[index]; 
-        if (lastOpt){
-            const id  = lastOpt.id;
-            tabbar.setValue(id);
-        }
-
-   
-    }
-}
-
-function addNewTab(){
-    $$("globalTabbar").addOption( { 
-        id    : "container", 
-        value : "Новая вкладка", 
-        info  : {},
-        close : true
-    }, true); 
-}
-
-
-function isSelectedOption(id){
-    const selectOpt = $$("globalTabbar").getValue();
-    if ( selectOpt == id ){
-        return true;
-    }
-}
-
-
-
-
-function createTabbar(){
-    const tabbar = {
-        view    : "tabbar",
-        id      : "globalTabbar",
-        css     : "global-tabbar",
-        value   : "container",
-        tooltip : "#value#",
-        optionWidth: 300,
-        multiview  : true, 
-        options : [
-           
-        ],
-        on:{
-
-
-            onBeforeTabClick:function(){
-        
-                const clearDirty = false;
-                mediator.tables.defaultState("edit", clearDirty);
-                
-                mediator.tables.defaultState("filter");
-                
-                mediator.dashboards.defaultState();
-               
-                mediator.forms.defaultState();
-
-                prevValue = this.getValue();
-         
-            },
-
-            onAfterTabClick:function(id){
-            
-                mediator.tables.filter.clearAll();
-
-                _layout_createConfigSpace(id);
-
-                setStateToStorage(id);
-        
-            },
-
-
-            setStorageData:function(){
-                const data  = webix.storage.local.get("tabbar");
-          
-                
-                if (data && data.tabs.length){
-                 
-                    restoreTabbar(data);
-                  
-                } else {
-                    addNewTab();
-                }
-            },
-
-            onBeforeTabClose: function(id){
-               
-                const tabConfig = this.getOption(id);
-                if (tabConfig && tabConfig.info){
-                    mediator.tabs.addRemovedTab(tabConfig.info.tree);
-                }
-                
-                const tabbar     = this;
-                const option     = tabbar.getOption(id);
-                const isTabDirty = option.info.dirty;
-   
-
-                if (isSelectedOption(id)){ // текущая вкладка
-
-                    mediator.getGlobalModalBox().then(function(result){
-
-                        if (result){
-                            tabbar.removeOption(id);
-                        }
-    
-                    });
-
-                } else { // другая вкладка
-        
-                    if (isTabDirty){
-                        tabbar.setValue(id);
-                 
-                        _layout_tabbarClick("onBeforeTabClick", id);
-                        _layout_tabbarClick("onAfterTabClick" , id);
-    
-                        const optionData = mediator.tabs.getInfo();
-                        optionData.isClose = true;
-                        mediator.tabs.setInfo(optionData);
-                    } else {
-                        tabbar.removeOption(id);
-                    }
-              
-                } 
-            
-                return false;
-            },
-
-            // onOptionAdd:function(){
-            //     this.config.addedTabs ++; 
-
-            // },
-
-            onOptionRemove:function(removedTab, lastTab){
-      
-                mediator.tabs.removeTab(lastTab);
-
-            },
-
-           
-          
-        }
-     
-    };
-
-    const layout = {
-        cols:[
-            createAddBtn(),
-            tabbar,
-            tabsHistoryBtn()
-        ]
-    };
-
-    return layout;
-}
-
-
 ;// CONCATENATED MODULE: ./src/js/app.js
   
 ///////////////////////////////
-
+//
+// Пустой компонент (create empty)
+//
 // Приложение
-
+//
 // Copyright (c) 2022 CA Expert
-
+//
 ///////////////////////////////
 
-console.log("expa 1.0.83"); 
+console.log("expa 1.0.84"); 
 
 
 
@@ -28221,7 +27814,7 @@ console.log("expa 1.0.83");
 
 
 
-
+//create empty
 const emptySpace = {
     view    : "align", 
     align   : "middle,center",

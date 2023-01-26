@@ -1,10 +1,10 @@
   
 ///////////////////////////////
-
+//
 // Компонент с выводом ошибок 
-
+//
 // Copyright (c) 2022 CA Expert
-
+//
 ///////////////////////////////
 
 import { setStorageData }               from "../blocks/storageSetting.js";
@@ -122,7 +122,7 @@ async function createLogMessage(srcTable) {
     let name;
 
     if (srcTable == "version"){
-        name = 'Expa v1.0.83';
+        name = 'Expa v1.0.84';
 
     } else if (srcTable == "cp"){
         name = 'Смена пароля';

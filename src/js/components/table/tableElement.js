@@ -46,7 +46,7 @@ import { createTableRows, createTable } from './generateTable.js';
 import { setLogValue }                  from '../logBlock.js';
 import { ServerData }                   from "../../blocks/getServerData.js";
 import { Button }                       from "../../viewTemplates/buttons.js";
-import { createHeadline }               from '../viewHeadline/_layout.js';
+import { createHeadline }               from '../viewHeadline.js.js';
 
 import { filterFormDefState, Filter, 
         filterBtnClick, filterForm}     from "./filter.js";

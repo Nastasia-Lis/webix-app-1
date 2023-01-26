@@ -1,9 +1,9 @@
 ///////////////////////////////
-
+//
 // Модальное окно: проверяет чисты ли все формы 
-
+//
 // Copyright (c) 2022 CA Expert
-
+//
 ///////////////////////////////
 
 
@@ -25,7 +25,11 @@ function settingsForm(form){
         getSettingsFormValues(form);
     }
     const storageData = getSettingsFormValues(id);
-    form.setValues(storageData);
+
+    if (storageData){
+        form.setValues(storageData);
+    }
+    
 }
 
 function unsetDirty(){

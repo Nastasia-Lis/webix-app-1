@@ -1,9 +1,9 @@
 ///////////////////////////////
-
+//
 // Confirm и modalbox 
-
+//
 // Copyright (c) 2022 CA Expert
-
+//
 ///////////////////////////////
 
 function popupExec (titleText) { 

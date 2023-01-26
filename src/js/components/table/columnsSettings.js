@@ -597,6 +597,14 @@ function returnMoveBtns(){
 
 // create save btn
 
+function returnMinSize(table, containerWidth){
+    const allCols = table.getColumns(true).length;
+    const width  = containerWidth / allCols;
+
+    return width.toFixed(2);
+}
+
+
 function visibleColsSubmitClick (){
  
     const list      = $$("visibleListSelected");
@@ -608,12 +616,6 @@ function visibleColsSubmitClick (){
     const emptySpace = 77;
     const containerWidth = window.innerWidth - $$("tree").$width - emptySpace; 
 
-    function returnMinSize(){
-        const allCols = table.getColumns(true).length;
-        const width  = containerWidth / allCols;
-
-        return width.toFixed(2);
-    }
 
     function setLastColWidth(lastColumn,widthCols){
         const sumWidth     = widthCols.reduce((a, b) => a + b, 0);
@@ -622,7 +624,7 @@ function visibleColsSubmitClick (){
         let widthLastCol   =  containerWidth - sumWidth;
         const minWidth     = 50;
         if (widthLastCol < minWidth){
-            widthLastCol = returnMinSize();
+            widthLastCol = returnMinSize(table, containerWidth);
         }
 
         lastColumn.width = Number(widthLastCol);
@@ -929,11 +931,16 @@ function setSize(sentVals){
         );
     }
 
-    if (isArray(sentVals.values, logNameFile, "setSize")){
-        sentVals.values.forEach(function(el){
-            setColWidth(el);
-        });
+
+    if (sentVals && sentVals.columns){
+        const vals = sentVals.columns.values;
+        if (isArray(vals, logNameFile, "setSize")){
+            vals.forEach(function(el){
+                setColWidth(el);
+            });
+        }
     }
+  
   
 }
 
@@ -943,7 +950,7 @@ function saveExistsTemplate(sentObj, idPutData, visCol){
 
     const prefs   = sentObj.prefs;
     const id      = getItemId();
-
+   
     new ServerData({
         id : `userprefs/${idPutData}`,
        
@@ -965,7 +972,7 @@ function saveExistsTemplate(sentObj, idPutData, visCol){
                 );
             
                 if (setUpdates){
-                    setUpdateCols (prefs);
+                    setUpdateCols (prefs.columns);
                 }
               
     
@@ -1011,7 +1018,7 @@ function saveNewTemplate(sentObj){
                 );
     
                 if (setUpdates){
-                    setUpdateCols (prefs);
+                    setUpdateCols (prefs.columns);
                 }
 
             }
@@ -1022,25 +1029,49 @@ function saveNewTemplate(sentObj){
     Action.destructItem($$("popupVisibleCols"));
 }
 
-function getUserprefsData(sentObj, visCol){
+function getUserprefsData(values, visCol){
     const id      = getItemId();
 
+    const name  = `userprefs.name+=+%27fields/${id}%27`;
+    const owner = `userprefs.owner+=+${userData.id}`;
+
     new ServerData({
-        id : `smarts?query=userprefs.name+=+%27visibleColsPrefs_${id}%27+and+userprefs.owner+=+${userData.id}&limit=80&offset=0`,
-    
+        id : `smarts?query=${name}+and+${owner}&limit=80&offset=0`,
+       // id : `smarts?query=userprefs.name+=+%27visibleColsPrefs_${id}%27+and+${owner}&limit=80&offset=0`,
     }).get().then(function(data){
 
         if (data){
-
             const content = data.content;
 
             if (content && content.length){ // запись уже существует
-                saveExistsTemplate(sentObj, content[0].id, visCol);
+               
+                const columnsData = content[0];
+
+                if (columnsData){
+                    const prefs       = JSON.parse(columnsData.prefs);
+
+                    if (prefs){
+                        prefs.columns = values;
+                        columnsData.prefs = prefs;
+                    }
+    
+                    saveExistsTemplate(columnsData, columnsData.id, visCol);
+                }
+          
             } else {
+
+                const sentObj = {
+                    name  : `fields/${id}`,
+                    owner : userData.id,
+                    prefs : {
+                        columns:values
+                    },
+                };
+
                 saveNewTemplate(sentObj);
             }
-
         }
+
         
     });
 
@@ -1059,14 +1090,14 @@ async function postPrefsValues(values, visCol = false, updates = true){
         tableIdPrefs : id
     };
 
-    const sentObj = {
-        name  : "visibleColsPrefs_" + id,
-        owner : userData.id,
-        prefs : sentVals,
-    };
+    // const sentObj = {
+    //     name  : `fields/${id}`,
+    //     owner : userData.id,
+    //     prefs : sentVals,
+    // };
 
 
-    getUserprefsData(sentObj, visCol);
+    getUserprefsData(sentVals, visCol);
 
 }
 
@@ -1134,6 +1165,5 @@ export {
     createPopup,
     setColsWidthStorage,
     dropColsSettings,
-    postPrefsValues,
     columnResize
 };

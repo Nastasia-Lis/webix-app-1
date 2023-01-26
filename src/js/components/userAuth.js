@@ -1,15 +1,47 @@
   
 ///////////////////////////////
-
-// Layout редактора пароля
-
+//
+// Медиатор                 (create mediator)
+//
+// Layout редактора пароля  (create layout)
+//
 // Copyright (c) 2022 CA Expert
 
 ///////////////////////////////
-import { setLogValue }      from '../logBlock.js';
-import { ServerData }       from "../../blocks/getServerData.js";
-import { mediator }         from "../../blocks/_mediator.js";
-import { Button }           from "../../viewTemplates/buttons.js";
+import { setLogValue }      from './logBlock.js';
+import { ServerData }       from "../blocks/getServerData.js";
+import { mediator }         from "../blocks/_mediator.js";
+import { Button }           from "../viewTemplates/buttons.js";
+
+
+//create mediator
+class UserAuth {
+    constructor (){
+        this.name = "user_auth";
+    }
+
+    create (){
+        $$("container").addView(
+            {   view   : "layout",
+                id     : this.name, 
+                css    : "webix_auth",
+                hidden : true, 
+                rows   : [
+                    authCpLayout,
+                    {}
+                ],
+            }, 
+        7);
+
+    }
+
+    put (){
+        return doAuthCp();
+    }
+
+}
+
+//create layout
 
 let form;
 
@@ -180,6 +212,5 @@ const authCpLayout = {
 };
 
 export {
-    authCpLayout,
-    doAuthCp
+    UserAuth
 };

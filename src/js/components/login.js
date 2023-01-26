@@ -1,14 +1,14 @@
   
 ///////////////////////////////
-
+//
 // Компонент авторизации 
-
+//
 // Copyright (c) 2022 CA Expert
 
 ///////////////////////////////
 
 
-import { router }       from "./routerConfig/_router.js";
+import { router }       from "./router.js";
 import { ServerData }   from "../blocks/getServerData.js";
 
 

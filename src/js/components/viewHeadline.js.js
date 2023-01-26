@@ -1,24 +1,34 @@
   
 ///////////////////////////////
-
-// Кнопка сохранения страницы в закладки
-
+//
+// Кнопка сохранения страницы в закладки    (create favorite btn)
+//
+// Кнопки с историей                        (create history btns)
+//
+// Название страницы                        (create title)
+//
+// Layout титульной панели                  (create layout)
+//
 // Copyright (c) 2022 CA Expert
-
+//
 ///////////////////////////////
+import { setFunctionError }         from "../blocks/errors.js";
+import { Button }                   from "../viewTemplates/buttons.js";
+import { mediator }                 from "../blocks/_mediator.js";
+import { LoadServerData, 
+        GetFields }                 from "../blocks/globalStorage.js";
+import { setLogValue }              from "./logBlock.js";
+import { ServerData }               from "../blocks/getServerData.js";
+import { getItemId, 
+        returnOwner, Action}        from "../blocks/commonFunctions.js";
+import { Popup }                    from "../viewTemplates/popup.js";
 
-import { LoadServerData, GetFields }        from "../../blocks/globalStorage.js";
 
-import { setLogValue }                      from "../logBlock.js";
-import { setFunctionError }                 from "../../blocks/errors.js";
-import { ServerData }                       from "../../blocks/getServerData.js";
-import { getItemId, returnOwner, Action}    from "../../blocks/commonFunctions.js";
-
-import { Popup }                            from "../../viewTemplates/popup.js";
-import { Button }                           from "../../viewTemplates/buttons.js";
+const logNameFile = "viewHeadline";
 
 
-const logNameFile = "viewHeadline => favoriteBtn";
+
+//create favorite btn
 
 function findName (id, names){
 
@@ -321,6 +331,239 @@ function createFavoriteBtn(){
 
 
 
+
+
+//create history btns
+
+function returnProp(name){
+    const tabInfo = mediator.tabs.getInfo();
+    return tabInfo[name];
+}
+
+function selectPage(config, id, changeHistory=false){
+    mediator.tabs.setInfo(config, changeHistory);
+    tabbarClick("onBeforeTabClick", id);
+    tabbarClick("onAfterTabClick" , id);
+}
+
+
+function isThisPage(history){
+    const lastHistory = history[history.length - 1];
+    const tabConfig   = mediator.tabs.getInfo();
+
+    if (tabConfig && lastHistory){
+        const id        = tabConfig.tree ? tabConfig.tree.field : null;
+        const historyId = lastHistory.field;
+
+        if (id == historyId){
+            return true;
+        }
+   
+    }
+   
+}
+function returnPrevPageConfig(history){
+  
+    if (history && history.length){
+
+        let index = 1;
+
+        if (isThisPage(history)){
+            index = 2;
+        }
+        const lastIndex     = history.length - index;
+        const modifyHistory = history.slice(0, lastIndex);
+   
+        if (lastIndex <= 1){
+            mediator.tabs.setHistoryBtnState(false, false); // disable prev btn
+
+        }
+
+        mediator.tabs.setHistoryBtnState(true); // enable next btn
+       
+        if (history[lastIndex]){
+            return{ 
+                tree    : history[lastIndex],
+                history : modifyHistory,
+            };
+        }
+     
+    }
+
+}
+
+function tabbarClick(ev, id){
+    $$("globalTabbar").callEvent(ev, [ id ]);
+}
+
+
+function returnSelectTabId(){
+    const tabbar   = $$("globalTabbar");
+    return tabbar.getValue();  
+}
+
+function addNextPageConfig(prevPageConfig){
+    const tree = returnProp ("tree");
+    prevPageConfig.nextPage = tree;
+}
+
+
+function prevBtnClick (){
+    const tabId          = returnSelectTabId    ();
+    const history        = returnProp           ("history");
+    const prevPageConfig = returnPrevPageConfig (history);
+    
+    if (prevPageConfig){
+        addNextPageConfig(prevPageConfig);
+        selectPage(prevPageConfig, tabId);
+        
+    }
+}
+
+function returnNextPageConfig(nextPage){
+    const history = returnProp("history");
+    const prevPage = returnProp("tree");
+    history.push(prevPage);
+    return {
+        tree   : nextPage,
+        history: history
+    };
+}
+
+function isNextPageExists(nextPage){
+    if (nextPage){
+        return nextPage;
+    }
+}
+
+function nextBtnClick (){
+    const nextPage = returnProp("nextPage");
+
+    if (isNextPageExists(nextPage)){
+        const tabId          = returnSelectTabId   ();
+        const nextPageConfig = returnNextPageConfig(nextPage);
+  
+        selectPage(nextPageConfig, tabId, true);
+
+        mediator.tabs.setHistoryBtnState(true, false);// disable next btn
+        mediator.tabs.setHistoryBtnState(); // enable prev btn
+         
+    }
+
+}   
+
+function createHistoryBtns(){
+
+    
+    const prevBtn = new Button({
+        
+        config   : {
+            id       : `historyBtnLeft_${webix.uid()}`,
+            hotkey   : "Ctrl+Shift+P",
+            icon     : "icon-arrow-left",
+            disabled : true, 
+            css      : "historyBtnLeft",
+            click    : function(){
+                prevBtnClick();
+            },
+        },
+        titleAttribute : "Вернуться назад"
+
+    
+    }).transparentView();
+
+    const nextBtn = new Button({
+        
+        config   : {
+            id       : `historyBtnRight_${webix.uid()}`,
+            hotkey   : "Ctrl+Shift+B",
+            icon     : "icon-arrow-right",
+            css      : "historyBtnRight",
+            disabled : true, 
+            click    : function(){
+                nextBtnClick();
+            },
+        },
+        titleAttribute : "Перейти вперёд "
+
+    
+    }).transparentView();
+   
+
+    return {
+        css  : "btn-history",
+        cols : [
+            prevBtn,
+            nextBtn,
+        ]
+    };
+}
+
+
+//create title
+
+function returnHeadline(idTemplate, templateTitle){
+    const headline = {   
+        view        : "template",
+        id          : idTemplate,
+        borderless  : true,
+        css         : "webix_block-headline",
+        height      : 34,
+        template    : templateTitle,
+        on:{
+
+        }
+    };
+
+    return headline;
+}
+function returnDiv(title = "Имя не указано"){
+    return "<div class='no-wrap-headline'>" + title + "</div>";
+}
+
+function setHeadlineBlock ( idTemplate, title ){
+    let templateTitle;
+    try{
+        if(title){
+            templateTitle = title;
+        } else {
+            templateTitle = function(){
+                const value      = $$(idTemplate).getValues();
+                const valLength  = Object.keys(value).length;
+                
+                //changeTabName(id)
+                if (valLength !== 0){
+                   // mediator.tabs.changeTabName(null, value);
+                    return returnDiv(title = value);
+                } else {
+                    return returnDiv();
+                }
+            };
+        }
+    } catch (err){
+        setFunctionError(err, logNameFile, "setHeadlineBlock");
+    } 
+
+    return returnHeadline(idTemplate, templateTitle);
+}
+
+
+//create layout
+function createHeadline(idTemplate, title = null){
+    const headlineLayout = {
+        css : "webix_block-headline",
+        cols: [
+            setHeadlineBlock(idTemplate, title),
+            {},
+            createHistoryBtns(),
+            createFavoriteBtn()
+        ]
+    };
+
+    return headlineLayout;
+}
+
+
 export {
-    createFavoriteBtn
+    createHeadline
 };

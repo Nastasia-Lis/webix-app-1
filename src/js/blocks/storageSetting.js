@@ -1,9 +1,9 @@
 ///////////////////////////////
-
+//
 // Загрузка в Local Storage и применение настроек  
-
+//
 // Copyright (c) 2022 CA Expert
-
+//
 /////////////////////////////// 
 
 
@@ -17,8 +17,6 @@ function setStorageData (name, value){
         localStorage.setItem(name, value);
     } 
 }
-
-
 
 
 function setLogState(value){
@@ -81,6 +79,17 @@ function deletePrefs(id, obj){
     }
 }
 
+function setSettingsToStorage(el){
+  
+    const prefs  = JSON.parse(el.prefs);
+    const names  = Object.keys(prefs);
+    const values = Object.values(prefs);
+    names.forEach(function(name, i){
+        setStorageData (name, JSON.stringify(values[i]));
+    });
+ 
+ 
+}
 
 function setDataToStorage(data, user){
     
@@ -95,14 +104,19 @@ function setDataToStorage(data, user){
             if (owner == user.id && !isFavPref){
                  
 
-                if (name !== "userRestoreData"){
-                    setStorageData (el.name, el.prefs);
-                } 
-
-                if (name == "tabbar" || name == "userRestoreData" 
-                    || name == "tabsHistory"){
-                    deletePrefs(el.id, el);
+                if (name == "/settings"){
+                    setSettingsToStorage(el);
+                } else {
+                    if (name !== "userRestoreData"){
+                        setStorageData (el.name, el.prefs);
+                    } 
+    
+                    if (name == "tabbar" || name == "userRestoreData" 
+                        || name == "tabsHistory"){
+                        deletePrefs(el.id, el);
+                    }
                 }
+              
             }
 
         });

@@ -26,7 +26,7 @@ import { setFunctionError }               from "../../blocks/errors.js";
 import { Action }                         from '../../blocks/commonFunctions.js';
 import { ServerData }                     from "../../blocks/getServerData.js";
 
-import { createHeadline }                 from '../viewHeadline/_layout.js';
+import { createHeadline }                 from '../viewHeadline.js.js';
 import { createOverlayTemplate }          from '../../viewTemplates/loadTemplate.js';
 import { LoadServerData, GetFields }      from "../../blocks/globalStorage.js";
 import { mediator }                       from "../../blocks/_mediator.js";

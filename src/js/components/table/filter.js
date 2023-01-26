@@ -52,7 +52,7 @@
 //
 // Создание родительского элемента фильтра                  (create parent field)
 //
-// Кнопка с выбором операции и/или                          (create operation field btn)
+// Кнопка с выбором операции и/или                          (create logic operation field btn)
 //
 // Layout фильтра                                           (create filter form layout)
 //
@@ -66,11 +66,11 @@
 //
 // Кнопка применения изменений фильтра                      (create submit popup btn)
 //
-// Кнопка удаления шаблона                                   (create template del btn)
+// Кнопка удаления шаблона                                  (create template del btn)
 //
-// Layout таббара с табами                                   (create layout tabbar)
+// Layout таббара с табами                                  (create layout tabbar)
 //
-// Layout попапа с таббаром                                  (create layout edit popup)
+// Layout попапа с таббаром                                 (create layout edit popup)
 //
 // Copyright (c) 2022 CA Expert
 //
@@ -3012,7 +3012,7 @@ function createParentFilter (parentElem, positon = 1) {
 
 
 
-//create operation field btn
+//create logic operation field btn
 
 function segmentBtn(element, isChild, uniqueId){
     let id;

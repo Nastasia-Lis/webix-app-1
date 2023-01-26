@@ -1,9 +1,9 @@
 ///////////////////////////////
-
+//
 // Создание query  
-
+//
 // Copyright (c) 2022 CA Expert
-
+//
 ///////////////////////////////
 
 function encodeQueryData(data) {

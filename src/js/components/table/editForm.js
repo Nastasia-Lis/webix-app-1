@@ -7,7 +7,7 @@
 //
 // Кнопки редактора                             (create form btns)
 //
-// Создание контента редактора                  (create property)
+// Создание компонента редактора                (create property)
 //
 // Медиатор                                     (create mediator)
 //

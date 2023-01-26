@@ -451,11 +451,13 @@ function returnCountCols(){
     let countCols;
 
     if(storageData && storageData.values.length){
-        countCols  =  length;
+        countCols  =  storageData.values.length;
+ 
     } else {
         const cols = table.getColumns(true);
         countCols  = cols .length;
     }
+
     return countCols;
 }
 
@@ -481,7 +483,7 @@ function setColsSize(col){
 
 function findUniqueCols(col){
     let result = false;
-
+  
     if (isArray(storageData, logNameFile, "findUniqueCols")){
         storageData.values.forEach(function(el){
 
@@ -555,8 +557,10 @@ function setVisibleCols(allCols){
 
 
 function setPositionCols(){
-    if (isArray(storageData.values, logNameFile, "setPositionCols")){
+   
+    if (isArray(storageData, logNameFile, "setPositionCols")){
         storageData.values.forEach(function(el){
+       
             table.moveColumn(el.column,el.position);
                 
         });
@@ -567,13 +571,17 @@ function setPositionCols(){
 function setUserPrefs(idTable, ids){
     table       = idTable;
 
-    const prefsName = "visibleColsPrefs_" + ids;
+    const prefsName = `fields/${ids}`;
 
     storageData   = webix.storage.local.get(prefsName);
-
+     
+    if (storageData){
+        storageData = storageData.columns;
+    }
+    
     const allCols = table.getColumns       (true);
  
-   
+ 
     if( storageData && storageData.values.length ){
         setVisibleCols (allCols);
         setPositionCols();

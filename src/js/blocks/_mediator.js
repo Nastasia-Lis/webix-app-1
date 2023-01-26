@@ -1,22 +1,22 @@
 ///////////////////////////////
-
+//
 // Медиатор
-
+//
 // Copyright (c) 2022 CA Expert
-
+//
 ///////////////////////////////
 
 
 import { Dashboards }    from "../components/dashboard/_dashMediator.js";
 import { Tables, Forms } from "../components/table/tableElement.js";
-import { TreeEdit }      from "../components/treeEdit/_treeEditMediator.js";
-import { UserAuth }      from "../components/user_auth/_userAuthMediator.js";
-import { Settings }      from "../components/settings/_settingsMediator.js";
+import { TreeEdit }      from "../components/treeEdit.js";
+import { UserAuth }      from "../components/userAuth.js";
+import { Settings }      from "../components/settings.js";
 
-import { Tree }                from "../components/treeSidabar/_treeMediator.js";
-import { Header }              from "../components/header/_headerMediator.js";
+import { Tree }                from "../components/treeSidebar.js";
+import { Header }              from "../components/header.js";
 
-import { Tabs }                from "../components/tabs/_tabMediator.js";
+import { Tabs }                from "../components/tabs.js";
 
 import { clickModalBox }       from "./globalModalBox.js";
 import { setParamToLink,

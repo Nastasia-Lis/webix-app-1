@@ -1,10 +1,10 @@
 ///////////////////////////////
-
+//
 // Общеиспользуемые функции (Получить id, действия 
 // над элементами (показать, включить и тд))
-
+//
 // Copyright (c) 2022 CA Expert
-
+//
 ///////////////////////////////
 
 
@@ -138,23 +138,6 @@ function textInputClean(){
     }, { capture: true });
 }
 
-function stringOption(l, el, keyArray){
-    try{
-        while (l <= Object.values(el).length){
-            if (typeof Object.values(el)[l] == "string"){
-                keyArray = Object.keys(el)[l];
-                break;
-            } 
-            l++;
-        }
-    } catch (err){  
-        setFunctionError(
-            err,
-            "commonFunctions",
-            "getComboOptions => stringOption"
-        );
-    }
-}
 
 
 
