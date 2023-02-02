@@ -1368,10 +1368,6 @@ function createTabbar(){
                 return false;
             },
 
-            // onOptionAdd:function(){
-            //     this.config.addedTabs ++; 
-
-            // },
 
             onOptionRemove:function(removedTab, lastTab){
       
@@ -1386,11 +1382,19 @@ function createTabbar(){
     };
 
     const layout = {
-        cols:[
-            createAddBtn(),
-            tabbar,
-            tabsHistoryBtn()
+
+        rows:[
+            {height:6},
+            {  
+                cols:[
+                    createAddBtn(),
+                    tabbar,
+                    tabsHistoryBtn()
+                ]
+            },
+            {height:6},
         ]
+      
     };
 
     return layout;

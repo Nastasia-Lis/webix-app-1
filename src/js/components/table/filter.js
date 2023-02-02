@@ -1238,7 +1238,7 @@ let sentObj;
 let currName;
 
 
-async function isTemplateExists(owner){
+async function isTemplateExists(owner, currNameTemplate){
     let exists = {
         check : false
     };
@@ -1248,23 +1248,45 @@ async function isTemplateExists(owner){
        
     }).get().then(function(data){
     
-        if (data){
-    
-            const content = data.content;
-    
-            if (isArray(content, logNameFile, "isTemplateExists")){
-    
-                content.forEach(function(el){
-   
-                    if (el.name == currName){
-                      
+        if (data && data.content){
+            const item = data.content[0];
+
+            if (item){
+              
+                const prefs = JSON.parse(item.prefs);
+                if (prefs){
+                    item.prefs = prefs;
+                 
+                    const templates = prefs.filterTemplates;
+ 
+                    if(templates && templates.length){  // шаблоны уже есть
+
+                        templates.forEach(function(template, i){
+                            // шаблон с именем уже существует
+                            if (template.name == currNameTemplate){
+                                exists = {
+                                    check : true,
+                                    item  : item,
+                                    index : i
+                                };
+                            }
+                        });
+
+                        // шаблон с именем уникален
+                        if (!exists.check){
+                            exists.item = item;
+                        }
+
+                    }  else {   // шаблонов нет
                         exists = {
-                            check : true,
-                            id    : el.id
+                            check : false,
+                            item  : item
                         };
-                    } 
-                });
+                    }
+                    
+                }
             }
+
         }
          
     });
@@ -1274,31 +1296,7 @@ async function isTemplateExists(owner){
 }
 
 
-function putUserprefsTemplate(id){
-
-    
-    new ServerData({
-        id : `userprefs/${id}`
-    
-    }).put(sentObj).then(function(data){
-
-        if (data){
-
-            setLogValue(
-                "success",
-                "Шаблон" +
-                " «" +
-                nameTemplate +
-                "» " +
-                " обновлён"
-            );
-        }
-        
-    });
-
-}
-
-async function saveExistsTemplate(id){
+async function saveExistsTemplate(sentObj){
     modalBox(   "Шаблон с таким именем существует", 
                 "После сохранения предыдущие данные будут стёрты", 
                 ["Отмена", "Сохранить изменения"]
@@ -1306,32 +1304,34 @@ async function saveExistsTemplate(id){
     .then(function(result){
 
         if (result == 1){
-            putUserprefsTemplate(id);
+            saveNewTemplate(sentObj);
         }
     });
  
 }
 
- 
+function successNotify(){
+    setLogValue(
+        "success",
+        "Шаблон" +
+        " «" +
+        nameTemplate +
+        "» " +
+        " сохранён в библиотеку"
+    );
+}
 
-function saveNewTemplate(){
-
+function saveNewTemplate(sentObj){
+    
      
     new ServerData({
-        id : "userprefs"
+        id : `userprefs/${sentObj.id}`
     
-    }).post(sentObj).then(function(data){
+    }).put(sentObj).then(function(data){
 
         if (data){
 
-            setLogValue(
-                "success",
-                "Шаблон" +
-                " «" +
-                nameTemplate +
-                "» " +
-                " сохранён в библиотеку"
-            );
+            successNotify();
         }
         
     });
@@ -1339,6 +1339,20 @@ function saveNewTemplate(){
 
 }
 
+function postNewTemplate(sentObj){
+    new ServerData({
+        id : `userprefs`
+    
+    }).post(sentObj).then(function(data){
+
+        if (data){
+
+            successNotify();
+        }
+        
+    });
+
+}
 
 async function saveTemplate (result){ 
 
@@ -1348,10 +1362,9 @@ async function saveTemplate (result){
     const currId = getItemId();
     const values = Filter.getFilter().values;
 
-
+    
     nameTemplate = result;
-    currName     = currId + "_filter-template_" + nameTemplate;
-
+    currName     = `fields/${currId}`;
     
     const template = {
         name   : nameTemplate,
@@ -1359,24 +1372,53 @@ async function saveTemplate (result){
         values : values
     };
 
-    sentObj = {
-        name    : currName,
-        prefs   : template,
-        owner   : user.id
-    };
-  
 
-    const existsInfo = await isTemplateExists(user.id);
+    const existsInfo = await isTemplateExists(user.id, nameTemplate);
+ 
     const isExists   = existsInfo.check;
-
-
+ 
     if (isExists){
-        const id = existsInfo.id;
-        saveExistsTemplate(id);  
-    } else {
-        saveNewTemplate();
-    }
+        const item  = existsInfo.item;
+        const index = existsInfo.index;
 
+        if (item){
+
+            item.prefs.filterTemplates[index] = template;
+            sentObj = item;
+        
+            saveExistsTemplate(sentObj); 
+        }
+     
+    } else {
+        const item = existsInfo.item;
+        
+        if (item){ // запись таблицы уже есть
+            if (!item.prefs.filterTemplates){
+                item.prefs.filterTemplates = [];
+            }
+        
+            item.prefs.filterTemplates.push(template);
+            
+            sentObj = item;
+            saveNewTemplate(sentObj);
+        } else { // записи нет
+            sentObj = {
+                name    : currName,
+                owner   : user.id,
+                prefs   : {
+                    filterTemplates:[
+                        template,
+                    ]
+                }
+            };
+   
+            postNewTemplate(sentObj);
+           
+        }
+
+      
+
+    }
 }
 
 
@@ -1498,7 +1540,6 @@ function buttonsFormFilter (name) {
 //create lib
 
 let user;
-let prefsData;
 let libData;
 
  
@@ -1525,50 +1566,23 @@ function clearOptionsPull() {
 
 
 function createOption(i, data){
-    const prefs   = JSON.parse(data.prefs);
-    const idPrefs = prefs.table;
-    const currId  = getItemId ();
 
-    if (idPrefs == currId){
-        libData.addOption( {
-            id    : i + 1, 
-            value : prefs.name,
-            prefs : data
-        });
-
-    }
-}
-
-function isThisOption(data){
-    const dataOwner = data.owner;
-    const currOwner = user.id;
-
-    const name           = "filter-template_";
-    const isNameTemplate = data.name.includes(name);
-
-    if (isNameTemplate && dataOwner == currOwner){
-        return true;
-    }
+    const template = data;
+ 
+    libData.addOption({
+        id    : i + 1, 
+        value : template.name,
+        prefs : data
+    });
 
 }
-function setTemplates(){
+
+function setTemplates(templates){
    
-    clearOptionsPull();
-
-    if (prefsData && prefsData.length){
-        prefsData.forEach(function(data, i){
-            if(isThisOption(data)){
-                createOption(i, data);
-            }
+    templates.forEach(function(data, i){
+        createOption(i, data);
         
-        });
-    } else {
-        setFunctionError(
-            "array is null",
-            "table/filterForm/buttons/editBtn/createLibTab",
-            "setTemplates"
-        );
-    }
+    });
 
 
 }
@@ -1583,36 +1597,56 @@ function setEmptyOption(){
 }
 
 async function createLibTab(){ 
-    libData  = $$("filterEditLib");
-    user = await returnOwner();
 
-    new ServerData({
-        id : "userprefs"
-       
-    }).get().then(function(data){
-    
-        if (data){
-    
-            const content = data.content;
-    
-            if (content){
+    libData       = $$("filterEditLib");
+    user          = await returnOwner();
 
-                prefsData = content;
+    const idField = getItemId();
 
-                if(user){
-                    setTemplates();
+    clearOptionsPull();
+
+    if (user && idField){
+
+        const name    = `fields/${idField}`;
+    
+        new ServerData({
+            id : `smarts?query=userprefs.name+=+%27${name}%27+and+userprefs.owner+=+${user.id}`
+            
+        }).get().then(function(data){
         
-                    const lib = $$("filterEditLib");
-                    
-                    if (lib && lib.data.options.length == 0 ){
-                        setEmptyOption();
+            if (data){
+        
+                const content = data.content;
+        
+                if (content && content.length){
+
+                    const item = content[0];
+
+                    if (item.prefs){
+                        const prefs     = JSON.parse(item.prefs);
+                        const templates = prefs.filterTemplates;
+
+                        if (templates && templates.length){
+                            setTemplates(templates);
+                        }
+                        
                     }
-                
                 }
             }
-        }
-         
-    });
+
+
+        
+            const lib = $$("filterEditLib");
+        
+            if (lib && lib.data.options.length == 0 ){
+                setEmptyOption  ();
+            }
+                
+        });
+        
+    }
+
+
 
    
 }
@@ -3521,16 +3555,6 @@ function getOption(){
     return lib.getOption(libValue);
 }
 
-function createFiltersByTemplate(item) {
-    const radioValue = getOption();
-    const prefs      = JSON.parse(item.prefs);
-    createWorkspace(prefs.values);
-
-    Action.destructItem($$("popupFilterEdit"));
-    Filter.setActiveTemplate(radioValue);
-}
-
-
 function showHtmlContainers(){
     const keys = Filter.getItems();
 
@@ -3549,40 +3573,18 @@ function showHtmlContainers(){
 
 
 async function getLibraryData(){
-    const currId     = getItemId ();
     const radioValue = getOption();
-    const value = radioValue.value;
-    const name = 
-    currId + "_filter-template_" + value;
 
-    const owner = await returnOwner();
+    const template = radioValue.prefs.values;
+    createWorkspace(template);
 
-    new ServerData({
-        id : `smarts?query=userprefs.name=${name}+and+userprefs.owner=${owner.id}`
-    }).get().then(function(data){
-    
-        if (data){
-    
-            const content = data.content;
-    
-            if (content && content.length){
-                const item = content[0];
-                createFiltersByTemplate  (item);
+    Action.destructItem($$("popupFilterEdit"));
+    Filter.setActiveTemplate(radioValue);
 
-                showHtmlContainers       ();
-                Filter.setStateToStorage ();
-                Filter.enableSubmitButton();
-                Action.hideItem($$("templateInfo"));
-                setLogValue(
-                    "success", 
-                    "Рабочая область фильтра обновлена"
-                );
-                
-            }
-        }
-         
-    });
-
+    showHtmlContainers       ();
+    Filter.setStateToStorage ();
+    Filter.enableSubmitButton();
+    Action.hideItem($$("templateInfo"));
 
 }
 
@@ -3918,15 +3920,11 @@ function removeOptionState (){
 
 }
 
-function deleteElement(){
-    const prefs   = radioValue.prefs;
-    const idPrefs = prefs.id;
-
-        
+function sentPutData(sentObj){
     new ServerData({
-        id : `userprefs/${idPrefs}`
+        id : `userprefs/${sentObj.id}`
     
-    }).del(prefs).then(function(data){
+    }).put(sentObj).then(function(data){
 
         if (data){
 
@@ -3940,6 +3938,68 @@ function deleteElement(){
             Filter.clearFilter();
             Filter.setStateToStorage();
             Action.showItem($$("filterEmptyTempalte"));
+        }
+        
+    });
+}
+
+
+function createModifyPrefs(prefs, item){
+    const result  = [];
+    let itemPrefs = item.prefs;
+
+    if (itemPrefs){
+        itemPrefs = JSON.parse(itemPrefs);
+        const templates = itemPrefs.filterTemplates;
+
+        if (templates && templates.length){
+            templates.forEach(function(el){
+
+                if (el.name !== prefs.name){
+                    result.push(el);
+                }
+            });
+        }
+    }
+
+    return result;
+}
+
+async function deleteElement(){
+    const prefs   = radioValue.prefs;
+    const idPrefs = prefs.table;
+    const name    = `fields/${idPrefs}`;
+    user          = await returnOwner();
+ 
+
+    new ServerData({
+        id : `smarts?query=userprefs.name+=+%27${name}%27+and+userprefs.owner+=+${user.id}`
+    
+    }).get().then(function(data){
+ 
+
+        if (data && data.content && data.content.length){
+            const item = data.content[0];
+    
+            if (item){
+            
+                const sentData = createModifyPrefs(prefs, item);
+                let itemPrefs  = item.prefs;
+
+                if (itemPrefs){
+                    itemPrefs = JSON.parse(itemPrefs);
+                    itemPrefs.filterTemplates = sentData;
+
+                    item.prefs = itemPrefs;
+
+                    
+
+                    sentPutData(item);
+                }
+
+  
+            }
+       
         }
         
     });
@@ -3958,8 +4018,8 @@ async function userprefsData (){
     const libValue = lib.getValue();
     radioValue = lib.getOption(libValue);
 
-    const idPrefs = radioValue.prefs.id;
-
+    const idPrefs = radioValue.prefs.table;
+ 
     if (idPrefs){
         deleteElement       (radioValue, lib);
         resetLibSelectOption();

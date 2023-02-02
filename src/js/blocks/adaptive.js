@@ -50,8 +50,10 @@ function resizeSidebar(){
 
     if (window.innerWidth > minWidth && $$("tree")){
         resizeTree();
+  
     }
-    
+
+ 
 }
 
 function setMinView(element, container, backBtn){
@@ -179,68 +181,64 @@ function setSearchInputState(){
 
     
     headerChilds.forEach(function(el){
-        if (el.config.id.includes("search")){
-            el.show();
-        }
+        el.show();
+  
     });
 
 
    
 }
 
+function setAdaptiveLogic(visibleEl){
+    if (visibleEl == "forms"){
+        resizeForms();
 
+    } else if (visibleEl == "dashboards"){
+        resizeTools();  
+        resizeContext();
+    } else if (visibleEl == "tables"){
+        resizeTableEditForm();
+        resizeTableFilterForm ();
+
+    } else if (visibleEl == "userprefs"){
+        //none
+
+    } else if (visibleEl == "user_auth"){
+        //none
+
+    }
+}
+
+function initLogic(){
+
+    const elements = [
+        "forms", 
+        "dashboards", 
+        "tables", 
+        "userprefs", 
+        "user_auth"
+    ];
+
+    elements.forEach(function(el,i){
+        const elem = $$(el);
+        if(elem && elem.isVisible()){
+            setAdaptiveLogic(el);
+        }
+    });
+        
+    
+}
 function resizeAdaptive (){
 
     window.addEventListener('resize', function() {
   
         async function getActiveView (){  
-
-            function setAdaptiveLogic(visibleEl){
-                if (visibleEl == "forms"){
-                    resizeForms();
-
-                } else if (visibleEl == "dashboards"){
-                    resizeTools();  
-                    resizeContext();
-                } else if (visibleEl == "tables"){
-                    resizeTableEditForm();
-                    resizeTableFilterForm ();
-
-                } else if (visibleEl == "userprefs"){
-                    //none
-
-                } else if (visibleEl == "user_auth"){
-                    //none
-
-                }
-            }
-
-            function initLogic(){
-
-                const elements = [
-                    "forms", 
-                    "dashboards", 
-                    "tables", 
-                    "userprefs", 
-                    "user_auth"
-                ];
-
-                elements.forEach(function(el,i){
-                    const elem = $$(el);
-                    if(elem && elem.isVisible()){
-                        setAdaptiveLogic(el);
-                    }
-                });
-                    
-                
-            }
-
             initLogic();
-        
         }
     
         getActiveView ();
         resizeSidebar();
+       
 
         if(window.innerWidth > minWidth){
             setSearchInputState();

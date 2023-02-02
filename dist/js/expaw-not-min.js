@@ -880,135 +880,147 @@ function getValue(elem){
 }
 
 
+function returnSuccessMsg(name){
+    setLogValue(
+        "success", 
+        "Ссылка" + " «" + name + "» " + 
+        " сохранёна в избранное"
+    );
+}
 
-async function postContent(namePref){
+
+async function postContent(sentObj){
+    const name = getValue("favNameLink");
+    new ServerData({
+        id : "userprefs"
+        
+    }).post(sentObj).then(function(data){
+    
+        if (data){
+            returnSuccessMsg(name);
+        }
+        Action.destructItem($$("popupFavsLinkSave")); 
+    });
+
+    
+}
+function putContent(sentObj){
+
+    const name = getValue("favNameLink");
+    new ServerData({
+        id : `userprefs/${sentObj.id}`,
+       
+    }).put(sentObj).then(function(data){
+    
+        if (data){
+    
+            const content = data.content;
+    
+            if (content){
+
+                Action.destructItem($$("popupFavsLinkSave"));
+                returnSuccessMsg(name);
+    
+            } else {
+                Action.destructItem($$("popupFavsLinkSave"));
+                errors_setFunctionError(
+                    "Не удалось сохранить ссылку",
+                    viewHeadline_js_logNameFile,
+                    "putContent"
+                );
+            }
+        }
+         
+    });
+
+
+    Action.destructItem($$("popupVisibleCols"));
+} 
+
+
+function createPrefs(id){
     const favNameLinkVal = getValue("favNameLink");
     const favLinkVal     = getValue("favLink");
 
-    const user = await returnOwner();
+    const favorite = {
+        name: favNameLinkVal,
+        link: favLinkVal,
+        id  : id,
+    };
 
-    if (user){
-
-        const postObj = {
-            name : "fav-link_" + namePref,
-            owner: user.id,
-            prefs:{
-                name: favNameLinkVal,
-                link: favLinkVal,
-                id  : namePref,
-            }
-        };
-
-        new ServerData({
-            id : "userprefs"
-           
-        }).post(postObj).then(function(data){
-        
-            if (data){
-        
-                setLogValue(
-                    "success", 
-                    "Ссылка" + " «" + favNameLinkVal + "» " + 
-                    " сохранёна в избранное"
-                );
-            }
-            Action.destructItem($$("popupFavsLinkSave")); 
-        });
-
-    }
+    return favorite;
 }
 
-function getFavPrefs(data){
-    const prefs = [];
-
-    if (data && data.length){
-        data.forEach(function(pref){
-
-            if (pref.name.includes("fav-link")){
-                prefs.push(pref.name);
-            }
-    
-        });
-    }
-     
-
-    return prefs;
-}
-
-function returnId(el){
-    const index = el.indexOf("_") + 1;
-    return el.slice(index);
-}
-
-function getNotUniquePref(favPrefs, namePref){
-    let unique = true;
-
-    if (favPrefs && favPrefs.length){
-        favPrefs.forEach(function(el){
-                
-            if (el.includes(namePref)){
-                const id = returnId(el);
-    
-                if (id == namePref && unique){
-                    unique = false;
-                    setLogValue(
-                        "success", 
-                        "Такая ссылка уже есть в избранном"
-                    );
-                } 
-            } 
-        });
-    
-    }
-
-    return unique;
-}
-
-
-function getNotUniquePrefs (data, namePref){
-    const favPrefs = getFavPrefs(data);
-    let unique = true;
-    try{
-        if (favPrefs.length){
-            unique = 
-            getNotUniquePref(favPrefs, namePref);
-        } 
-        
-        
-        if (!(favPrefs.length) || unique) {
-            postContent(namePref);
-        } else if (!unique){
-            Action.destructItem($$("popupFavsLinkSave"));
-        }
-    } catch (err){
-        errors_setFunctionError(
-            err,
-            viewHeadline_js_logNameFile,
-            "getNotUniquePrefs"
-        );
-    }
-}
-
-function btnSaveLinkClick(){
+async function btnSaveLinkClick(){
   
-    const namePref = getItemId();
-
-    new ServerData({
-        id : "userprefs"
-       
-    }).get().then(function(data){
+    const id        = getItemId();
+ 
+    if (id){
+        const name      = `fields/${id}`;
+        const queryName = `userprefs.name+=+%27${name}%27`;
     
-        if (data){
-            const content = data.content;
-
-            if (content && content.length){
-                getNotUniquePrefs (content, namePref);
-            }
+        const owner     = await returnOwner();
+    
+        if (owner && owner.id){
             
+            const ownerId   = `userprefs.owner+=+${owner.id}`;
+    
+            new ServerData({
+                id : `smarts?query=${queryName}+and+${ownerId}&limit=80&offset=0`,
+            }).get().then(function(data){
+            
+                if (data && data.content){
+          
+                    const content = data.content;
+        
+                    if (content.length){ // exists
+                        const item = content[0];
+    
+                        if (item){
+                            const prefs = JSON.parse(item.prefs);
+              
+                            if (prefs.favorite){ //favs exists
+                                setLogValue(
+                                    "success", 
+                                    "Ссылка уже в избранном"
+                                );
+                    
+                                Action.destructItem($$("popupFavsLinkSave"));
+                            } else {
+                                prefs.favorite = createPrefs(id);
+                                item.prefs = prefs;
+                                putContent(item);
+                            }
+                        }
+    
+                    } else {
+                        const favNameLinkVal = getValue("favNameLink");
+    
+                        const postObj = {
+                            name : name,
+                            owner: owner.id,
+                            prefs: {}
+                        };
+    
+                        postObj.prefs.favorite = createPrefs(id);
+    
+                        postContent(postObj,favNameLinkVal);
+                    }
+                    
+                }
+        
+            });
+        
+        } else {
+            errors_setFunctionError(
+                "owner does not exists",
+                viewHeadline_js_logNameFile,
+                "btnSaveLinkClick"
+            );
         }
-
-    });
-
+    }
+   
+ 
 }
 
 const btnSaveLink = new Button({
@@ -1785,7 +1797,7 @@ function createChart(dataCharts){
                 css : "webix_dash-chart",
              
                 rows: [ 
-                    {template:' ', height:20, css:"dash-delim"},
+                 //   {template:' ', height:20, css:"dash-delim"},
                     dynamicElements_returnHeadline (titleTemplate),
                     {   margin     : 4,
                         minHeight  : heightElem,
@@ -1831,12 +1843,6 @@ function setIdAttribute(idsParam){
 function createDashLayout(dataCharts){
     const layout = createChart(dataCharts);
  
-    // const dashLayout = [
-    //     {  
-    //         cols : layout
-            
-    //     }
-    // ];
  
     const dashCharts = {
         id  : "dashboard-charts",
@@ -1851,7 +1857,7 @@ function createDashLayout(dataCharts){
 function createScrollContent(dataCharts){
     const content = {
         view        : "scrollview", 
-        scroll      : "y",
+      //  scroll      : "y",
         id          : "dashBodyScroll",
         borderless  : true, 
         body        : {
@@ -7959,7 +7965,7 @@ let sentObj;
 let currName;
 
 
-async function isTemplateExists(owner){
+async function isTemplateExists(owner, currNameTemplate){
     let exists = {
         check : false
     };
@@ -7969,23 +7975,45 @@ async function isTemplateExists(owner){
        
     }).get().then(function(data){
     
-        if (data){
-    
-            const content = data.content;
-    
-            if (isArray(content, filter_logNameFile, "isTemplateExists")){
-    
-                content.forEach(function(el){
-   
-                    if (el.name == currName){
-                      
+        if (data && data.content){
+            const item = data.content[0];
+
+            if (item){
+              
+                const prefs = JSON.parse(item.prefs);
+                if (prefs){
+                    item.prefs = prefs;
+                 
+                    const templates = prefs.filterTemplates;
+ 
+                    if(templates && templates.length){  // шаблоны уже есть
+
+                        templates.forEach(function(template, i){
+                            // шаблон с именем уже существует
+                            if (template.name == currNameTemplate){
+                                exists = {
+                                    check : true,
+                                    item  : item,
+                                    index : i
+                                };
+                            }
+                        });
+
+                        // шаблон с именем уникален
+                        if (!exists.check){
+                            exists.item = item;
+                        }
+
+                    }  else {   // шаблонов нет
                         exists = {
-                            check : true,
-                            id    : el.id
+                            check : false,
+                            item  : item
                         };
-                    } 
-                });
+                    }
+                    
+                }
             }
+
         }
          
     });
@@ -7995,31 +8023,7 @@ async function isTemplateExists(owner){
 }
 
 
-function putUserprefsTemplate(id){
-
-    
-    new ServerData({
-        id : `userprefs/${id}`
-    
-    }).put(sentObj).then(function(data){
-
-        if (data){
-
-            setLogValue(
-                "success",
-                "Шаблон" +
-                " «" +
-                nameTemplate +
-                "» " +
-                " обновлён"
-            );
-        }
-        
-    });
-
-}
-
-async function saveExistsTemplate(id){
+async function saveExistsTemplate(sentObj){
     modalBox(   "Шаблон с таким именем существует", 
                 "После сохранения предыдущие данные будут стёрты", 
                 ["Отмена", "Сохранить изменения"]
@@ -8027,32 +8031,34 @@ async function saveExistsTemplate(id){
     .then(function(result){
 
         if (result == 1){
-            putUserprefsTemplate(id);
+            saveNewTemplate(sentObj);
         }
     });
  
 }
 
- 
+function successNotify(){
+    setLogValue(
+        "success",
+        "Шаблон" +
+        " «" +
+        nameTemplate +
+        "» " +
+        " сохранён в библиотеку"
+    );
+}
 
-function saveNewTemplate(){
-
+function saveNewTemplate(sentObj){
+    
      
     new ServerData({
-        id : "userprefs"
+        id : `userprefs/${sentObj.id}`
     
-    }).post(sentObj).then(function(data){
+    }).put(sentObj).then(function(data){
 
         if (data){
 
-            setLogValue(
-                "success",
-                "Шаблон" +
-                " «" +
-                nameTemplate +
-                "» " +
-                " сохранён в библиотеку"
-            );
+            successNotify();
         }
         
     });
@@ -8060,6 +8066,20 @@ function saveNewTemplate(){
 
 }
 
+function postNewTemplate(sentObj){
+    new ServerData({
+        id : `userprefs`
+    
+    }).post(sentObj).then(function(data){
+
+        if (data){
+
+            successNotify();
+        }
+        
+    });
+
+}
 
 async function saveTemplate (result){ 
 
@@ -8069,10 +8089,9 @@ async function saveTemplate (result){
     const currId = getItemId();
     const values = Filter.getFilter().values;
 
-
+    
     nameTemplate = result;
-    currName     = currId + "_filter-template_" + nameTemplate;
-
+    currName     = `fields/${currId}`;
     
     const template = {
         name   : nameTemplate,
@@ -8080,24 +8099,53 @@ async function saveTemplate (result){
         values : values
     };
 
-    sentObj = {
-        name    : currName,
-        prefs   : template,
-        owner   : user.id
-    };
-  
 
-    const existsInfo = await isTemplateExists(user.id);
+    const existsInfo = await isTemplateExists(user.id, nameTemplate);
+ 
     const isExists   = existsInfo.check;
-
-
+ 
     if (isExists){
-        const id = existsInfo.id;
-        saveExistsTemplate(id);  
-    } else {
-        saveNewTemplate();
-    }
+        const item  = existsInfo.item;
+        const index = existsInfo.index;
 
+        if (item){
+
+            item.prefs.filterTemplates[index] = template;
+            sentObj = item;
+        
+            saveExistsTemplate(sentObj); 
+        }
+     
+    } else {
+        const item = existsInfo.item;
+        
+        if (item){ // запись таблицы уже есть
+            if (!item.prefs.filterTemplates){
+                item.prefs.filterTemplates = [];
+            }
+        
+            item.prefs.filterTemplates.push(template);
+            
+            sentObj = item;
+            saveNewTemplate(sentObj);
+        } else { // записи нет
+            sentObj = {
+                name    : currName,
+                owner   : user.id,
+                prefs   : {
+                    filterTemplates:[
+                        template,
+                    ]
+                }
+            };
+   
+            postNewTemplate(sentObj);
+           
+        }
+
+      
+
+    }
 }
 
 
@@ -8219,7 +8267,6 @@ function buttonsFormFilter (name) {
 //create lib
 
 let user;
-let prefsData;
 let libData;
 
  
@@ -8246,50 +8293,23 @@ function clearOptionsPull() {
 
 
 function createOption(i, data){
-    const prefs   = JSON.parse(data.prefs);
-    const idPrefs = prefs.table;
-    const currId  = getItemId ();
 
-    if (idPrefs == currId){
-        libData.addOption( {
-            id    : i + 1, 
-            value : prefs.name,
-            prefs : data
-        });
-
-    }
-}
-
-function isThisOption(data){
-    const dataOwner = data.owner;
-    const currOwner = user.id;
-
-    const name           = "filter-template_";
-    const isNameTemplate = data.name.includes(name);
-
-    if (isNameTemplate && dataOwner == currOwner){
-        return true;
-    }
+    const template = data;
+ 
+    libData.addOption({
+        id    : i + 1, 
+        value : template.name,
+        prefs : data
+    });
 
 }
-function setTemplates(){
+
+function setTemplates(templates){
    
-    clearOptionsPull();
-
-    if (prefsData && prefsData.length){
-        prefsData.forEach(function(data, i){
-            if(isThisOption(data)){
-                createOption(i, data);
-            }
+    templates.forEach(function(data, i){
+        createOption(i, data);
         
-        });
-    } else {
-        errors_setFunctionError(
-            "array is null",
-            "table/filterForm/buttons/editBtn/createLibTab",
-            "setTemplates"
-        );
-    }
+    });
 
 
 }
@@ -8304,36 +8324,56 @@ function setEmptyOption(){
 }
 
 async function createLibTab(){ 
-    libData  = $$("filterEditLib");
-    user = await returnOwner();
 
-    new ServerData({
-        id : "userprefs"
-       
-    }).get().then(function(data){
-    
-        if (data){
-    
-            const content = data.content;
-    
-            if (content){
+    libData       = $$("filterEditLib");
+    user          = await returnOwner();
 
-                prefsData = content;
+    const idField = getItemId();
 
-                if(user){
-                    setTemplates();
+    clearOptionsPull();
+
+    if (user && idField){
+
+        const name    = `fields/${idField}`;
+    
+        new ServerData({
+            id : `smarts?query=userprefs.name+=+%27${name}%27+and+userprefs.owner+=+${user.id}`
+            
+        }).get().then(function(data){
         
-                    const lib = $$("filterEditLib");
-                    
-                    if (lib && lib.data.options.length == 0 ){
-                        setEmptyOption();
+            if (data){
+        
+                const content = data.content;
+        
+                if (content && content.length){
+
+                    const item = content[0];
+
+                    if (item.prefs){
+                        const prefs     = JSON.parse(item.prefs);
+                        const templates = prefs.filterTemplates;
+
+                        if (templates && templates.length){
+                            setTemplates(templates);
+                        }
+                        
                     }
-                
                 }
             }
-        }
-         
-    });
+
+
+        
+            const lib = $$("filterEditLib");
+        
+            if (lib && lib.data.options.length == 0 ){
+                setEmptyOption  ();
+            }
+                
+        });
+        
+    }
+
+
 
    
 }
@@ -10242,16 +10282,6 @@ function getOption(){
     return lib.getOption(libValue);
 }
 
-function createFiltersByTemplate(item) {
-    const radioValue = getOption();
-    const prefs      = JSON.parse(item.prefs);
-    createWorkspace(prefs.values);
-
-    Action.destructItem($$("popupFilterEdit"));
-    Filter.setActiveTemplate(radioValue);
-}
-
-
 function showHtmlContainers(){
     const keys = Filter.getItems();
 
@@ -10270,40 +10300,18 @@ function showHtmlContainers(){
 
 
 async function getLibraryData(){
-    const currId     = getItemId ();
     const radioValue = getOption();
-    const value = radioValue.value;
-    const name = 
-    currId + "_filter-template_" + value;
 
-    const owner = await returnOwner();
+    const template = radioValue.prefs.values;
+    createWorkspace(template);
 
-    new ServerData({
-        id : `smarts?query=userprefs.name=${name}+and+userprefs.owner=${owner.id}`
-    }).get().then(function(data){
-    
-        if (data){
-    
-            const content = data.content;
-    
-            if (content && content.length){
-                const item = content[0];
-                createFiltersByTemplate  (item);
+    Action.destructItem($$("popupFilterEdit"));
+    Filter.setActiveTemplate(radioValue);
 
-                showHtmlContainers       ();
-                Filter.setStateToStorage ();
-                Filter.enableSubmitButton();
-                Action.hideItem($$("templateInfo"));
-                setLogValue(
-                    "success", 
-                    "Рабочая область фильтра обновлена"
-                );
-                
-            }
-        }
-         
-    });
-
+    showHtmlContainers       ();
+    Filter.setStateToStorage ();
+    Filter.enableSubmitButton();
+    Action.hideItem($$("templateInfo"));
 
 }
 
@@ -10639,15 +10647,11 @@ function removeOptionState (){
 
 }
 
-function deleteElement(){
-    const prefs   = radioValue.prefs;
-    const idPrefs = prefs.id;
-
-        
+function sentPutData(sentObj){
     new ServerData({
-        id : `userprefs/${idPrefs}`
+        id : `userprefs/${sentObj.id}`
     
-    }).del(prefs).then(function(data){
+    }).put(sentObj).then(function(data){
 
         if (data){
 
@@ -10661,6 +10665,68 @@ function deleteElement(){
             Filter.clearFilter();
             Filter.setStateToStorage();
             Action.showItem($$("filterEmptyTempalte"));
+        }
+        
+    });
+}
+
+
+function createModifyPrefs(prefs, item){
+    const result  = [];
+    let itemPrefs = item.prefs;
+
+    if (itemPrefs){
+        itemPrefs = JSON.parse(itemPrefs);
+        const templates = itemPrefs.filterTemplates;
+
+        if (templates && templates.length){
+            templates.forEach(function(el){
+
+                if (el.name !== prefs.name){
+                    result.push(el);
+                }
+            });
+        }
+    }
+
+    return result;
+}
+
+async function deleteElement(){
+    const prefs   = radioValue.prefs;
+    const idPrefs = prefs.table;
+    const name    = `fields/${idPrefs}`;
+    user          = await returnOwner();
+ 
+
+    new ServerData({
+        id : `smarts?query=userprefs.name+=+%27${name}%27+and+userprefs.owner+=+${user.id}`
+    
+    }).get().then(function(data){
+ 
+
+        if (data && data.content && data.content.length){
+            const item = data.content[0];
+    
+            if (item){
+            
+                const sentData = createModifyPrefs(prefs, item);
+                let itemPrefs  = item.prefs;
+
+                if (itemPrefs){
+                    itemPrefs = JSON.parse(itemPrefs);
+                    itemPrefs.filterTemplates = sentData;
+
+                    item.prefs = itemPrefs;
+
+                    
+
+                    sentPutData(item);
+                }
+
+  
+            }
+       
         }
         
     });
@@ -10679,8 +10745,8 @@ async function userprefsData (){
     const libValue = lib.getValue();
     radioValue = lib.getOption(libValue);
 
-    const idPrefs = radioValue.prefs.id;
-
+    const idPrefs = radioValue.prefs.table;
+ 
     if (idPrefs){
         deleteElement       (radioValue, lib);
         resetLibSelectOption();
@@ -16112,7 +16178,7 @@ function returnLayoutTables(id){
         hidden  : true, 
         view    : "scrollview", 
         body    : { 
-            view  : "flexlayout",
+          //  view  : "flexlayout",
             id    : "flexlayoutTable", 
             cols  : [
 
@@ -18494,7 +18560,7 @@ let treeSidebar_tree;
 let id;
 let selectItem;
 
-function treeSidebar_returnId(type, uid){
+function returnId(type, uid){
     return "q-" + type + "_data-tree_" + uid;
 }
 
@@ -18507,13 +18573,13 @@ function addDisableItem(idLoadElement, value, idParent = id){
 }
 
 function createLoadEl(uid){
-    const id = treeSidebar_returnId("none", uid);
+    const id = returnId("none", uid);
     addDisableItem (id, "Загрузка ...");
     treeSidebar_tree.addCss    (id, "tree_load-items");
 }
 
 function createNoneEl(uid, idParent){
-    const id = treeSidebar_returnId("none", uid);
+    const id = returnId("none", uid);
     addDisableItem (id, "Раздел пуст", idParent);
 }
 
@@ -18888,16 +18954,20 @@ function findFavsInUserData(data, id){
 
         if (data && data.length){
             data.forEach(function(el){
-                if (el.name.includes("fav-link") && id == el.owner){
+                if (el.name.includes("fields/") && id == el.owner){
+             
                     const prefs  = JSON.parse(el.prefs);
-                    prefs.dataId = el.id;
-                    collection.push(prefs);
+
+                    if (prefs && prefs.favorite){
+                        prefs.favorite.dataId = el.id;
+                        collection.push(prefs.favorite);
+                    }
+         
                     
                 }
             });
         }
        
-
     } catch (err){
         errors_setFunctionError(
             err, 
@@ -19051,26 +19121,70 @@ const favorites_btnSaveLink = new Button({
    
 }).maxView("primary");
 
-function deleteUserprefsData(options, option){
-    const id = option.dataId;
+
+function removeOption(options, option){
+      
+    const length = options.data.options.length;
+    if (length == 1){
+        const emptyOpt = favorites_returnEmptyOption();
+        options.addOption(emptyOpt);
+    }
+
+    options.removeOption(option.id);
+
+}
+
+function putItem(item, options, option){
 
     new ServerData({
-        id : `userprefs/${id}`
+        id : `userprefs/${item.id}`
        
-    }).del({id : option.id}).then(function(data){
+    }).put(item).then(function(data){
     
-        if (data){
-            const length = options.data.options.length;
-            if (length == 1){
-                const emptyOpt = favorites_returnEmptyOption();
-                options.addOption(emptyOpt);
-            }
-            options.removeOption(option.id);
-             
+        if (data && data.content){
+            
+            setLogValue(
+                "success", 
+                "Ссылка удалена из избранного"
+            );
+            
+            removeOption(options, option);
         }
          
     });
+}
 
+
+async function deleteUserprefsData(options, option){
+ 
+    if (option && options){
+        const owner   = await returnOwner();
+        const name    = `userprefs.name+=+%27fields/${option.id}%27`;
+        const ownerId = `userprefs.owner+=+${owner.id}`;
+        new ServerData({
+            id : `smarts?query=${name}+and+${ownerId}&limit=80&offset=0`,
+           
+        }).get().then(function(data){
+        
+            if (data && data.content){
+                const item = data.content[0];
+
+                if (item){
+                    const prefs = JSON.parse(item.prefs);
+                  
+                    if (prefs.favorite){
+                        delete prefs.favorite;
+                    }
+
+                    item.prefs = prefs;
+
+                    putItem(item, options, option);
+                }
+
+            }
+             
+        });
+    }
 
 }
 function favorites_removeBtnClick(){
@@ -21038,10 +21152,6 @@ function createTabbar(){
                 return false;
             },
 
-            // onOptionAdd:function(){
-            //     this.config.addedTabs ++; 
-
-            // },
 
             onOptionRemove:function(removedTab, lastTab){
       
@@ -21056,11 +21166,19 @@ function createTabbar(){
     };
 
     const layout = {
-        cols:[
-            createAddBtn(),
-            tabbar,
-            tabsHistoryBtn()
+
+        rows:[
+            {height:6},
+            {  
+                cols:[
+                    createAddBtn(),
+                    tabbar,
+                    tabsHistoryBtn()
+                ]
+            },
+            {height:6},
         ]
+      
     };
 
     return layout;
@@ -21713,7 +21831,7 @@ async function createLogMessage(srcTable) {
     let name;
 
     if (srcTable == "version"){
-        name = 'Expa v1.0.84';
+        name = 'Expa v1.0.85';
 
     } else if (srcTable == "cp"){
         name = 'Смена пароля';
@@ -27493,8 +27611,10 @@ function resizeSidebar(){
 
     if (window.innerWidth > adaptive_minWidth && $$("tree")){
         resizeTree();
+  
     }
-    
+
+ 
 }
 
 function setMinView(element, container, backBtn){
@@ -27622,68 +27742,64 @@ function adaptive_setSearchInputState(){
 
     
     headerChilds.forEach(function(el){
-        if (el.config.id.includes("search")){
-            el.show();
-        }
+        el.show();
+  
     });
 
 
    
 }
 
+function setAdaptiveLogic(visibleEl){
+    if (visibleEl == "forms"){
+        resizeForms();
 
+    } else if (visibleEl == "dashboards"){
+        resizeTools();  
+        resizeContext();
+    } else if (visibleEl == "tables"){
+        resizeTableEditForm();
+        resizeTableFilterForm ();
+
+    } else if (visibleEl == "userprefs"){
+        //none
+
+    } else if (visibleEl == "user_auth"){
+        //none
+
+    }
+}
+
+function initLogic(){
+
+    const elements = [
+        "forms", 
+        "dashboards", 
+        "tables", 
+        "userprefs", 
+        "user_auth"
+    ];
+
+    elements.forEach(function(el,i){
+        const elem = $$(el);
+        if(elem && elem.isVisible()){
+            setAdaptiveLogic(el);
+        }
+    });
+        
+    
+}
 function resizeAdaptive (){
 
     window.addEventListener('resize', function() {
   
         async function getActiveView (){  
-
-            function setAdaptiveLogic(visibleEl){
-                if (visibleEl == "forms"){
-                    resizeForms();
-
-                } else if (visibleEl == "dashboards"){
-                    resizeTools();  
-                    resizeContext();
-                } else if (visibleEl == "tables"){
-                    resizeTableEditForm();
-                    resizeTableFilterForm ();
-
-                } else if (visibleEl == "userprefs"){
-                    //none
-
-                } else if (visibleEl == "user_auth"){
-                    //none
-
-                }
-            }
-
-            function initLogic(){
-
-                const elements = [
-                    "forms", 
-                    "dashboards", 
-                    "tables", 
-                    "userprefs", 
-                    "user_auth"
-                ];
-
-                elements.forEach(function(el,i){
-                    const elem = $$(el);
-                    if(elem && elem.isVisible()){
-                        setAdaptiveLogic(el);
-                    }
-                });
-                    
-                
-            }
-
             initLogic();
-        
         }
     
         getActiveView ();
         resizeSidebar();
+       
 
         if(window.innerWidth > adaptive_minWidth){
             adaptive_setSearchInputState();
@@ -27791,7 +27907,7 @@ function backButtonBrowserLogic (){
 //
 ///////////////////////////////
 
-console.log("expa 1.0.84"); 
+console.log("expa 1.0.85"); 
 
 
 

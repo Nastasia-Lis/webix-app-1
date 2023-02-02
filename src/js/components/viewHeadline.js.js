@@ -123,135 +123,147 @@ function getValue(elem){
 }
 
 
+function returnSuccessMsg(name){
+    setLogValue(
+        "success", 
+        "Ссылка" + " «" + name + "» " + 
+        " сохранёна в избранное"
+    );
+}
 
-async function postContent(namePref){
+
+async function postContent(sentObj){
+    const name = getValue("favNameLink");
+    new ServerData({
+        id : "userprefs"
+        
+    }).post(sentObj).then(function(data){
+    
+        if (data){
+            returnSuccessMsg(name);
+        }
+        Action.destructItem($$("popupFavsLinkSave")); 
+    });
+
+    
+}
+function putContent(sentObj){
+
+    const name = getValue("favNameLink");
+    new ServerData({
+        id : `userprefs/${sentObj.id}`,
+       
+    }).put(sentObj).then(function(data){
+    
+        if (data){
+    
+            const content = data.content;
+    
+            if (content){
+
+                Action.destructItem($$("popupFavsLinkSave"));
+                returnSuccessMsg(name);
+    
+            } else {
+                Action.destructItem($$("popupFavsLinkSave"));
+                setFunctionError(
+                    "Не удалось сохранить ссылку",
+                    logNameFile,
+                    "putContent"
+                );
+            }
+        }
+         
+    });
+
+
+    Action.destructItem($$("popupVisibleCols"));
+} 
+
+
+function createPrefs(id){
     const favNameLinkVal = getValue("favNameLink");
     const favLinkVal     = getValue("favLink");
 
-    const user = await returnOwner();
+    const favorite = {
+        name: favNameLinkVal,
+        link: favLinkVal,
+        id  : id,
+    };
 
-    if (user){
-
-        const postObj = {
-            name : "fav-link_" + namePref,
-            owner: user.id,
-            prefs:{
-                name: favNameLinkVal,
-                link: favLinkVal,
-                id  : namePref,
-            }
-        };
-
-        new ServerData({
-            id : "userprefs"
-           
-        }).post(postObj).then(function(data){
-        
-            if (data){
-        
-                setLogValue(
-                    "success", 
-                    "Ссылка" + " «" + favNameLinkVal + "» " + 
-                    " сохранёна в избранное"
-                );
-            }
-            Action.destructItem($$("popupFavsLinkSave")); 
-        });
-
-    }
+    return favorite;
 }
 
-function getFavPrefs(data){
-    const prefs = [];
-
-    if (data && data.length){
-        data.forEach(function(pref){
-
-            if (pref.name.includes("fav-link")){
-                prefs.push(pref.name);
-            }
-    
-        });
-    }
-     
-
-    return prefs;
-}
-
-function returnId(el){
-    const index = el.indexOf("_") + 1;
-    return el.slice(index);
-}
-
-function getNotUniquePref(favPrefs, namePref){
-    let unique = true;
-
-    if (favPrefs && favPrefs.length){
-        favPrefs.forEach(function(el){
-                
-            if (el.includes(namePref)){
-                const id = returnId(el);
-    
-                if (id == namePref && unique){
-                    unique = false;
-                    setLogValue(
-                        "success", 
-                        "Такая ссылка уже есть в избранном"
-                    );
-                } 
-            } 
-        });
-    
-    }
-
-    return unique;
-}
-
-
-function getNotUniquePrefs (data, namePref){
-    const favPrefs = getFavPrefs(data);
-    let unique = true;
-    try{
-        if (favPrefs.length){
-            unique = 
-            getNotUniquePref(favPrefs, namePref);
-        } 
-        
-        
-        if (!(favPrefs.length) || unique) {
-            postContent(namePref);
-        } else if (!unique){
-            Action.destructItem($$("popupFavsLinkSave"));
-        }
-    } catch (err){
-        setFunctionError(
-            err,
-            logNameFile,
-            "getNotUniquePrefs"
-        );
-    }
-}
-
-function btnSaveLinkClick(){
+async function btnSaveLinkClick(){
   
-    const namePref = getItemId();
-
-    new ServerData({
-        id : "userprefs"
-       
-    }).get().then(function(data){
+    const id        = getItemId();
+ 
+    if (id){
+        const name      = `fields/${id}`;
+        const queryName = `userprefs.name+=+%27${name}%27`;
     
-        if (data){
-            const content = data.content;
-
-            if (content && content.length){
-                getNotUniquePrefs (content, namePref);
-            }
+        const owner     = await returnOwner();
+    
+        if (owner && owner.id){
             
+            const ownerId   = `userprefs.owner+=+${owner.id}`;
+    
+            new ServerData({
+                id : `smarts?query=${queryName}+and+${ownerId}&limit=80&offset=0`,
+            }).get().then(function(data){
+            
+                if (data && data.content){
+          
+                    const content = data.content;
+        
+                    if (content.length){ // exists
+                        const item = content[0];
+    
+                        if (item){
+                            const prefs = JSON.parse(item.prefs);
+              
+                            if (prefs.favorite){ //favs exists
+                                setLogValue(
+                                    "success", 
+                                    "Ссылка уже в избранном"
+                                );
+                    
+                                Action.destructItem($$("popupFavsLinkSave"));
+                            } else {
+                                prefs.favorite = createPrefs(id);
+                                item.prefs = prefs;
+                                putContent(item);
+                            }
+                        }
+    
+                    } else {
+                        const favNameLinkVal = getValue("favNameLink");
+    
+                        const postObj = {
+                            name : name,
+                            owner: owner.id,
+                            prefs: {}
+                        };
+    
+                        postObj.prefs.favorite = createPrefs(id);
+    
+                        postContent(postObj,favNameLinkVal);
+                    }
+                    
+                }
+        
+            });
+        
+        } else {
+            setFunctionError(
+                "owner does not exists",
+                logNameFile,
+                "btnSaveLinkClick"
+            );
         }
-
-    });
-
+    }
+   
+ 
 }
 
 const btnSaveLink = new Button({

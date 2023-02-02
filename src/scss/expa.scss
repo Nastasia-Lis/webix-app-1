@@ -1,5 +1,50 @@
-
 ///////////////////////////////
+//
+// скролл                                       create scroll
+//
+// общие стили                                  create global
+//
+// кнопки                                       create buttons
+//
+// вид загрузки компонента                      create load view
+//
+// общйи вид у checkbox                         create checkbox
+//
+// смена пароля                                 create cp
+//
+// попапы                                       create popup
+//
+// редактор колонок                             create visible columns list
+//
+// системные сообщения                          create log block
+//
+// контекстное меню                             create context menu  
+//
+// календарь                                    create calendar
+//
+// пустой элемент                               create empty view
+//
+// заголовок компонента                         create viewHeadline
+//
+// радио кнопки                                 create radio button
+//
+// ресайзер                                     create resizer
+//
+// дерево                                       create tree
+//
+// попап prompt                                 create prompt
+//
+// компрнент логина                             create login
+//
+// уведомления                                  create notify
+//
+// фон интерфейса                               create workspace background
+//
+// дашборды                                     create dashboard
+//
+// таблицы                                      create table
+//
+// вкладки                                      create tabbar
 //
 // Copyright (c) 2022 CA Expert
 //
@@ -22,6 +67,10 @@ html, body {
 
 
 
+
+
+// create scroll
+
 // полоса прокрутки (скроллбар) 
 ::-webkit-scrollbar {
     width: auto!important;  
@@ -43,18 +92,17 @@ html, body {
 
 
 
-// общее
-.webix_view,
-.webix_confirm  {
-    font-weight: 400!important;
-    font-size: 14px!important;
-    line-height: 150%!important;
-}
 
-.webix_view.webix_layout_line{
+
+
+// create global
+
+// сокрытие дефолтной анимации backbone router
+.webix_view.webix_layout_line { 
     transition: none!important;
 }   
 
+// классы видимости элемента
 .webix_hide-content{
     display: none!important;
 }
@@ -62,6 +110,9 @@ html, body {
     display: block!important;
 }
 
+
+
+//общие стили у тэгов
 h1, h2, h3, h4, h5, h6{
     color:var(--dark)!important;
 }
@@ -70,15 +121,21 @@ select {
     cursor:pointer;
 }
 
-a{
+
+ 
+a {
     color: var(--dark);
 }
-a:hover{
+
+a:hover {
     color: var(--primary);
 }
-a:active{
+
+a:active {
     color: var(--primary-dark);
 }
+ 
+
 input:focus,
 .webix_inp_static:focus,
 select:focus{
@@ -109,7 +166,7 @@ label, button{
 
 
 
-//-------------------------buttons
+// create buttons
 
 //primary
    
@@ -128,6 +185,8 @@ label, button{
 .webix_secondary .webix_button{
     @include secondary-btn;
 }
+
+// цвет иконки в secondary btn
 .webix_secondary .webix_button .webix_icon_btn{
     color: var(--primary)!important;
 }
@@ -135,6 +194,8 @@ label, button{
 .webix_secondary .webix_button:hover{
     @include secondary-btn--hover;
 }
+
+// цвет иконки hover в secondary btn
 .webix_secondary .webix_button:hover .webix_icon_btn{
     color:var(--white)!important;
 }
@@ -143,36 +204,63 @@ label, button{
     @include secondary-btn--active;
 }
 
+
+
 // collapse btn
+// background у кнопки сокрытия дерева в header
 .webix_collapse .webix_button,
 .webix_collapse .webix_button:hover,
 .webix_collapse .webix_button:active{
     background : transparent!important;
 }
+
+// hover иконки у кнопки сокрытия дерева в header
 .webix_collapse .webix_button:hover .webix_icon_btn{
     color: var(--dark)!important;
 }
 
+// позиционирование кнопки сокрытия дерева в header
 .webix_collapse .webix_button{
     padding-left:15px;
     padding-top:2px;
 }
 
 
+
+// иконки у кнопок
+.webix_icon_btn{
+    font-size: 13px!important; 
+    margin-right: 0px!important;
+}
+.webix_img_btn > .webix_icon_btn{
+    margin-bottom: 1px !important;
+}
+.webix_img_btn > .icon-trash{
+    margin-bottom: 2px!important;
+}
+
+
+
+
 // segment btn (table filter)
+
+// отступ от поля ввода
 .webix_el_segmented{
     margin-top: 7px!important;
 }
+
+// размеры
 .webix_segment_N,
 .webix_segment_0{
     font-size: 14px!important;
-
     margin:0px 5px!important;
     width: 100px!important;
     border-radius: 5px!important;
 
 }
 
+
+// цвета
 .webix_segment_N.webix_selected,
 .webix_selected.webix_segment_0{
     background-color: var(--primary)!important;
@@ -196,17 +284,14 @@ label, button{
 }
 
 
+// центрирование текста
 .webix_all_segments{
     text-align: center;
 }
 
  
 
-// editBtn
-.edit-btn-icon .webix_button .webix_icon{
-    color:var(--primary)!important;
-}
-
+// editBtn (table toolbar) цвета иконки 
 .edit-btn-icon .webix_button .webix_icon{
     color:var(--primary)!important;
 }
@@ -216,11 +301,17 @@ label, button{
 }
 
 
+
+
 //remove 
 
+// цвет иконки
 .webix_danger .webix_button .webix_icon_btn {
     color: var(--danger)!important;
 }
+
+
+// вид всей кнопки
 .webix_danger .webix_button{
     background: var(--danger-light)!important;
     transition: .2s;
@@ -239,15 +330,18 @@ label, button{
 }
 
 
-//disabled
 
 
+
+//disabled вид кнопки
+
+// background
 .webix_view.webix_control .webix_disabled_box .webix_button{
     color: rgb(124, 124, 124)!important;
     background: var(--gray) !important;
 }
 
-
+// икнопки
 .webix_disabled_box .webix_img_btn  {
     color: rgb(124, 124, 124)!important;
 }
@@ -259,37 +353,31 @@ label, button{
 
 
 
-
-
-
-
-
-//-------------------------favs
+// прозрачный фон у кнопок
 .webix-transparent-btn  .webix_button.webix_img_btn{
     background:transparent!important;
 }
 
+
 .webix-transparent-btn  .webix_button.webix_img_btn:hover{
     background:var(--gray-light)!important;
-   // color:var(--gray)!important;
 }
 
 .webix-transparent-btn  .webix_button.webix_img_btn:active{
     background:var(--gray)!important;
-   // color:var(--gray)!important;
 }
+
+
+// вид иконок у прозрачных кнопок
 .webix-transparent-btn .webix_button .webix_icon_btn{
     padding-top: 4px!important;
 }
+
 .webix-transparent-btn .webix_button:hover .webix_icon_btn{
     color:var(--primary-dark)!important;
 }
 
 
-.webix-transparent-btn--primary{
-    background-color:transparent!important;
-    color:var(--primary-dark)!important;
-}
 
 
 
@@ -304,10 +392,9 @@ label, button{
 
 
 
- 
+//create load view
 
-
-//-------------------------global load
+// вид загрузки компонента
 .global_loadTemplate{
     color :#858585;
     font-size : 14px!important;
@@ -320,23 +407,9 @@ label, button{
 
 
 
+// create checkbox
 
-
-// trash btn transparent 
-
-.webix-trash-btn-color .webix_button .webix_icon_btn {
-    color:var(--danger)!important;
-}
-
-
-
-
-
-
-
-
-
-//checkbox
+//общйи вид у checkbox
 .webix_el_checkbox .webix_label_right{
     padding-top:6px!important;
 }
@@ -355,18 +428,24 @@ label, button{
 
 
 
-//-------------------------cp
+
+// create cp
 
 
+// отсутп от границ контентной части
 .webix_auth{
     margin: 1px 0px 0px 1px!important;
 }
 
+
+// заголовок 
 .webix_cp-form,
 .webix_headline-userprefs{
     font-weight: 600!important;
     font-size: 18px!important;
 }
+
+// отсутп заголовка 
 .webix_cp-form >  .webix_template,
 .webix_headline-userprefs > .webix_template,
 .webix_userprefs-info > .webix_template{
@@ -376,27 +455,83 @@ label, button{
 
 
 
+// create popup
+ 
 
+// размеры confirm компонента
+.webix_modal_box{
+    border-radius: 4px!important;
+    padding: 15px 30px!important;
+}
 
-//-------------------------popup
-
-.webix_alert .webix_popup_title{
+// сокрытие дефолтного webix стиля у заголовка confirm компонента
+.webix_alert .webix_popup_title,
+.webix_confirm .webix_popup_title{
     box-shadow:none!important;
 }
+
+// отступ от пояснительной части confirm компонента
 .webix_modal-custom-save.webix_alert .webix_popup_text{
     margin-bottom: 5px!important;
 }
 
-
+// размеры confirm кнопок
 .webix_popup_button{
     height: 40px!important;
     min-width: 120px!important;
     line-height: 26px!important;
+    padding: 5px 10px!important;
 }
+.webix_modal_box.webix_confirm{
+    width: 400px!important;
+}
+
+
+// главная кнопка
+.webix_modal-custom-save > .webix_popup_controls .webix_popup_button:last-child,
+.webix_popup_button.confirm {
+    @include primary-btn;
+    color:#fff!important;
+}
+
+.webix_modal-custom-save > .webix_popup_controls .webix_popup_button:last-child:hover,
+.webix_popup_button.confirm:hover {
+    @include primary-btn--hover;
+}
+
+.webix_modal-custom-save > .webix_popup_controls .webix_popup_button:last-child:active,
+.webix_popup_button.confirm:active {
+    @include primary-btn--active;
+}
+
+
+
+
+// стиль средней кнопки (если их 3)
+.webix_modal-custom-save > .webix_popup_controls .webix_popup_button,
+.webix_popup_button {
+    @include secondary-btn;
+}    
+.webix_modal-custom-save > .webix_popup_controls .webix_popup_button:hover,
+.webix_popup_button:hover {
+    @include primary-btn--hover;
+    color: #fff!important;
+}
+.webix_modal-custom-save > .webix_popup_controls .webix_popup_button:active,
+.webix_popup_button:active  {
+    @include secondary-btn--active;
+    color: #fff!important;
+}
+
+
+
+// стиль заголовка 
 .webix_popup_title{
     font-weight: 600!important;
 }
 
+
+// сокращение заголовка в случае если он не вмещается
 .no-wrap-headline{
     text-overflow   : ellipsis!important;
     white-space     : nowrap;
@@ -407,16 +542,13 @@ label, button{
     width           : 100%!important;
 }
 
-.popup-date_template .webix_template{
-    padding-right: 0px!important;
-}
-
-.popup-time_template .webix_template{
-    padding-left: 0px!important;
-    padding-right: 0px!important;
-}
 
 
+
+
+// edit table form => calendar popup
+
+// знак ":" между инпутами времени 
 .popup_time-spacer {
     background-color: transparent!important;
     font-size: 20px!important;
@@ -425,8 +557,7 @@ label, button{
     padding: 2px 2px 0px 2px!important;
  
 }
-
-
+// заголовок у инпутов времени
 .popup_time-timeFormHead{
     background-color: transparent!important;
 }.popup_time-timeFormHead .webix_template{
@@ -434,27 +565,17 @@ label, button{
 }
 
 
-.webix_template-not-found .webix_template,
-.popup_headline .webix_template {
-    font-weight: 600;
-    font-size: 16px;
-    padding: 9px 0px 0px 9px!important;
-}
-
+// скругление у всех popup
 .webix_popup{
     border-radius: 6px!important;
 }
 
-.webix_template-not-found-descr > .webix_template{
-    padding: 0px 0px 0px 8px!important;
-}
 
-
+// кнопка close у всех popup
 .popup_close-btn .webix_button.webix_img_btn{
     background-color: transparent!important;
     width: 27px!important;
 }
-
 
 .popup_close-btn .webix_button:hover .webix_icon_btn{
     color: var(--primary-light)!important;
@@ -468,14 +589,8 @@ label, button{
     font-size: 20px!important;
 }
 
-.popup_subtitle{
-    height: auto!important;
-}
 
-.popup_padding-container{
-    padding: 10px!important;
-}
-
+// внутр. отступы у всех popup
 .webix_popup-config{
     padding:20px 20px!important;
     margin-left: auto!important;
@@ -487,26 +602,30 @@ label, button{
 
 
 
+// create visible columns list
 
+// кнопка сброса до дефолтных настроек колонок
+.webix-trash-btn-color .webix_img_btn .webix_icon_btn{
+    color:var(--danger)!important;
+}
 
-
-
-
-
-//-------------------------visible columns list
-
+// внутренний отступ у list-элемента
 .webix_list.list-filter-borders .webix_scroll_cont{
     padding-bottom: 28px!important;
 }
-/// list filter
 
+// background у list-элемента
 .list-filter-borders{
     background-color:var(--bg)!important;
     border-radius: 0px 0px 6px 6px;
 }
+
+// background у пустого list-элемента
 .list-filter-empty .webix_empty-template{
     background-color:var(--bg)!important;
 }
+
+// заголовок у list-элемента
 .list-filter-headline{
     background-color:var(--gray-light)!important;
     border-radius: 6px 6px 0px 0px;
@@ -515,21 +634,8 @@ label, button{
     padding: 7px 0px 10px 0px!important;
 }
 
- 
-.list-filter-move-btns .icon-arrow-right{
-    font-size: 11px!important;
-}
-.list-filter-move-btns .icon-arrow-left{
-    font-size: 11px!important;
-}
 
-.list-filter-head .webix_template{
-    padding: 7px 0px 0px 2px!important;
-}
-
-
-
-//-------------------------select
+// выделенный item у list-элемента
 .webix_list_item.webix_selected {
     box-shadow: inset 2px 0 var(--primary)!important;
 }
@@ -538,14 +644,18 @@ label, button{
 
 
 
-//------------------------- log block
-.webix_badge{ // header btn
+// create log block
+
+// header btn log block стиль счетчика уведомлений
+.webix_badge{ 
     background-color: var(--danger)!important;
 }
 
+// заголовок системных сообщений
 .webix_log-headline{
     font-weight: 600;
 }
+// сообщения 
 .webix_log-block .webix_list_item{
     cursor: default!important;
     font-size: 13px!important;
@@ -557,7 +667,7 @@ label, button{
     width:auto!important;
 }
 
-
+// сообщения об ошибках
 .webix_contextmenu a:last-child{
     color:  var(--danger-dark)!important;
 }
@@ -568,67 +678,41 @@ label, button{
 
 
 
-//------------------------- context menu  
+// create context menu   
+
+// элементы контекстного меню - размер иконок
 .webix_list_item .webix_icon{
     font-size: 13px!important;
     margin-right: 8px!important;
 }
-
+// элементы контекстного меню - размер текста
 .webix_list_item.menu{
     font-size: 13px!important;
 }
 
+// элемент выхода из системы - цвет иконки
 .icon-sign-out{
     color:var(--danger-dark)!important;
 }
 
 
+ 
 
 
 
-//------------------------- modalbox
-.webix_modal_box.webix_confirm{
-    width: 400px!important;
-}
+// create calendar
 
-.webix_modal-custom-save > .webix_popup_controls .webix_popup_button{
-    @include secondary-btn;
-}
-
-.webix_modal-custom-save > .webix_popup_controls .webix_popup_button:hover{
-    @include primary-btn--hover;
-    color: #fff!important;
-}
-.webix_modal-custom-save > .webix_popup_controls .webix_popup_button:active{
-    @include secondary-btn--active;
-    color: #fff!important;
-}
-
-.webix_modal-custom-save > .webix_popup_controls .webix_popup_button:last-child{
-    @include primary-btn;
-    color:#fff!important;
-}
-
-.webix_modal-custom-save > .webix_popup_controls .webix_popup_button:last-child:hover{
-    @include primary-btn--hover;
-}
-
-.webix_modal-custom-save > .webix_popup_controls .webix_popup_button:last-child:active{
-    @include primary-btn--active;
-}
-
-
-
-
-//-------------------------calendar
-
+// сегодняшнее число 
 .webix_cal_body .webix_cal_today .webix_cal_day_inner{
     box-shadow: inset 0 0 0 1px var(--primary)!important;
 }
+
+// выходные
 .webix_cal_body .webix_cal_event{
     color: var(--primary)!important;
 }
 
+// месяц и год
 .webix_cal_body .webix_cal_block.webix_selected span:hover{
     background-color: var(--primary-light)!important;
 }
@@ -642,10 +726,11 @@ label, button{
     background-color: var(--secondary)!important;
 }
 
-
+// кнопки назад/вперед
 .webix_cal_prev_button:hover{
     color: var(--primary-light)!important;
 }
+
 .webix_cal_next_button:hover{
     color: var(--primary-light)!important;
 }
@@ -658,6 +743,7 @@ label, button{
     color: var(--primary)!important;
 }
 
+// кнопка выбора месяца/года
 .webix_cal_done {
     @include secondary-btn;
     height: 35px!important;
@@ -675,14 +761,24 @@ label, button{
     border-radius: 4px;
 }
 
-.webix_cal_body .webix_cal_select .webix_cal_day_inner:hover,
-.webix_cal_body .webix_cal_today.webix_cal_select .webix_cal_day_inner:hover {
-    background: var(--primary-light)!important;
+// выбранный месяц и год - скругление
+.webix_cal_body .webix_cal_block span {
+    border-radius: 8%!important;
 }
+
+
+
+// выбранный день
 .webix_cal_body .webix_cal_select .webix_cal_day_inner,
 .webix_cal_body .webix_cal_today.webix_cal_select .webix_cal_day_inner {
     background: var(--primary)!important;
 }
+
+.webix_cal_body .webix_cal_select .webix_cal_day_inner:hover,
+.webix_cal_body .webix_cal_today.webix_cal_select .webix_cal_day_inner:hover {
+    background: var(--primary-light)!important;
+}
+
 .webix_cal_body .webix_cal_select .webix_cal_day_inner:active,
 .webix_cal_body .webix_cal_today.webix_cal_select .webix_cal_day_inner:active {
     background: var(--primary-dark)!important;
@@ -696,80 +792,60 @@ label, button{
     color: var(--primary)!important;
 }
 
-
+// форма background выбранного дня
 .webix_cal_day_inner{
     border-radius: 5px!important;
 }
 
+// кнопки сегодня и очистить
 .webix_cal_icon {
     font-size: 13px!important;
 }
 
+
+// кнопка очистить
 .webix_cal_icon_clear.webix_cal_icon{
     color: var(--danger);
 }
-
 .webix_cal_icon_clear.webix_cal_icon:hover{
     color: var(--danger-light)!important;
 }
-
 .webix_cal_icon_clear.webix_cal_icon:active{
     color: var(--danger-dark)!important;
 }
 
+
+// кнопка сегодня
 .webix_cal_icons span:not(:last-child){
     margin-right: 5px!important;
 }
 
-.webix_cal_body .webix_cal_block span {
-    border-radius: 8%!important;
-}
 
-
-.webix_view.webix_form.webix_layout_form .webix_el_slider{
-    display: none !important;
-}
-
- 
-.webix_template-datepicker .webix_template{
-    //font-size: 18px !important;
-    font-weight: 500;
-    padding: 5px 0px!important;
-    color:var(--primary);
-}
-
-.webix_view.webix_colon_template .webix_template{
-    padding: 6px 0px 0px!important;
-    font-size: 23px!important;
-}
-
+// counter 
 .webix_inp_counter_value{
     margin: 0px 5px 0px 5px!important;
     border: 1px solid var(--gray)!important;
     padding: 0px!important;
     cursor:text!important;
 }
-
 .webix_el_counter .webix_inp_counter_value{
     width: 75px!important;
 }
 
+ 
 
-.webix_template-actions  .webix_template{
-    font-weight: 600;
-    font-size: 16px;
-    padding:5px 0 0 !important;
-}
-
-
-
-
-//-------------------------viewHeadline
-
+// create empty view
+// вид пустого компонента
 .webix_empty-template {
     color:#858585!important;
     font-size:13px!important;
 }
+
+
+
+
+
+// create viewHeadline
 
 .webix_block-headline{
     display:inline-block!important;
@@ -782,7 +858,7 @@ label, button{
 
 
 
-//-------------------------radio
+// create radio button
 .webix_el_radio .webix_radio_1 .webix_custom_radio{
     color: var(--primary)!important;
 }
@@ -802,31 +878,15 @@ label, button{
 
 
 
-
-
-//-------------------------icons
-
-.webix_icon_btn{
-    font-size: 13px!important; 
-    margin-right: 0px!important;
-}
-
-.webix_img_btn > .webix_icon_btn{
-    margin-bottom: 1px !important;
-}
-.webix_img_btn > .icon-trash{
-    margin-bottom: 2px!important;
-}
-
-
-//-------------------------resizer
+// create resizer
 
 .webix_resizer {
     border-width: 1px!important;
 }
 
 
-//-------------------------input label
+
+// create input label
 
 .webix_inp_top_label{
     font-size: 12px!important;
@@ -834,28 +894,38 @@ label, button{
 }
 
 
-//-------------------------tree
 
+
+// create tree
+
+// tree edit компонент - фон
 .webix_tree.webix_tree-edit{
     background-color: none !important;
 }
 
+
+// элемент дерева - высота и отклик
 .webix_tree_item{
     height: 31px!important;
     line-height: 20px!important;
 }
+.webix_tree_item{
+    cursor: pointer!important;
+    padding: 5px 10px!important;
+    border-radius: 4px!important;
+}
 
+
+// пустой элемент дерева
 .tree_none-items{
     color: var(--gray)!important;
 }
 .tree_none-items:hover{
     background-color: transparent!important;
 }
-
 .tree_none-items .webix_tree_file{
     color: var(--gray-light) !important;
 }
-
 .tree_none-items:hover .webix_tree_file{
     color: var(--gray-light) !important;
 }
@@ -863,7 +933,41 @@ label, button{
     color: var(--gray-light) !important;
 }
 
+// пустой элемент и эл загрузки
+.tree_load-items, .tree_none-items, .tree_disabled-item{
+    pointer-events: none;
+}
+.tree_load-items .webix_tree_file{
+    color: transparent!important;
+}
+.tree_disabled-item .webix_tree_folder_open,
+.tree_disabled-item .webix_tree_close      ,
+.tree_disabled-item .webix_tree_open,
+.tree_disabled-item {
+    color : var(--gray)!important;
+}
 
+// элемент дерева - наведение
+.webix_tree_item:hover{
+    background-color: var(--gray-light)!important;
+}
+
+// цвет открытой папки
+.webix_tree_folder_open{
+    color: var(--primary-light)!important;
+}
+
+// выбранный элемент
+.webix_tree_item.webix_selected > .webix_tree_file{
+    color: var(--primary-light)!important;
+}
+.webix_tree .webix_tree_item.webix_selected{
+    background-color: var(--gray-light)!important;
+    font-weight: 500;
+}
+
+
+// delimeter
 .tree_delim-items{
     color: transparent!important;
     pointer-events: none;
@@ -873,104 +977,42 @@ label, button{
     margin-bottom: 8px!important;
     margin-left: 15px!important;
 }
-
-
 .tree_delim-items .webix_tree_file{
     color: transparent!important;
 }
 
 
-.tree_load-items, .tree_none-items, .tree_disabled-item{
-    pointer-events: none;
-}
-
-.tree_load-items .webix_tree_file{
-    color: transparent!important;
-}
-
-.tree_disabled-item .webix_tree_folder_open,
-.tree_disabled-item .webix_tree_close      ,
-.tree_disabled-item .webix_tree_open,
-.tree_disabled-item {
-    color : var(--gray)!important;
-}
 
 
-
-.webix_tree_item{
-    cursor: pointer!important;
-    padding: 5px 10px!important;
-    border-radius: 4px!important;
-}
-.webix_tree_item:hover{
-    background-color: var(--gray-light)!important;
-}
-
-.webix_tree_folder_open{
-    color: var(--primary-light)!important;
-}
-.webix_tree_item.webix_selected > .webix_tree_file{
-    color: var(--primary-light)!important;
-}
-
-.webix_tree .webix_tree_item.webix_selected{
-    background-color: var(--gray-light)!important;
-    font-weight: 500;
-}
-
-.webix_webix_selected .webix_tree_file{
-    color: var(--primary-light)!important;
-}
-
-.webix_tree_item:hover .webix_tree_folder,
-.webix_tree_item:hover .webix_tree_folder_open,
-.webix_tree_item:hover .webix_tree_file{
-    color: var(--primary-light);
-}
-
-
-
-
-
-
-
-//-------------------------prompt
+// create prompt
+ 
+// перекрытие webix стиля у заголовка
 .webix_prompt-filter-lib .webix_popup_title{
     box-shadow: none!important;
     font-size: 17px!important;
     padding-bottom: 10px!important;
 }
 
-
+// перекрытие webix стилей у инпута
 .webix_popup_input.webix_el_text{
     padding: 0!important;
     margin-bottom: 10px!important;
 }
-
 .webix_popup_input.webix_el_text input{
     height: 32px!important;
 }
-
-
-
 .webix_popup_input.webix_el_text.webix_required::before{
     display: none;
 }
 
 
-.webix_prompt-filter-lib{
-    border-radius:6px!important;
-}
-
-
+// кнопка отменить
 .webix_prompt-filter-lib > .webix_popup_controls div:nth-child(2){
     @include secondary-btn;
 }
-
 .webix_prompt-filter-lib > .webix_popup_controls div:nth-child(2):hover{
     @include secondary-btn--hover ;
 }
-
 .webix_prompt-filter-lib > .webix_popup_controls div:nth-child(2):active{
     @include secondary-btn--active ;
 }
@@ -980,19 +1022,17 @@ label, button{
 
 
 
-
-//-------------------------login password input
+// create login
+//-------------------------login password input hide btn
 .password-icon {
     padding     : 7px 6px 0px 0px!important;
     font-size   : 18px!important;
     transition  : .2s;
     cursor      : pointer;
-
 }
 .password-icon:hover{
     color       :var(--gray);
 }
-
 .password-icon:active{
     color       :var(--gray-dark);
     
@@ -1002,48 +1042,7 @@ label, button{
 
 
 
-//--------------------------popup confirm
-
-
-.webix_confirm .webix_popup_title{
-    box-shadow: none !important;
-}
-.webix_popup_button.confirm{
-    @include primary-btn;
-}
-
-.webix_popup_button.confirm:hover{
-    @include primary-btn--hover;
-}
-
-.webix_popup_button.confirm:active{
-    @include primary-btn--active;
-}
-
-.webix_popup_button{
-    padding: 5px 10px!important;
-}
-
-.webix_popup_controls > :first-child{
-    @include secondary-btn;
-}
-
-.webix_popup_controls > :first-child:hover{
-    @include secondary-btn--hover ;
-}
-.webix_popup_controls > :first-child:active{
-    @include secondary-btn--active ;
-}
-.webix_modal_box{
-    border-radius: 4px!important;
-    padding: 15px 30px!important;
-}
-
-
-
-
-
-//-------------------------notify
+// create notify
 .webix_success{
     border-radius: 4px!important;
     font-weight: 500!important;
@@ -1071,77 +1070,39 @@ label, button{
 
 
 
+// create workspace background
 
-//------------------------- workspace background
+// bg сайдбара
 .webix_tree.webix_tree-main{
-    background-color: var(--bg)!important;
-}
-
-.webix_header-style{
     background-color: var(--bg)!important;
 }
 .webix_side-container{
     background-color: var(--bg)!important;
 }
 
-
-
-
-
-
-//-------------------------dashboard
-
-.webix_accordion-container > .webix_accordionitem.collapsed .webix_accordionitem_header{
-    color:var(--dark)!important;
+// bg header
+.webix_header-style{
     background-color: var(--bg)!important;
 }
-.webix_accordion-container > .webix_accordionitem .webix_accordionitem_header{
-    font-weight: 400!important;
-    font-size: 15px!important;
-    background-color: var(--gray-light)!important;
-}
-
-.webix_accordion-container > .webix_accordionitem.collapsed .webix_accordionitem_header .webix_accordionitem_button{
-    color:var(--dark)!important;
-}
-.webix_accordion-container > .webix_accordionitem .webix_accordionitem_header .webix_accordionitem_button{
-    color:var(--primary)!important;
-}
 
 
-.webix_timeline_node{
-    stroke: var(--primary)!important;
-}
-.webix_dashboard-h2 .webix_template{
-    padding: 0px!important;
-}
-
-.webix_block-title{
-    font-weight: 600!important;
-    font-size: 16px!important;
-    height: auto!important;
-}
-
-.webix_dash-title > .webix_template{
-    padding: 8px 12px !important;
-    text-align: center;
-  
-}
 
 
-.webix_chart canvas{
-    right: 0!important;
+
+
+// create dashboard
+
+// dashboard filter заголовки у динамических инпутов
+.webix_template-datepicker .webix_template{
+    font-weight: 500;
+    padding: 5px 0px!important;
+    color:var(--primary);
 }
+
+// скролл у дашборда 
 .webix_view.dashboardBody.webix_layout_line{
     overflow:visible!important;
 }
-
-
-
-.webix_dash-chart-headline .webix_template{
-    padding:12px 0 0 0 !important;
-}
-
 
 
 
@@ -1154,32 +1115,33 @@ label, button{
 } //заголовок у фильтров в дашборде и таблице, редакторе таблицы
   
 
-
-.dash_container{ //dashboard 
+// отступ у контентной части
+.dash_container{ 
     margin-top :1px !important;   
     margin-left :1px !important; 
 }
 
-.dash-HeadlineBlock { // заголовки charts
+// заголовки charts
+.dash-HeadlineBlock { 
     margin: 0 !important;
     text-align: center;
     font-size:17px!important;
     font-weight:400 !important;
 }
 
-
-.dash-timeboard { // dashboard timepicker
+// dashboard timepicker - отключение 
+.dash-timeboard { 
     display: none!important;
 }
 
-
-.dash-filter-invalid{ //dashboard invalid input
+//dashboard invalid input
+.dash-filter-invalid{ 
     background  : var(--danger-light) !important;
     border-color: var(--danger)!important;
 }
 
-
-.dash-delim{ // dash layout spacer
+// dash layout spacer
+.dash-delim{ 
     background-color: var(--bg) !important;
 }
 
@@ -1190,30 +1152,23 @@ label, button{
 
 
 
+// create table
 
 
-//-------------------------table
-
-
-/// property
-/// 
+/// property компонент - скругление
 .webix_property{
     border-radius: 5px!important;
 }
 
-// edit form
+// edit form отступ от ресайзера
 .webix_form-edit{
     margin-left: 0px!important;
 }
 
-
-
-// popup calendar 
+// popup calendar скругление у плашки времени 
 .webix_view.webix_form.webix_layout_space{
     border-radius: 5px!important;
 }
-
-
 
 
 // table counter
@@ -1222,57 +1177,48 @@ label, button{
 }
 
 
-//property
+//property поле с ошибкой
 .propery-error{
     background-color: var(--danger-light); 
 }
-
-
-.webix_form-template > .webix_template{
-    padding: 0px!important;
-}
-
-.webix_hcolumn, .webix_pager_item_selected{
-    font-weight: 500!important;
-    font-size: 14px!important;
-}
+ 
+// bg у счетчика записей
 .webix_table-style .webix_hcell, .webix_style-template-count{
     background:var(--bg)!important;
 }
 
 
+// сокрытие дефолтных стилей таблицы webix 
 .webix_dtable .webix_ss_header .webix_hcolumn div.webix_last_row,
 .webix_dtable div.webix_ss_vscroll_header,
 .webix_dtable div.webix_ss_vscroll_footer{
     border-bottom-color: rgb(218, 222, 224) !important;
     border-top-color: rgb(218, 222, 224) !important;
 }
-
-.webix_dtable .webix_select_mark > div.webix_row_select{
-    box-shadow: inset 2px 0 var(--primary)!important;
-}
-.webix_cell{
-    cursor: pointer;
-}
-
-
 .webix_dtable .webix_ss_footer .webix_hcolumn > div:first-child, .webix_dtable .webix_ss_footer .webix_hcell[row="0"]{
     border-top-color: rgb(218, 222, 224) !important;
 }
 
+// выбранная запись в таблице
+.webix_dtable .webix_select_mark > div.webix_row_select{
+    box-shadow: inset 2px 0 var(--primary)!important;
+}
 
-// table toolbar
+// курсор на таблице
+.webix_cell{
+    cursor: pointer;
+}
+
+// table toolbar editForm btn
 .btn-edit-icon-toolbar{
     font-size:13px!important; 
     color:var(--primary)!important
 }
 
-
-///// table filter
+// table filter
 .applyNotify{
     padding : 3px 10px!important;
 }
-
 .applyNotify .webix_template{
     padding         : 3px 12px !important;
     height          : 30px!important;
@@ -1282,46 +1228,48 @@ label, button{
     border-radius   : 4px !important;
 }
 
+
 .filter-template-info{
     background-color: var(--bg)!important;
     border-radius:4px !important;
 }
-
 .filter-template-info .webix_view {
     background-color: transparent!important;
-
 }
 .filter-template-info .webix_template{
     font-size: 13px!important;
     background-color: transparent!important;
     padding: 10px 0px 10px 15px!important;
 }
-
 .webix_filter-inputs{
     margin-top: 0px!important; 
 }
 
 //tabbar
-
-.webix_filter-popup-tabbar  .webix_item_tab.webix_selected{
-    //border-color: 
+// выбранный таб
+.webix_filter-popup-tabbar .webix_item_tab.webix_selected {
     box-shadow: inset 0 -2px var(--primary)!important;
 }
-
-.webix_filter-popup-tabbar  .webix_item_tab{
-    //border-color: 
+// остальные табы
+.webix_filter-popup-tabbar  .webix_item_tab {
     box-shadow: inset 0 -2px var(--gray)!important;
 }
 
+//сокрытие дефолтной анимации при переходе между табами
+.webix_multivew-cell{
+    transition: none !important;
+}
+
+// все табы
 .webix_all_tabs .webix_item_tab{
     color: var(--primary)!important;
     font-size: 15px!important;
 }
 
+// отступ от пояснительного текста в редакторе фильтров
 .webix_edit-form-popup{
     margin-top:-15px!important;
 }
-
 .webix_edit-form-popup > .webix_scroll_cont > .webix_view.webix_layout_line{
     margin-top: 0px!important;
 }
@@ -1330,11 +1278,9 @@ label, button{
 
 
 
+// create tabbar
 
-
-//------------------------- tabbar
-
-
+// стили всех вкладок
 .global-tabbar .webix_all_tabs  .webix_item_tab{
     text-align-last: left;
     padding-left: 15px!important;
@@ -1342,24 +1288,24 @@ label, button{
     color:var(--gray-dark)!important;
     font-size: 13px!important;
 }
-
 .global-tabbar .webix_all_tabs  .webix_item_tab:hover{
     background-color: var(--bg)!important;
 }
  
+// кнопка закрыть вкладку
 .global-tabbar .webix_all_tabs  .webix_item_tab .webix_tab_close{
     color:var(--gray-dark)!important;
     font-size: 16px!important;
     padding-top: 2px!important;
 }
-
 .global-tabbar .webix_all_tabs  .webix_item_tab .webix_tab_close:hover{
     color:var(--primary-light)!important;
 }
-
 .global-tabbar .webix_all_tabs  .webix_item_tab .webix_tab_close:active{
     color:var(--primary-dark)!important;
 }
+
+// выбранный таб
 .global-tabbar .webix_item_tab.webix_selected{
     background-color: var(--bg);
 }

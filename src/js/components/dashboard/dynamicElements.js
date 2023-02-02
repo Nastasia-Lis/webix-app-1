@@ -422,7 +422,7 @@ function createChart(dataCharts){
                 css : "webix_dash-chart",
              
                 rows: [ 
-                    {template:' ', height:20, css:"dash-delim"},
+                 //   {template:' ', height:20, css:"dash-delim"},
                     returnHeadline (titleTemplate),
                     {   margin     : 4,
                         minHeight  : heightElem,
@@ -468,12 +468,6 @@ function setIdAttribute(idsParam){
 function createDashLayout(dataCharts){
     const layout = createChart(dataCharts);
  
-    // const dashLayout = [
-    //     {  
-    //         cols : layout
-            
-    //     }
-    // ];
  
     const dashCharts = {
         id  : "dashboard-charts",
@@ -488,7 +482,7 @@ function createDashLayout(dataCharts){
 function createScrollContent(dataCharts){
     const content = {
         view        : "scrollview", 
-        scroll      : "y",
+      //  scroll      : "y",
         id          : "dashBodyScroll",
         borderless  : true, 
         body        : {

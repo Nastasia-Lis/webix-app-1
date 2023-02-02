@@ -45,16 +45,20 @@ function findFavsInUserData(data, id){
 
         if (data && data.length){
             data.forEach(function(el){
-                if (el.name.includes("fav-link") && id == el.owner){
+                if (el.name.includes("fields/") && id == el.owner){
+             
                     const prefs  = JSON.parse(el.prefs);
-                    prefs.dataId = el.id;
-                    collection.push(prefs);
+
+                    if (prefs && prefs.favorite){
+                        prefs.favorite.dataId = el.id;
+                        collection.push(prefs.favorite);
+                    }
+         
                     
                 }
             });
         }
        
-
     } catch (err){
         setFunctionError(
             err, 
@@ -208,26 +212,70 @@ const btnSaveLink = new Button({
    
 }).maxView("primary");
 
-function deleteUserprefsData(options, option){
-    const id = option.dataId;
+
+function removeOption(options, option){
+      
+    const length = options.data.options.length;
+    if (length == 1){
+        const emptyOpt = returnEmptyOption();
+        options.addOption(emptyOpt);
+    }
+
+    options.removeOption(option.id);
+
+}
+
+function putItem(item, options, option){
 
     new ServerData({
-        id : `userprefs/${id}`
+        id : `userprefs/${item.id}`
        
-    }).del({id : option.id}).then(function(data){
+    }).put(item).then(function(data){
     
-        if (data){
-            const length = options.data.options.length;
-            if (length == 1){
-                const emptyOpt = returnEmptyOption();
-                options.addOption(emptyOpt);
-            }
-            options.removeOption(option.id);
-             
+        if (data && data.content){
+            
+            setLogValue(
+                "success", 
+                "Ссылка удалена из избранного"
+            );
+            
+            removeOption(options, option);
         }
          
     });
+}
 
+
+async function deleteUserprefsData(options, option){
+ 
+    if (option && options){
+        const owner   = await returnOwner();
+        const name    = `userprefs.name+=+%27fields/${option.id}%27`;
+        const ownerId = `userprefs.owner+=+${owner.id}`;
+        new ServerData({
+            id : `smarts?query=${name}+and+${ownerId}&limit=80&offset=0`,
+           
+        }).get().then(function(data){
+        
+            if (data && data.content){
+                const item = data.content[0];
+
+                if (item){
+                    const prefs = JSON.parse(item.prefs);
+                  
+                    if (prefs.favorite){
+                        delete prefs.favorite;
+                    }
+
+                    item.prefs = prefs;
+
+                    putItem(item, options, option);
+                }
+
+            }
+             
+        });
+    }
 
 }
 function removeBtnClick(){

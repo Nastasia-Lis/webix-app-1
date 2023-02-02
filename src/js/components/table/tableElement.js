@@ -1353,7 +1353,7 @@ function returnLayoutTables(id){
         hidden  : true, 
         view    : "scrollview", 
         body    : { 
-            view  : "flexlayout",
+          //  view  : "flexlayout",
             id    : "flexlayoutTable", 
             cols  : [
 
